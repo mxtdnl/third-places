@@ -1,0 +1,827 @@
+<title>Third Place Decoder</title>
+<style>
+  :root {
+    /* Background */
+    --bg: #F2DFBE;
+    --bg-card: #FFFAF2;
+    --text: #2A1F18;
+    --text-muted: #6A5A48;
+    --border: #D8C8A8;
+
+    /* Characteristic colours — reuse these in Activity 2 */
+    --char-1: #5C3A96; /* Neutral Ground */
+    --char-2: #B52838; /* The Leveler */
+    --char-3: #C85218; /* Conversation is the Main Activity */
+    --char-4: #D4A020; /* Accessibility and Accommodation */
+    --char-5: #7A5828; /* The Regulars */
+    --char-6: #B83068; /* A Low Profile */
+    --char-7: #CC6830; /* The Mood is Playful */
+    --char-8: #7E58A8; /* A Home Away from Home */
+
+    /* Feedback */
+    --correct: #2A7A42;
+    --correct-bg: #E6F4EA;
+    --incorrect: #B82828;
+    --incorrect-bg: #FDEEEE;
+    --hint-bg: #FFF3E0;
+    --hint-border: #D4882B;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    padding-block: 0;
+  }
+
+  .screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+    overflow-y: auto;
+    background: var(--bg);
+  }
+  .screen.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* ============================================================
+     INTRO SCREEN
+     ============================================================ */
+  #screen-intro { position: relative; }
+
+  .geo-circle {
+    position: absolute;
+    width: 380px;
+    height: 380px;
+    border-radius: 50%;
+    background: var(--char-1);
+    opacity: 0.1;
+    top: -80px;
+    right: -40px;
+    pointer-events: none;
+  }
+  .geo-rect {
+    position: absolute;
+    width: 220px;
+    height: 100px;
+    background: var(--char-3);
+    opacity: 0.08;
+    bottom: 12%;
+    left: -30px;
+    transform: rotate(-12deg);
+    pointer-events: none;
+  }
+  .geo-tri {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-left: 50px solid transparent;
+    border-right: 50px solid transparent;
+    border-bottom: 85px solid var(--char-2);
+    opacity: 0.08;
+    top: 35%;
+    left: 10%;
+    pointer-events: none;
+  }
+
+  .intro-content {
+    max-width: 640px;
+    text-align: center;
+    z-index: 1;
+  }
+
+  .intro-content h1 {
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.15;
+    margin-bottom: 1.5rem;
+  }
+
+  .intro-sub {
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .progress-dots {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+  .progress-dot {
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--border);
+    background: transparent;
+    transition: background 0.4s ease, border-color 0.4s ease;
+  }
+  .progress-dot.filled {
+    border-color: transparent;
+  }
+
+  .progress-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+  }
+
+  .btn {
+    background: var(--char-1);
+    color: #fff;
+    border: none;
+    padding: 0.9rem 3rem;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease;
+    font-family: inherit;
+  }
+  .btn:hover {
+    background: var(--char-2);
+    transform: translateY(-2px);
+  }
+  .btn:active {
+    transform: translateY(0);
+  }
+
+  /* ============================================================
+     GAME SCREEN
+     ============================================================ */
+  #screen-game {
+    justify-content: flex-start;
+    padding-top: 2.5rem;
+  }
+
+  .game-header {
+    width: 100%;
+    max-width: 720px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  .progress-text {
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    white-space: nowrap;
+    margin-left: 1rem;
+  }
+
+  .question-body {
+    width: 100%;
+    max-width: 720px;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .question-body.exiting {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  .question-body.entering {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+
+  .definition-card {
+    background: var(--bg-card);
+    border: 2px solid var(--text);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .definition-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: var(--bar-color, var(--text));
+    transition: background 0.3s ease;
+  }
+  .definition-card p {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    padding-top: 0.25rem;
+  }
+
+  .options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .option-card {
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    border-left: 6px solid var(--border);
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 700;
+    font-size: 1.05rem;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 64px;
+    user-select: none;
+    font-family: inherit;
+    line-height: 1.3;
+  }
+  .option-card:hover:not(.disabled):not(.correct):not(.incorrect) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(42, 31, 24, 0.1);
+    border-color: var(--text-muted);
+    border-left-color: var(--text-muted);
+  }
+  .option-card.correct {
+    border-color: var(--correct);
+    border-left-color: var(--correct);
+    background: var(--correct-bg);
+    cursor: default;
+  }
+  .option-card.unlocked {
+    color: #fff;
+    border-color: transparent;
+    border-left-color: transparent;
+    cursor: default;
+  }
+  .option-card.incorrect {
+    border-color: var(--incorrect);
+    border-left-color: var(--incorrect);
+    background: var(--incorrect-bg);
+  }
+  .option-card.disabled {
+    opacity: 0.35;
+    pointer-events: none;
+    cursor: default;
+  }
+
+  .feedback-area {
+    margin-top: 1rem;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+  }
+  .feedback-area.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .feedback-box {
+    padding: 1.25rem 1.5rem;
+    line-height: 1.6;
+    font-size: 0.95rem;
+  }
+  .feedback-box.correct-feedback {
+    border-left: 5px solid var(--correct);
+    background: var(--correct-bg);
+  }
+  .feedback-box.hint-feedback {
+    border-left: 5px solid var(--hint-border);
+    background: var(--hint-bg);
+  }
+  .feedback-box strong {
+    display: block;
+    margin-bottom: 0.3rem;
+  }
+
+  .btn-continue {
+    background: var(--text);
+    color: var(--bg);
+    border: none;
+    padding: 0.75rem 2.5rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background 0.2s ease, transform 0.15s ease;
+    font-family: inherit;
+  }
+  .btn-continue:hover {
+    background: var(--char-1);
+    color: #fff;
+    transform: translateY(-1px);
+  }
+
+  /* ============================================================
+     SUMMARY SCREEN
+     ============================================================ */
+  #screen-summary {
+    justify-content: flex-start;
+    padding-top: 3rem;
+  }
+  .summary-content {
+    max-width: 720px;
+    width: 100%;
+  }
+  .summary-content h2 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+  .summary-count {
+    text-align: center;
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: var(--correct);
+    margin-bottom: 2rem;
+  }
+
+  .char-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+    margin-bottom: 2rem;
+  }
+  .char-tile {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1.3;
+  }
+  .char-tile .check {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border: 2px solid rgba(255,255,255,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+  }
+
+  .revisit-section {
+    margin-bottom: 2rem;
+  }
+  .revisit-heading {
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid var(--border);
+  }
+  .revisit-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.95rem;
+  }
+  .revisit-item .name {
+    font-weight: 700;
+  }
+  .revisit-item .attempts {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .divider {
+    width: 60px;
+    height: 3px;
+    background: var(--text);
+    margin: 2rem auto;
+  }
+
+  .transition-prompt {
+    text-align: center;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+    font-style: italic;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 600px) {
+    .options-grid {
+      grid-template-columns: 1fr;
+    }
+    .char-grid {
+      grid-template-columns: 1fr;
+    }
+    .game-header {
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+  }
+</style>
+
+<!-- ============================================================
+     INTRO
+     ============================================================ -->
+<section id="screen-intro" class="screen active">
+  <div class="geo-circle"></div>
+  <div class="geo-rect"></div>
+  <div class="geo-tri"></div>
+  <div class="intro-content">
+    <h1>What makes a<br>third place<br>a third place?</h1>
+    <p class="intro-sub">Match each characteristic to the description that best captures it. You have 8 characteristics. Don't worry if you're uncertain — you'll get feedback after each decision.</p>
+    <div class="progress-dots" id="intro-dots"></div>
+    <p class="progress-label">0 / 8</p>
+    <button class="btn" id="btn-start">Begin</button>
+  </div>
+</section>
+
+<!-- ============================================================
+     GAME
+     ============================================================ -->
+<section id="screen-game" class="screen">
+  <div class="game-header">
+    <div class="progress-dots" id="game-dots"></div>
+    <span class="progress-text" id="progress-text">1 / 8</span>
+  </div>
+  <div class="question-body" id="question-body">
+    <div class="definition-card" id="definition-card">
+      <p id="definition-text"></p>
+    </div>
+    <div class="options-grid" id="options-grid"></div>
+    <div class="feedback-area" id="feedback-area">
+      <div class="feedback-box" id="feedback-box"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SUMMARY
+     ============================================================ -->
+<section id="screen-summary" class="screen">
+  <div class="summary-content">
+    <h2>Concepts Unlocked</h2>
+    <div class="summary-count">8 / 8</div>
+    <div class="char-grid" id="char-grid"></div>
+    <div id="revisit-section"></div>
+    <div class="divider"></div>
+    <p class="transition-prompt">You'll now need to identify these characteristics in real spaces.</p>
+  </div>
+</section>
+
+<script>
+// ============================================================
+// EDITABLE DATA — change content here without touching code below
+// ============================================================
+var CHARACTERISTICS = [
+  {
+    name: "Neutral Ground",
+    color: "var(--char-1)",
+    colorHex: "#5C3A96",
+    definition: "A third place is a setting where people can come and go freely, without obligation, invitation, or the need to play host.",
+    distractors: ["A Low Profile", "A Home Away from Home", "The Leveler"],
+    hint: "This characteristic is about freedom from obligation — why people don’t need a reason to be there, or to leave.",
+    feedback: "Without neutral ground, every gathering carries the weight of host–guest obligations. This freedom from entanglement creates the conditions for informal, low-stakes social interaction."
+  },
+  {
+    name: "The Leveler",
+    color: "var(--char-2)",
+    colorHex: "#B52838",
+    definition: "A third place is a socially levelling environment where individuals’ rank, status, and roles in the outside world carry no weight.",
+    distractors: ["Neutral Ground", "The Regulars", "Conversation is the Main Activity"],
+    hint: "Think about external hierarchies — job titles, income, education. What happens to them inside this space?",
+    feedback: "When external status is suspended, people engage with who you are in the space, not who you are outside it. This creates genuinely open social interaction."
+  },
+  {
+    name: "Conversation is the Main Activity",
+    color: "var(--char-3)",
+    colorHex: "#C85218",
+    definition: "Talk — lively, playful, wide-ranging — is the primary social activity in a third place, valued collectively for its own sake.",
+    distractors: ["The Mood is Playful", "A Home Away from Home", "Accessibility and Accommodation"],
+    hint: "Focus on the primary activity — not the mood or the feeling, but what people are actually doing together.",
+    feedback: "Conversation isn’t just something that happens in a third place — it’s the point. The quality of talk is what distinguishes a third place from a mere venue."
+  },
+  {
+    name: "Accessibility and Accommodation",
+    color: "var(--char-4)",
+    colorHex: "#D4A020",
+    definition: "A third place is easy to access and accommodating to its visitors’ schedules — one can go alone, at almost any time, and expect to find familiar faces.",
+    distractors: ["The Leveler", "A Low Profile", "The Regulars"],
+    hint: "This is about physical and temporal access — location, hours, and the ability to show up without planning.",
+    feedback: "A third place must fit into the cracks of daily life without effort. If you need to plan a visit, it stops functioning as the spontaneous social anchor Oldenburg describes."
+  },
+  {
+    name: "The Regulars",
+    color: "var(--char-5)",
+    colorHex: "#7A5828",
+    definition: "A third place has a core group of regular visitors who set the social tone, attract newcomers, and give the space its characteristic mood.",
+    distractors: ["Neutral Ground", "A Home Away from Home", "The Mood is Playful"],
+    hint: "Think about specific people, not the space itself. Who gives a third place its recognisable personality?",
+    feedback: "Regulars aren’t just frequent visitors — they’re the social infrastructure. They set the tone, welcome newcomers, and ensure that on any visit, you’ll find someone you know."
+  },
+  {
+    name: "A Low Profile",
+    color: "var(--char-6)",
+    colorHex: "#B83068",
+    definition: "Third places are characteristically unpretentious, plain, and without airs — their décor maximises comfort by avoiding ostentation.",
+    distractors: ["Accessibility and Accommodation", "The Leveler", "Neutral Ground"],
+    hint: "Look at the physical environment. What does the place look like — and what does it deliberately not look like?",
+    feedback: "Plainness serves a purpose: it removes pretension and signals that everyone belongs. Ostentation can inadvertently create social barriers."
+  },
+  {
+    name: "The Mood is Playful",
+    color: "var(--char-7)",
+    colorHex: "#CC6830",
+    definition: "The dominant mood of a third place is one of playfulness — frivolity, humour, verbal wit, and lightheartedness are the norm.",
+    distractors: ["Conversation is the Main Activity", "The Regulars", "A Home Away from Home"],
+    hint: "Consider the emotional register of the space. Not what people do, but the spirit in which they do it.",
+    feedback: "Playfulness isn’t frivolity — it’s constitutive. When humour is the default register, anxiety and social performance give way to genuine connection."
+  },
+  {
+    name: "A Home Away from Home",
+    color: "var(--char-8)",
+    colorHex: "#7E58A8",
+    definition: "A third place provides a sense of rootedness, comfort, and warmth analogous to being at home — it is a psychological anchor in daily life.",
+    distractors: ["The Regulars", "Neutral Ground", "The Leveler"],
+    hint: "Think about psychological attachment — rootedness, warmth, a sense of belonging without domestic obligations.",
+    feedback: "This is the deepest characteristic: rootedness, possession, ease, warmth, and regeneration — all the comforts of home, without its entangling obligations."
+  }
+];
+
+// ============================================================
+// STATE
+// ============================================================
+var state = {
+  order: [],
+  current: 0,
+  attempts: {},
+  transitioning: false
+};
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function shuffle(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+  }
+  return a;
+}
+
+function $(sel) { return document.getElementById(sel); }
+
+// ============================================================
+// SCREEN MANAGEMENT
+// ============================================================
+function showScreen(id) {
+  var screens = document.querySelectorAll('.screen');
+  for (var i = 0; i < screens.length; i++) {
+    screens[i].classList.remove('active');
+  }
+  $(id).classList.add('active');
+}
+
+// ============================================================
+// PROGRESS DOTS
+// ============================================================
+function buildDots(containerId) {
+  var el = $(containerId);
+  el.innerHTML = '';
+  for (var i = 0; i < 8; i++) {
+    var dot = document.createElement('div');
+    dot.className = 'progress-dot';
+    el.appendChild(dot);
+  }
+}
+
+function updateDots() {
+  var gameDots = $('game-dots').children;
+  var introDots = $('intro-dots').children;
+  for (var i = 0; i < 8; i++) {
+    if (i < state.current) {
+      var char = CHARACTERISTICS[state.order[i]];
+      gameDots[i].style.background = char.colorHex;
+      gameDots[i].style.borderColor = char.colorHex;
+      gameDots[i].classList.add('filled');
+      introDots[i].style.background = char.colorHex;
+      introDots[i].style.borderColor = char.colorHex;
+      introDots[i].classList.add('filled');
+    } else {
+      gameDots[i].style.background = '';
+      gameDots[i].style.borderColor = '';
+      gameDots[i].classList.remove('filled');
+    }
+  }
+  $('progress-text').textContent = (state.current + 1) + ' / 8';
+  if (state.current >= 8) {
+    $('progress-text').textContent = '8 / 8';
+  }
+}
+
+// ============================================================
+// GAME LOGIC
+// ============================================================
+function startGame() {
+  state.order = shuffle([0, 1, 2, 3, 4, 5, 6, 7]);
+  state.current = 0;
+  state.attempts = {};
+  for (var i = 0; i < 8; i++) {
+    state.attempts[CHARACTERISTICS[i].name] = 0;
+  }
+  updateDots();
+  showScreen('screen-game');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  var idx = state.order[state.current];
+  var char = CHARACTERISTICS[idx];
+
+  $('definition-card').style.setProperty('--bar-color', char.colorHex);
+  $('definition-text').textContent = char.definition;
+
+  var options = shuffle([char.name].concat(char.distractors));
+  var grid = $('options-grid');
+  grid.innerHTML = '';
+
+  for (var i = 0; i < options.length; i++) {
+    var card = document.createElement('button');
+    card.className = 'option-card';
+    card.textContent = options[i];
+    card.setAttribute('data-name', options[i]);
+    card.addEventListener('click', handleAnswer);
+    grid.appendChild(card);
+  }
+
+  var fa = $('feedback-area');
+  fa.classList.remove('visible');
+  $('feedback-box').innerHTML = '';
+  $('feedback-box').className = 'feedback-box';
+
+  updateDots();
+}
+
+function handleAnswer(e) {
+  if (state.transitioning) return;
+  var card = e.currentTarget;
+  if (card.classList.contains('disabled') || card.classList.contains('correct')) return;
+
+  var selected = card.getAttribute('data-name');
+  var idx = state.order[state.current];
+  var char = CHARACTERISTICS[idx];
+
+  state.attempts[char.name]++;
+
+  if (selected === char.name) {
+    card.classList.add('correct');
+    setTimeout(function() {
+      card.classList.add('unlocked');
+      card.style.background = char.colorHex;
+      card.style.borderColor = char.colorHex;
+    }, 350);
+
+    var allCards = $('options-grid').children;
+    for (var i = 0; i < allCards.length; i++) {
+      if (allCards[i] !== card) {
+        allCards[i].classList.add('disabled');
+      }
+    }
+
+    var fb = $('feedback-box');
+    fb.className = 'feedback-box correct-feedback';
+    fb.innerHTML = '<strong>Correct</strong>' + char.feedback;
+
+    var btnWrap = document.createElement('div');
+    var btn = document.createElement('button');
+    btn.className = 'btn-continue';
+    btn.textContent = state.current < 7 ? 'Continue' : 'See Summary';
+    btn.addEventListener('click', nextQuestion);
+    btnWrap.appendChild(btn);
+    fb.appendChild(btnWrap);
+
+    setTimeout(function() {
+      $('feedback-area').classList.add('visible');
+    }, 450);
+  } else {
+    card.classList.add('incorrect');
+    setTimeout(function() {
+      card.classList.remove('incorrect');
+      card.classList.add('disabled');
+    }, 500);
+
+    var fb = $('feedback-box');
+    fb.className = 'feedback-box hint-feedback';
+    fb.innerHTML = '<strong>Not quite</strong>' + char.hint;
+    $('feedback-area').classList.add('visible');
+  }
+}
+
+function nextQuestion() {
+  if (state.transitioning) return;
+  state.transitioning = true;
+
+  var body = $('question-body');
+  body.classList.add('exiting');
+
+  setTimeout(function() {
+    state.current++;
+    if (state.current >= 8) {
+      body.classList.remove('exiting');
+      state.transitioning = false;
+      renderSummary();
+      return;
+    }
+    renderQuestion();
+    body.classList.remove('exiting');
+    body.classList.add('entering');
+
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        body.classList.remove('entering');
+        state.transitioning = false;
+      });
+    });
+  }, 280);
+}
+
+// ============================================================
+// SUMMARY
+// ============================================================
+function renderSummary() {
+  var grid = $('char-grid');
+  grid.innerHTML = '';
+  for (var i = 0; i < 8; i++) {
+    var char = CHARACTERISTICS[i];
+    var tile = document.createElement('div');
+    tile.className = 'char-tile';
+    tile.style.background = char.colorHex;
+    tile.innerHTML = '<span class="check">✓</span><span>' + char.name + '</span>';
+    grid.appendChild(tile);
+  }
+
+  var revisitItems = [];
+  for (var i = 0; i < 8; i++) {
+    var char = CHARACTERISTICS[i];
+    if (state.attempts[char.name] > 1) {
+      revisitItems.push({ name: char.name, attempts: state.attempts[char.name] });
+    }
+  }
+
+  var section = $('revisit-section');
+  section.innerHTML = '';
+  if (revisitItems.length > 0) {
+    var heading = document.createElement('div');
+    heading.className = 'revisit-heading';
+    heading.textContent = 'Worth Revisiting';
+    section.appendChild(heading);
+    for (var i = 0; i < revisitItems.length; i++) {
+      var item = document.createElement('div');
+      item.className = 'revisit-item';
+      item.innerHTML = '<span class="name">' + revisitItems[i].name + '</span><span class="attempts">' + revisitItems[i].attempts + ' attempts</span>';
+      section.appendChild(item);
+    }
+  }
+
+  showScreen('screen-summary');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+buildDots('intro-dots');
+buildDots('game-dots');
+$('btn-start').addEventListener('click', startGame);
+</script>
