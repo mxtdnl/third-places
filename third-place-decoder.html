@@ -209,34 +209,23 @@
     transform: translateX(16px);
   }
 
-  .definition-card {
-    background: var(--bg-card);
-    border: 2px solid var(--text);
-    padding: 2rem;
-    margin-bottom: 1.5rem;
-    position: relative;
-    overflow: hidden;
-  }
-  .definition-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 6px;
-    background: var(--bar-color, var(--text));
+  .name-banner {
+    padding: 1.25rem 2rem;
+    margin-bottom: 1.25rem;
+    color: #fff;
+    font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1.25;
     transition: background 0.3s ease;
-  }
-  .definition-card p {
-    font-size: 1.2rem;
-    line-height: 1.6;
-    padding-top: 0.25rem;
   }
 
   .options-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
   }
 
   .option-card {
@@ -246,16 +235,13 @@
     padding: 1rem 1.25rem;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-weight: 700;
-    font-size: 1.05rem;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 64px;
+    font-weight: 400;
+    font-size: 0.95rem;
+    text-align: left;
+    min-height: auto;
     user-select: none;
     font-family: inherit;
-    line-height: 1.3;
+    line-height: 1.55;
   }
   .option-card:hover:not(.disabled):not(.correct):not(.incorrect) {
     transform: translateY(-2px);
@@ -267,12 +253,6 @@
     border-color: var(--correct);
     border-left-color: var(--correct);
     background: var(--correct-bg);
-    cursor: default;
-  }
-  .option-card.unlocked {
-    color: #fff;
-    border-color: transparent;
-    border-left-color: transparent;
     cursor: default;
   }
   .option-card.incorrect {
@@ -438,9 +418,6 @@
   }
 
   @media (max-width: 600px) {
-    .options-grid {
-      grid-template-columns: 1fr;
-    }
     .char-grid {
       grid-template-columns: 1fr;
     }
@@ -460,7 +437,7 @@
   <div class="geo-tri"></div>
   <div class="intro-content">
     <h1>What makes a<br>third place<br>a third place?</h1>
-    <p class="intro-sub">Match each characteristic to the description that best captures it. You have 8 characteristics. Don't worry if you're uncertain — you'll get feedback after each decision.</p>
+    <p class="intro-sub">For each characteristic, choose the description that best captures it. You'll see four descriptions — only one is correct. Don't worry if you're uncertain — you'll get feedback after each decision.</p>
     <div class="progress-dots" id="intro-dots"></div>
     <p class="progress-label">0 / 8</p>
     <button class="btn" id="btn-start">Begin</button>
@@ -476,9 +453,7 @@
     <span class="progress-text" id="progress-text">1 / 8</span>
   </div>
   <div class="question-body" id="question-body">
-    <div class="definition-card" id="definition-card">
-      <p id="definition-text"></p>
-    </div>
+    <div class="name-banner" id="name-banner"></div>
     <div class="options-grid" id="options-grid"></div>
     <div class="feedback-area" id="feedback-area">
       <div class="feedback-box" id="feedback-box"></div>
@@ -507,73 +482,97 @@
 var CHARACTERISTICS = [
   {
     name: "Neutral Ground",
-    color: "var(--char-1)",
     colorHex: "#5C3A96",
     definition: "A third place is a setting where people can come and go freely, without obligation, invitation, or the need to play host.",
-    distractors: ["A Low Profile", "A Home Away from Home", "The Leveler"],
+    distractorDefs: [
+      "The space is physically plain and unassuming, avoiding pretension or high-end décor.",
+      "The space provides a sense of rootedness, so visitors return to it as a regular part of daily routine.",
+      "The space is free from any kind of hierarchy, so no one can hold a higher position than anyone else."
+    ],
     hint: "This characteristic is about freedom from obligation — why people don’t need a reason to be there, or to leave.",
     feedback: "Without neutral ground, every gathering carries the weight of host–guest obligations. This freedom from entanglement creates the conditions for informal, low-stakes social interaction."
   },
   {
     name: "The Leveler",
-    color: "var(--char-2)",
     colorHex: "#B52838",
     definition: "A third place is a socially levelling environment where individuals’ rank, status, and roles in the outside world carry no weight.",
-    distractors: ["Neutral Ground", "The Regulars", "Conversation is the Main Activity"],
+    distractorDefs: [
+      "People can enter and exit the space freely without needing permission or an invitation.",
+      "The space attracts a core group of repeat visitors who know each other and set the social tone.",
+      "All participants in the space are required to have an equal amount of knowledge or experience before joining."
+    ],
     hint: "Think about external hierarchies — job titles, income, education. What happens to them inside this space?",
     feedback: "When external status is suspended, people engage with who you are in the space, not who you are outside it. This creates genuinely open social interaction."
   },
   {
     name: "Conversation is the Main Activity",
-    color: "var(--char-3)",
     colorHex: "#C85218",
     definition: "Talk — lively, playful, wide-ranging — is the primary social activity in a third place, valued collectively for its own sake.",
-    distractors: ["The Mood is Playful", "A Home Away from Home", "Accessibility and Accommodation"],
+    distractorDefs: [
+      "The primary purpose of the space is to provide entertainment or organised activities for its visitors.",
+      "The dominant mood is lighthearted and playful, with humour and banter valued above seriousness.",
+      "Visitors feel a sense of belonging and warmth, as though the space were a second home."
+    ],
     hint: "Focus on the primary activity — not the mood or the feeling, but what people are actually doing together.",
     feedback: "Conversation isn’t just something that happens in a third place — it’s the point. The quality of talk is what distinguishes a third place from a mere venue."
   },
   {
     name: "Accessibility and Accommodation",
-    color: "var(--char-4)",
     colorHex: "#D4A020",
     definition: "A third place is easy to access and accommodating to its visitors’ schedules — one can go alone, at almost any time, and expect to find familiar faces.",
-    distractors: ["The Leveler", "A Low Profile", "The Regulars"],
+    distractorDefs: [
+      "The space is socially inclusive, welcoming people regardless of background, status, or credentials.",
+      "The space is simple and unpretentious in its design, prioritising function over aesthetics.",
+      "The space provides free Wi-Fi, parking, and other amenities that make long visits comfortable."
+    ],
     hint: "This is about physical and temporal access — location, hours, and the ability to show up without planning.",
     feedback: "A third place must fit into the cracks of daily life without effort. If you need to plan a visit, it stops functioning as the spontaneous social anchor Oldenburg describes."
   },
   {
     name: "The Regulars",
-    color: "var(--char-5)",
     colorHex: "#7A5828",
     definition: "A third place has a core group of regular visitors who set the social tone, attract newcomers, and give the space its characteristic mood.",
-    distractors: ["Neutral Ground", "A Home Away from Home", "The Mood is Playful"],
+    distractorDefs: [
+      "The space promotes informal, voluntary socialisation beyond the demands of work and home.",
+      "Visitors are free to come and go without being noticed or remarked upon.",
+      "The space provides a consistent set of rules and expectations that all visitors must follow."
+    ],
     hint: "Think about specific people, not the space itself. Who gives a third place its recognisable personality?",
     feedback: "Regulars aren’t just frequent visitors — they’re the social infrastructure. They set the tone, welcome newcomers, and ensure that on any visit, you’ll find someone you know."
   },
   {
     name: "A Low Profile",
-    color: "var(--char-6)",
     colorHex: "#B83068",
     definition: "Third places are characteristically unpretentious, plain, and without airs — their décor maximises comfort by avoiding ostentation.",
-    distractors: ["Accessibility and Accommodation", "The Leveler", "Neutral Ground"],
+    distractorDefs: [
+      "The space is easy to reach and open at convenient times, so people can visit without special planning.",
+      "The space avoids hierarchy, treating all visitors as equals regardless of external status.",
+      "The space is designed to be visually calming and minimalist, prioritising mental health and mindfulness."
+    ],
     hint: "Look at the physical environment. What does the place look like — and what does it deliberately not look like?",
     feedback: "Plainness serves a purpose: it removes pretension and signals that everyone belongs. Ostentation can inadvertently create social barriers."
   },
   {
     name: "The Mood is Playful",
-    color: "var(--char-7)",
     colorHex: "#CC6830",
     definition: "The dominant mood of a third place is one of playfulness — frivolity, humour, verbal wit, and lightheartedness are the norm.",
-    distractors: ["Conversation is the Main Activity", "The Regulars", "A Home Away from Home"],
+    distractorDefs: [
+      "Talk is the central activity of the space, with wide-ranging conversation valued for its own sake.",
+      "The space encourages creative, hands-on activities like crafting, building, or tinkering.",
+      "Visitors feel psychologically safe enough to share personal problems and seek emotional support."
+    ],
     hint: "Consider the emotional register of the space. Not what people do, but the spirit in which they do it.",
     feedback: "Playfulness isn’t frivolity — it’s constitutive. When humour is the default register, anxiety and social performance give way to genuine connection."
   },
   {
     name: "A Home Away from Home",
-    color: "var(--char-8)",
     colorHex: "#7E58A8",
     definition: "A third place provides a sense of rootedness, comfort, and warmth analogous to being at home — it is a psychological anchor in daily life.",
-    distractors: ["The Regulars", "Neutral Ground", "The Leveler"],
+    distractorDefs: [
+      "The space has a core group of repeat visitors who give it a recognisable social character.",
+      "Visitors are not required to fulfil any obligations or commitments as a condition of participation.",
+      "The space provides comfortable physical furnishings — sofas, warm lighting, soft music — that make people want to stay."
+    ],
     hint: "Think about psychological attachment — rootedness, warmth, a sense of belonging without domestic obligations.",
     feedback: "This is the deepest characteristic: rootedness, possession, ease, warmth, and regeneration — all the comforts of home, without its entangling obligations."
   }
@@ -670,18 +669,19 @@ function renderQuestion() {
   var idx = state.order[state.current];
   var char = CHARACTERISTICS[idx];
 
-  $('definition-card').style.setProperty('--bar-color', char.colorHex);
-  $('definition-text').textContent = char.definition;
+  var banner = $('name-banner');
+  banner.style.background = char.colorHex;
+  banner.textContent = char.name;
 
-  var options = shuffle([char.name].concat(char.distractors));
+  var defs = shuffle([char.definition].concat(char.distractorDefs));
   var grid = $('options-grid');
   grid.innerHTML = '';
 
-  for (var i = 0; i < options.length; i++) {
+  for (var i = 0; i < defs.length; i++) {
     var card = document.createElement('button');
     card.className = 'option-card';
-    card.textContent = options[i];
-    card.setAttribute('data-name', options[i]);
+    card.textContent = defs[i];
+    card.setAttribute('data-correct', defs[i] === char.definition ? '1' : '0');
     card.addEventListener('click', handleAnswer);
     grid.appendChild(card);
   }
@@ -699,19 +699,14 @@ function handleAnswer(e) {
   var card = e.currentTarget;
   if (card.classList.contains('disabled') || card.classList.contains('correct')) return;
 
-  var selected = card.getAttribute('data-name');
   var idx = state.order[state.current];
   var char = CHARACTERISTICS[idx];
+  var isCorrect = card.getAttribute('data-correct') === '1';
 
   state.attempts[char.name]++;
 
-  if (selected === char.name) {
+  if (isCorrect) {
     card.classList.add('correct');
-    setTimeout(function() {
-      card.classList.add('unlocked');
-      card.style.background = char.colorHex;
-      card.style.borderColor = char.colorHex;
-    }, 350);
 
     var allCards = $('options-grid').children;
     for (var i = 0; i < allCards.length; i++) {
@@ -734,7 +729,7 @@ function handleAnswer(e) {
 
     setTimeout(function() {
       $('feedback-area').classList.add('visible');
-    }, 450);
+    }, 350);
   } else {
     card.classList.add('incorrect');
     setTimeout(function() {
