@@ -25,6 +25,10 @@
   --ambiguous-bg: rgba(212,160,32,0.12);
   --absent: #C83838;
   --absent-bg: rgba(200,56,56,0.12);
+
+  --domain-psych: #7E58A8;
+  --domain-econ: #D4A020;
+  --domain-polit: #B52838;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -414,11 +418,238 @@ body {
   border-radius: 50%;
 }
 
+/* --- Stress Test (Part 3) --- */
+.domain-section { margin-bottom: 1.5rem; }
+.domain-heading {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  margin-bottom: 8px;
+  border-left: 4px solid;
+}
+.condition-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+}
+.condition-card {
+  background: var(--bg-surface);
+  border: 2px solid var(--border);
+  padding: 12px 16px;
+  cursor: pointer;
+  font: 700 15px/1.3 inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+.condition-card:hover { border-color: var(--text-muted); color: var(--text); transform: translateY(-1px); }
+.condition-card.selected { border-color: var(--text); color: var(--text); background: var(--bg-elevated); }
+.condition-card.used { opacity: 0.3; pointer-events: none; text-decoration: line-through; }
+
+.intervention-display {
+  font-size: clamp(20px, 3vw, 28px);
+  font-weight: 700;
+  line-height: 1.4;
+  margin: 1.5rem 0;
+  padding: 1.25rem 1.5rem;
+  border-left: 5px solid;
+  background: var(--bg-surface);
+}
+
+.baseline-chart { margin-bottom: 2rem; }
+.baseline-chart .bar-label { width: 220px; font-size: 16px; }
+.baseline-chart .bar-track { height: 24px; }
+
+.pred-panel { display: flex; flex-direction: column; gap: 6px; margin-bottom: 1.5rem; }
+.pred-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 10px 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+}
+.pred-label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.pred-dot { width: 12px; height: 12px; flex-shrink: 0; }
+.pred-toggles { display: flex; gap: 4px; flex-shrink: 0; }
+.pred-btn {
+  font: 700 12px/1 inherit;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pred-btn:hover { border-color: var(--text-muted); color: var(--text); }
+.pred-btn[data-p="stronger"].active { background: var(--present); border-color: var(--present); color: #fff; }
+.pred-btn[data-p="unchanged"].active { background: #5A5040; border-color: #6A6050; color: #fff; }
+.pred-btn[data-p="weaker"].active { background: var(--absent); border-color: var(--absent); color: #fff; }
+
+.causal-chain {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  margin: 2rem auto;
+  max-width: 700px;
+}
+.chain-step {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  padding: 14px 24px;
+  font: 700 17px/1.3 inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: center;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.chain-step.visible { opacity: 1; transform: translateY(0); }
+.chain-arrow {
+  font-size: 24px;
+  color: var(--text-dim);
+  line-height: 1;
+  padding: 4px 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.chain-arrow.visible { opacity: 1; }
+
+.chain-trigger-btn {
+  font: 700 15px/1 inherit;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 14px 32px;
+  border: 2px solid var(--text-muted);
+  background: var(--bg-surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin: 1.5rem auto;
+  display: block;
+}
+.chain-trigger-btn:hover { background: var(--bg-elevated); border-color: var(--text); }
+
+.comparison-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.comparison-wrap.visible { opacity: 1; }
+.comparison-col-heading {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 1rem;
+}
+
+.mini-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.mini-bar-label {
+  width: 180px;
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.2;
+}
+.mini-bar-dot { width: 10px; height: 10px; flex-shrink: 0; }
+.mini-bar-track { flex: 1; height: 22px; background: var(--bg-surface); position: relative; overflow: hidden; }
+.mini-bar-fill { height: 100%; transition: width 0.5s ease; }
+.mini-bar-sym { width: 20px; flex-shrink: 0; text-align: center; font-size: 14px; color: var(--text-dim); }
+
+.summary-grid {
+  display: flex;
+  gap: 1.25rem;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+}
+.summary-card {
+  flex: 0 0 260px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  padding: 1rem;
+}
+.summary-card.highlight { border-color: var(--text-muted); border-width: 2px; }
+.summary-card-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+  min-height: 36px;
+}
+.summary-mini-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 3px;
+}
+.summary-mini-dot { width: 8px; height: 8px; flex-shrink: 0; }
+.summary-mini-label { font-size: 11px; font-weight: 600; width: 120px; flex-shrink: 0; line-height: 1.2; }
+.summary-mini-track { flex: 1; height: 14px; background: var(--bg); overflow: hidden; }
+.summary-mini-fill { height: 100%; transition: width 0.5s ease; }
+
+.stress-action-bar {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+.stress-action-btn {
+  font: 700 14px/1 inherit;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 10px 24px;
+  border: 2px solid var(--text-dim);
+  background: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.stress-action-btn:hover { border-color: var(--text-muted); color: var(--text); }
+
 /* --- Responsive --- */
 @media (max-width: 800px) {
   .inv-layout { grid-template-columns: 1fr; }
   .inv-sidebar { position: static; }
   .bar-label { width: 160px; font-size: 15px; }
+  .condition-grid { grid-template-columns: 1fr 1fr; }
+  .comparison-wrap { grid-template-columns: 1fr; }
+  .pred-row { flex-wrap: wrap; }
+  .pred-label { min-width: 100%; }
+  .mini-bar-label { width: 140px; font-size: 13px; }
+  .baseline-chart .bar-label { width: 140px; font-size: 14px; }
+  .summary-card { flex: 0 0 220px; }
+  .summary-mini-label { width: 90px; font-size: 10px; }
 }
 </style>
 
@@ -455,7 +686,7 @@ var CASES = [
     num: '02',
     name: 'Starbucks on the High Street',
     subtitle: 'Chain Coffee Shop',
-    description: 'A centrally located Starbucks branch is open 6:30am–8:30pm daily. The interior follows the corporate template — branded cups, standardised playlist, curated décor including motivational wall text. It has fast free Wi-Fi and comfortable seating, attracting a mix of remote workers on laptops, commuters grabbing takeaway, and occasional pairs or groups chatting over drinks. Staff are friendly but turnover is high; no barista remembers regulars’ names. A large coffee costs approximately £4.50.'
+    description: 'A centrally located Starbucks branch is open 6:30am–8:30pm daily. The interior follows the corporate template — branded cups, standardised playlist, curated décor including motivational wall text. It has fast free Wi-Fi and comfortable seating, attracting a mix of remote workers on laptops, commuters grabbing takeaway, and occasional pairs or groups chatting over drinks. Staff are friendly but turnover is high; no barista remembers regulars\' names. A large coffee costs approximately £4.50.'
   }
 ];
 
@@ -463,27 +694,21 @@ var SVG = {};
 SVG['university-cafe'] = '<svg viewBox="0 0 600 350" xmlns="http://www.w3.org/2000/svg">'
   +'<rect width="600" height="350" fill="#241C14"/>'
   +'<rect y="255" width="600" height="95" fill="#1E1810"/>'
-  // Windows
   +'<rect x="50" y="35" width="140" height="130" fill="#1A2535" stroke="#3A3A30" stroke-width="2"/>'
   +'<rect x="410" y="35" width="140" height="130" fill="#1A2535" stroke="#3A3A30" stroke-width="2"/>'
-  // Campus buildings left
   +'<rect x="65" y="95" width="30" height="70" fill="#253040"/>'
   +'<rect x="100" y="115" width="25" height="50" fill="#2A3545"/>'
   +'<rect x="130" y="85" width="40" height="80" fill="#223038"/>'
-  // Small window lights
   +'<rect x="72" y="102" width="6" height="6" fill="#3A4A58" opacity="0.6"/>'
   +'<rect x="72" y="118" width="6" height="6" fill="#3A4A58" opacity="0.4"/>'
   +'<rect x="140" y="100" width="6" height="6" fill="#3A4A58" opacity="0.5"/>'
-  // Campus buildings right
   +'<rect x="425" y="100" width="35" height="65" fill="#253040"/>'
   +'<rect x="465" y="80" width="30" height="85" fill="#2A3545"/>'
   +'<rect x="510" y="105" width="25" height="60" fill="#223038"/>'
-  // Bookshelf
   +'<rect x="220" y="35" width="160" height="130" fill="#2A1E14" stroke="#3A3A30" stroke-width="2"/>'
   +'<line x1="225" y1="67" x2="375" y2="67" stroke="#4A3A28" stroke-width="2"/>'
   +'<line x1="225" y1="99" x2="375" y2="99" stroke="#4A3A28" stroke-width="2"/>'
   +'<line x1="225" y1="131" x2="375" y2="131" stroke="#4A3A28" stroke-width="2"/>'
-  // Books
   +'<rect x="230" y="40" width="8" height="25" fill="#5C3A96"/>'
   +'<rect x="240" y="44" width="6" height="21" fill="#B52838"/>'
   +'<rect x="248" y="40" width="10" height="25" fill="#C85218"/>'
@@ -495,44 +720,31 @@ SVG['university-cafe'] = '<svg viewBox="0 0 600 350" xmlns="http://www.w3.org/20
   +'<rect x="230" y="102" width="9" height="27" fill="#7A5828"/>'
   +'<rect x="242" y="104" width="8" height="25" fill="#B52838"/>'
   +'<rect x="253" y="102" width="6" height="27" fill="#D4A020"/>'
-  // Clock showing ~4pm
   +'<circle cx="575" cy="55" r="16" fill="none" stroke="#F2DFBE" stroke-width="1.5"/>'
   +'<line x1="575" y1="55" x2="575" y2="44" stroke="#F2DFBE" stroke-width="1.5"/>'
   +'<line x1="575" y1="55" x2="583" y2="58" stroke="#F2DFBE" stroke-width="1"/>'
-  // Left sofa (purple)
   +'<rect x="50" y="215" width="180" height="40" rx="4" fill="#5C3A96"/>'
   +'<rect x="50" y="205" width="18" height="50" rx="3" fill="#4A2A80"/>'
   +'<rect x="212" y="205" width="18" height="50" rx="3" fill="#4A2A80"/>'
-  // Right sofa (burnt orange — mismatched)
   +'<rect x="370" y="215" width="180" height="40" rx="4" fill="#C85218"/>'
   +'<rect x="370" y="205" width="18" height="50" rx="3" fill="#A84010"/>'
   +'<rect x="532" y="205" width="18" height="50" rx="3" fill="#A84010"/>'
-  // Central table
   +'<rect x="252" y="238" width="96" height="22" rx="2" fill="#7A5828"/>'
   +'<rect x="260" y="260" width="6" height="16" fill="#5A4020"/>'
   +'<rect x="334" y="260" width="6" height="16" fill="#5A4020"/>'
-  // Coffee cups
   +'<circle cx="275" cy="244" r="5" fill="#CC6830"/><circle cx="275" cy="244" r="2.5" fill="#241C14"/>'
   +'<circle cx="310" cy="246" r="4.5" fill="#CC6830"/><circle cx="310" cy="246" r="2" fill="#241C14"/>'
   +'<circle cx="332" cy="244" r="5" fill="#D4A020"/><circle cx="332" cy="244" r="2.5" fill="#241C14"/>'
-  // Open textbook
   +'<rect x="290" y="240" width="14" height="10" fill="#F2DFBE" transform="rotate(-5 297 245)"/>'
-  // Student 1
   +'<circle cx="95" cy="194" r="11" fill="#F2DFBE"/><rect x="84" y="205" width="22" height="16" rx="2" fill="#F2DFBE"/>'
-  // Student 2 (leaning)
   +'<circle cx="145" cy="190" r="11" fill="#D4A020"/><rect x="134" y="201" width="22" height="18" rx="2" fill="#D4A020"/>'
-  // Student 3 (gesturing)
   +'<circle cx="195" cy="192" r="11" fill="#F2DFBE"/><rect x="184" y="203" width="22" height="16" rx="2" fill="#F2DFBE"/>'
   +'<rect x="206" y="208" width="24" height="5" rx="2" fill="#F2DFBE"/>'
-  // Student 4
   +'<circle cx="410" cy="194" r="11" fill="#D4A020"/><rect x="399" y="205" width="22" height="16" rx="2" fill="#D4A020"/>'
-  // Student 5
   +'<circle cx="475" cy="192" r="11" fill="#F2DFBE"/><rect x="464" y="203" width="22" height="16" rx="2" fill="#F2DFBE"/>'
-  // Newcomer with tray
   +'<circle cx="315" cy="176" r="13" fill="#B83068"/>'
   +'<rect x="303" y="189" width="24" height="34" rx="2" fill="#B83068"/>'
   +'<rect x="296" y="218" width="38" height="4" rx="1" fill="#A89878"/>'
-  // Wave dots
   +'<circle cx="234" cy="206" r="2.5" fill="#F2DFBE" opacity="0.5"/>'
   +'<circle cx="248" cy="200" r="2" fill="#F2DFBE" opacity="0.35"/>'
   +'<circle cx="260" cy="195" r="2" fill="#F2DFBE" opacity="0.2"/>'
@@ -541,68 +753,121 @@ SVG['university-cafe'] = '<svg viewBox="0 0 600 350" xmlns="http://www.w3.org/20
 SVG['chain-coffee'] = '<svg viewBox="0 0 600 350" xmlns="http://www.w3.org/2000/svg">'
   +'<rect width="600" height="350" fill="#222020"/>'
   +'<rect y="260" width="600" height="90" fill="#1C1A1A"/>'
-  // Counter
   +'<rect x="40" y="68" width="520" height="28" rx="2" fill="#3A3228"/>'
   +'<rect x="40" y="58" width="520" height="12" fill="#4A4238"/>'
-  // Logo circle
   +'<circle cx="300" cy="32" r="20" fill="none" stroke="#3A7A4A" stroke-width="2.5"/>'
   +'<circle cx="300" cy="32" r="8" fill="#3A7A4A"/>'
   +'<circle cx="300" cy="32" r="3" fill="#222020"/>'
-  // Motivational text
   +'<rect x="100" y="108" width="160" height="3" rx="1" fill="#3A3228"/>'
   +'<rect x="115" y="118" width="130" height="3" rx="1" fill="#3A3228"/>'
   +'<rect x="108" y="128" width="145" height="3" rx="1" fill="#3A3228"/>'
-  // Price board
   +'<rect x="480" y="20" width="80" height="38" fill="#2E2828" stroke="#3A3228" stroke-width="1"/>'
   +'<rect x="486" y="28" width="40" height="3" fill="#6A5A48"/>'
   +'<rect x="486" y="35" width="35" height="3" fill="#6A5A48"/>'
   +'<rect x="486" y="42" width="42" height="3" fill="#6A5A48"/>'
-  // Price highlights (£4.50 hint)
   +'<rect x="538" y="28" width="16" height="3" fill="#D4A020"/>'
   +'<rect x="538" y="35" width="16" height="3" fill="#D4A020"/>'
   +'<rect x="538" y="42" width="16" height="3" fill="#D4A020"/>'
-  // Barista
   +'<circle cx="300" cy="52" r="9" fill="#A89878"/><rect x="292" y="61" width="16" height="8" fill="#A89878"/>'
-  // Customer (no recognition)
   +'<circle cx="200" cy="52" r="9" fill="#F2DFBE"/><rect x="192" y="61" width="16" height="8" fill="#F2DFBE"/>'
-  // Solo table 1
   +'<rect x="60" y="180" width="65" height="26" rx="2" fill="#4A4238"/>'
   +'<rect x="72" y="170" width="34" height="20" rx="1" fill="#2A2828"/>'
   +'<rect x="72" y="161" width="34" height="11" rx="1" fill="#333038"/>'
   +'<circle cx="89" cy="148" r="10" fill="#A89878"/><rect x="80" y="158" width="18" height="13" rx="2" fill="#A89878"/>'
   +'<path d="M77,145 A12,10 0 0 1 101,145" stroke="#4A4238" stroke-width="3" fill="none"/>'
   +'<circle cx="68" cy="188" r="4" fill="#3A7A4A"/>'
-  // Solo table 2
   +'<rect x="195" y="180" width="65" height="26" rx="2" fill="#4A4238"/>'
   +'<rect x="207" y="170" width="34" height="20" rx="1" fill="#2A2828"/>'
   +'<rect x="207" y="161" width="34" height="11" rx="1" fill="#333038"/>'
   +'<circle cx="224" cy="148" r="10" fill="#A89878"/><rect x="215" y="158" width="18" height="13" rx="2" fill="#A89878"/>'
   +'<path d="M212,145 A12,10 0 0 1 236,145" stroke="#4A4238" stroke-width="3" fill="none"/>'
   +'<circle cx="203" cy="188" r="4" fill="#3A7A4A"/>'
-  // Solo table 3
   +'<rect x="340" y="180" width="65" height="26" rx="2" fill="#4A4238"/>'
   +'<rect x="352" y="170" width="34" height="20" rx="1" fill="#2A2828"/>'
   +'<rect x="352" y="161" width="34" height="11" rx="1" fill="#333038"/>'
   +'<circle cx="369" cy="148" r="10" fill="#A89878"/><rect x="360" y="158" width="18" height="13" rx="2" fill="#A89878"/>'
   +'<path d="M357,145 A12,10 0 0 1 381,145" stroke="#4A4238" stroke-width="3" fill="none"/>'
   +'<circle cx="348" cy="188" r="4" fill="#3A7A4A"/>'
-  // Solo table 4
   +'<rect x="475" y="180" width="65" height="26" rx="2" fill="#4A4238"/>'
   +'<rect x="487" y="170" width="34" height="20" rx="1" fill="#2A2828"/>'
   +'<rect x="487" y="161" width="34" height="11" rx="1" fill="#333038"/>'
   +'<circle cx="504" cy="148" r="10" fill="#F2DFBE"/><rect x="495" y="158" width="18" height="13" rx="2" fill="#F2DFBE"/>'
   +'<path d="M492,145 A12,10 0 0 1 516,145" stroke="#4A4238" stroke-width="3" fill="none"/>'
   +'<circle cx="483" cy="188" r="4" fill="#3A7A4A"/>'
-  // Corner pair (contrast — no headphones, warmer cups)
   +'<rect x="100" y="285" width="75" height="26" rx="2" fill="#4A4238"/>'
   +'<circle cx="110" cy="293" r="4" fill="#CC6830"/>'
   +'<circle cx="160" cy="293" r="4" fill="#CC6830"/>'
   +'<circle cx="118" cy="264" r="10" fill="#B83068"/><rect x="109" y="274" width="18" height="14" rx="2" fill="#B83068"/>'
   +'<circle cx="155" cy="262" r="10" fill="#CC6830"/><rect x="146" y="272" width="18" height="14" rx="2" fill="#CC6830"/>'
-  // Surveillance camera (subtle)
   +'<rect x="562" y="4" width="28" height="7" fill="#3A3228"/>'
   +'<circle cx="562" cy="8" r="4" fill="#4A4238"/>'
   +'</svg>';
+
+// ============================================================
+// STRESS TEST DATA
+// ============================================================
+var STRESS_DOMAINS = [
+  {
+    id: 'psychological', label: 'Psychological', color: '#7E58A8',
+    conditions: [
+      { id: 'belonging', name: 'Belonging',
+        intervention: 'The regular morning group begins actively excluding newcomers, creating an unwritten "members only" atmosphere and claiming "their" tables.',
+        chain: ['INSIDERS CLAIM OWNERSHIP OF THE SPACE', 'NEWCOMERS FEEL UNWELCOME AND LEAVE', 'VISITOR DIVERSITY NARROWS', 'SOCIAL DYNAMICS BECOME CLIQUISH', 'THE SPACE SERVES A CLOSED GROUP, NOT A COMMUNITY'] },
+      { id: 'trust', name: 'Trust',
+        intervention: 'A series of thefts occur in the space. Word spreads through the community and visitors begin guarding their belongings and avoiding eye contact with strangers.',
+        chain: ['INTERPERSONAL TRUST COLLAPSES', 'VISITORS BECOME GUARDED AND SUSPICIOUS', 'SPONTANEOUS CONVERSATION DECLINES', 'THE SOCIAL ATMOSPHERE TURNS COLD', 'WARMTH AND MUTUAL CARE DISAPPEAR'] },
+      { id: 'familiarity', name: 'Familiarity',
+        intervention: 'All long-standing staff are replaced overnight by new employees who don’t recognise any of the regulars or know their usual orders.',
+        chain: ['PERSONAL RECOGNITION DISAPPEARS', 'REGULARS FEEL LIKE STRANGERS IN THEIR OWN SPACE', 'SOCIAL CONTINUITY BREAKS', 'THE SPACE LOSES ITS COLLECTIVE MEMORY', 'SENSE OF HOME AND BELONGING FADES'] },
+      { id: 'identity', name: 'Identity',
+        intervention: 'A celebrity influencer posts a viral review calling the space "the coolest hidden gem in the city," and footfall triples overnight with newcomers taking selfies.',
+        chain: ['LOW PROFILE DESTROYED — SPACE BECOMES A DESTINATION', 'REGULARS OUTNUMBERED BY TRANSIENT VISITORS', 'SELF-PRESENTATION REPLACES PLAYFULNESS', 'COMMUNITY CHARACTER OVERWHELMED BY TOURISM', 'CONVERSATION DISPLACED BY SELFIE-TAKING'] },
+      { id: 'inclusion', name: 'Inclusion',
+        intervention: 'The space introduces a formal membership scheme requiring application forms and references from two existing members before entry is permitted.',
+        chain: ['ENTRY BECOMES CONDITIONAL ON SOCIAL CONNECTIONS', 'GATEKEEPING FORMALISED — OUTSIDERS BLOCKED', 'DEMOGRAPHIC NARROWS TO CONNECTED INSIDERS', 'THE LEVELLING FUNCTION COLLAPSES', 'THE SPACE BECOMES A PRIVATE CLUB'] }
+    ]
+  },
+  {
+    id: 'economic', label: 'Economic', color: '#D4A020',
+    conditions: [
+      { id: 'price', name: 'Price',
+        intervention: 'The landlord doubles the rent, forcing the operators to introduce a £5 cover charge and remove the free seating area.',
+        chain: ['COSTS RISE SHARPLY FOR VISITORS', 'ECONOMIC ACCESS NARROWS — LOWER-INCOME REGULARS PRICED OUT', 'THE SOCIAL MIX SHIFTS TOWARD HIGHER EARNERS', 'COMMUNITY DIVERSITY AND LEVELLING ERODE', 'FREQUENCY OF VISITS DROPS — ROOTEDNESS WEAKENS'] },
+      { id: 'ownership', name: 'Ownership',
+        intervention: 'A multinational chain buys the space and implements corporate branding, a standardised menu, and centralised management from head office.',
+        chain: ['LOCAL AUTONOMY AND CHARACTER DISAPPEAR', 'CORPORATE IDENTITY REPLACES COMMUNITY IDENTITY', 'STAFF LOSE DISCRETION TO SHAPE THE ATMOSPHERE', 'REGULARS LOSE THEIR SENSE OF OWNERSHIP', 'THE SPACE BECOMES INTERCHANGEABLE WITH ANY OTHER BRANCH'] },
+      { id: 'profit-motive', name: 'Profit Motive',
+        intervention: 'New management introduces a 45-minute table time limit and a minimum spend of £8 per person to maximise revenue per seat.',
+        chain: ['LINGERING AND EXTENDED VISITS BECOME IMPOSSIBLE', 'CONVERSATION IS CUT SHORT BY THE CLOCK', 'DROP-IN SPONTANEITY ELIMINATED — EVERY VISIT COSTS', 'THE SPACE OPTIMISES FOR THROUGHPUT, NOT COMMUNITY', 'SOCIAL FUNCTION SUBORDINATED TO COMMERCIAL LOGIC'] },
+      { id: 'opening-hours', name: 'Opening Hours',
+        intervention: 'Due to rising costs, the space cuts its hours to 10am–3pm weekdays only, closing entirely on evenings and weekends.',
+        chain: ['AVAILABILITY DRAMATICALLY REDUCED', 'WORKERS AND STUDENTS LOCKED OUT BY SCHEDULE', 'ONLY THOSE FREE DURING WEEKDAY MORNINGS CAN ATTEND', 'THE VISITOR DEMOGRAPHIC NARROWS SHARPLY', 'THE SPACE FAILS AS AN EVERYDAY ANCHOR IN DAILY LIFE'] },
+      { id: 'commercialisation', name: 'Commercialisation',
+        intervention: 'The space begins renting out its evenings for private corporate events, closing to the public three nights a week.',
+        chain: ['PUBLIC ACCESS BECOMES PART-TIME', 'EVENING COMMUNITY LOSES ITS GATHERING PLACE', 'CORPORATE USE SIGNALS EXCLUSIVITY AND FORMALITY', 'THE ATMOSPHERE SPLITS BETWEEN INFORMAL AND PROFESSIONAL', 'DUAL IDENTITY CONFUSES BELONGING AND OWNERSHIP'] }
+    ]
+  },
+  {
+    id: 'political', label: 'Political', color: '#B52838',
+    conditions: [
+      { id: 'access-rules', name: 'Access Rules',
+        intervention: 'New management introduces age-restricted entry: no under-18s after 5pm and no under-12s at any time without a supervising adult.',
+        chain: ['INTERGENERATIONAL MIXING IS RESTRICTED', 'FAMILIES AND YOUNG PEOPLE ARE EXCLUDED', 'THE SOCIAL DIVERSITY OF THE SPACE NARROWS', 'THE LEVELLING FUNCTION WEAKENS', 'COMMUNITY WHOLENESS FRAGMENTS BY AGE GROUP'] },
+      { id: 'surveillance', name: 'Surveillance',
+        intervention: 'The local council designates the space as a "community safety zone," installing CCTV, requiring photo-ID registration at the door, and banning alcohol.',
+        chain: ['ANONYMOUS, VOLUNTARY ATTENDANCE ENDS', 'VISITORS FEEL WATCHED AND DOCUMENTED', 'SELF-CENSORSHIP INCREASES — SPONTANEITY DROPS', 'INFORMAL BEHAVIOUR IS SUPPRESSED', 'THE SPACE FEELS INSTITUTIONAL, NOT HOMELY'] },
+      { id: 'regulation', name: 'Regulation',
+        intervention: 'New noise regulations require the space to maintain library-level quiet (below 50 decibels) at all times, enforced by a sound meter on the wall.',
+        chain: ['CONVERSATION VOLUME IS FORCIBLY RESTRICTED', 'GROUP DISCUSSION AND LAUGHTER BECOME IMPOSSIBLE', 'BANTER AND PLAYFUL EXCHANGES ARE SUPPRESSED', 'THE MOOD SHIFTS FROM LIVELY TO CONTROLLED', 'SOCIAL VITALITY AND ENERGY DRAIN AWAY'] },
+      { id: 'public-private', name: 'Public/Private',
+        intervention: 'The council compulsorily purchases the space and converts it into a "managed community hub" with booking systems, programme schedules, and council-appointed staff.',
+        chain: ['SPONTANEOUS DROP-IN USE REPLACED BY SCHEDULED PROGRAMMES', 'VISITORS MUST BOOK TIME SLOTS IN ADVANCE', 'COUNCIL BUREAUCRACY GOVERNS ATMOSPHERE AND RULES', 'INSTITUTIONAL NORMS REPLACE ORGANIC COMMUNITY CULTURE', 'THE SPACE BECOMES A SERVICE, NOT A PLACE TO BELONG'] },
+      { id: 'policing', name: 'Policing',
+        intervention: 'After complaints from neighbouring businesses, uniformed security guards are posted at the door and visitors lingering without purchasing are asked to leave after 30 minutes.',
+        chain: ['AN ENFORCEMENT PRESENCE CHANGES THE ATMOSPHERE', 'FREEDOM TO LINGER WITHOUT SPENDING IS REMOVED', 'VISITORS FEEL MONITORED AND CONDITIONALLY WELCOME', 'SPONTANEOUS SOCIALISING IS CURTAILED', 'THE SPACE BECOMES TRANSACTIONAL — PAY OR LEAVE'] }
+    ]
+  }
+];
 
 // ============================================================
 // STATE
@@ -624,16 +889,21 @@ var state = {
     };
   }),
   stressTests: [],
+  currentStressTest: null,
+  chainRevealed: 0,
   synthesis: {}
 };
 
 var SCREENS = [
-  { phase:'part2', type:'reveal',      label:'Part 2', num:1, of:4 },
-  { phase:'part2', type:'investigate',  label:'Part 2', num:2, of:4 },
-  { phase:'part2', type:'profile',      label:'Part 2', num:3, of:4 },
-  { phase:'part2', type:'cases',        label:'Part 2', num:4, of:4 },
-  { phase:'part3', type:'placeholder3', label:'Part 3', num:1, of:1 },
-  { phase:'part4', type:'placeholder4', label:'Part 4', num:1, of:1 }
+  { phase:'part2', type:'reveal',              label:'Part 2', num:1, of:4 },
+  { phase:'part2', type:'investigate',          label:'Part 2', num:2, of:4 },
+  { phase:'part2', type:'profile',             label:'Part 2', num:3, of:4 },
+  { phase:'part2', type:'cases',               label:'Part 2', num:4, of:4 },
+  { phase:'part3', type:'stressIntro',         label:'Part 3', num:1, of:4 },
+  { phase:'part3', type:'stressPrediction',    label:'Part 3', num:2, of:4 },
+  { phase:'part3', type:'stressConsequences',  label:'Part 3', num:3, of:4 },
+  { phase:'part3', type:'stressSummary',       label:'Part 3', num:4, of:4 },
+  { phase:'part4', type:'placeholder4',        label:'Part 4', num:1, of:1 }
 ];
 
 var screenIndex = 0;
@@ -646,18 +916,27 @@ function render() {
   var s = SCREENS[screenIndex];
   var html = '';
   switch(s.type) {
-    case 'reveal':      html = renderReveal(); break;
-    case 'investigate':  html = renderInvestigate(); break;
-    case 'profile':      html = renderProfile(); break;
-    case 'cases':        html = renderCases(); break;
-    case 'placeholder3': html = renderPlaceholder('Stress Test', 'Coming next'); break;
-    case 'placeholder4': html = renderPlaceholder('Synthesis', 'Coming next'); break;
+    case 'reveal':              html = renderReveal(); break;
+    case 'investigate':          html = renderInvestigate(); break;
+    case 'profile':              html = renderProfile(); break;
+    case 'cases':                html = renderCases(); break;
+    case 'stressIntro':          html = renderStressIntro(); break;
+    case 'stressPrediction':     html = renderStressPrediction(); break;
+    case 'stressConsequences':   html = renderStressConsequences(); break;
+    case 'stressSummary':        html = renderStressSummary(); break;
+    case 'placeholder4':         html = renderPlaceholder('Synthesis', 'Coming next'); break;
   }
   document.getElementById('app').innerHTML = html;
   document.getElementById('app').scrollTop = 0;
   updateToolbar();
   if (s.type === 'profile') {
     requestAnimationFrame(function() { requestAnimationFrame(animateBars); });
+  }
+  if (s.type === 'stressIntro') {
+    requestAnimationFrame(function() { requestAnimationFrame(animateBaselineBars); });
+  }
+  if (s.type === 'stressSummary') {
+    requestAnimationFrame(function() { requestAnimationFrame(animateSummaryBars); });
   }
 }
 
@@ -812,6 +1091,214 @@ function renderPlaceholder(title, sub) {
 }
 
 // ============================================================
+// PART 3: STRESS TEST SCREENS
+// ============================================================
+
+function renderStressIntro() {
+  var ci = state.activeCaseIndex;
+  var c = CASES[ci];
+  var profile = getEffectiveProfile(ci);
+  var caseTests = getCaseTests(ci);
+
+  var bars = '';
+  for (var i = 0; i < 8; i++) {
+    var ch = CHARS[i];
+    var p = profile[i];
+    var sym = p.status === 'present' ? '✓' : p.status === 'ambiguous' ? '?' : p.status === 'absent' ? '✗' : '—';
+    var w = p.status === 'present' ? '100%' : p.status === 'ambiguous' ? '50%' : '0%';
+    bars += '<div class="bar-row">'
+      + '<div class="bar-label"><div class="bar-dot" style="background:' + ch.hex + '"></div>' + esc(ch.name) + '</div>'
+      + '<div class="bar-track"><div class="bar-fill" data-baseline-bar="' + i + '" style="background:' + ch.hex + ';width:0"></div></div>'
+      + '<div class="bar-status">' + sym + '</div>'
+      + '</div>';
+  }
+
+  var usedIds = {};
+  for (var t = 0; t < caseTests.length; t++) { usedIds[caseTests[t].conditionId] = true; }
+
+  var domains = '';
+  for (var d = 0; d < STRESS_DOMAINS.length; d++) {
+    var dom = STRESS_DOMAINS[d];
+    var cards = '';
+    for (var j = 0; j < dom.conditions.length; j++) {
+      var cond = dom.conditions[j];
+      var isUsed = usedIds[cond.id];
+      var isSel = state.currentStressTest && state.currentStressTest.conditionId === cond.id;
+      cards += '<div class="condition-card' + (isUsed ? ' used' : '') + (isSel ? ' selected' : '') + '" '
+        + 'data-action="select-condition" data-cid="' + cond.id + '">'
+        + esc(cond.name) + '</div>';
+    }
+    domains += '<div class="domain-section">'
+      + '<div class="domain-heading" style="border-color:' + dom.color + ';color:' + dom.color + '">' + esc(dom.label) + '</div>'
+      + '<div class="condition-grid">' + cards + '</div>'
+      + '</div>';
+  }
+
+  var interventionHtml = '';
+  if (state.currentStressTest) {
+    var info = getCondition(state.currentStressTest.conditionId);
+    interventionHtml = '<div class="intervention-display" style="border-color:' + info.domain.color + '">'
+      + esc(state.currentStressTest.intervention)
+      + '</div>';
+  }
+
+  var testCountLabel = caseTests.length > 0
+    ? '<div style="font-size:15px;color:var(--text-dim);letter-spacing:0.1em;text-transform:uppercase;font-weight:600;margin-bottom:1rem">'
+      + caseTests.length + ' stress test' + (caseTests.length > 1 ? 's' : '') + ' completed on this case</div>'
+    : '';
+
+  return '<div class="screen-wrap">'
+    + geoDecor('#B52838', 350, -50, 'circle', 0.06)
+    + '<div class="case-number">CASE ' + c.num + ' &mdash; ' + esc(c.name) + '</div>'
+    + '<div class="case-title">Stress Test the Space</div>'
+    + '<p class="body-text" style="color:var(--text-muted)">The ' + esc(c.name) + ' currently has these characteristics. Now change the conditions under which it operates.</p>'
+    + testCountLabel
+    + '<div class="baseline-chart bar-chart">' + bars + '</div>'
+    + domains
+    + interventionHtml
+    + '</div>';
+}
+
+function renderStressPrediction() {
+  if (!state.currentStressTest) {
+    return '<div class="screen-wrap"><div class="section-heading">No intervention selected</div>'
+      + '<p class="body-text">Go back to select a condition card.</p></div>';
+  }
+
+  var info = getCondition(state.currentStressTest.conditionId);
+  var preds = state.currentStressTest.predictions;
+
+  var rows = '';
+  for (var i = 0; i < 8; i++) {
+    var ch = CHARS[i];
+    var val = preds[ch.id] || '';
+    rows += '<div class="pred-row">'
+      + '<div class="pred-label"><div class="pred-dot" style="background:' + ch.hex + '"></div>' + esc(ch.name) + '</div>'
+      + '<div class="pred-toggles">'
+      + predBtn(i, 'stronger', 'STRONGER', val)
+      + predBtn(i, 'unchanged', 'UNCHANGED', val)
+      + predBtn(i, 'weaker', 'WEAKER', val)
+      + '</div>'
+      + '</div>';
+  }
+
+  return '<div class="screen-wrap">'
+    + geoDecor(info.domain.color, -30, -40, 'rect', 0.06, 200, 120, -8)
+    + '<div class="case-number">STRESS TEST &mdash; ' + esc(info.domain.label) + '</div>'
+    + '<div class="intervention-display" style="border-color:' + info.domain.color + '">'
+    + esc(state.currentStressTest.intervention)
+    + '</div>'
+    + '<div class="section-heading">Predict the Effect</div>'
+    + '<p class="body-text" style="font-size:18px;color:var(--text-muted)">For each characteristic, predict: will this intervention make it stronger, leave it unchanged, or make it weaker?</p>'
+    + '<div class="pred-panel">' + rows + '</div>'
+    + '<div class="prompt-text">&ldquo;Why would this affect [characteristic]?&rdquo;</div>'
+    + '<div class="prompt-text" style="margin-top:0.75rem">&ldquo;Is that a psychological, economic, or political effect &mdash; or more than one?&rdquo;</div>'
+    + '</div>';
+}
+
+function renderStressConsequences() {
+  if (!state.currentStressTest) {
+    return '<div class="screen-wrap"><div class="section-heading">No intervention selected</div>'
+      + '<p class="body-text">Go back to select a condition card.</p></div>';
+  }
+
+  var info = getCondition(state.currentStressTest.conditionId);
+  var chain = info.condition.chain;
+
+  var chainHtml = '<div class="causal-chain">';
+  for (var i = 0; i < chain.length; i++) {
+    var stepVis = state.chainRevealed >= (i + 1) ? ' visible' : '';
+    chainHtml += '<div class="chain-step' + stepVis + '" style="border-color:' + info.domain.color + '">' + esc(chain[i]) + '</div>';
+    if (i < chain.length - 1) {
+      var arrowVis = state.chainRevealed >= (i + 2) ? ' visible' : '';
+      chainHtml += '<div class="chain-arrow' + arrowVis + '">↓</div>';
+    }
+  }
+  chainHtml += '</div>';
+
+  var showBtn = state.chainRevealed < chain.length;
+  var btnHtml = showBtn
+    ? '<button class="chain-trigger-btn" data-action="reveal-chain">'
+      + (state.chainRevealed === 0 ? 'SHOW CONSEQUENCES' : 'NEXT STEP →')
+      + '</button>'
+    : '';
+
+  var ci = state.activeCaseIndex;
+  var caseTests = getCaseTests(ci);
+  var beforeProfile = getEffectiveProfile(ci);
+  var afterProfile = applyPredictions(beforeProfile, state.currentStressTest.predictions);
+
+  var compVis = state.chainRevealed >= chain.length ? ' visible' : '';
+  var compHtml = '<div class="comparison-wrap' + compVis + '">'
+    + '<div>'
+    + '<div class="comparison-col-heading">Before</div>'
+    + renderMiniChart(beforeProfile, 'before')
+    + '</div>'
+    + '<div>'
+    + '<div class="comparison-col-heading">After (Class Prediction)</div>'
+    + renderMiniChart(afterProfile, 'after')
+    + '</div>'
+    + '</div>';
+
+  var actionsHtml = state.chainRevealed >= chain.length
+    ? '<div class="stress-action-bar">'
+      + '<button class="stress-action-btn" data-action="run-another">Run Another Stress Test</button>'
+      + '</div>'
+    : '';
+
+  return '<div class="screen-wrap">'
+    + '<div class="case-number">STRESS TEST &mdash; ' + esc(info.domain.label) + '</div>'
+    + '<div class="intervention-display" style="border-color:' + info.domain.color + ';font-size:20px">'
+    + esc(state.currentStressTest.intervention)
+    + '</div>'
+    + '<div class="section-heading">Causal Chain</div>'
+    + chainHtml
+    + btnHtml
+    + compHtml
+    + actionsHtml
+    + '</div>';
+}
+
+function renderStressSummary() {
+  var ci = state.activeCaseIndex;
+  var c = CASES[ci];
+  var caseTests = getCaseTests(ci);
+
+  if (caseTests.length === 0) {
+    return '<div class="screen-wrap">'
+      + '<div class="section-heading">Stress Test Summary</div>'
+      + '<p class="body-text">No stress tests completed yet. Go back to run a stress test.</p>'
+      + '</div>';
+  }
+
+  var originalProfile = getEffectiveProfile(ci, -1);
+
+  var cards = '<div class="summary-card">'
+    + '<div class="summary-card-title">Original Profile</div>'
+    + renderSummaryMiniChart(originalProfile, 'sum-orig')
+    + '</div>';
+
+  for (var t = 0; t < caseTests.length; t++) {
+    var afterProfile = getEffectiveProfile(ci, t);
+    var isLast = t === caseTests.length - 1;
+    cards += '<div class="summary-card' + (isLast ? ' highlight' : '') + '">'
+      + '<div class="summary-card-title">After: ' + esc(caseTests[t].conditionName) + '</div>'
+      + renderSummaryMiniChart(afterProfile, 'sum-' + t)
+      + '</div>';
+  }
+
+  return '<div class="screen-wrap">'
+    + geoDecor('#B52838', -40, -30, 'circle', 0.07, 200)
+    + '<div class="case-number">CASE ' + c.num + ' &mdash; ' + esc(c.name) + '</div>'
+    + '<div class="section-heading">Stress Test Summary</div>'
+    + '<p class="body-text" style="font-size:18px;color:var(--text-muted)">'
+    + 'Cumulative effect of ' + caseTests.length + ' intervention' + (caseTests.length > 1 ? 's' : '') + ' on the third-place profile.</p>'
+    + '<div class="summary-grid">' + cards + '</div>'
+    + '<div class="prompt-text" style="margin-top:2rem">You’ve seen how conditions change characteristics. Now apply this to a new space.</div>'
+    + '</div>';
+}
+
+// ============================================================
 // HELPERS
 // ============================================================
 function esc(s) {
@@ -826,6 +1313,10 @@ function voteBtn(kind, val, label, current) {
 
 function toggleBtn(ci, status, sym, current) {
   return '<button class="toggle-btn' + (current === status ? ' active' : '') + '" data-action="set-status" data-ci="' + ci + '" data-s="' + status + '">' + sym + '</button>';
+}
+
+function predBtn(ci, prediction, label, current) {
+  return '<button class="pred-btn' + (current === prediction ? ' active' : '') + '" data-action="set-prediction" data-ci="' + ci + '" data-p="' + prediction + '">' + label + '</button>';
 }
 
 function geoDecor(color, right, top, shape, opacity, w, h, rot) {
@@ -850,12 +1341,181 @@ function animateBars() {
   }
 }
 
+function animateBaselineBars() {
+  var profile = getEffectiveProfile(state.activeCaseIndex);
+  for (var i = 0; i < 8; i++) {
+    (function(idx) {
+      var el = document.querySelector('[data-baseline-bar="' + idx + '"]');
+      if (!el) return;
+      var w = profile[idx].status === 'present' ? '100%' : profile[idx].status === 'ambiguous' ? '50%' : '0%';
+      setTimeout(function() { el.style.width = w; }, idx * 60);
+    })(i);
+  }
+}
+
+function animateSummaryBars() {
+  var fills = document.querySelectorAll('[data-sum-bar]');
+  for (var i = 0; i < fills.length; i++) {
+    (function(el) {
+      var w = el.dataset.targetW;
+      setTimeout(function() { el.style.width = w; }, 100);
+    })(fills[i]);
+  }
+}
+
+function animateMiniBars() {
+  var fills = document.querySelectorAll('[data-mini-bar]');
+  for (var i = 0; i < fills.length; i++) {
+    (function(el, idx) {
+      var w = el.dataset.targetW;
+      setTimeout(function() { el.style.width = w; }, idx * 40);
+    })(fills[i], i);
+  }
+}
+
+// ============================================================
+// STRESS TEST HELPERS
+// ============================================================
+
+function getCondition(id) {
+  for (var d = 0; d < STRESS_DOMAINS.length; d++) {
+    var dom = STRESS_DOMAINS[d];
+    for (var c = 0; c < dom.conditions.length; c++) {
+      if (dom.conditions[c].id === id) {
+        return { condition: dom.conditions[c], domain: dom };
+      }
+    }
+  }
+  return null;
+}
+
+function getCaseTests(caseIndex) {
+  var caseId = CASES[caseIndex].id;
+  var tests = [];
+  for (var i = 0; i < state.stressTests.length; i++) {
+    if (state.stressTests[i].caseId === caseId) tests.push(state.stressTests[i]);
+  }
+  return tests;
+}
+
+function statusToStrength(status) {
+  if (status === 'present') return 2;
+  if (status === 'ambiguous') return 1;
+  return 0;
+}
+
+function strengthToStatus(strength) {
+  if (strength >= 2) return 'present';
+  if (strength === 1) return 'ambiguous';
+  return 'absent';
+}
+
+function getEffectiveProfile(caseIndex, upToTestIndex) {
+  var sc = state.cases[caseIndex];
+  var profile = [];
+  for (var i = 0; i < 8; i++) {
+    var s = sc.characteristics[i].status;
+    var strength = s ? statusToStrength(s) : 1;
+    profile.push({ id: CHARS[i].id, name: CHARS[i].name, hex: CHARS[i].hex, strength: strength, status: s || 'ambiguous' });
+  }
+
+  if (upToTestIndex === -1) return profile;
+
+  var tests = getCaseTests(caseIndex);
+  var end = typeof upToTestIndex === 'number' ? upToTestIndex + 1 : tests.length;
+  for (var t = 0; t < end && t < tests.length; t++) {
+    for (var i = 0; i < 8; i++) {
+      var pred = tests[t].predictions[CHARS[i].id];
+      if (pred === 'stronger' && profile[i].strength < 2) profile[i].strength++;
+      else if (pred === 'weaker' && profile[i].strength > 0) profile[i].strength--;
+      profile[i].status = strengthToStatus(profile[i].strength);
+    }
+  }
+  return profile;
+}
+
+function applyPredictions(profile, predictions) {
+  var result = [];
+  for (var i = 0; i < profile.length; i++) {
+    var p = { id: profile[i].id, name: profile[i].name, hex: profile[i].hex, strength: profile[i].strength, status: profile[i].status };
+    var pred = predictions[p.id];
+    if (pred === 'stronger' && p.strength < 2) p.strength++;
+    else if (pred === 'weaker' && p.strength > 0) p.strength--;
+    p.status = strengthToStatus(p.strength);
+    result.push(p);
+  }
+  return result;
+}
+
+function renderMiniChart(profile, prefix) {
+  var html = '';
+  for (var i = 0; i < profile.length; i++) {
+    var p = profile[i];
+    var sym = p.status === 'present' ? '✓' : p.status === 'ambiguous' ? '?' : '✗';
+    var w = p.status === 'present' ? '100%' : p.status === 'ambiguous' ? '50%' : '0%';
+    html += '<div class="mini-bar-row">'
+      + '<div class="mini-bar-label"><div class="mini-bar-dot" style="background:' + p.hex + '"></div>' + esc(p.name) + '</div>'
+      + '<div class="mini-bar-track"><div class="mini-bar-fill" data-mini-bar="' + prefix + '-' + i + '" data-target-w="' + w + '" style="background:' + p.hex + ';width:0"></div></div>'
+      + '<div class="mini-bar-sym">' + sym + '</div>'
+      + '</div>';
+  }
+  return html;
+}
+
+function renderSummaryMiniChart(profile, prefix) {
+  var html = '';
+  for (var i = 0; i < profile.length; i++) {
+    var p = profile[i];
+    var w = p.status === 'present' ? '100%' : p.status === 'ambiguous' ? '50%' : '0%';
+    html += '<div class="summary-mini-row">'
+      + '<div class="summary-mini-dot" style="background:' + p.hex + '"></div>'
+      + '<div class="summary-mini-label">' + esc(p.name) + '</div>'
+      + '<div class="summary-mini-track"><div class="summary-mini-fill" data-sum-bar="' + prefix + '-' + i + '" data-target-w="' + w + '" style="background:' + p.hex + ';width:0"></div></div>'
+      + '</div>';
+  }
+  return html;
+}
+
+function finalizeStressTest() {
+  if (!state.currentStressTest) return;
+  var hasPreds = false;
+  var preds = state.currentStressTest.predictions;
+  for (var k in preds) {
+    if (preds.hasOwnProperty(k) && preds[k]) { hasPreds = true; break; }
+  }
+  if (!hasPreds) return;
+
+  state.stressTests.push({
+    intervention: state.currentStressTest.intervention,
+    conditionName: state.currentStressTest.conditionName,
+    domain: state.currentStressTest.domain,
+    conditionId: state.currentStressTest.conditionId,
+    predictions: state.currentStressTest.predictions,
+    caseId: CASES[state.activeCaseIndex].id
+  });
+  state.currentStressTest = null;
+  state.chainRevealed = 0;
+}
+
+function findScreenByType(type) {
+  for (var i = 0; i < SCREENS.length; i++) {
+    if (SCREENS[i].type === type) return i;
+  }
+  return -1;
+}
+
 // ============================================================
 // NAVIGATION
 // ============================================================
 function navigate(dir) {
   var next = screenIndex + dir;
   if (next < 0 || next >= SCREENS.length) return;
+
+  var current = SCREENS[screenIndex];
+  if (current.type === 'stressConsequences' && dir === 1 && state.currentStressTest) {
+    finalizeStressTest();
+  }
+
   expandedChar = -1;
   var app = document.getElementById('app');
   app.classList.add('fade');
@@ -872,7 +1532,9 @@ function updateToolbar() {
   if (s.of > 1) txt += ' — Screen ' + s.num + ' of ' + s.of;
   document.getElementById('phase-indicator').textContent = txt;
   document.getElementById('btn-prev').disabled = screenIndex === 0;
-  document.getElementById('btn-next').disabled = screenIndex === SCREENS.length - 1;
+  var nextDisabled = screenIndex === SCREENS.length - 1;
+  if (s.type === 'stressIntro' && !state.currentStressTest) nextDisabled = true;
+  document.getElementById('btn-next').disabled = nextDisabled;
 }
 
 // ============================================================
@@ -925,6 +1587,92 @@ document.getElementById('app').addEventListener('click', function(e) {
     app.classList.add('fade');
     setTimeout(function() {
       screenIndex = 0;
+      render();
+      app.classList.remove('fade');
+    }, 150);
+    return;
+  }
+
+  // Stress test: select condition
+  var condCard = e.target.closest('[data-action="select-condition"]');
+  if (condCard) {
+    var cid = condCard.dataset.cid;
+    var info = getCondition(cid);
+    if (!info) return;
+    state.currentStressTest = {
+      conditionId: cid,
+      conditionName: info.condition.name,
+      domain: info.domain.id,
+      intervention: info.condition.intervention,
+      predictions: {}
+    };
+    state.chainRevealed = 0;
+    render();
+    return;
+  }
+
+  // Stress test: set prediction
+  var predBtnEl = e.target.closest('[data-action="set-prediction"]');
+  if (predBtnEl && state.currentStressTest) {
+    var ci = parseInt(predBtnEl.dataset.ci);
+    var p = predBtnEl.dataset.p;
+    var charId = CHARS[ci].id;
+    if (state.currentStressTest.predictions[charId] === p) {
+      state.currentStressTest.predictions[charId] = null;
+    } else {
+      state.currentStressTest.predictions[charId] = p;
+    }
+    // Update just the toggles without full re-render
+    var row = predBtnEl.closest('.pred-row');
+    if (row) {
+      var btns = row.querySelectorAll('.pred-btn');
+      for (var b = 0; b < btns.length; b++) {
+        if (btns[b].dataset.p === state.currentStressTest.predictions[charId]) {
+          btns[b].classList.add('active');
+        } else {
+          btns[b].classList.remove('active');
+        }
+      }
+    }
+    return;
+  }
+
+  // Stress test: reveal chain step
+  var chainBtn = e.target.closest('[data-action="reveal-chain"]');
+  if (chainBtn && state.currentStressTest) {
+    var info = getCondition(state.currentStressTest.conditionId);
+    var chain = info.condition.chain;
+    state.chainRevealed++;
+
+    var steps = document.querySelectorAll('.chain-step');
+    var arrows = document.querySelectorAll('.chain-arrow');
+    var idx = state.chainRevealed - 1;
+    if (steps[idx]) steps[idx].classList.add('visible');
+    if (idx > 0 && arrows[idx - 1]) arrows[idx - 1].classList.add('visible');
+
+    if (state.chainRevealed >= chain.length) {
+      chainBtn.style.display = 'none';
+      var comp = document.querySelector('.comparison-wrap');
+      if (comp) setTimeout(function() { comp.classList.add('visible'); }, 300);
+      setTimeout(animateMiniBars, 500);
+      // Show action bar
+      var actions = document.querySelector('.stress-action-bar');
+      if (actions) actions.style.display = '';
+    } else {
+      chainBtn.textContent = 'NEXT STEP →';
+    }
+    return;
+  }
+
+  // Stress test: run another
+  var anotherBtn = e.target.closest('[data-action="run-another"]');
+  if (anotherBtn) {
+    finalizeStressTest();
+    var idx = findScreenByType('stressIntro');
+    var app = document.getElementById('app');
+    app.classList.add('fade');
+    setTimeout(function() {
+      screenIndex = idx;
       render();
       app.classList.remove('fade');
     }, 150);
