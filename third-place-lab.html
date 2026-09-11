@@ -1,0 +1,971 @@
+<title>Third Place Lab</title>
+<style>
+:root {
+  --bg: #1A1510;
+  --bg-surface: #241C14;
+  --bg-card: #2E241C;
+  --bg-elevated: #382E24;
+  --text: #F2DFBE;
+  --text-muted: #A89878;
+  --text-dim: #6A5A48;
+  --border: #3A3228;
+
+  --char-1: #5C3A96;
+  --char-2: #B52838;
+  --char-3: #C85218;
+  --char-4: #D4A020;
+  --char-5: #7A5828;
+  --char-6: #B83068;
+  --char-7: #CC6830;
+  --char-8: #7E58A8;
+
+  --present: #2A8A4A;
+  --present-bg: rgba(42,138,74,0.15);
+  --ambiguous: #D4A020;
+  --ambiguous-bg: rgba(212,160,32,0.12);
+  --absent: #C83838;
+  --absent-bg: rgba(200,56,56,0.12);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 20px;
+  line-height: 1.5;
+  overflow: hidden;
+  height: 100vh;
+}
+
+#app {
+  position: fixed;
+  inset: 0 0 52px 0;
+  overflow-y: auto;
+  padding: 2rem;
+  transition: opacity 0.15s ease;
+}
+#app.fade { opacity: 0; }
+
+#toolbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  background: rgba(26,21,16,0.92);
+  border-top: 1px solid var(--border);
+  z-index: 100;
+  padding-inline: 1rem;
+}
+
+.tb-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font: 700 13px/1 inherit;
+  padding: 7px 18px;
+  cursor: pointer;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: color 0.2s, border-color 0.2s;
+}
+.tb-btn:hover { color: var(--text-muted); border-color: var(--text-muted); }
+.tb-btn:disabled { opacity: 0.25; pointer-events: none; }
+
+#phase-indicator {
+  color: var(--text-dim);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  min-width: 180px;
+  text-align: center;
+}
+
+/* --- Shared --- */
+.screen-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  position: relative;
+}
+.case-number {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 0.25rem;
+}
+.case-title {
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+}
+.section-heading {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+.question-text {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  line-height: 1.3;
+}
+.body-text {
+  font-size: 22px;
+  line-height: 1.6;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+}
+.prompt-text {
+  font-size: 22px;
+  font-style: italic;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: 1.5rem;
+  padding-left: 1.25rem;
+  border-left: 3px solid var(--border);
+}
+
+/* --- Vote buttons --- */
+.vote-group {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.vote-btn {
+  font: 700 20px/1 inherit;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 14px 32px;
+  border: 2px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.vote-btn:hover { border-color: var(--text-muted); color: var(--text); }
+.vote-btn[data-val="yes"].selected { background: var(--present); border-color: var(--present); color: #fff; }
+.vote-btn[data-val="no"].selected { background: var(--absent); border-color: var(--absent); color: #fff; }
+.vote-btn[data-val="depends"].selected { background: var(--ambiguous); border-color: var(--ambiguous); color: #fff; }
+
+.verdict-display {
+  font-size: 16px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  min-height: 24px;
+  margin-bottom: 0.5rem;
+}
+
+/* --- SVG container --- */
+.case-svg {
+  margin: 0 auto 1.5rem;
+  display: block;
+  max-width: 600px;
+  width: 100%;
+}
+.case-svg svg { width: 100%; height: auto; display: block; }
+
+/* --- Investigate --- */
+.inv-layout {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 2rem;
+  align-items: start;
+}
+.inv-sidebar {
+  position: sticky;
+  top: 0;
+}
+.inv-sidebar .body-text { font-size: 18px; }
+.inv-sidebar .case-svg { max-width: 100%; }
+
+.char-panel { display: flex; flex-direction: column; gap: 4px; }
+
+.char-row {
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  transition: background 0.2s, border-color 0.2s;
+}
+.char-row[data-status="present"]  { background: var(--present-bg);  border-color: rgba(42,138,74,0.35); }
+.char-row[data-status="ambiguous"]{ background: var(--ambiguous-bg); border-color: rgba(212,160,32,0.3); }
+.char-row[data-status="absent"]   { background: var(--absent-bg);   border-color: rgba(200,56,56,0.3); }
+
+.char-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 10px 14px;
+  cursor: pointer;
+  user-select: none;
+}
+.char-dot {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.char-name {
+  flex: 1;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.char-expand-icon {
+  font-size: 14px;
+  color: var(--text-dim);
+  transition: transform 0.2s;
+  margin-right: 0.5rem;
+}
+.char-row.expanded .char-expand-icon { transform: rotate(90deg); }
+
+.toggle-group {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.toggle-btn {
+  width: 38px;
+  height: 34px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-dim);
+  font: 700 16px/1 inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.toggle-btn:hover { border-color: var(--text-muted); color: var(--text); }
+.toggle-btn[data-s="present"].active  { background: var(--present);  border-color: var(--present);  color: #fff; }
+.toggle-btn[data-s="ambiguous"].active{ background: var(--ambiguous); border-color: var(--ambiguous); color: #fff; }
+.toggle-btn[data-s="absent"].active   { background: var(--absent);   border-color: var(--absent);   color: #fff; }
+
+.char-evidence {
+  padding: 0 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.evidence-label {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.evidence-ta {
+  width: 100%;
+  min-height: 48px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  padding: 8px 10px;
+  resize: vertical;
+  line-height: 1.4;
+}
+.evidence-ta:focus { outline: 1px solid var(--text-muted); border-color: var(--text-muted); }
+
+/* --- Profile bar chart --- */
+.bar-chart { margin-bottom: 2rem; }
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 8px;
+}
+.bar-label {
+  width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.bar-dot {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+.bar-track {
+  flex: 1;
+  height: 30px;
+  background: var(--bg-surface);
+  position: relative;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  width: 0;
+  transition: width 0.6s ease;
+}
+.bar-status {
+  width: 24px;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 16px;
+  color: var(--text-dim);
+}
+.profile-summary {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+.profile-summary span { font-size: 28px; }
+
+/* --- Case navigation --- */
+.case-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+.case-card {
+  background: var(--bg-surface);
+  border: 2px solid var(--border);
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.case-card:hover { border-color: var(--text-muted); transform: translateY(-2px); }
+.case-card.current { border-color: var(--char-1); border-width: 3px; }
+.case-card-num {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--text-dim);
+  margin-bottom: 0.25rem;
+}
+.case-card-name {
+  font-size: 24px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.75rem;
+}
+.case-card-meta {
+  font-size: 15px;
+  color: var(--text-muted);
+  display: flex;
+  gap: 1.5rem;
+}
+.case-card-pips {
+  display: flex;
+  gap: 4px;
+  margin-top: 0.75rem;
+}
+.pip {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--border);
+  transition: background 0.2s;
+}
+
+/* --- Placeholders --- */
+.placeholder-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 120px);
+  text-align: center;
+  position: relative;
+}
+.placeholder-title {
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+.placeholder-sub {
+  font-size: 22px;
+  color: var(--text-dim);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* --- Bauhaus geometric decorations --- */
+.geo {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+.geo-circle {
+  border-radius: 50%;
+}
+
+/* --- Responsive --- */
+@media (max-width: 800px) {
+  .inv-layout { grid-template-columns: 1fr; }
+  .inv-sidebar { position: static; }
+  .bar-label { width: 160px; font-size: 15px; }
+}
+</style>
+
+<div id="app"></div>
+
+<nav id="toolbar">
+  <button class="tb-btn" id="btn-prev" onclick="navigate(-1)">&larr; PREV</button>
+  <span id="phase-indicator"></span>
+  <button class="tb-btn" id="btn-next" onclick="navigate(1)">NEXT &rarr;</button>
+</nav>
+
+<script>
+var CHARS = [
+  { id:'neutral-ground',  name:'Neutral Ground',                  hex:'#5C3A96' },
+  { id:'leveler',          name:'The Leveler',                     hex:'#B52838' },
+  { id:'conversation',     name:'Conversation is the Main Activity', hex:'#C85218' },
+  { id:'accessibility',    name:'Accessibility and Accommodation', hex:'#D4A020' },
+  { id:'regulars',         name:'The Regulars',                    hex:'#7A5828' },
+  { id:'low-profile',      name:'A Low Profile',                   hex:'#B83068' },
+  { id:'playful-mood',     name:'The Mood is Playful',             hex:'#CC6830' },
+  { id:'home-away',        name:'A Home Away from Home',           hex:'#7E58A8' }
+];
+
+var CASES = [
+  {
+    id: 'university-cafe',
+    num: '01',
+    name: 'The Common Room',
+    subtitle: 'University Café',
+    description: 'The Common Room is a café on the ground floor of a university building, open to all students and staff from 8am to 6pm. It has worn leather sofas, a battered bookshelf stocked with donated novels, and a counter selling subsidised coffee and sandwiches. A group of postgraduate students meets there most afternoons, occupying the same corner and greeting newcomers. Conversation ranges freely — from assignment complaints to football to weekend plans. The café has no reservation system and no minimum spend, though it closes promptly at 6pm and is shut at weekends.'
+  },
+  {
+    id: 'chain-coffee',
+    num: '02',
+    name: 'Starbucks on the High Street',
+    subtitle: 'Chain Coffee Shop',
+    description: 'A centrally located Starbucks branch is open 6:30am–8:30pm daily. The interior follows the corporate template — branded cups, standardised playlist, curated décor including motivational wall text. It has fast free Wi-Fi and comfortable seating, attracting a mix of remote workers on laptops, commuters grabbing takeaway, and occasional pairs or groups chatting over drinks. Staff are friendly but turnover is high; no barista remembers regulars’ names. A large coffee costs approximately £4.50.'
+  }
+];
+
+var SVG = {};
+SVG['university-cafe'] = '<svg viewBox="0 0 600 350" xmlns="http://www.w3.org/2000/svg">'
+  +'<rect width="600" height="350" fill="#241C14"/>'
+  +'<rect y="255" width="600" height="95" fill="#1E1810"/>'
+  // Windows
+  +'<rect x="50" y="35" width="140" height="130" fill="#1A2535" stroke="#3A3A30" stroke-width="2"/>'
+  +'<rect x="410" y="35" width="140" height="130" fill="#1A2535" stroke="#3A3A30" stroke-width="2"/>'
+  // Campus buildings left
+  +'<rect x="65" y="95" width="30" height="70" fill="#253040"/>'
+  +'<rect x="100" y="115" width="25" height="50" fill="#2A3545"/>'
+  +'<rect x="130" y="85" width="40" height="80" fill="#223038"/>'
+  // Small window lights
+  +'<rect x="72" y="102" width="6" height="6" fill="#3A4A58" opacity="0.6"/>'
+  +'<rect x="72" y="118" width="6" height="6" fill="#3A4A58" opacity="0.4"/>'
+  +'<rect x="140" y="100" width="6" height="6" fill="#3A4A58" opacity="0.5"/>'
+  // Campus buildings right
+  +'<rect x="425" y="100" width="35" height="65" fill="#253040"/>'
+  +'<rect x="465" y="80" width="30" height="85" fill="#2A3545"/>'
+  +'<rect x="510" y="105" width="25" height="60" fill="#223038"/>'
+  // Bookshelf
+  +'<rect x="220" y="35" width="160" height="130" fill="#2A1E14" stroke="#3A3A30" stroke-width="2"/>'
+  +'<line x1="225" y1="67" x2="375" y2="67" stroke="#4A3A28" stroke-width="2"/>'
+  +'<line x1="225" y1="99" x2="375" y2="99" stroke="#4A3A28" stroke-width="2"/>'
+  +'<line x1="225" y1="131" x2="375" y2="131" stroke="#4A3A28" stroke-width="2"/>'
+  // Books
+  +'<rect x="230" y="40" width="8" height="25" fill="#5C3A96"/>'
+  +'<rect x="240" y="44" width="6" height="21" fill="#B52838"/>'
+  +'<rect x="248" y="40" width="10" height="25" fill="#C85218"/>'
+  +'<rect x="260" y="42" width="7" height="23" fill="#D4A020"/>'
+  +'<rect x="270" y="40" width="9" height="25" fill="#7E58A8"/>'
+  +'<rect x="230" y="70" width="10" height="27" fill="#CC6830"/>'
+  +'<rect x="242" y="72" width="7" height="25" fill="#B83068"/>'
+  +'<rect x="252" y="70" width="8" height="27" fill="#5C3A96"/>'
+  +'<rect x="230" y="102" width="9" height="27" fill="#7A5828"/>'
+  +'<rect x="242" y="104" width="8" height="25" fill="#B52838"/>'
+  +'<rect x="253" y="102" width="6" height="27" fill="#D4A020"/>'
+  // Clock showing ~4pm
+  +'<circle cx="575" cy="55" r="16" fill="none" stroke="#F2DFBE" stroke-width="1.5"/>'
+  +'<line x1="575" y1="55" x2="575" y2="44" stroke="#F2DFBE" stroke-width="1.5"/>'
+  +'<line x1="575" y1="55" x2="583" y2="58" stroke="#F2DFBE" stroke-width="1"/>'
+  // Left sofa (purple)
+  +'<rect x="50" y="215" width="180" height="40" rx="4" fill="#5C3A96"/>'
+  +'<rect x="50" y="205" width="18" height="50" rx="3" fill="#4A2A80"/>'
+  +'<rect x="212" y="205" width="18" height="50" rx="3" fill="#4A2A80"/>'
+  // Right sofa (burnt orange — mismatched)
+  +'<rect x="370" y="215" width="180" height="40" rx="4" fill="#C85218"/>'
+  +'<rect x="370" y="205" width="18" height="50" rx="3" fill="#A84010"/>'
+  +'<rect x="532" y="205" width="18" height="50" rx="3" fill="#A84010"/>'
+  // Central table
+  +'<rect x="252" y="238" width="96" height="22" rx="2" fill="#7A5828"/>'
+  +'<rect x="260" y="260" width="6" height="16" fill="#5A4020"/>'
+  +'<rect x="334" y="260" width="6" height="16" fill="#5A4020"/>'
+  // Coffee cups
+  +'<circle cx="275" cy="244" r="5" fill="#CC6830"/><circle cx="275" cy="244" r="2.5" fill="#241C14"/>'
+  +'<circle cx="310" cy="246" r="4.5" fill="#CC6830"/><circle cx="310" cy="246" r="2" fill="#241C14"/>'
+  +'<circle cx="332" cy="244" r="5" fill="#D4A020"/><circle cx="332" cy="244" r="2.5" fill="#241C14"/>'
+  // Open textbook
+  +'<rect x="290" y="240" width="14" height="10" fill="#F2DFBE" transform="rotate(-5 297 245)"/>'
+  // Student 1
+  +'<circle cx="95" cy="194" r="11" fill="#F2DFBE"/><rect x="84" y="205" width="22" height="16" rx="2" fill="#F2DFBE"/>'
+  // Student 2 (leaning)
+  +'<circle cx="145" cy="190" r="11" fill="#D4A020"/><rect x="134" y="201" width="22" height="18" rx="2" fill="#D4A020"/>'
+  // Student 3 (gesturing)
+  +'<circle cx="195" cy="192" r="11" fill="#F2DFBE"/><rect x="184" y="203" width="22" height="16" rx="2" fill="#F2DFBE"/>'
+  +'<rect x="206" y="208" width="24" height="5" rx="2" fill="#F2DFBE"/>'
+  // Student 4
+  +'<circle cx="410" cy="194" r="11" fill="#D4A020"/><rect x="399" y="205" width="22" height="16" rx="2" fill="#D4A020"/>'
+  // Student 5
+  +'<circle cx="475" cy="192" r="11" fill="#F2DFBE"/><rect x="464" y="203" width="22" height="16" rx="2" fill="#F2DFBE"/>'
+  // Newcomer with tray
+  +'<circle cx="315" cy="176" r="13" fill="#B83068"/>'
+  +'<rect x="303" y="189" width="24" height="34" rx="2" fill="#B83068"/>'
+  +'<rect x="296" y="218" width="38" height="4" rx="1" fill="#A89878"/>'
+  // Wave dots
+  +'<circle cx="234" cy="206" r="2.5" fill="#F2DFBE" opacity="0.5"/>'
+  +'<circle cx="248" cy="200" r="2" fill="#F2DFBE" opacity="0.35"/>'
+  +'<circle cx="260" cy="195" r="2" fill="#F2DFBE" opacity="0.2"/>'
+  +'</svg>';
+
+SVG['chain-coffee'] = '<svg viewBox="0 0 600 350" xmlns="http://www.w3.org/2000/svg">'
+  +'<rect width="600" height="350" fill="#222020"/>'
+  +'<rect y="260" width="600" height="90" fill="#1C1A1A"/>'
+  // Counter
+  +'<rect x="40" y="68" width="520" height="28" rx="2" fill="#3A3228"/>'
+  +'<rect x="40" y="58" width="520" height="12" fill="#4A4238"/>'
+  // Logo circle
+  +'<circle cx="300" cy="32" r="20" fill="none" stroke="#3A7A4A" stroke-width="2.5"/>'
+  +'<circle cx="300" cy="32" r="8" fill="#3A7A4A"/>'
+  +'<circle cx="300" cy="32" r="3" fill="#222020"/>'
+  // Motivational text
+  +'<rect x="100" y="108" width="160" height="3" rx="1" fill="#3A3228"/>'
+  +'<rect x="115" y="118" width="130" height="3" rx="1" fill="#3A3228"/>'
+  +'<rect x="108" y="128" width="145" height="3" rx="1" fill="#3A3228"/>'
+  // Price board
+  +'<rect x="480" y="20" width="80" height="38" fill="#2E2828" stroke="#3A3228" stroke-width="1"/>'
+  +'<rect x="486" y="28" width="40" height="3" fill="#6A5A48"/>'
+  +'<rect x="486" y="35" width="35" height="3" fill="#6A5A48"/>'
+  +'<rect x="486" y="42" width="42" height="3" fill="#6A5A48"/>'
+  // Price highlights (£4.50 hint)
+  +'<rect x="538" y="28" width="16" height="3" fill="#D4A020"/>'
+  +'<rect x="538" y="35" width="16" height="3" fill="#D4A020"/>'
+  +'<rect x="538" y="42" width="16" height="3" fill="#D4A020"/>'
+  // Barista
+  +'<circle cx="300" cy="52" r="9" fill="#A89878"/><rect x="292" y="61" width="16" height="8" fill="#A89878"/>'
+  // Customer (no recognition)
+  +'<circle cx="200" cy="52" r="9" fill="#F2DFBE"/><rect x="192" y="61" width="16" height="8" fill="#F2DFBE"/>'
+  // Solo table 1
+  +'<rect x="60" y="180" width="65" height="26" rx="2" fill="#4A4238"/>'
+  +'<rect x="72" y="170" width="34" height="20" rx="1" fill="#2A2828"/>'
+  +'<rect x="72" y="161" width="34" height="11" rx="1" fill="#333038"/>'
+  +'<circle cx="89" cy="148" r="10" fill="#A89878"/><rect x="80" y="158" width="18" height="13" rx="2" fill="#A89878"/>'
+  +'<path d="M77,145 A12,10 0 0 1 101,145" stroke="#4A4238" stroke-width="3" fill="none"/>'
+  +'<circle cx="68" cy="188" r="4" fill="#3A7A4A"/>'
+  // Solo table 2
+  +'<rect x="195" y="180" width="65" height="26" rx="2" fill="#4A4238"/>'
+  +'<rect x="207" y="170" width="34" height="20" rx="1" fill="#2A2828"/>'
+  +'<rect x="207" y="161" width="34" height="11" rx="1" fill="#333038"/>'
+  +'<circle cx="224" cy="148" r="10" fill="#A89878"/><rect x="215" y="158" width="18" height="13" rx="2" fill="#A89878"/>'
+  +'<path d="M212,145 A12,10 0 0 1 236,145" stroke="#4A4238" stroke-width="3" fill="none"/>'
+  +'<circle cx="203" cy="188" r="4" fill="#3A7A4A"/>'
+  // Solo table 3
+  +'<rect x="340" y="180" width="65" height="26" rx="2" fill="#4A4238"/>'
+  +'<rect x="352" y="170" width="34" height="20" rx="1" fill="#2A2828"/>'
+  +'<rect x="352" y="161" width="34" height="11" rx="1" fill="#333038"/>'
+  +'<circle cx="369" cy="148" r="10" fill="#A89878"/><rect x="360" y="158" width="18" height="13" rx="2" fill="#A89878"/>'
+  +'<path d="M357,145 A12,10 0 0 1 381,145" stroke="#4A4238" stroke-width="3" fill="none"/>'
+  +'<circle cx="348" cy="188" r="4" fill="#3A7A4A"/>'
+  // Solo table 4
+  +'<rect x="475" y="180" width="65" height="26" rx="2" fill="#4A4238"/>'
+  +'<rect x="487" y="170" width="34" height="20" rx="1" fill="#2A2828"/>'
+  +'<rect x="487" y="161" width="34" height="11" rx="1" fill="#333038"/>'
+  +'<circle cx="504" cy="148" r="10" fill="#F2DFBE"/><rect x="495" y="158" width="18" height="13" rx="2" fill="#F2DFBE"/>'
+  +'<path d="M492,145 A12,10 0 0 1 516,145" stroke="#4A4238" stroke-width="3" fill="none"/>'
+  +'<circle cx="483" cy="188" r="4" fill="#3A7A4A"/>'
+  // Corner pair (contrast — no headphones, warmer cups)
+  +'<rect x="100" y="285" width="75" height="26" rx="2" fill="#4A4238"/>'
+  +'<circle cx="110" cy="293" r="4" fill="#CC6830"/>'
+  +'<circle cx="160" cy="293" r="4" fill="#CC6830"/>'
+  +'<circle cx="118" cy="264" r="10" fill="#B83068"/><rect x="109" y="274" width="18" height="14" rx="2" fill="#B83068"/>'
+  +'<circle cx="155" cy="262" r="10" fill="#CC6830"/><rect x="146" y="272" width="18" height="14" rx="2" fill="#CC6830"/>'
+  // Surveillance camera (subtle)
+  +'<rect x="562" y="4" width="28" height="7" fill="#3A3228"/>'
+  +'<circle cx="562" cy="8" r="4" fill="#4A4238"/>'
+  +'</svg>';
+
+// ============================================================
+// STATE
+// ============================================================
+var state = {
+  currentPhase: 'part2',
+  currentScreen: 0,
+  activeCaseIndex: 0,
+  cases: CASES.map(function(c) {
+    return {
+      id: c.id,
+      name: c.name,
+      description: c.description,
+      initialVerdict: null,
+      characteristics: CHARS.map(function(ch) {
+        return { id: ch.id, name: ch.name, status: null, evidenceFor: '', evidenceAgainst: '' };
+      }),
+      finalVerdict: null
+    };
+  }),
+  stressTests: [],
+  synthesis: {}
+};
+
+var SCREENS = [
+  { phase:'part2', type:'reveal',      label:'Part 2', num:1, of:4 },
+  { phase:'part2', type:'investigate',  label:'Part 2', num:2, of:4 },
+  { phase:'part2', type:'profile',      label:'Part 2', num:3, of:4 },
+  { phase:'part2', type:'cases',        label:'Part 2', num:4, of:4 },
+  { phase:'part3', type:'placeholder3', label:'Part 3', num:1, of:1 },
+  { phase:'part4', type:'placeholder4', label:'Part 4', num:1, of:1 }
+];
+
+var screenIndex = 0;
+var expandedChar = -1;
+
+// ============================================================
+// RENDER
+// ============================================================
+function render() {
+  var s = SCREENS[screenIndex];
+  var html = '';
+  switch(s.type) {
+    case 'reveal':      html = renderReveal(); break;
+    case 'investigate':  html = renderInvestigate(); break;
+    case 'profile':      html = renderProfile(); break;
+    case 'cases':        html = renderCases(); break;
+    case 'placeholder3': html = renderPlaceholder('Stress Test', 'Coming next'); break;
+    case 'placeholder4': html = renderPlaceholder('Synthesis', 'Coming next'); break;
+  }
+  document.getElementById('app').innerHTML = html;
+  document.getElementById('app').scrollTop = 0;
+  updateToolbar();
+  if (s.type === 'profile') {
+    requestAnimationFrame(function() { requestAnimationFrame(animateBars); });
+  }
+}
+
+function renderReveal() {
+  var ci = state.activeCaseIndex;
+  var c = CASES[ci];
+  var sc = state.cases[ci];
+  var v = sc.initialVerdict;
+  var vLabel = v === 'yes' ? 'YES' : v === 'no' ? 'NO' : v === 'depends' ? 'IT DEPENDS' : '';
+
+  return '<div class="screen-wrap">'
+    + geoDecor('#5C3A96', 320, -60, 'circle', 0.06)
+    + geoDecor('#C85218', -40, 280, 'rect', 0.05, 200, 80, -12)
+    + '<div class="case-number">CASE ' + c.num + ' &mdash; ' + c.subtitle + '</div>'
+    + '<div class="case-title">' + esc(c.name) + '</div>'
+    + '<div class="case-svg">' + SVG[c.id] + '</div>'
+    + '<p class="body-text">' + esc(c.description) + '</p>'
+    + '<div class="question-text">First impression: could this be a third place?</div>'
+    + '<div class="vote-group">'
+    + voteBtn('initial', 'yes', 'YES', v)
+    + voteBtn('initial', 'no', 'NO', v)
+    + voteBtn('initial', 'depends', 'IT DEPENDS', v)
+    + '</div>'
+    + '<div class="verdict-display">' + (v ? 'Class verdict recorded: ' + vLabel : '') + '</div>'
+    + '</div>';
+}
+
+function renderInvestigate() {
+  var ci = state.activeCaseIndex;
+  var c = CASES[ci];
+  var sc = state.cases[ci];
+
+  var rows = '';
+  for (var i = 0; i < 8; i++) {
+    var ch = CHARS[i];
+    var cs = sc.characteristics[i];
+    var isExp = expandedChar === i;
+    var statusAttr = cs.status || '';
+    rows += '<div class="char-row' + (isExp ? ' expanded' : '') + '" data-status="' + statusAttr + '" data-ci="' + i + '">'
+      + '<div class="char-header" data-action="expand" data-ci="' + i + '">'
+      + '<div class="char-dot" style="background:' + ch.hex + '"></div>'
+      + '<span class="char-name">' + esc(ch.name) + '</span>'
+      + '<span class="char-expand-icon">' + (isExp ? '▼' : '▶') + '</span>'
+      + '<div class="toggle-group">'
+      + toggleBtn(i, 'present', '✓', cs.status)
+      + toggleBtn(i, 'ambiguous', '?', cs.status)
+      + toggleBtn(i, 'absent', '✗', cs.status)
+      + '</div>'
+      + '</div>'
+      + (isExp
+        ? '<div class="char-evidence">'
+          + '<div class="evidence-label">Evidence for</div>'
+          + '<textarea class="evidence-ta" data-ev="for" data-ci="' + i + '">' + esc(cs.evidenceFor) + '</textarea>'
+          + '<div class="evidence-label">Evidence against</div>'
+          + '<textarea class="evidence-ta" data-ev="against" data-ci="' + i + '">' + esc(cs.evidenceAgainst) + '</textarea>'
+          + '</div>'
+        : '')
+      + '</div>';
+  }
+
+  return '<div class="screen-wrap">'
+    + '<div class="case-number" style="margin-bottom:1rem">CASE ' + c.num + ' &mdash; ' + esc(c.name) + '</div>'
+    + '<div class="inv-layout">'
+    + '<div class="inv-sidebar">'
+    + '<div class="case-svg">' + SVG[c.id] + '</div>'
+    + '<p class="body-text">' + esc(c.description) + '</p>'
+    + '</div>'
+    + '<div class="char-panel">' + rows + '</div>'
+    + '</div>'
+    + '</div>';
+}
+
+function renderProfile() {
+  var ci = state.activeCaseIndex;
+  var c = CASES[ci];
+  var sc = state.cases[ci];
+  var v = sc.finalVerdict;
+  var vLabel = v === 'yes' ? 'YES' : v === 'no' ? 'NO' : v === 'depends' ? 'IT DEPENDS' : '';
+
+  var presentCount = 0;
+  var bars = '';
+  for (var i = 0; i < 8; i++) {
+    var ch = CHARS[i];
+    var cs = sc.characteristics[i];
+    if (cs.status === 'present') presentCount++;
+    var sym = cs.status === 'present' ? '✓' : cs.status === 'ambiguous' ? '?' : cs.status === 'absent' ? '✗' : '—';
+    bars += '<div class="bar-row">'
+      + '<div class="bar-label"><div class="bar-dot" style="background:' + ch.hex + '"></div>' + esc(ch.name) + '</div>'
+      + '<div class="bar-track"><div class="bar-fill" data-bar="' + i + '" style="background:' + ch.hex + ';width:0"></div></div>'
+      + '<div class="bar-status">' + sym + '</div>'
+      + '</div>';
+  }
+
+  return '<div class="screen-wrap">'
+    + geoDecor('#7E58A8', -50, -30, 'circle', 0.07, 200)
+    + '<div class="case-number">CASE ' + c.num + ' &mdash; ' + esc(c.name) + '</div>'
+    + '<div class="section-heading">Third-Place Profile</div>'
+    + '<div class="bar-chart">' + bars + '</div>'
+    + '<div class="profile-summary"><span>' + presentCount + '/8</span> characteristics appear present. Is that enough?</div>'
+    + '<div class="vote-group">'
+    + voteBtn('final', 'yes', 'YES', v)
+    + voteBtn('final', 'no', 'NO', v)
+    + voteBtn('final', 'depends', 'IT DEPENDS', v)
+    + '</div>'
+    + '<div class="verdict-display">' + (v ? 'Class verdict: ' + vLabel : '') + '</div>'
+    + '<div class="prompt-text">What would have to change for your answer to change?</div>'
+    + '</div>';
+}
+
+function renderCases() {
+  var cards = '';
+  for (var i = 0; i < CASES.length; i++) {
+    var c = CASES[i];
+    var sc = state.cases[i];
+    var assessed = 0;
+    for (var j = 0; j < 8; j++) { if (sc.characteristics[j].status) assessed++; }
+    var isCurrent = i === state.activeCaseIndex;
+
+    var pips = '';
+    for (var j = 0; j < 8; j++) {
+      var s = sc.characteristics[j].status;
+      var bg = s === 'present' ? 'var(--present)' : s === 'ambiguous' ? 'var(--ambiguous)' : s === 'absent' ? 'var(--absent)' : 'transparent';
+      pips += '<div class="pip" style="background:' + bg + '"></div>';
+    }
+
+    cards += '<div class="case-card' + (isCurrent ? ' current' : '') + '" data-action="select-case" data-case="' + i + '">'
+      + '<div class="case-card-num">CASE ' + c.num + '</div>'
+      + '<div class="case-card-name">' + esc(c.name) + '</div>'
+      + '<div class="case-card-meta">'
+      + '<span>' + assessed + '/8 assessed</span>'
+      + '<span>' + (sc.initialVerdict ? 'Initial verdict ✓' : 'No initial verdict') + '</span>'
+      + '</div>'
+      + '<div class="case-card-pips">' + pips + '</div>'
+      + '</div>';
+  }
+
+  return '<div class="screen-wrap">'
+    + geoDecor('#B52838', 400, -40, 'rect', 0.06, 180, 60, 8)
+    + '<div class="section-heading">Case Studies</div>'
+    + '<p class="body-text">Select a case to investigate, or advance to the next part.</p>'
+    + '<div class="case-grid">' + cards + '</div>'
+    + '</div>';
+}
+
+function renderPlaceholder(title, sub) {
+  var col = title === 'Stress Test' ? '#B52838' : '#5C3A96';
+  return '<div class="placeholder-wrap">'
+    + '<div class="geo geo-circle" style="width:300px;height:300px;background:' + col + ';opacity:0.06;top:50%;left:50%;transform:translate(-50%,-50%)"></div>'
+    + '<div class="placeholder-title" style="position:relative">' + esc(title) + '</div>'
+    + '<div class="placeholder-sub" style="position:relative">' + esc(sub) + '</div>'
+    + '</div>';
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function esc(s) {
+  var d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function voteBtn(kind, val, label, current) {
+  return '<button class="vote-btn' + (current === val ? ' selected' : '') + '" data-action="vote" data-kind="' + kind + '" data-val="' + val + '">' + label + '</button>';
+}
+
+function toggleBtn(ci, status, sym, current) {
+  return '<button class="toggle-btn' + (current === status ? ' active' : '') + '" data-action="set-status" data-ci="' + ci + '" data-s="' + status + '">' + sym + '</button>';
+}
+
+function geoDecor(color, right, top, shape, opacity, w, h, rot) {
+  w = w || 280; h = h || w;
+  var s = 'position:absolute;pointer-events:none;z-index:0;opacity:' + (opacity || 0.06) + ';background:' + color + ';';
+  s += 'right:' + right + 'px;top:' + top + 'px;width:' + w + 'px;height:' + h + 'px;';
+  if (shape === 'circle') s += 'border-radius:50%;';
+  if (rot) s += 'transform:rotate(' + rot + 'deg);';
+  return '<div style="' + s + '"></div>';
+}
+
+function animateBars() {
+  var sc = state.cases[state.activeCaseIndex];
+  for (var i = 0; i < 8; i++) {
+    (function(idx) {
+      var el = document.querySelector('[data-bar="' + idx + '"]');
+      if (!el) return;
+      var s = sc.characteristics[idx].status;
+      var w = s === 'present' ? '100%' : s === 'ambiguous' ? '50%' : '0%';
+      setTimeout(function() { el.style.width = w; }, idx * 80);
+    })(i);
+  }
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function navigate(dir) {
+  var next = screenIndex + dir;
+  if (next < 0 || next >= SCREENS.length) return;
+  expandedChar = -1;
+  var app = document.getElementById('app');
+  app.classList.add('fade');
+  setTimeout(function() {
+    screenIndex = next;
+    render();
+    app.classList.remove('fade');
+  }, 150);
+}
+
+function updateToolbar() {
+  var s = SCREENS[screenIndex];
+  var txt = s.label;
+  if (s.of > 1) txt += ' — Screen ' + s.num + ' of ' + s.of;
+  document.getElementById('phase-indicator').textContent = txt;
+  document.getElementById('btn-prev').disabled = screenIndex === 0;
+  document.getElementById('btn-next').disabled = screenIndex === SCREENS.length - 1;
+}
+
+// ============================================================
+// EVENT HANDLING
+// ============================================================
+document.getElementById('app').addEventListener('click', function(e) {
+  // Toggle status — check first to prevent expand triggering
+  var stBtn = e.target.closest('[data-action="set-status"]');
+  if (stBtn) {
+    e.stopPropagation();
+    var ci = parseInt(stBtn.dataset.ci);
+    var s = stBtn.dataset.s;
+    var sc = state.cases[state.activeCaseIndex];
+    sc.characteristics[ci].status = sc.characteristics[ci].status === s ? null : s;
+    updateCharRow(ci);
+    return;
+  }
+
+  // Expand/collapse characteristic
+  var expBtn = e.target.closest('[data-action="expand"]');
+  if (expBtn) {
+    var ci = parseInt(expBtn.dataset.ci);
+    expandedChar = expandedChar === ci ? -1 : ci;
+    render();
+    return;
+  }
+
+  // Vote
+  var vBtn = e.target.closest('[data-action="vote"]');
+  if (vBtn) {
+    var kind = vBtn.dataset.kind;
+    var val = vBtn.dataset.val;
+    var sc = state.cases[state.activeCaseIndex];
+    if (kind === 'initial') {
+      sc.initialVerdict = sc.initialVerdict === val ? null : val;
+    } else {
+      sc.finalVerdict = sc.finalVerdict === val ? null : val;
+    }
+    render();
+    return;
+  }
+
+  // Case selection
+  var caseCard = e.target.closest('[data-action="select-case"]');
+  if (caseCard) {
+    var idx = parseInt(caseCard.dataset.case);
+    state.activeCaseIndex = idx;
+    expandedChar = -1;
+    var app = document.getElementById('app');
+    app.classList.add('fade');
+    setTimeout(function() {
+      screenIndex = 0;
+      render();
+      app.classList.remove('fade');
+    }, 150);
+    return;
+  }
+});
+
+document.getElementById('app').addEventListener('input', function(e) {
+  if (e.target.dataset.ev) {
+    var ci = parseInt(e.target.dataset.ci);
+    var sc = state.cases[state.activeCaseIndex];
+    if (e.target.dataset.ev === 'for') {
+      sc.characteristics[ci].evidenceFor = e.target.value;
+    } else {
+      sc.characteristics[ci].evidenceAgainst = e.target.value;
+    }
+  }
+});
+
+function updateCharRow(idx) {
+  var row = document.querySelector('.char-row[data-ci="' + idx + '"]');
+  if (!row) return;
+  var sc = state.cases[state.activeCaseIndex];
+  var s = sc.characteristics[idx].status || '';
+  row.dataset.status = s;
+  var btns = row.querySelectorAll('[data-action="set-status"]');
+  for (var i = 0; i < btns.length; i++) {
+    if (btns[i].dataset.s === s) btns[i].classList.add('active');
+    else btns[i].classList.remove('active');
+  }
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', function(e) {
+  if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+  if (e.key === 'ArrowRight') { e.preventDefault(); navigate(1); }
+  if (e.key === 'ArrowLeft')  { e.preventDefault(); navigate(-1); }
+});
+
+// ============================================================
+// INIT
+// ============================================================
+render();
+</script>
