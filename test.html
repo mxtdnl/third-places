@@ -1,0 +1,535 @@
+<meta charset="utf-8">
+<title>Third Places — Test Suite</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #1a1a1a; color: #e0e0e0; padding: 2rem; }
+  h1 { font-size: 1.4rem; margin-bottom: 0.5rem; }
+  .summary { margin-bottom: 1.5rem; font-size: 0.95rem; }
+  .pass { color: #4caf50; }
+  .fail { color: #f44336; }
+  .suite { margin-bottom: 1.5rem; }
+  .suite-header { font-weight: 700; font-size: 1rem; margin-bottom: 0.3rem; color: #ccc; }
+  .test { padding: 3px 0; font-size: 0.85rem; }
+  .test.pass::before { content: "✓ "; color: #4caf50; }
+  .test.fail::before { content: "✗ "; color: #f44336; }
+  .test.fail { color: #f44336; }
+  .error-detail { color: #e57373; font-size: 0.8rem; margin-left: 1.2rem; }
+</style>
+
+<h1>Third Places — Test Suite</h1>
+<div class="summary" id="summary"></div>
+<div id="results"></div>
+
+<!-- Minimal DOM stubs the scripts expect -->
+<div id="app" style="display:none"></div>
+<nav id="toolbar" style="display:none">
+  <button id="btn-prev"></button>
+  <span id="phase-indicator"></span>
+  <button id="btn-next"></button>
+</nav>
+<div style="display:none">
+  <div id="intro" class="screen"></div>
+  <div id="game" class="screen"></div>
+  <div id="summary-screen" class="screen"></div>
+  <div id="intro-dots"></div>
+  <div id="game-dots"></div>
+  <div id="game-header"></div>
+  <div id="game-body"></div>
+</div>
+
+<!-- Load both app scripts so their globals are available -->
+<script id="decoder-source"></script>
+<script id="lab-source"></script>
+
+<script>
+(function() {
+  var passed = 0, failed = 0;
+  var results = document.getElementById('results');
+  var currentSuite = null;
+  var currentSuiteEl = null;
+
+  function suite(name) {
+    currentSuite = name;
+    currentSuiteEl = document.createElement('div');
+    currentSuiteEl.className = 'suite';
+    currentSuiteEl.innerHTML = '<div class="suite-header">' + name + '</div>';
+    results.appendChild(currentSuiteEl);
+  }
+
+  function assert(name, fn) {
+    var el = document.createElement('div');
+    el.className = 'test';
+    try {
+      fn();
+      el.classList.add('pass');
+      el.textContent = name;
+      passed++;
+    } catch(e) {
+      el.classList.add('fail');
+      el.textContent = name;
+      var detail = document.createElement('div');
+      detail.className = 'error-detail';
+      detail.textContent = e.message;
+      el.appendChild(detail);
+      failed++;
+    }
+    currentSuiteEl.appendChild(el);
+  }
+
+  function eq(a, b, msg) {
+    if (a !== b) throw new Error((msg || '') + ' expected ' + JSON.stringify(b) + ', got ' + JSON.stringify(a));
+  }
+
+  function ok(v, msg) {
+    if (!v) throw new Error(msg || 'assertion failed');
+  }
+
+  // =========================================================
+  // Load scripts by extracting <script> content from each HTML
+  // =========================================================
+  function extractAndRun(html, label) {
+    var m = html.match(/<script>([\s\S]*?)<\/script>/);
+    if (!m) throw new Error('No <script> in ' + label);
+    var code = m[1]
+      .replace(/document\.addEventListener\(/g, 'void(0 && ')
+      .replace(/document\.getElementById\('app'\)\.addEventListener\(/g, 'void(0 && ')
+      .replace(/\$\('[^']+'\)\.addEventListener\(/g, 'void(0 && ');
+    code = code.replace(/\nrender\(\);\s*$/, '');
+    return code;
+  }
+
+  function loadScripts(callback) {
+    var loaded = 0;
+    var labCode, decoderCode;
+
+    function done() {
+      loaded++;
+      if (loaded < 2) return;
+
+      // Execute decoder in a namespace
+      try {
+        var decoderFn = new Function(
+          decoderCode + '\n'
+          + 'window.D_CHARACTERISTICS = CHARACTERISTICS;\n'
+          + 'window.D_state = state;\n'
+          + 'window.D_shuffle = shuffle;\n'
+        );
+        decoderFn();
+      } catch(e) {
+        suite('LOAD ERRORS');
+        assert('decoder.html parses without syntax errors', function() { throw e; });
+      }
+
+      // Execute lab
+      try {
+        var labFn = new Function(
+          labCode + '\n'
+          + 'window.L_CHARS = CHARS;\n'
+          + 'window.L_CASES = CASES;\n'
+          + 'window.L_SVG = SVG;\n'
+          + 'window.L_STRESS_DOMAINS = STRESS_DOMAINS;\n'
+          + 'window.L_state = state;\n'
+          + 'window.L_SCREENS = SCREENS;\n'
+          + 'window.L_screenIndex = screenIndex;\n'
+          + 'window.L_esc = esc;\n'
+          + 'window.L_voteBtn = voteBtn;\n'
+          + 'window.L_toggleBtn = toggleBtn;\n'
+          + 'window.L_predBtn = predBtn;\n'
+          + 'window.L_geoDecor = geoDecor;\n'
+          + 'window.L_statusToStrength = statusToStrength;\n'
+          + 'window.L_strengthToStatus = strengthToStatus;\n'
+          + 'window.L_getEffectiveProfile = getEffectiveProfile;\n'
+          + 'window.L_applyPredictions = applyPredictions;\n'
+          + 'window.L_getCaseDomains = getCaseDomains;\n'
+          + 'window.L_getCondition = getCondition;\n'
+          + 'window.L_getCaseTests = getCaseTests;\n'
+          + 'window.L_findScreenByType = findScreenByType;\n'
+          + 'window.L_renderReveal = renderReveal;\n'
+          + 'window.L_renderInvestigate = renderInvestigate;\n'
+          + 'window.L_renderProfile = renderProfile;\n'
+          + 'window.L_renderCases = renderCases;\n'
+          + 'window.L_renderStressIntro = renderStressIntro;\n'
+          + 'window.L_renderTallyBar = renderTallyBar;\n'
+          + 'window.L_renderMiniChart = renderMiniChart;\n'
+          + 'window.L_renderTriangleSVG = renderTriangleSVG;\n'
+          + 'window.L_voteCompRow = voteCompRow;\n'
+          + 'window.L_tallyBtn = tallyBtn;\n'
+          + 'window.L_finalizeStressTest = finalizeStressTest;\n'
+          + 'window.L_navigate = navigate;\n'
+          + 'window.L_updateToolbar = updateToolbar;\n'
+          + 'window.L_render = render;\n'
+        );
+        labFn();
+      } catch(e) {
+        suite('LOAD ERRORS');
+        assert('lab.html parses without syntax errors', function() { throw e; });
+      }
+
+      callback();
+    }
+
+    var xhr1 = new XMLHttpRequest();
+    xhr1.open('GET', 'third-place-decoder.html');
+    xhr1.onload = function() { decoderCode = extractAndRun(xhr1.responseText, 'decoder'); done(); };
+    xhr1.onerror = function() { decoderCode = ''; done(); };
+    xhr1.send();
+
+    var xhr2 = new XMLHttpRequest();
+    xhr2.open('GET', 'third-place-lab.html');
+    xhr2.onload = function() { labCode = extractAndRun(xhr2.responseText, 'lab'); done(); };
+    xhr2.onerror = function() { labCode = ''; done(); };
+    xhr2.send();
+  }
+
+  function runTests() {
+
+    // =====================================================
+    // DECODER TESTS
+    // =====================================================
+
+    suite('Decoder — Data Integrity');
+
+    assert('CHARACTERISTICS has 8 entries', function() {
+      eq(D_CHARACTERISTICS.length, 8);
+    });
+
+    assert('Each characteristic has required fields', function() {
+      D_CHARACTERISTICS.forEach(function(c, i) {
+        ok(c.name, 'missing name at index ' + i);
+        ok(c.colorHex, 'missing colorHex at index ' + i);
+        ok(c.definition, 'missing definition at index ' + i);
+        ok(Array.isArray(c.distractorDefs), 'distractorDefs not array at ' + i);
+        eq(c.distractorDefs.length, 3, 'distractorDefs length at ' + i);
+        ok(c.hint, 'missing hint at ' + i);
+        ok(c.feedback, 'missing feedback at ' + i);
+      });
+    });
+
+    assert('All colorHex values are valid hex colours', function() {
+      D_CHARACTERISTICS.forEach(function(c) {
+        ok(/^#[0-9A-Fa-f]{6}$/.test(c.colorHex), c.name + ' has invalid hex: ' + c.colorHex);
+      });
+    });
+
+    assert('No duplicate characteristic names', function() {
+      var names = D_CHARACTERISTICS.map(function(c) { return c.name; });
+      eq(new Set(names).size, 8, 'duplicate names found');
+    });
+
+    suite('Decoder — shuffle()');
+
+    assert('shuffle returns a new array of the same length', function() {
+      var input = [1, 2, 3, 4, 5];
+      var result = D_shuffle(input);
+      eq(result.length, 5);
+      ok(result !== input, 'should return a new array');
+    });
+
+    assert('shuffle does not mutate the input', function() {
+      var input = [10, 20, 30];
+      var copy = input.slice();
+      D_shuffle(input);
+      eq(JSON.stringify(input), JSON.stringify(copy));
+    });
+
+    assert('shuffle preserves all elements', function() {
+      var input = [1, 2, 3, 4, 5, 6, 7, 8];
+      var result = D_shuffle(input);
+      var sorted = result.slice().sort(function(a, b) { return a - b; });
+      eq(JSON.stringify(sorted), JSON.stringify(input));
+    });
+
+    // =====================================================
+    // LAB — DATA INTEGRITY
+    // =====================================================
+
+    suite('Lab — Data Integrity');
+
+    assert('CHARS has 8 entries with id, name, hex', function() {
+      eq(L_CHARS.length, 8);
+      L_CHARS.forEach(function(c, i) {
+        ok(c.id, 'missing id at ' + i);
+        ok(c.name, 'missing name at ' + i);
+        ok(/^#[0-9A-Fa-f]{6}$/.test(c.hex), 'invalid hex at ' + i);
+      });
+    });
+
+    assert('CASES has at least 2 entries', function() {
+      ok(L_CASES.length >= 2, 'expected at least 2 cases');
+      L_CASES.forEach(function(c) {
+        ok(c.id, 'missing case id');
+        ok(c.name, 'missing case name');
+        ok(c.description, 'missing case description');
+      });
+    });
+
+    assert('SVG exists for each case', function() {
+      L_CASES.forEach(function(c) {
+        ok(L_SVG[c.id], 'missing SVG for case ' + c.id);
+        ok(L_SVG[c.id].indexOf('<svg') !== -1, 'SVG for ' + c.id + ' is not valid SVG');
+      });
+    });
+
+    assert('STRESS_DOMAINS exists for each case', function() {
+      L_CASES.forEach(function(c) {
+        ok(L_STRESS_DOMAINS[c.id], 'missing STRESS_DOMAINS for ' + c.id);
+        ok(L_STRESS_DOMAINS[c.id].length > 0, 'empty domains for ' + c.id);
+      });
+    });
+
+    assert('Each stress domain has conditions with chain arrays', function() {
+      L_CASES.forEach(function(c) {
+        L_STRESS_DOMAINS[c.id].forEach(function(d) {
+          ok(d.id, 'domain missing id');
+          ok(d.label, 'domain missing label');
+          ok(d.conditions.length > 0, 'domain has no conditions');
+          d.conditions.forEach(function(cond) {
+            ok(cond.id, 'condition missing id');
+            ok(cond.name, 'condition missing name');
+            ok(cond.intervention, 'condition missing intervention');
+            ok(Array.isArray(cond.chain), 'condition chain is not array');
+            ok(cond.chain.length >= 2, 'chain too short for ' + cond.id);
+          });
+        });
+      });
+    });
+
+    assert('SCREENS has 12 entries covering all phases', function() {
+      eq(L_SCREENS.length, 12);
+      var phases = {};
+      L_SCREENS.forEach(function(s) { phases[s.phase] = true; });
+      ok(phases.part2, 'missing part2');
+      ok(phases.part3, 'missing part3');
+      ok(phases.part4, 'missing part4');
+    });
+
+    assert('State initialised with cases matching CASES', function() {
+      eq(L_state.cases.length, L_CASES.length);
+      L_state.cases.forEach(function(sc, i) {
+        eq(sc.id, L_CASES[i].id);
+        eq(sc.characteristics.length, 8);
+      });
+    });
+
+    // =====================================================
+    // LAB — PURE FUNCTIONS
+    // =====================================================
+
+    suite('Lab — statusToStrength / strengthToStatus');
+
+    assert('statusToStrength maps correctly', function() {
+      eq(L_statusToStrength('present'), 2);
+      eq(L_statusToStrength('ambiguous'), 1);
+      eq(L_statusToStrength('absent'), 0);
+      eq(L_statusToStrength(null), 0);
+      eq(L_statusToStrength(''), 0);
+    });
+
+    assert('strengthToStatus maps correctly', function() {
+      eq(L_strengthToStatus(2), 'present');
+      eq(L_strengthToStatus(3), 'present');
+      eq(L_strengthToStatus(1), 'ambiguous');
+      eq(L_strengthToStatus(0), 'absent');
+      eq(L_strengthToStatus(-1), 'absent');
+    });
+
+    assert('round-trip: statusToStrength then strengthToStatus', function() {
+      ['present', 'ambiguous', 'absent'].forEach(function(s) {
+        eq(L_strengthToStatus(L_statusToStrength(s)), s);
+      });
+    });
+
+    suite('Lab — applyPredictions');
+
+    assert('stronger increases strength by 1, capped at 2', function() {
+      var profile = [{ id: 'a', name: 'A', hex: '#000', strength: 1, status: 'ambiguous' }];
+      var result = L_applyPredictions(profile, { a: 'stronger' });
+      eq(result[0].strength, 2);
+      eq(result[0].status, 'present');
+    });
+
+    assert('weaker decreases strength by 1, floored at 0', function() {
+      var profile = [{ id: 'a', name: 'A', hex: '#000', strength: 1, status: 'ambiguous' }];
+      var result = L_applyPredictions(profile, { a: 'weaker' });
+      eq(result[0].strength, 0);
+      eq(result[0].status, 'absent');
+    });
+
+    assert('stronger at max (2) stays at 2', function() {
+      var profile = [{ id: 'a', name: 'A', hex: '#000', strength: 2, status: 'present' }];
+      var result = L_applyPredictions(profile, { a: 'stronger' });
+      eq(result[0].strength, 2);
+    });
+
+    assert('weaker at min (0) stays at 0', function() {
+      var profile = [{ id: 'a', name: 'A', hex: '#000', strength: 0, status: 'absent' }];
+      var result = L_applyPredictions(profile, { a: 'weaker' });
+      eq(result[0].strength, 0);
+    });
+
+    assert('applyPredictions does not mutate original profile', function() {
+      var profile = [{ id: 'a', name: 'A', hex: '#000', strength: 1, status: 'ambiguous' }];
+      L_applyPredictions(profile, { a: 'stronger' });
+      eq(profile[0].strength, 1);
+    });
+
+    suite('Lab — findScreenByType');
+
+    assert('finds existing screen types', function() {
+      eq(L_findScreenByType('reveal'), 0);
+      eq(L_findScreenByType('stressIntro'), 4);
+      eq(L_findScreenByType('synthesisFinal'), 11);
+    });
+
+    assert('returns -1 for unknown type', function() {
+      eq(L_findScreenByType('nonexistent'), -1);
+    });
+
+    suite('Lab — esc()');
+
+    assert('escapes HTML special characters', function() {
+      var result = L_esc('<b>"test" & \'stuff\'</b>');
+      ok(result.indexOf('<') === -1, 'should escape <');
+      ok(result.indexOf('>') === -1, 'should escape >');
+      ok(result.indexOf('&amp;') !== -1, 'should escape &');
+    });
+
+    suite('Lab — HTML generators');
+
+    assert('voteBtn produces button with correct attributes', function() {
+      var html = L_voteBtn('initial', 'yes', 'YES', 'yes');
+      ok(html.indexOf('data-action="vote"') !== -1);
+      ok(html.indexOf('data-kind="initial"') !== -1);
+      ok(html.indexOf('data-val="yes"') !== -1);
+      ok(html.indexOf('selected') !== -1);
+    });
+
+    assert('voteBtn without selection has no selected class', function() {
+      var html = L_voteBtn('initial', 'yes', 'YES', 'no');
+      ok(html.indexOf('selected') === -1);
+    });
+
+    assert('toggleBtn marks active state correctly', function() {
+      var html = L_toggleBtn(0, 'present', '✓', 'present');
+      ok(html.indexOf('active') !== -1);
+      var html2 = L_toggleBtn(0, 'present', '✓', 'absent');
+      ok(html2.indexOf('active') === -1);
+    });
+
+    assert('geoDecor produces positioned div', function() {
+      var html = L_geoDecor('#ff0000', 10, 20, 'circle', 0.1);
+      ok(html.indexOf('position:absolute') !== -1);
+      ok(html.indexOf('border-radius:50%') !== -1);
+      ok(html.indexOf('#ff0000') !== -1);
+    });
+
+    assert('renderTallyBar returns empty for zero votes', function() {
+      eq(L_renderTallyBar({ yes: 0, no: 0, ambivalent: 0 }), '');
+    });
+
+    assert('renderTallyBar produces segments for non-zero votes', function() {
+      var html = L_renderTallyBar({ yes: 5, no: 3, ambivalent: 2 });
+      ok(html.indexOf('tally-seg') !== -1);
+      ok(html.indexOf('50%') !== -1); // 5/10 = 50%
+    });
+
+    assert('renderMiniChart produces rows for each characteristic', function() {
+      var profile = L_CHARS.map(function(c) {
+        return { id: c.id, name: c.name, hex: c.hex, strength: 1, status: 'ambiguous' };
+      });
+      var html = L_renderMiniChart(profile, 'test');
+      var count = (html.match(/mini-bar-row/g) || []).length;
+      eq(count, 8);
+    });
+
+    assert('renderTriangleSVG produces valid SVG', function() {
+      var svg = L_renderTriangleSVG();
+      ok(svg.indexOf('<svg') !== -1);
+      ok(svg.indexOf('</svg>') !== -1);
+    });
+
+    suite('Lab — Render functions produce HTML');
+
+    assert('renderReveal returns non-empty HTML with case info', function() {
+      var html = L_renderReveal();
+      ok(html.length > 100);
+      ok(html.indexOf('CASE') !== -1);
+      ok(html.indexOf('vote-btn') !== -1);
+    });
+
+    assert('renderInvestigate returns HTML with 8 characteristic rows', function() {
+      var html = L_renderInvestigate();
+      var rows = (html.match(/char-row/g) || []).length;
+      ok(rows >= 8, 'expected at least 8 char-row occurrences, got ' + rows);
+    });
+
+    assert('renderProfile returns HTML with bar chart', function() {
+      var html = L_renderProfile();
+      ok(html.indexOf('bar-track') !== -1);
+    });
+
+    assert('renderCases returns HTML with case cards', function() {
+      var html = L_renderCases();
+      ok(html.indexOf('case-card') !== -1);
+    });
+
+    // =====================================================
+    // LAB — getCaseDomains / getCondition
+    // =====================================================
+
+    suite('Lab — Domain and Condition Lookup');
+
+    assert('getCaseDomains returns domains for case 0', function() {
+      var domains = L_getCaseDomains(0);
+      ok(domains.length >= 2, 'expected at least 2 domains');
+    });
+
+    assert('getCondition finds a valid condition', function() {
+      var domains = L_getCaseDomains(0);
+      var firstCond = domains[0].conditions[0];
+      var result = L_getCondition(firstCond.id);
+      ok(result !== null, 'condition not found');
+      eq(result.condition.id, firstCond.id);
+    });
+
+    assert('getCondition returns null for invalid id', function() {
+      eq(L_getCondition('nonexistent-condition-xyz'), null);
+    });
+
+    // =====================================================
+    // ENCODING
+    // =====================================================
+
+    suite('Encoding — UTF-8 declaration');
+
+    assert('lab.html has meta charset=utf-8', function() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'third-place-lab.html', false);
+      xhr.send();
+      ok(xhr.responseText.indexOf('charset="utf-8"') !== -1 || xhr.responseText.indexOf("charset='utf-8'") !== -1 || xhr.responseText.indexOf('charset=utf-8') !== -1,
+        'missing meta charset');
+    });
+
+    assert('decoder.html has meta charset=utf-8', function() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'third-place-decoder.html', false);
+      xhr.send();
+      ok(xhr.responseText.indexOf('charset="utf-8"') !== -1 || xhr.responseText.indexOf("charset='utf-8'") !== -1 || xhr.responseText.indexOf('charset=utf-8') !== -1,
+        'missing meta charset');
+    });
+
+    // =====================================================
+    // SUMMARY
+    // =====================================================
+
+    var total = passed + failed;
+    var summaryEl = document.getElementById('summary');
+    summaryEl.innerHTML = '<span class="' + (failed ? 'fail' : 'pass') + '">'
+      + passed + '/' + total + ' passed'
+      + (failed ? ', ' + failed + ' failed' : '')
+      + '</span>';
+    document.title = (failed ? '✗ ' : '✓ ') + passed + '/' + total + ' — Third Places Tests';
+  }
+
+  loadScripts(runTests);
+})();
+</script>
