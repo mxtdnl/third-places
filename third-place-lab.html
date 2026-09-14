@@ -1106,7 +1106,7 @@ SVG['common'] = '<svg viewBox="0 0 600 350" xmlns="http://www.w3.org/2000/svg">'
   +'<circle cx="418" cy="252" r="1.5" fill="#F2DFBE" opacity="0.25"/>'
   +'</svg>';
 
-var COMMON_P1 = 'COMMON is a café on the ground floor of a newly built housing development in an inner-city neighbourhood. It was written into the planning permission as a “community amenity space” and is operated by a small social enterprise, not a chain. The café serves affordable coffee, tea, and simple food. Entry is free — no purchase required to sit. It has a long communal table, a few smaller tables, a children’s corner with books and crayons, and a community notice board. It is open 8am–8pm, seven days a week.';
+var COMMON_P1 = 'COMMON is a café on the ground floor of a newly built housing development in an inner-city neighbourhood. It was written into the planning permission as a "community amenity space" and is operated by a small social enterprise, not a chain. The café serves affordable coffee, tea, and simple food. Entry is free — no purchase required to sit. It has a long communal table, a few smaller tables, a children’s corner with books and crayons, and a community notice board. It is open 8am–8pm, seven days a week.';
 
 var COMMON_P2 = 'The café quickly becomes a focal point for the development’s residents. A group of retirees meets every morning. Parents gather after school drop-off. Freelancers use it as a workspace in quieter hours. Staff learn regulars’ names and orders. Conversation flows freely between groups — the retirees swap gardening advice with younger residents; a freelancer helps a retiree set up their new phone. There is no dress code, no minimum spend, and no booking system. The furniture is functional and slightly scuffed. The atmosphere is warm and unhurried.';
 
@@ -1114,91 +1114,91 @@ var COMMON_P2 = 'The café quickly becomes a focal point for the development’s
 // STRESS TEST DATA — case-specific
 // ============================================================
 var STRESS_DOMAINS = {
-  ‘university-cafe’: [
+  'university-cafe': [
     {
-      id: ‘psychological’, label: ‘Psychological / Social’, color: ‘#7E58A8’,
+      id: 'psychological', label: 'Psychological / Social', color: '#7E58A8',
       conditions: [
-        { id: ‘cr-clique’, name: ‘In-Group Closure’,
-          intervention: ‘The postgrad regulars develop such strong in-group norms — inside jokes, claimed seating, a WhatsApp group they reference in front of newcomers — that an undergraduate posts on the student forum: "The Common Room is basically a postgrad private club. Don’t bother unless you know them."’,
-          chain: [‘THE POSTGRAD GROUP’S IN-JOKES AND CLAIMED SEATING CREATE AN INSIDER BARRIER’, ‘UNDERGRADUATES AND NEWCOMERS FEEL THEY’RE INTRUDING’, ‘THE SPACE BECOMES IDENTIFIED WITH ONE GROUP’S SENIORITY’, ‘REGULARS FUNCTION AS GATEKEEPERS RATHER THAN WELCOMERS’, ‘ONLY THE IN-GROUP FEELS AT HOME — FOR EVERYONE ELSE THE SPACE IS EXCLUSIONARY’] },
-        { id: ‘cr-theft’, name: ‘Theft Scare’,
-          intervention: ‘A spate of laptop thefts in the building is reported in the campus newsletter. Students begin guarding their bags, sitting at individual tables instead of the sofas, and avoiding leaving belongings unattended — even briefly.’,
-          chain: [‘FEAR OF THEFT MAKES STUDENTS PROTECTIVE AND TERRITORIAL’, ‘THE OPEN-SOFA CULTURE IS REPLACED BY INDIVIDUAL TABLE-CLAIMING’, ‘SPONTANEOUS CONVERSATION BETWEEN STRANGERS DECLINES’, ‘THE ATMOSPHERE SHIFTS FROM COMMUNAL TO GUARDED’, ‘WARMTH AND MUTUAL TRUST BETWEEN REGULARS ERODE’] },
-        { id: ‘cr-photoshoot’, name: ‘Prospectus Photoshoot’,
-          intervention: ‘The university marketing team selects the café for prospectus and recruitment photoshoots. Twice a month, staging crews rearrange furniture, place branded props, and ask regulars to move.’,
-          chain: [‘THE SPACE IS PERIODICALLY COMMANDEERED FOR INSTITUTIONAL PURPOSES’, ‘REGULARS LOSE THEIR SENSE OF OWNERSHIP AND ROUTINE’, ‘THE CAFÉ’S IMAGE IS CURATED FOR OUTSIDERS, NOT ITS USERS’, ‘THE LOW-PROFILE, LIVED-IN CHARACTER IS DISRUPTED’, ‘THE SPACE BEGINS TO FEEL LIKE A UNIVERSITY SHOWCASE, NOT A HANGOUT’] }
+        { id: 'cr-clique', name: 'In-Group Closure',
+          intervention: 'The postgrad regulars develop such strong in-group norms — inside jokes, claimed seating, a WhatsApp group they reference in front of newcomers — that an undergraduate posts on the student forum: "The Common Room is basically a postgrad private club. Don\'t bother unless you know them."',
+          chain: ['THE POSTGRAD GROUP\'S IN-JOKES AND CLAIMED SEATING CREATE AN INSIDER BARRIER', 'UNDERGRADUATES AND NEWCOMERS FEEL THEY\'RE INTRUDING', 'THE SPACE BECOMES IDENTIFIED WITH ONE GROUP\'S SENIORITY', 'REGULARS FUNCTION AS GATEKEEPERS RATHER THAN WELCOMERS', 'ONLY THE IN-GROUP FEELS AT HOME — FOR EVERYONE ELSE THE SPACE IS EXCLUSIONARY'] },
+        { id: 'cr-theft', name: 'Theft Scare',
+          intervention: 'A spate of laptop thefts in the building is reported in the campus newsletter. Students begin guarding their bags, sitting at individual tables instead of the sofas, and avoiding leaving belongings unattended — even briefly.',
+          chain: ['FEAR OF THEFT MAKES STUDENTS PROTECTIVE AND TERRITORIAL', 'THE OPEN-SOFA CULTURE IS REPLACED BY INDIVIDUAL TABLE-CLAIMING', 'SPONTANEOUS CONVERSATION BETWEEN STRANGERS DECLINES', 'THE ATMOSPHERE SHIFTS FROM COMMUNAL TO GUARDED', 'WARMTH AND MUTUAL TRUST BETWEEN REGULARS ERODE'] },
+        { id: 'cr-photoshoot', name: 'Prospectus Photoshoot',
+          intervention: 'The university marketing team selects the café for prospectus and recruitment photoshoots. Twice a month, staging crews rearrange furniture, place branded props, and ask regulars to move.',
+          chain: ['THE SPACE IS PERIODICALLY COMMANDEERED FOR INSTITUTIONAL PURPOSES', 'REGULARS LOSE THEIR SENSE OF OWNERSHIP AND ROUTINE', 'THE CAFÉ\'S IMAGE IS CURATED FOR OUTSIDERS, NOT ITS USERS', 'THE LOW-PROFILE, LIVED-IN CHARACTER IS DISRUPTED', 'THE SPACE BEGINS TO FEEL LIKE A UNIVERSITY SHOWCASE, NOT A HANGOUT'] }
       ]
     },
     {
-      id: ‘economic’, label: ‘Economic’, color: ‘#D4A020’,
+      id: 'economic', label: 'Economic', color: '#D4A020',
       conditions: [
-        { id: ‘cr-subsidy’, name: ‘Subsidy Cut’,
-          intervention: ‘The university cuts the café’s catering subsidy as part of a budget review. Coffee rises from £1.50 to £3.50, the operator introduces branded packaging and a loyalty-card scheme to stay viable, and the donated bookshelf is replaced with a retail snack display.’,
-          chain: [‘SUBSIDISED PRICING WAS KEY TO DROP-IN CULTURE — COMMERCIAL RATES PRICE OUT DAILY VISITORS’, ‘THE PRICE GAP HITS HARDEST BETWEEN FUNDED POSTGRADS AND UNDERGRADS ON MAINTENANCE LOANS’, ‘BRANDED PACKAGING AND RETAIL DISPLAYS REPLACE THE HOMELY FEEL’, ‘SOME REGULARS CAN NO LONGER AFFORD DAILY VISITS — THE GROUP THINS’, ‘THE DONATED BOOKSHELF’S LOSS REMOVES A MARKER OF COMMUNAL OWNERSHIP’] },
-        { id: ‘cr-vending’, name: ‘Vending Machines’,
-          intervention: ‘The university replaces the subsidised counter service with self-service vending machines and a contactless coffee-pod system to cut staffing costs. The barista who knew everyone’s name is gone.’,
-          chain: [‘STAFF WHO KNEW REGULARS BY NAME ARE REMOVED’, ‘THE HUMAN POINT OF SOCIAL CONNECTION AT THE COUNTER DISAPPEARS’, ‘THE SPACE BECOMES SELF-SERVICE AND TRANSACTIONAL’, ‘WITHOUT STAFF AS SOCIAL ANCHORS, NEWCOMERS HAVE NO ENTRY POINT’, ‘THE CAFÉ FEELS LIKE A VENDING AREA, NOT A GATHERING PLACE’] },
-        { id: ‘cr-premium’, name: ‘Premium Corner’,
-          intervention: ‘The café operator introduces a "Study Plus" zone: the best sofas, power outlets, and fastest Wi-Fi are roped off behind a £2/hour paywall, leaving the free area with hard chairs and no charging points.’,
-          chain: [‘THE BEST SEATING BECOMES PAY-TO-USE’, ‘A VISIBLE TWO-TIER SYSTEM EMERGES WITHIN THE SAME SPACE’, ‘THE FREE AREA FEELS DOWNGRADED — STUDENTS WITHOUT MEANS SIT IN WORSE CONDITIONS’, ‘THE LEVELLING FUNCTION COLLAPSES — FINANCIAL STATUS DETERMINES YOUR EXPERIENCE’, ‘THE POSTGRAD GROUP MIGRATES TO PREMIUM; THE COMMUNAL MIXING ENDS’] }
+        { id: 'cr-subsidy', name: 'Subsidy Cut',
+          intervention: 'The university cuts the café\'s catering subsidy as part of a budget review. Coffee rises from £1.50 to £3.50, the operator introduces branded packaging and a loyalty-card scheme to stay viable, and the donated bookshelf is replaced with a retail snack display.',
+          chain: ['SUBSIDISED PRICING WAS KEY TO DROP-IN CULTURE — COMMERCIAL RATES PRICE OUT DAILY VISITORS', 'THE PRICE GAP HITS HARDEST BETWEEN FUNDED POSTGRADS AND UNDERGRADS ON MAINTENANCE LOANS', 'BRANDED PACKAGING AND RETAIL DISPLAYS REPLACE THE HOMELY FEEL', 'SOME REGULARS CAN NO LONGER AFFORD DAILY VISITS — THE GROUP THINS', 'THE DONATED BOOKSHELF\'S LOSS REMOVES A MARKER OF COMMUNAL OWNERSHIP'] },
+        { id: 'cr-vending', name: 'Vending Machines',
+          intervention: 'The university replaces the subsidised counter service with self-service vending machines and a contactless coffee-pod system to cut staffing costs. The barista who knew everyone\'s name is gone.',
+          chain: ['STAFF WHO KNEW REGULARS BY NAME ARE REMOVED', 'THE HUMAN POINT OF SOCIAL CONNECTION AT THE COUNTER DISAPPEARS', 'THE SPACE BECOMES SELF-SERVICE AND TRANSACTIONAL', 'WITHOUT STAFF AS SOCIAL ANCHORS, NEWCOMERS HAVE NO ENTRY POINT', 'THE CAFÉ FEELS LIKE A VENDING AREA, NOT A GATHERING PLACE'] },
+        { id: 'cr-premium', name: 'Premium Corner',
+          intervention: 'The café operator introduces a "Study Plus" zone: the best sofas, power outlets, and fastest Wi-Fi are roped off behind a £2/hour paywall, leaving the free area with hard chairs and no charging points.',
+          chain: ['THE BEST SEATING BECOMES PAY-TO-USE', 'A VISIBLE TWO-TIER SYSTEM EMERGES WITHIN THE SAME SPACE', 'THE FREE AREA FEELS DOWNGRADED — STUDENTS WITHOUT MEANS SIT IN WORSE CONDITIONS', 'THE LEVELLING FUNCTION COLLAPSES — FINANCIAL STATUS DETERMINES YOUR EXPERIENCE', 'THE POSTGRAD GROUP MIGRATES TO PREMIUM; THE COMMUNAL MIXING ENDS'] }
       ]
     },
     {
-      id: ‘political’, label: ‘Political’, color: ‘#B52838’,
+      id: 'political', label: 'Political', color: '#B52838',
       conditions: [
-        { id: ‘cr-study-space’, name: ‘Bookable Study Space’,
-          intervention: ‘The university estates department reclassifies the café as a “bookable study space” during exam season (10am–4pm), requiring student-ID scans at the door and enforcing a quiet-use policy. The postgrad group is told to book a slot or use the space outside peak hours.’,
-          chain: [‘ID SCANNING AND BOOKING REPLACE FREE, ANONYMOUS DROP-IN ACCESS’, ‘CASUAL USE IS RESTRICTED TO THE MARGINS OF THE DAY’, ‘THE QUIET-USE POLICY DIRECTLY SUPPRESSES CONVERSATION’, ‘THE AFTERNOON POSTGRAD GROUP LOSES ITS UNSPOKEN CLAIM TO THE CORNER’, ‘STUDY-ZONE NORMS SUPPRESS BANTER AND DISPLACE INFORMALITY’] },
-        { id: ‘cr-visitor-policy’, name: ‘Visitor Policy’,
-          intervention: ‘Following a safeguarding review, the university mandates that all non-student visitors must present photo ID and be signed in by a staff member. Friends visiting from other universities, partners, and community members can no longer just walk in.’,
-          chain: [‘EXTERNAL VISITORS FACE A FORMAL GATEKEEPING PROCESS’, ‘THE CAFÉ’S CONNECTION TO THE WIDER COMMUNITY IS SEVERED’, ‘THE VISITOR MIX NARROWS TO ENROLLED STUDENTS AND STAFF ONLY’, ‘THE LEVELLING FUNCTION WEAKENS — THE SPACE NOW SELECTS BY INSTITUTIONAL AFFILIATION’, ‘NEUTRAL GROUND ERODES WHEN ENTRY IS CONDITIONAL ON CREDENTIALS’] },
-        { id: ‘cr-noise’, name: ‘Noise Complaint’,
-          intervention: ‘After complaints from the adjacent lecture theatre, the university installs a noise limiter that flashes a warning light when conversation exceeds 55 decibels. Persistent breaches trigger an automatic email to the café operator.’,
-          chain: [‘A VISIBLE NOISE MONITOR CREATES CONSTANT AWARENESS OF VOLUME’, ‘GROUP LAUGHTER AND ANIMATED CONVERSATION ARE SELF-POLICED’, ‘THE PLAYFUL MOOD IS SUPPRESSED BY MECHANICAL ENFORCEMENT’, ‘THE CAFÉ’S SOCIAL ATMOSPHERE BECOMES LIBRARY-LIKE’, ‘CONVERSATION CEASES TO BE THE MAIN ACTIVITY — QUIET SOLO WORK DOMINATES’] }
+        { id: 'cr-study-space', name: 'Bookable Study Space',
+          intervention: 'The university estates department reclassifies the café as a "bookable study space" during exam season (10am–4pm), requiring student-ID scans at the door and enforcing a quiet-use policy. The postgrad group is told to book a slot or use the space outside peak hours.',
+          chain: ['ID SCANNING AND BOOKING REPLACE FREE, ANONYMOUS DROP-IN ACCESS', 'CASUAL USE IS RESTRICTED TO THE MARGINS OF THE DAY', 'THE QUIET-USE POLICY DIRECTLY SUPPRESSES CONVERSATION', 'THE AFTERNOON POSTGRAD GROUP LOSES ITS UNSPOKEN CLAIM TO THE CORNER', 'STUDY-ZONE NORMS SUPPRESS BANTER AND DISPLACE INFORMALITY'] },
+        { id: 'cr-visitor-policy', name: 'Visitor Policy',
+          intervention: 'Following a safeguarding review, the university mandates that all non-student visitors must present photo ID and be signed in by a staff member. Friends visiting from other universities, partners, and community members can no longer just walk in.',
+          chain: ['EXTERNAL VISITORS FACE A FORMAL GATEKEEPING PROCESS', 'THE CAFÉ\'S CONNECTION TO THE WIDER COMMUNITY IS SEVERED', 'THE VISITOR MIX NARROWS TO ENROLLED STUDENTS AND STAFF ONLY', 'THE LEVELLING FUNCTION WEAKENS — THE SPACE NOW SELECTS BY INSTITUTIONAL AFFILIATION', 'NEUTRAL GROUND ERODES WHEN ENTRY IS CONDITIONAL ON CREDENTIALS'] },
+        { id: 'cr-noise', name: 'Noise Complaint',
+          intervention: 'After complaints from the adjacent lecture theatre, the university installs a noise limiter that flashes a warning light when conversation exceeds 55 decibels. Persistent breaches trigger an automatic email to the café operator.',
+          chain: ['A VISIBLE NOISE MONITOR CREATES CONSTANT AWARENESS OF VOLUME', 'GROUP LAUGHTER AND ANIMATED CONVERSATION ARE SELF-POLICED', 'THE PLAYFUL MOOD IS SUPPRESSED BY MECHANICAL ENFORCEMENT', 'THE CAFÉ\'S SOCIAL ATMOSPHERE BECOMES LIBRARY-LIKE', 'CONVERSATION CEASES TO BE THE MAIN ACTIVITY — QUIET SOLO WORK DOMINATES'] }
       ]
     }
   ],
-  ‘chain-coffee’: [
+  'chain-coffee': [
     {
-      id: ‘psychological’, label: ‘Psychological / Social’, color: ‘#7E58A8’,
+      id: 'psychological', label: 'Psychological / Social', color: '#7E58A8',
       conditions: [
-        { id: ‘sb-tiktok’, name: ‘TikTok Viral’,
-          intervention: ‘A TikTok trend makes this specific branch go viral as “the aesthetic study spot.” Students and content creators queue for the window seats, stage flat-lays of their drinks for content, and shush anyone whose conversation disrupts their filming.’,
-          chain: [‘THE ALREADY-WEAK CONVERSATIONAL CULTURE IS ACTIVELY SUPPRESSED BY PATRONS POLICING NOISE’, ‘THE BRANCH BECOMES A DESTINATION — “AESTHETIC” FRAMING DOUBLES DOWN ON CURATED APPEARANCE’, ‘EXISTING PATRONS WHO JUST WANT COFFEE FEEL DISPLACED’, ‘SELF-PRESENTATION AND PERFORMANCE REPLACE ANY REMAINING SPONTANEITY’, ‘THE ATMOSPHERE BECOMES PERFORMATIVE, NOT PLAYFUL’] },
-        { id: ‘sb-laptop-territory’, name: ‘Laptop Territory’,
-          intervention: ‘Remote workers begin treating the branch as an unofficial co-working space, spreading across multiple seats with monitors, ring lights, and “do not disturb” signs. A retired couple looking for somewhere to chat is told by another customer: “People are trying to work here.”’,
-          chain: [‘REMOTE WORKERS CLAIM TABLES AS PERSONAL OFFICES’, ‘SOCIAL USE OF THE SPACE BECOMES STIGMATISED’, ‘NON-WORKERS FEEL UNWELCOME DURING BUSINESS HOURS’, ‘THE DOMINANT NORM SHIFTS FROM PUBLIC CAFÉ TO SHARED WORKSPACE’, ‘ANY REMAINING THIRD-PLACE QUALITIES ARE SUPPRESSED BY PRODUCTIVITY CULTURE’] },
-        { id: ‘sb-anti-social’, name: ‘Teenager Hangout’,
-          intervention: ‘A group of teenagers begins using the branch as a daily after-school hangout, playing music from phones and leaving mess. Other customers complain. Starbucks responds with “respectful use” signage, 30-minute time limits for under-18s, and staff patrols.’,
-          chain: [‘MANAGEMENT INTRODUCES AGE-TARGETED RESTRICTIONS’, ‘THE SPACE SIGNALS THAT SOME USERS ARE LESS WELCOME THAN OTHERS’, ‘THE LEVELLING FUNCTION WEAKENS — ACCESS BECOMES CONDITIONAL ON BEHAVIOUR POLICING’, ‘SURVEILLANCE AND SIGNAGE MAKE THE SPACE FEEL INSTITUTIONAL’, ‘INFORMALITY AND PLAYFULNESS ARE SUPPRESSED BY ENFORCEMENT’] }
+        { id: 'sb-tiktok', name: 'TikTok Viral',
+          intervention: 'A TikTok trend makes this specific branch go viral as "the aesthetic study spot." Students and content creators queue for the window seats, stage flat-lays of their drinks for content, and shush anyone whose conversation disrupts their filming.',
+          chain: ['THE ALREADY-WEAK CONVERSATIONAL CULTURE IS ACTIVELY SUPPRESSED BY PATRONS POLICING NOISE', 'THE BRANCH BECOMES A DESTINATION — "AESTHETIC" FRAMING DOUBLES DOWN ON CURATED APPEARANCE', 'EXISTING PATRONS WHO JUST WANT COFFEE FEEL DISPLACED', 'SELF-PRESENTATION AND PERFORMANCE REPLACE ANY REMAINING SPONTANEITY', 'THE ATMOSPHERE BECOMES PERFORMATIVE, NOT PLAYFUL'] },
+        { id: 'sb-laptop-territory', name: 'Laptop Territory',
+          intervention: 'Remote workers begin treating the branch as an unofficial co-working space, spreading across multiple seats with monitors, ring lights, and "do not disturb" signs. A retired couple looking for somewhere to chat is told by another customer: "People are trying to work here."',
+          chain: ['REMOTE WORKERS CLAIM TABLES AS PERSONAL OFFICES', 'SOCIAL USE OF THE SPACE BECOMES STIGMATISED', 'NON-WORKERS FEEL UNWELCOME DURING BUSINESS HOURS', 'THE DOMINANT NORM SHIFTS FROM PUBLIC CAFÉ TO SHARED WORKSPACE', 'ANY REMAINING THIRD-PLACE QUALITIES ARE SUPPRESSED BY PRODUCTIVITY CULTURE'] },
+        { id: 'sb-anti-social', name: 'Teenager Hangout',
+          intervention: 'A group of teenagers begins using the branch as a daily after-school hangout, playing music from phones and leaving mess. Other customers complain. Starbucks responds with "respectful use" signage, 30-minute time limits for under-18s, and staff patrols.',
+          chain: ['MANAGEMENT INTRODUCES AGE-TARGETED RESTRICTIONS', 'THE SPACE SIGNALS THAT SOME USERS ARE LESS WELCOME THAN OTHERS', 'THE LEVELLING FUNCTION WEAKENS — ACCESS BECOMES CONDITIONAL ON BEHAVIOUR POLICING', 'SURVEILLANCE AND SIGNAGE MAKE THE SPACE FEEL INSTITUTIONAL', 'INFORMALITY AND PLAYFULNESS ARE SUPPRESSED BY ENFORCEMENT'] }
       ]
     },
     {
-      id: ‘economic’, label: ‘Economic’, color: ‘#D4A020’,
+      id: 'economic', label: 'Economic', color: '#D4A020',
       conditions: [
-        { id: ‘sb-digital-refit’, name: ‘Digital-First Refit’,
-          intervention: ‘Starbucks HQ mandates a “digital-first” refit: half the seating is removed to expand the click-and-collect counter, a 90-minute seat time limit is enforced via timed receipts, and the average drink price rises 20% to £5.40.’,
-          chain: [‘TIME LIMITS AND REDUCED SEATING ELIMINATE LINGERING’, ‘TIME PRESSURE DISCOURAGES THE ALREADY-WEAK EXTENDED INTERACTION’, ‘A TIMED VISIT CANNOT PRODUCE ROOTEDNESS — THE SPACE BECOMES PURELY TRANSACTIONAL’, ‘HIGHER PRICES TIGHTEN THE ECONOMIC FILTER FURTHER’, ‘THE SPACE IS OPTIMISED FOR THROUGHPUT, NOT DWELLING’] },
-        { id: ‘sb-app-only’, name: ‘App-Only Ordering’,
-          intervention: ‘Starbucks makes its loyalty app mandatory for all in-store orders, ending cash and contactless card payments. Ordering requires creating an account with name, email, and phone number.’,
-          chain: [‘CASH-PAYING AND TECH-AVERSE CUSTOMERS ARE EXCLUDED’, ‘THE BARRIER SHIFTS FROM PRICE TO DIGITAL ACCESS’, ‘OLDER VISITORS AND THOSE WITHOUT SMARTPHONES ARE LOCKED OUT’, ‘THE ALREADY-NARROW DEMOGRAPHIC NARROWS FURTHER’, ‘ANONYMOUS, CASUAL DROP-IN USE BECOMES IMPOSSIBLE’] },
-        { id: ‘sb-delivery-hub’, name: ‘Delivery Hub’,
-          intervention: ‘The branch becomes a Deliveroo/Uber Eats fulfilment hub. 40% of orders are now for delivery riders. A dedicated collection point and staging area replace the communal seating near the counter, and a stream of riders enters and exits throughout the day.’,
-          chain: [‘DELIVERY LOGISTICS CONSUME PHYSICAL SPACE AND STAFF ATTENTION’, ‘THE SEATING AREA SHRINKS AND MOVES AWAY FROM THE COUNTER’, ‘THE CONSTANT FLOW OF RIDERS CREATES A TRANSIENT, LOGISTICAL ATMOSPHERE’, ‘THE BRANCH FEELS MORE LIKE A KITCHEN THAN A CAFÉ’, ‘ANY REMAINING SOCIAL FUNCTION IS SUBORDINATED TO DELIVERY THROUGHPUT’] }
+        { id: 'sb-digital-refit', name: 'Digital-First Refit',
+          intervention: 'Starbucks HQ mandates a "digital-first" refit: half the seating is removed to expand the click-and-collect counter, a 90-minute seat time limit is enforced via timed receipts, and the average drink price rises 20% to £5.40.',
+          chain: ['TIME LIMITS AND REDUCED SEATING ELIMINATE LINGERING', 'TIME PRESSURE DISCOURAGES THE ALREADY-WEAK EXTENDED INTERACTION', 'A TIMED VISIT CANNOT PRODUCE ROOTEDNESS — THE SPACE BECOMES PURELY TRANSACTIONAL', 'HIGHER PRICES TIGHTEN THE ECONOMIC FILTER FURTHER', 'THE SPACE IS OPTIMISED FOR THROUGHPUT, NOT DWELLING'] },
+        { id: 'sb-app-only', name: 'App-Only Ordering',
+          intervention: 'Starbucks makes its loyalty app mandatory for all in-store orders, ending cash and contactless card payments. Ordering requires creating an account with name, email, and phone number.',
+          chain: ['CASH-PAYING AND TECH-AVERSE CUSTOMERS ARE EXCLUDED', 'THE BARRIER SHIFTS FROM PRICE TO DIGITAL ACCESS', 'OLDER VISITORS AND THOSE WITHOUT SMARTPHONES ARE LOCKED OUT', 'THE ALREADY-NARROW DEMOGRAPHIC NARROWS FURTHER', 'ANONYMOUS, CASUAL DROP-IN USE BECOMES IMPOSSIBLE'] },
+        { id: 'sb-delivery-hub', name: 'Delivery Hub',
+          intervention: 'The branch becomes a Deliveroo/Uber Eats fulfilment hub. 40% of orders are now for delivery riders. A dedicated collection point and staging area replace the communal seating near the counter, and a stream of riders enters and exits throughout the day.',
+          chain: ['DELIVERY LOGISTICS CONSUME PHYSICAL SPACE AND STAFF ATTENTION', 'THE SEATING AREA SHRINKS AND MOVES AWAY FROM THE COUNTER', 'THE CONSTANT FLOW OF RIDERS CREATES A TRANSIENT, LOGISTICAL ATMOSPHERE', 'THE BRANCH FEELS MORE LIKE A KITCHEN THAN A CAFÉ', 'ANY REMAINING SOCIAL FUNCTION IS SUBORDINATED TO DELIVERY THROUGHPUT'] }
       ]
     },
     {
-      id: ‘political’, label: ‘Political’, color: ‘#B52838’,
+      id: 'political', label: 'Political', color: '#B52838',
       conditions: [
-        { id: ‘sb-community-levy’, name: ‘Community Levy’,
-          intervention: ‘The council introduces a “high street community levy” on chain outlets with more than 10 UK branches. Starbucks complies by partitioning off 30% of its floorspace as a “free community area” — no purchase required — but furnishes it with hard plastic chairs and separates it from the main café with a glass divider.’,
-          chain: [‘THE PARTITION CREATES A VISIBLE TWO-TIER SYSTEM’, ‘PAYING CUSTOMERS SIT IN COMFORT; NON-PAYING VISITORS SIT IN A STRIPPED-DOWN ANNEX’, ‘THE GLASS DIVIDER MAKES NON-PAYING VISITORS CONSPICUOUS’, ‘FREEDOM FROM OBLIGATION IS UNDERMINED BY VISIBILITY OF ECONOMIC STATUS’, ‘THE COMMUNITY AREA COULD THEORETICALLY ENABLE INTERACTION BUT HARD FURNITURE DISCOURAGES STAYING’] },
-        { id: ‘sb-hours-cut’, name: ‘Licence Restriction’,
-          intervention: ‘The council revokes the branch’s extended-hours licence after high-street anti-social behaviour complaints, cutting closing time from 8:30pm to 5:30pm.’,
-          chain: [‘THE AFTER-WORK WINDOW — STARBUCKS’S ONE REMAINING ACCESSIBILITY STRENGTH — IS ELIMINATED’, ‘EVENING VISITORS LOSE THEIR REGULAR STOP’, ‘THE SPACE SERVES ONLY DAYTIME COMMUTERS AND WORKERS’, ‘ANY NASCENT EVENING REGULAR PATTERN IS DESTROYED’, ‘THE SPACE BECOMES A PURELY FUNCTIONAL DAYTIME PIT STOP’] },
-        { id: ‘sb-pavement-ban’, name: ‘Pavement Seating Ban’,
-          intervention: ‘The council bans pavement seating on the high street to improve pedestrian flow. Starbucks loses its four outdoor tables — the only seating where conversation happened naturally, away from the laptop-dominated interior.’,
-          chain: [‘THE ONLY INFORMAL, CONVERSATION-FRIENDLY SEATING IS REMOVED’, ‘ALL VISITORS ARE FUNNELLED INTO THE LAPTOP-DOMINATED INTERIOR’, ‘THE ALREADY-WEAK CONVERSATIONAL CULTURE LOSES ITS LAST PHYSICAL NICHE’, ‘THE SPACE BECOMES ENTIRELY A SOLO-WORK ENVIRONMENT’, ‘THE FUNCTIONAL, QUIET ATMOSPHERE HARDENS INTO THE UNCHALLENGED NORM’] }
+        { id: 'sb-community-levy', name: 'Community Levy',
+          intervention: 'The council introduces a "high street community levy" on chain outlets with more than 10 UK branches. Starbucks complies by partitioning off 30% of its floorspace as a "free community area" — no purchase required — but furnishes it with hard plastic chairs and separates it from the main café with a glass divider.',
+          chain: ['THE PARTITION CREATES A VISIBLE TWO-TIER SYSTEM', 'PAYING CUSTOMERS SIT IN COMFORT; NON-PAYING VISITORS SIT IN A STRIPPED-DOWN ANNEX', 'THE GLASS DIVIDER MAKES NON-PAYING VISITORS CONSPICUOUS', 'FREEDOM FROM OBLIGATION IS UNDERMINED BY VISIBILITY OF ECONOMIC STATUS', 'THE COMMUNITY AREA COULD THEORETICALLY ENABLE INTERACTION BUT HARD FURNITURE DISCOURAGES STAYING'] },
+        { id: 'sb-hours-cut', name: 'Licence Restriction',
+          intervention: 'The council revokes the branch\'s extended-hours licence after high-street anti-social behaviour complaints, cutting closing time from 8:30pm to 5:30pm.',
+          chain: ['THE AFTER-WORK WINDOW — STARBUCKS\'S ONE REMAINING ACCESSIBILITY STRENGTH — IS ELIMINATED', 'EVENING VISITORS LOSE THEIR REGULAR STOP', 'THE SPACE SERVES ONLY DAYTIME COMMUTERS AND WORKERS', 'ANY NASCENT EVENING REGULAR PATTERN IS DESTROYED', 'THE SPACE BECOMES A PURELY FUNCTIONAL DAYTIME PIT STOP'] },
+        { id: 'sb-pavement-ban', name: 'Pavement Seating Ban',
+          intervention: 'The council bans pavement seating on the high street to improve pedestrian flow. Starbucks loses its four outdoor tables — the only seating where conversation happened naturally, away from the laptop-dominated interior.',
+          chain: ['THE ONLY INFORMAL, CONVERSATION-FRIENDLY SEATING IS REMOVED', 'ALL VISITORS ARE FUNNELLED INTO THE LAPTOP-DOMINATED INTERIOR', 'THE ALREADY-WEAK CONVERSATIONAL CULTURE LOSES ITS LAST PHYSICAL NICHE', 'THE SPACE BECOMES ENTIRELY A SOLO-WORK ENVIRONMENT', 'THE FUNCTIONAL, QUIET ATMOSPHERE HARDENS INTO THE UNCHALLENGED NORM'] }
       ]
     }
   ]
