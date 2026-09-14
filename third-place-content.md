@@ -228,37 +228,72 @@ A mid-sized public library offers free entry, comfortable seating areas, a child
 
 ## D. Stress Test Scenarios (Intervention Cards)
 
-### Card 1 — Economic Intervention
-**"The landlord doubles the rent on the space, forcing the operators to introduce a £5 cover charge and remove the free seating area."**
-
-Causal chain:
-- **Accessibility and Accommodation** ↓↓ — A cover charge converts a drop-in space into a pay-to-enter venue, eliminating spontaneous visits and pricing out lower-income patrons.
-- **Leveler** ↓ — The economic barrier reintroduces status differentiation; the space now selects for disposable income.
-- **The Regulars** ↓ — Some regulars can no longer afford frequent visits; the core group fragments, weakening the social tone-setting function.
-- **Home Away from Home** ↓ — Reduced frequency of visits erodes the sense of rootedness and mutual familiarity.
+Each case study has its own set of three intervention cards (Economic, Political, Psychological/Social), designed to reflect the specific conditions and vulnerabilities of that space.
 
 ---
 
-### Card 2 — Political Intervention
-**"The local council designates the space as a 'community safety zone,' installing CCTV, requiring photo-ID registration at the door, and banning alcohol."**
+### Case 1: The Common Room — Intervention Cards
+
+#### Card 1A — Economic Intervention
+**"The university cuts the café's catering subsidy as part of a budget review. Coffee rises from £1.50 to £3.50, the operator introduces branded packaging and a loyalty-card scheme to stay viable, and the donated bookshelf is replaced with a retail snack display."**
 
 Causal chain:
-- **Neutral Ground** ↓↓ — ID registration transforms voluntary, anonymous attendance into surveilled, documented attendance; the sense of freedom from entanglement collapses.
-- **Leveler** ↓ — ID requirements exclude undocumented individuals and create a formal gatekeeping mechanism; participation becomes conditional.
-- **Playful Mood** ↓ — Surveillance and regulation dampen informality and spontaneity; patrons self-censor; banter feels riskier.
-- **Low Profile** ↓ — CCTV cameras and registration desks make the space feel institutional rather than homely.
+- **Accessibility and Accommodation** ↓↓ — Subsidised pricing was key to drop-in culture; commercial rates price out students who visited daily.
+- **Leveler** ↓ — The price gap matters more between funded postgrads and undergrads on maintenance loans; the space begins to select for financial comfort.
+- **Low Profile** ↓ — Branded packaging and a retail display replace the homely, unpolished feel; the donated bookshelf was a symbol of communal ownership.
+- **The Regulars** ↓ — Some regulars can no longer afford daily visits; the afternoon group thins out.
+- **Home Away from Home** ↓ — Reduced frequency erodes rootedness; the loss of the bookshelf removes a tangible marker of shared ownership.
+
+#### Card 1B — Political Intervention
+**"The university estates department reclassifies the café as a 'bookable study space' during exam season (10am–4pm), requiring student-ID scans at the door and enforcing a quiet-use policy. The postgrad group is told to book a slot or use the space outside peak hours."**
+
+Causal chain:
+- **Neutral Ground** ↓↓ — ID scanning and booking replace free, anonymous drop-in access; attendance becomes logged and scheduled.
+- **Accessibility and Accommodation** ↓↓ — Casual use is restricted to the margins of the day, precisely when most students are on campus.
+- **Conversation** ↓↓ — The quiet-use policy directly suppresses the space's primary social activity.
+- **The Regulars** ↓ — The afternoon postgrad group loses its unspoken claim to the corner; the core disperses across campus.
+- **Playful Mood** ↓ — Study-zone norms suppress banter; the institutional frame displaces informality.
+
+#### Card 1C — Psychological/Social Intervention
+**"The postgrad regulars develop such strong in-group norms — inside jokes, claimed seating, a WhatsApp group they reference in front of newcomers — that an undergraduate posts on the student forum: 'The Common Room is basically a postgrad private club. Don't bother unless you know them.'"**
+
+Causal chain:
+- **Leveler** ↓↓ — The postgrad/undergrad divide reintroduces status hierarchy; the space becomes identified with one group's seniority.
+- **The Regulars** ↔ transformed — Regulars still exist but now function as gatekeepers rather than welcomers; their tone-setting role becomes exclusionary.
+- **Neutral Ground** ↓ — Newcomers feel they are intruding; the obligation-free quality erodes when entering requires social courage.
+- **Playful Mood** ↓ — The in-group humour excludes rather than includes; newcomers feel awkward, not amused.
+- **Home Away from Home** ↓ — Only the in-group feels at home; for everyone else the space feels exclusionary rather than anchoring.
 
 ---
 
-### Card 3 — Psychological/Social Intervention
-**"A celebrity influencer posts a viral review calling the space 'the coolest hidden gem in the city,' and footfall triples overnight with newcomers taking selfies."**
+### Case 2: Starbucks on the High Street — Intervention Cards
+
+#### Card 2A — Economic Intervention
+**"Starbucks HQ mandates a 'digital-first' refit: half the seating is removed to expand the click-and-collect counter, a 90-minute seat time limit is enforced via timed receipts, and the average drink price rises 20% to £5.40."**
 
 Causal chain:
-- **Low Profile** ↓↓ — The space is no longer unpretentious or under-the-radar; its identity shifts from neighbourhood hangout to destination.
-- **The Regulars** ↓ — The influx of transient visitors dilutes the regulars' presence; the established social tone is overwhelmed by newcomers who are there for the aesthetic, not the community.
-- **Playful Mood** ↓ — Self-presentation replaces playfulness; visitors perform for social media rather than engaging in banter.
-- **Home Away from Home** ↓ — Regulars no longer feel ownership; the space feels invaded; the warmth of mutual recognition is replaced by stranger-to-stranger anonymity.
-- **Conversation** ↓ — Overcrowding and selfie-taking displace conversation as the primary activity.
+- **Accessibility and Accommodation** ↓↓ — Time limits and reduced seating eliminate lingering; the space is optimised for throughput, not dwelling.
+- **Conversation** ↓ — Time pressure discourages the already-weak extended interaction; pairs cut visits short.
+- **Home Away from Home** ↓ — A timed visit cannot produce rootedness; the space becomes purely transactional.
+- **Leveler** ↓ — Higher prices tighten the economic filter that was already the space's weakest point.
+
+#### Card 2B — Political Intervention
+**"The council introduces a 'high street community levy' on chain outlets with more than 10 UK branches. Starbucks complies by partitioning off 30% of its floorspace as a 'free community area' — no purchase required — but furnishes it with hard plastic chairs and separates it from the main café with a glass divider."**
+
+Causal chain:
+- **Leveler** ↓ — The partition creates a visible two-tier system: paying customers in comfort on one side, non-paying visitors in a stripped-down annex on the other.
+- **Low Profile** ↔ — Still branded, but the community area introduces an awkwardly institutional element alongside the corporate aesthetic.
+- **Neutral Ground** ambiguous — The free area removes the purchase obligation, but the glass divider makes non-paying visitors conspicuous; freedom from obligation is undermined by visibility of economic status.
+- **Conversation** ↔ — The community area could theoretically enable interaction, but the hard furniture and physical separation from the main café discourage anyone from staying long enough to talk.
+
+#### Card 2C — Psychological/Social Intervention
+**"A TikTok trend makes this specific branch go viral as 'the aesthetic study spot.' Students and content creators queue for the window seats, stage flat-lays of their drinks for content, and shush anyone whose conversation disrupts their filming."**
+
+Causal chain:
+- **Conversation** ↓↓ — The already-weak conversational culture is actively suppressed by patrons policing noise for their videos.
+- **Low Profile** ↓ — The branch becomes a destination; the "aesthetic" framing doubles down on curated appearance over homeliness.
+- **Neutral Ground** ↓ — The space becomes contested territory; existing patrons who just want coffee feel displaced by the content-creation crowd.
+- **Playful Mood** ↓ — Self-presentation and performance replace any remaining spontaneity; the atmosphere is performative, not playful.
 
 ---
 
