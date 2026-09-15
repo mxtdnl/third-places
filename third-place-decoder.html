@@ -418,6 +418,113 @@
     margin: 0 auto;
   }
 
+  .summary-legend {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .legend-swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+  }
+  .legend-swatch.green { background: #d4edda; border: 1px solid #28a745; }
+  .legend-swatch.yellow { background: #fff3cd; border: 1px solid #e0a800; }
+  .legend-swatch.red { background: #f8d7da; border: 1px solid #dc3545; }
+
+  .summary-card {
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+    border-radius: 6px;
+  }
+  .summary-card.green {
+    background: #d4edda;
+    border: 2px solid #28a745;
+  }
+  .summary-card.yellow {
+    background: #fff3cd;
+    border: 2px solid #e0a800;
+  }
+  .summary-card.red {
+    background: #f8d7da;
+    border: 2px solid #dc3545;
+  }
+  .summary-card-name {
+    padding: 0.65rem 1rem;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .summary-card-def {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    margin: 0;
+    color: var(--text);
+  }
+
+  .btn-export {
+    margin-top: 1.5rem;
+  }
+
+  @media print {
+    body {
+      background: white !important;
+      padding: 0 !important;
+    }
+    .screen {
+      display: none !important;
+    }
+    #screen-summary {
+      display: flex !important;
+      position: static !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      padding: 1rem !important;
+      overflow: visible !important;
+      height: auto !important;
+      background: white !important;
+    }
+    .summary-content {
+      max-width: 100% !important;
+    }
+    .summary-card {
+      break-inside: avoid;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .summary-card-name {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .legend-swatch {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .btn-export {
+      display: none !important;
+    }
+    .divider {
+      display: none !important;
+    }
+    .transition-prompt {
+      display: none !important;
+    }
+  }
+
   @media (max-width: 600px) {
     .char-grid {
       grid-template-columns: 1fr;
@@ -468,11 +575,17 @@
 <section id="screen-summary" class="screen">
   <div class="summary-content">
     <h2>Concepts Unlocked</h2>
-    <div class="summary-count">8 / 8</div>
-    <div class="char-grid" id="char-grid"></div>
-    <div id="revisit-section"></div>
+    <div class="summary-legend">
+      <span class="legend-item"><span class="legend-swatch green"></span> 1st attempt</span>
+      <span class="legend-item"><span class="legend-swatch yellow"></span> 2nd&#8211;3rd attempt</span>
+      <span class="legend-item"><span class="legend-swatch red"></span> 4th attempt</span>
+    </div>
+    <div id="summary-cards"></div>
     <div class="divider"></div>
     <p class="transition-prompt">You'll now need to identify these characteristics in real spaces.</p>
+    <div style="text-align:center">
+      <button class="btn btn-export" id="btn-export">Export Results</button>
+    </div>
   </div>
 </section>
 
@@ -777,41 +890,30 @@ function nextQuestion() {
 // SUMMARY
 // ============================================================
 function renderSummary() {
-  var grid = $('char-grid');
-  grid.innerHTML = '';
+  var cards = $('summary-cards');
+  cards.innerHTML = '';
   for (var i = 0; i < 8; i++) {
-    var char = CHARACTERISTICS[i];
-    var tile = document.createElement('div');
-    tile.className = 'char-tile';
-    tile.style.background = char.colorHex;
-    tile.innerHTML = '<span class="check">✓</span><span>' + char.name + '</span>';
-    grid.appendChild(tile);
+    var char = CHARACTERISTICS[state.order[i]];
+    var att = state.attempts[char.name];
+    var grade = att === 1 ? 'green' : att <= 3 ? 'yellow' : 'red';
+    var card = document.createElement('div');
+    card.className = 'summary-card ' + grade;
+    var nameDiv = document.createElement('div');
+    nameDiv.className = 'summary-card-name';
+    nameDiv.style.background = char.colorHex;
+    nameDiv.textContent = char.name;
+    var defP = document.createElement('p');
+    defP.className = 'summary-card-def';
+    defP.textContent = char.definition;
+    card.appendChild(nameDiv);
+    card.appendChild(defP);
+    cards.appendChild(card);
   }
-
-  var revisitItems = [];
-  for (var i = 0; i < 8; i++) {
-    var char = CHARACTERISTICS[i];
-    if (state.attempts[char.name] > 1) {
-      revisitItems.push({ name: char.name, attempts: state.attempts[char.name] });
-    }
-  }
-
-  var section = $('revisit-section');
-  section.innerHTML = '';
-  if (revisitItems.length > 0) {
-    var heading = document.createElement('div');
-    heading.className = 'revisit-heading';
-    heading.textContent = 'Worth Revisiting';
-    section.appendChild(heading);
-    for (var i = 0; i < revisitItems.length; i++) {
-      var item = document.createElement('div');
-      item.className = 'revisit-item';
-      item.innerHTML = '<span class="name">' + revisitItems[i].name + '</span><span class="attempts">' + revisitItems[i].attempts + ' attempts</span>';
-      section.appendChild(item);
-    }
-  }
-
   showScreen('screen-summary');
+}
+
+function exportResults() {
+  window.print();
 }
 
 // ============================================================
@@ -820,4 +922,5 @@ function renderSummary() {
 buildDots('intro-dots');
 buildDots('game-dots');
 $('btn-start').addEventListener('click', startGame);
+$('btn-export').addEventListener('click', exportResults);
 </script>
