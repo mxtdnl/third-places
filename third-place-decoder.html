@@ -533,6 +533,286 @@
       flex-wrap: wrap;
       gap: 0.5rem;
     }
+    .ev-transform { flex-direction: column; gap: 0.75rem; }
+    .ev-arrow { transform: rotate(90deg); }
+    .ev-options-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ============================================================
+     EVOLVING CHARACTERISTICS EXERCISE (Brilliant-style)
+     ============================================================ */
+  #screen-evolving {
+    justify-content: flex-start;
+    padding-top: 2.5rem;
+  }
+
+  .ev-container {
+    max-width: 680px;
+    width: 100%;
+  }
+
+  .ev-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  .ev-step-dots {
+    display: flex;
+    gap: 6px;
+  }
+  .ev-step-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.3s ease, transform 0.3s ease;
+  }
+  .ev-step-dot.filled {
+    background: var(--char-1);
+    transform: scale(1.15);
+  }
+  .ev-step-dot.current {
+    background: var(--char-2);
+    transform: scale(1.3);
+  }
+
+  .ev-step-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  .ev-body {
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .ev-body.exiting {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  .ev-body.entering {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+
+  .ev-context {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--text);
+    margin-bottom: 1.5rem;
+  }
+  .ev-context strong {
+    color: var(--char-1);
+  }
+
+  .ev-question {
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.55;
+    margin-bottom: 1.25rem;
+    color: var(--text);
+  }
+
+  .ev-transform {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    justify-content: center;
+  }
+
+  .ev-label-card {
+    flex: 1;
+    max-width: 260px;
+    padding: 1rem 1.25rem;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1.35;
+    color: #fff;
+    letter-spacing: 0.03em;
+  }
+
+  .ev-mystery {
+    background: var(--border);
+    color: var(--text-muted);
+    border: 2px dashed var(--text-muted);
+    font-weight: 600;
+    font-style: italic;
+    transition: all 0.4s ease;
+  }
+  .ev-mystery.revealed {
+    border: none;
+    font-style: normal;
+    color: #fff;
+  }
+
+  .ev-arrow {
+    flex-shrink: 0;
+    width: 0;
+    height: 0;
+    border-left: 10px solid var(--text-muted);
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+  }
+
+  .ev-subtitle {
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-top: -1rem;
+    margin-bottom: 1.5rem;
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  .ev-options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .ev-option {
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    padding: 0.9rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    font-size: 0.92rem;
+    text-align: center;
+    line-height: 1.4;
+    font-family: inherit;
+    user-select: none;
+  }
+  .ev-option:hover:not(.ev-disabled):not(.ev-correct):not(.ev-incorrect) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(42, 31, 24, 0.1);
+    border-color: var(--char-1);
+  }
+  .ev-option.ev-correct {
+    border-color: var(--correct);
+    background: var(--correct-bg);
+    cursor: default;
+    font-weight: 700;
+  }
+  .ev-option.ev-incorrect {
+    border-color: var(--incorrect);
+    background: var(--incorrect-bg);
+  }
+  .ev-option.ev-disabled {
+    opacity: 0.3;
+    pointer-events: none;
+    cursor: default;
+  }
+
+  .ev-explanation {
+    margin-top: 1.25rem;
+    border-left: 5px solid var(--correct);
+    background: var(--correct-bg);
+    padding: 1.25rem 1.5rem;
+    line-height: 1.65;
+    font-size: 0.93rem;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+    pointer-events: none;
+  }
+  .ev-explanation.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .ev-explanation strong {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--correct);
+  }
+
+  .ev-hint {
+    margin-top: 1rem;
+    border-left: 5px solid var(--hint-border);
+    background: var(--hint-bg);
+    padding: 1rem 1.25rem;
+    line-height: 1.6;
+    font-size: 0.9rem;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+  }
+  .ev-hint.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .ev-intro-heading {
+    font-size: clamp(1.4rem, 3vw, 1.8rem);
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .ev-source-tag {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    padding: 0.25rem 0.6rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .ev-complete-heading {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .ev-mapping-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    margin-bottom: 1.5rem;
+  }
+  .ev-mapping-table th {
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 2px solid var(--text);
+  }
+  .ev-mapping-table td {
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.4;
+    vertical-align: top;
+  }
+  .ev-mapping-table tr:last-child td {
+    border-bottom: none;
+  }
+  .ev-mapping-table .ev-new-row td {
+    background: rgba(92, 58, 150, 0.06);
+    font-weight: 600;
   }
 </style>
 
@@ -585,7 +865,21 @@
     <p class="transition-prompt">You'll now need to identify these characteristics in real spaces.</p>
     <div style="text-align:center">
       <button class="btn btn-export" id="btn-export">Export Results</button>
+      <button class="btn" id="btn-evolving" style="margin-top:0.75rem;background:var(--char-2)">Evolving Characteristics</button>
     </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     EVOLVING CHARACTERISTICS EXERCISE
+     ============================================================ -->
+<section id="screen-evolving" class="screen">
+  <div class="ev-container">
+    <div class="ev-header">
+      <div class="ev-step-dots" id="ev-dots"></div>
+      <span class="ev-step-label" id="ev-step-label">Step 1 / 7</span>
+    </div>
+    <div class="ev-body" id="ev-body"></div>
   </div>
 </section>
 
@@ -923,4 +1217,349 @@ buildDots('intro-dots');
 buildDots('game-dots');
 $('btn-start').addEventListener('click', startGame);
 $('btn-export').addEventListener('click', exportResults);
+
+// ============================================================
+// EVOLVING CHARACTERISTICS EXERCISE (Brilliant-style)
+// ============================================================
+var EVOLVING_STEPS = [
+  {
+    type: 'intro'
+  },
+  {
+    type: 'question',
+    original: 'Neutral Ground',
+    originalColor: '#5C3A96',
+    originalDesc: 'Freedom from obligation — people come and go freely.',
+    correct: 'Relationship Initiation and Maintenance',
+    options: [
+      'Relationship Initiation and Maintenance',
+      'Digital Anonymity',
+      'Online Neutrality',
+      'Obligation-Free Access'
+    ],
+    shift: 'From freedom-from-obligation to active relationship-building function.',
+    explanation: 'In physical spaces, neutral ground passively removes obligation. But Langlais & Vaux argued that in virtual spaces, the characteristic actively enables relationship formation. A WhatsApp group or Discord server doesn\'t merely lack obligation — it provides infrastructure for initiating and maintaining connections that wouldn\'t otherwise exist.',
+    hint: 'Think about what a virtual platform does beyond just removing barriers. What function does it serve for the people in it?'
+  },
+  {
+    type: 'question',
+    original: 'Accessibility and Accommodation',
+    originalColor: '#D4A020',
+    originalDesc: 'Easy to access, accommodating to schedules — drop in at any time.',
+    correct: 'Active and Passive Engagement',
+    options: [
+      'Active and Passive Engagement',
+      '24/7 Availability',
+      'Free-to-Use Platforms',
+      'Universal Design Compliance'
+    ],
+    shift: 'From ease-of-physical-access to the ability to participate actively or observe passively.',
+    explanation: 'Physical access is almost trivial online — a website is always "nearby." So Langlais & Vaux argued the real question becomes: can users engage at different intensity levels? The ability to actively contribute or passively lurk — reading without posting, watching without streaming — is the virtual equivalent of dropping in without commitment.',
+    hint: 'Physical location and hours don\'t apply to virtual spaces. What replaces those constraints? Think about how people participate at different levels of intensity.'
+  },
+  {
+    type: 'question',
+    original: 'The Regulars',
+    originalColor: '#7A5828',
+    originalDesc: 'A core group who set the tone and welcome newcomers.',
+    correct: 'Reciprocity',
+    options: [
+      'Reciprocity',
+      'Follower Count',
+      'Content Creation',
+      'Username Recognition'
+    ],
+    shift: 'From familiar faces setting the tone to expected responsiveness between users.',
+    explanation: 'In a physical space, regulars are identifiable by their presence — you see them and they see you. Online, presence is ambient: you can be "in" a group chat without anyone noticing. The social glue shifts from physical familiarity to reciprocity — the expectation that if you post, someone will respond. Without that responsiveness, a virtual space dies even if its membership numbers stay high.',
+    hint: 'You can\'t see who\'s "in the room" in a virtual space the same way. What replaces the comfort of familiar faces? Think about what makes people keep coming back.'
+  },
+  {
+    type: 'question',
+    original: 'A Home Away from Home',
+    originalColor: '#7E58A8',
+    originalDesc: 'Rootedness, comfort, and warmth — a psychological anchor in daily life.',
+    correct: 'Cognitive Separation and Reprieve',
+    options: [
+      'Cognitive Separation and Reprieve',
+      'Digital Comfort Zone',
+      'Personalised Interface',
+      'Virtual Second Home'
+    ],
+    shift: 'From rootedness and warmth to the ability to disconnect from stress and find respite.',
+    explanation: 'Physical rootedness doesn\'t translate directly — you can\'t have "your chair" in a subreddit. Langlais & Vaux found that virtual third places provide something different: cognitive escape. The emphasis shifts from the warmth of a second home to the psychological decompression of mentally stepping away from work, obligations, and stress.',
+    hint: 'Oldenburg wrote about physical warmth and a sense of possession. What\'s the psychological equivalent when the space has no physical form?'
+  },
+  {
+    type: 'question',
+    original: null,
+    originalColor: '#5C3A96',
+    correct: 'Third Place Within a Third Place',
+    options: [
+      'Third Place Within a Third Place',
+      'Digital Permanence',
+      'Algorithmic Curation',
+      'Multi-Platform Identity'
+    ],
+    shift: 'Accessing a virtual third place while physically in another third place.',
+    explanation: 'This entirely new characteristic captures a distinctly digital phenomenon. A person scrolling a group chat while sitting in a cafe is simultaneously in two third places — one physical, one virtual. These layers coexist and sometimes reinforce each other. This has no analogue in Oldenburg\'s framework, which assumes each person is in one place at a time.',
+    hint: 'This is something that was impossible in Oldenburg\'s pre-digital world. Think about what happens when virtual and physical social spaces overlap.'
+  },
+  {
+    type: 'synthesis',
+    scenario: 'A regular at a local cafe scrolls through the cafe\'s WhatsApp group while sitting at their usual table, replying to a thread about tomorrow\'s quiz night.',
+    question: 'According to Langlais & Vaux\'s framework, which evolving characteristic does this scenario best illustrate?',
+    correct: 'Third Place Within a Third Place',
+    options: [
+      'Third Place Within a Third Place',
+      'Cognitive Separation and Reprieve',
+      'Active and Passive Engagement',
+      'Reciprocity'
+    ],
+    explanation: 'The person is physically in a third place (the cafe) while simultaneously accessing a virtual third place (the WhatsApp group). The two layers coexist and reinforce each other — the WhatsApp group extends the cafe\'s social life beyond its walls, while the cafe provides the physical context that makes the group meaningful. This layered experience is exactly what the ninth characteristic describes.'
+  }
+];
+
+var evState = {
+  step: 0,
+  answered: false,
+  attempts: 0,
+  transitioning: false
+};
+
+function buildEvDots() {
+  var el = $('ev-dots');
+  el.innerHTML = '';
+  for (var i = 0; i < EVOLVING_STEPS.length; i++) {
+    var dot = document.createElement('div');
+    dot.className = 'ev-step-dot';
+    el.appendChild(dot);
+  }
+}
+
+function updateEvDots() {
+  var dots = $('ev-dots').children;
+  for (var i = 0; i < EVOLVING_STEPS.length; i++) {
+    dots[i].className = 'ev-step-dot';
+    if (i < evState.step) dots[i].classList.add('filled');
+    if (i === evState.step) dots[i].classList.add('current');
+  }
+  $('ev-step-label').textContent = 'Step ' + (evState.step + 1) + ' / ' + EVOLVING_STEPS.length;
+}
+
+function startEvolving() {
+  evState.step = 0;
+  evState.answered = false;
+  evState.attempts = 0;
+  evState.transitioning = false;
+  buildEvDots();
+  updateEvDots();
+  showScreen('screen-evolving');
+  renderEvStep();
+}
+
+function renderEvStep() {
+  var step = EVOLVING_STEPS[evState.step];
+  evState.answered = false;
+  evState.attempts = 0;
+  updateEvDots();
+
+  var body = $('ev-body');
+
+  if (step.type === 'intro') {
+    body.innerHTML =
+      '<div class="ev-source-tag">Langlais &amp; Vaux (2022)</div>' +
+      '<h2 class="ev-intro-heading">What happens when<br>third places go virtual?</h2>' +
+      '<p class="ev-context">You\'ve learned Oldenburg\'s eight characteristics of a third place — developed for physical spaces like cafes, pubs, and barbershops.</p>' +
+      '<p class="ev-context">But Langlais &amp; Vaux (2022) asked: <strong>do these characteristics still work for virtual environments?</strong> Social media groups, online games, Discord servers — spaces that feel like third places but have no physical form.</p>' +
+      '<p class="ev-context">They found that each characteristic needed rethinking. Some shifts were subtle; others were fundamental. They also identified a ninth characteristic with no physical-world equivalent.</p>' +
+      '<p class="ev-context">In this exercise, you\'ll work through the most significant reframings and reason about why each shift matters.</p>' +
+      '<div style="text-align:center;margin-top:2rem">' +
+        '<button class="btn-continue" id="ev-continue">Continue</button>' +
+      '</div>';
+    $('ev-continue').addEventListener('click', nextEvStep);
+    return;
+  }
+
+  if (step.type === 'synthesis') {
+    var opts = shuffle(step.options.slice());
+    var html =
+      '<div class="ev-source-tag">Synthesis</div>' +
+      '<div style="background:var(--bg-card);border:2px solid var(--border);padding:1.25rem 1.5rem;margin-bottom:1.5rem;line-height:1.65;font-size:0.95rem;font-style:italic">' +
+        esc(step.scenario) +
+      '</div>' +
+      '<p class="ev-question">' + esc(step.question) + '</p>' +
+      '<div class="ev-options-grid" id="ev-options">';
+    for (var i = 0; i < opts.length; i++) {
+      html += '<button class="ev-option" data-val="' + esc(opts[i]) + '">' + esc(opts[i]) + '</button>';
+    }
+    html += '</div>' +
+      '<div class="ev-hint" id="ev-hint"></div>' +
+      '<div class="ev-explanation" id="ev-explanation"></div>';
+    body.innerHTML = html;
+    attachEvOptionListeners(step);
+    return;
+  }
+
+  var isNinth = step.original === null;
+  var opts = shuffle(step.options.slice());
+
+  var html = '';
+  if (isNinth) {
+    html +=
+      '<div class="ev-source-tag">The 9th Characteristic</div>' +
+      '<p class="ev-context">Langlais &amp; Vaux didn\'t just update existing characteristics — they added an entirely new one derived from Memarovic et al. (2014). This ninth characteristic describes a phenomenon that couldn\'t exist in Oldenburg\'s purely physical framework.</p>' +
+      '<p class="ev-question">What is the ninth evolving characteristic?</p>';
+  } else {
+    html +=
+      '<div class="ev-transform">' +
+        '<div class="ev-label-card" style="background:' + step.originalColor + '">' + esc(step.original) + '</div>' +
+        '<div class="ev-arrow"></div>' +
+        '<div class="ev-label-card ev-mystery" id="ev-mystery">?</div>' +
+      '</div>' +
+      '<p class="ev-subtitle">' + esc(step.originalDesc) + '</p>' +
+      '<p class="ev-question">In virtual environments, this characteristic evolves. What does it become?</p>';
+  }
+
+  html += '<div class="ev-options-grid" id="ev-options">';
+  for (var i = 0; i < opts.length; i++) {
+    html += '<button class="ev-option" data-val="' + esc(opts[i]) + '">' + esc(opts[i]) + '</button>';
+  }
+  html += '</div>' +
+    '<div class="ev-hint" id="ev-hint"></div>' +
+    '<div class="ev-explanation" id="ev-explanation"></div>';
+
+  body.innerHTML = html;
+  attachEvOptionListeners(step);
+}
+
+function esc(str) {
+  var div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function attachEvOptionListeners(step) {
+  var btns = $('ev-options').querySelectorAll('.ev-option');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].addEventListener('click', function(e) { handleEvAnswer(e, step); });
+  }
+}
+
+function handleEvAnswer(e, step) {
+  if (evState.answered || evState.transitioning) return;
+  var btn = e.currentTarget;
+  if (btn.classList.contains('ev-disabled') || btn.classList.contains('ev-correct')) return;
+
+  var val = btn.getAttribute('data-val');
+  evState.attempts++;
+
+  if (val === step.correct) {
+    evState.answered = true;
+    btn.classList.add('ev-correct');
+    var allBtns = $('ev-options').querySelectorAll('.ev-option');
+    for (var i = 0; i < allBtns.length; i++) {
+      if (allBtns[i] !== btn) allBtns[i].classList.add('ev-disabled');
+    }
+
+    var mystery = $('ev-mystery');
+    if (mystery) {
+      mystery.textContent = step.correct;
+      mystery.classList.add('revealed');
+      mystery.style.background = step.originalColor;
+    }
+
+    var hint = $('ev-hint');
+    if (hint) hint.classList.remove('visible');
+
+    var expl = $('ev-explanation');
+    var isLast = evState.step >= EVOLVING_STEPS.length - 1;
+    expl.innerHTML =
+      '<strong>' + (step.shift ? esc(step.shift) : 'Correct') + '</strong>' +
+      esc(step.explanation) +
+      '<div style="margin-top:1rem">' +
+        '<button class="btn-continue" id="ev-continue">' +
+          (isLast ? 'See Full Mapping' : 'Continue') +
+        '</button>' +
+      '</div>';
+    setTimeout(function() { expl.classList.add('visible'); }, 300);
+    $('ev-continue').addEventListener('click', nextEvStep);
+  } else {
+    btn.classList.add('ev-incorrect');
+    setTimeout(function() {
+      btn.classList.remove('ev-incorrect');
+      btn.classList.add('ev-disabled');
+    }, 450);
+
+    if (step.hint) {
+      var hint = $('ev-hint');
+      hint.innerHTML = '<strong style="display:block;margin-bottom:0.2rem">Not quite</strong>' + esc(step.hint);
+      hint.classList.add('visible');
+    }
+  }
+}
+
+function nextEvStep() {
+  if (evState.transitioning) return;
+  evState.transitioning = true;
+  var body = $('ev-body');
+  body.classList.add('exiting');
+
+  setTimeout(function() {
+    evState.step++;
+    if (evState.step >= EVOLVING_STEPS.length) {
+      body.classList.remove('exiting');
+      evState.transitioning = false;
+      renderEvComplete();
+      return;
+    }
+    renderEvStep();
+    body.classList.remove('exiting');
+    body.classList.add('entering');
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        body.classList.remove('entering');
+        evState.transitioning = false;
+      });
+    });
+  }, 280);
+}
+
+function renderEvComplete() {
+  updateEvDots();
+  var body = $('ev-body');
+  var rows = [
+    ['Neutral Ground', 'Relationship Initiation and Maintenance', 'Freedom-from-obligation → active relationship-building'],
+    ['The Leveler', 'Equalizer', 'Status-irrelevance → equitable opportunity regardless of geography'],
+    ['Conversation is Main Activity', 'Communication Main Activity', 'Spoken conversation → all forms of communication'],
+    ['Accessibility and Accommodation', 'Active and Passive Engagement', 'Physical access → active or passive participation'],
+    ['The Regulars', 'Reciprocity', 'Familiar faces → expected responsiveness'],
+    ['A Low Profile', 'People Over Place', 'Physical plainness → primacy of social connection'],
+    ['The Mood is Playful', 'Playful Mood', 'Largely unchanged'],
+    ['A Home Away from Home', 'Cognitive Separation and Reprieve', 'Rootedness → disconnection from stress and respite']
+  ];
+
+  var html =
+    '<h2 class="ev-complete-heading">Full Mapping</h2>' +
+    '<p class="ev-context" style="text-align:center;margin-bottom:1.5rem">Oldenburg (1999) → Langlais &amp; Vaux (2022)</p>' +
+    '<table class="ev-mapping-table">' +
+    '<tr><th>Original</th><th>Evolving</th><th>Key Shift</th></tr>';
+  for (var i = 0; i < rows.length; i++) {
+    html += '<tr><td>' + esc(rows[i][0]) + '</td><td>' + esc(rows[i][1]) + '</td><td>' + esc(rows[i][2]) + '</td></tr>';
+  }
+  html += '<tr class="ev-new-row"><td><em>(new)</em></td><td>Third Place Within a Third Place</td><td>Accessing a virtual third place while in a physical one</td></tr>';
+  html += '</table>';
+  html += '<div class="divider"></div>';
+  html += '<p class="transition-prompt">The original eight characteristics were designed for physical spaces. Langlais &amp; Vaux\'s reframings show how the same social functions adapt — and sometimes fundamentally change — in virtual environments.</p>';
+  html += '<div style="text-align:center;margin-top:1.5rem">' +
+    '<button class="btn" id="ev-back" style="background:var(--text)">Back to Summary</button>' +
+    '</div>';
+
+  body.innerHTML = html;
+  $('ev-back').addEventListener('click', function() { showScreen('screen-summary'); });
+}
+
+if ($('ev-dots')) {
+  buildEvDots();
+  $('btn-evolving').addEventListener('click', startEvolving);
+}
 </script>
