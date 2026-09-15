@@ -36,9 +36,10 @@
   <div id="game-body"></div>
 </div>
 
-<!-- Load both app scripts so their globals are available -->
+<!-- Load all app scripts so their globals are available -->
 <script id="decoder-source"></script>
 <script id="lab-source"></script>
+<script id="builder-source"></script>
 
 <script>
 (function() {
@@ -99,11 +100,11 @@
 
   function loadScripts(callback) {
     var loaded = 0;
-    var labCode, decoderCode;
+    var labCode, decoderCode, builderCode;
 
     function done() {
       loaded++;
-      if (loaded < 2) return;
+      if (loaded < 3) return;
 
       // Execute decoder in a namespace
       try {
@@ -164,6 +165,53 @@
         assert('lab.html parses without syntax errors', function() { throw e; });
       }
 
+      // Execute builder
+      try {
+        var builderFn = new Function(
+          builderCode + '\n'
+          + 'window.B_CHARS = CHARS;\n'
+          + 'window.B_SCENARIOS = SCENARIOS;\n'
+          + 'window.B_LEVERS = LEVERS;\n'
+          + 'window.B_LEVER_INDEX = LEVER_INDEX;\n'
+          + 'window.B_GROUPS = GROUPS;\n'
+          + 'window.B_INITIAL_LEVERS = INITIAL_LEVERS;\n'
+          + 'window.B_EVENTS = EVENTS;\n'
+          + 'window.B_INSOLVENCY_EVENT = INSOLVENCY_EVENT;\n'
+          + 'window.B_SEASONS = SEASONS;\n'
+          + 'window.B_blankMods = blankMods;\n'
+          + 'window.B_computeTargets = computeTargets;\n'
+          + 'window.B_stepCharacteristics = stepCharacteristics;\n'
+          + 'window.B_computeEconomy = computeEconomy;\n'
+          + 'window.B_disruptionOf = disruptionOf;\n'
+          + 'window.B_scoreOf = scoreOf;\n'
+          + 'window.B_verdictOf = verdictOf;\n'
+          + 'window.B_statusOf = statusOf;\n'
+          + 'window.B_newGame = newGame;\n'
+          + 'window.B_actionsAllowed = actionsAllowed;\n'
+          + 'window.B_previewOption = previewOption;\n'
+          + 'window.B_endSeason = endSeason;\n'
+          + 'window.B_advanceSeason = advanceSeason;\n'
+          + 'window.B_eligibleEvent = eligibleEvent;\n'
+          + 'window.B_choiceSelectable = choiceSelectable;\n'
+          + 'window.B_resolveEvent = resolveEvent;\n'
+          + 'window.B_debriefOf = debriefOf;\n'
+          + 'window.B_esc = esc;\n'
+          + 'window.B_money = money;\n'
+          + 'window.B_renderIntro = renderIntro;\n'
+          + 'window.B_renderScenario = renderScenario;\n'
+          + 'window.B_renderSeason = renderSeason;\n'
+          + 'window.B_renderResult = renderResult;\n'
+          + 'window.B_renderEvent = renderEvent;\n'
+          + 'window.B_renderFinal = renderFinal;\n'
+          + 'window.B_setGame = function(g) { game = g; };\n'
+          + 'window.B_setEventOutcome = function(o) { eventOutcome = o; };\n'
+        );
+        builderFn();
+      } catch(e) {
+        suite('LOAD ERRORS');
+        assert('builder.html parses without syntax errors', function() { throw e; });
+      }
+
       callback();
     }
 
@@ -178,6 +226,12 @@
     xhr2.onload = function() { labCode = extractAndRun(xhr2.responseText, 'lab'); done(); };
     xhr2.onerror = function() { labCode = ''; done(); };
     xhr2.send();
+
+    var xhr3 = new XMLHttpRequest();
+    xhr3.open('GET', 'third-place-builder.html');
+    xhr3.onload = function() { builderCode = extractAndRun(xhr3.responseText, 'builder'); done(); };
+    xhr3.onerror = function() { builderCode = ''; done(); };
+    xhr3.send();
   }
 
   function runTests() {
@@ -495,6 +549,392 @@
       eq(L_getCondition('nonexistent-condition-xyz'), null);
     });
 
+
+    // =====================================================
+    // BUILDER — DATA INTEGRITY
+    // =====================================================
+
+    suite('Builder — Data Integrity');
+
+    assert('CHARS has 8 entries: 5 direct, 3 emergent, valid hex', function() {
+      eq(B_CHARS.length, 8);
+      var direct = 0, emergent = 0;
+      B_CHARS.forEach(function(c) {
+        ok(c.id && c.name && c.def, 'missing field on ' + c.id);
+        ok(/^#[0-9A-Fa-f]{6}$/.test(c.hex), 'invalid hex for ' + c.id);
+        if (c.kind === 'direct') direct++;
+        if (c.kind === 'emergent') emergent++;
+      });
+      eq(direct, 5); eq(emergent, 3);
+    });
+
+    assert('Builder CHARS use the same colours as the lab', function() {
+      B_CHARS.forEach(function(c, i) { eq(c.hex, L_CHARS[i].hex, c.name); });
+    });
+
+    assert('SCENARIOS has 3 entries with economics fields', function() {
+      eq(B_SCENARIOS.length, 3);
+      B_SCENARIOS.forEach(function(sc) {
+        ok(sc.id && sc.name && sc.subtitle && sc.blurb, 'missing text on ' + sc.id);
+        ok(sc.constraints.length >= 3, 'constraints on ' + sc.id);
+        ok(typeof sc.money === 'number' && typeof sc.rent === 'number' && typeof sc.subsidy === 'number', 'money fields on ' + sc.id);
+        ok(sc.baseFootfall > 0, 'footfall on ' + sc.id);
+        ok(sc.rentLabel, 'rentLabel on ' + sc.id);
+        ok(['residential', 'highstreet', 'campus'].indexOf(sc.location) !== -1, 'location on ' + sc.id);
+      });
+    });
+
+    assert('Every lever has unique options with cost, run and description', function() {
+      B_LEVERS.forEach(function(l) {
+        ok(l.id && l.name && l.group, 'lever fields on ' + l.id);
+        ok(l.disruption > 0, 'disruption on ' + l.id);
+        ok(l.options.length >= 2, 'options on ' + l.id);
+        var ids = {};
+        l.options.forEach(function(o) {
+          ok(!ids[o.id], 'duplicate option ' + o.id + ' on ' + l.id);
+          ids[o.id] = true;
+          ok(o.label && o.desc, 'label/desc on ' + l.id + '/' + o.id);
+          ok(typeof o.cost === 'number' && typeof o.run === 'number', 'cost/run on ' + l.id + '/' + o.id);
+        });
+      });
+    });
+
+    assert('INITIAL_LEVERS names a valid option for every lever', function() {
+      B_LEVERS.forEach(function(l) {
+        var v = B_INITIAL_LEVERS[l.id];
+        ok(v, 'no initial value for ' + l.id);
+        ok(l.options.some(function(o) { return o.id === v; }), 'invalid initial ' + v + ' for ' + l.id);
+      });
+      eq(Object.keys(B_INITIAL_LEVERS).length, B_LEVERS.length);
+    });
+
+    assert('Every lever group is listed in GROUPS', function() {
+      var g = {};
+      B_GROUPS.forEach(function(x) { g[x.id] = true; });
+      B_LEVERS.forEach(function(l) { ok(g[l.group], 'unknown group ' + l.group + ' on ' + l.id); });
+    });
+
+    assert('EVENTS reference valid scenarios, levers, options and characteristics', function() {
+      var scIds = B_SCENARIOS.map(function(s) { return s.id; });
+      var charIds = B_CHARS.map(function(c) { return c.id; });
+      function checkEffect(eff, where) {
+        if (eff.levers) Object.keys(eff.levers).forEach(function(k) {
+          ok(B_LEVER_INDEX[k], where + ' unknown lever ' + k);
+          ok(B_LEVER_INDEX[k].options.some(function(o) { return o.id === eff.levers[k]; }), where + ' unknown option ' + eff.levers[k]);
+        });
+        ['shock', 'mod'].forEach(function(key) {
+          if (!eff[key]) return;
+          Object.keys(eff[key]).forEach(function(k) {
+            ok(charIds.indexOf(k) !== -1 || (key === 'mod' && k === 'pressure'), where + ' unknown characteristic ' + k);
+          });
+        });
+        ok(eff.note, where + ' missing note');
+      }
+      var ids = {};
+      B_EVENTS.forEach(function(ev) {
+        ok(!ids[ev.id], 'duplicate event ' + ev.id); ids[ev.id] = true;
+        ok(ev.title && ev.text, 'title/text on ' + ev.id);
+        ok(typeof ev.when === 'function', 'when on ' + ev.id);
+        ok(ev.scenarios.length > 0, 'scenarios on ' + ev.id);
+        ev.scenarios.forEach(function(s) { ok(scIds.indexOf(s) !== -1, 'unknown scenario ' + s + ' on ' + ev.id); });
+        ok(ev.choices.length >= 1, 'choices on ' + ev.id);
+        ev.choices.forEach(function(c) {
+          ok(c.id && c.label && c.desc, 'choice fields on ' + ev.id);
+          if (c.requires) ok(c.requiresText, 'requiresText on ' + ev.id + '/' + c.id);
+          if (c.tryable) ok(ev.fallback, 'tryable without fallback on ' + ev.id);
+          checkEffect(c.effect, ev.id + '/' + c.id);
+        });
+        if (ev.fallback) checkEffect(ev.fallback.effect, ev.id + '/fallback');
+      });
+      ok(B_INSOLVENCY_EVENT.choices.some(function(c) { return c.effect.close; }), 'insolvency has no close option');
+    });
+
+    assert('Every scenario has at least 4 possible events', function() {
+      B_SCENARIOS.forEach(function(sc) {
+        var n = B_EVENTS.filter(function(ev) { return ev.scenarios.indexOf(sc.id) !== -1; }).length;
+        ok(n >= 4, sc.id + ' has only ' + n + ' events');
+      });
+    });
+
+    // =====================================================
+    // BUILDER — MODEL
+    // =====================================================
+
+    suite('Builder — computeTargets');
+
+    function leversWith(over) {
+      var l = {};
+      Object.keys(B_INITIAL_LEVERS).forEach(function(k) { l[k] = B_INITIAL_LEVERS[k]; });
+      Object.keys(over || {}).forEach(function(k) { l[k] = over[k]; });
+      return l;
+    }
+
+    assert('returns the five direct characteristics in 0..100', function() {
+      var t = B_computeTargets(leversWith(), B_SCENARIOS[0], B_blankMods(), 0);
+      ['ng', 'lv', 'cv', 'ac', 'lp'].forEach(function(k) {
+        ok(typeof t[k] === 'number' && t[k] >= 0 && t[k] <= 100, k + ' out of range: ' + t[k]);
+      });
+      eq(Object.keys(t).length, 5);
+    });
+
+    assert('gating, quiet rules, premium prices and branding lower the expected characteristics', function() {
+      var sc = B_SCENARIOS[0], m = B_blankMods();
+      var base = B_computeTargets(leversWith({ entry:'open', noise:'moderate', price:'low', decor:'scuffed' }), sc, m, 0);
+      ok(B_computeTargets(leversWith({ entry:'membership' }), sc, m, 0).ng < base.ng, 'membership should lower Neutral Ground');
+      ok(B_computeTargets(leversWith({ noise:'quiet' }), sc, m, 0).cv < base.cv, 'quiet policy should lower Conversation');
+      ok(B_computeTargets(leversWith({ price:'high' }), sc, m, 0).lv < base.lv, 'premium prices should lower Leveler');
+      ok(B_computeTargets(leversWith({ decor:'branded' }), sc, m, 0).lp < base.lp, 'branding should lower Low Profile');
+      ok(B_computeTargets(leversWith({ hours:'extended' }), sc, m, 0).ac > base.ac, 'extended hours should raise Accessibility');
+    });
+
+    assert('persistent modifiers shift targets', function() {
+      var sc = B_SCENARIOS[0];
+      var m = B_blankMods(); m.lv = -20;
+      var a = B_computeTargets(leversWith(), sc, B_blankMods(), 0);
+      var b = B_computeTargets(leversWith(), sc, m, 0);
+      eq(Math.round(a.lv - b.lv), 20);
+    });
+
+    suite('Builder — stepCharacteristics');
+
+    assert('a quiet season grows the regulars; disruption shrinks them', function() {
+      var g = B_newGame('community');
+      var quiet = B_stepCharacteristics(g.values, g.levers, g.scenario, B_blankMods(), 0);
+      var noisy = B_stepCharacteristics(g.values, g.levers, g.scenario, B_blankMods(), 20);
+      ok(quiet.rg > g.values.rg, 'regulars should grow in a quiet season');
+      ok(noisy.rg < quiet.rg, 'disruption should reduce regulars');
+      ok(noisy.ha < quiet.ha, 'disruption should reduce home away from home');
+    });
+
+    assert('values stay within 0..100 and are not mutated in place', function() {
+      var g = B_newGame('highstreet');
+      var before = JSON.stringify(g.values);
+      var v = B_stepCharacteristics(g.values, g.levers, g.scenario, B_blankMods(), 60);
+      Object.keys(v).forEach(function(k) { ok(v[k] >= 0 && v[k] <= 100, k + ' out of range'); });
+      eq(JSON.stringify(g.values), before);
+    });
+
+    suite('Builder — computeEconomy');
+
+    assert('net equals takings plus subsidy minus all costs', function() {
+      var g = B_newGame('campus');
+      var e = B_computeEconomy(g.levers, g.scenario, g.values, B_blankMods(), g.rent, g.subsidy);
+      eq(e.net, e.revenue + e.subsidy - e.costs);
+      eq(e.costs, e.rent + e.staff + e.security + e.running + e.supplies);
+      eq(e.supplies, Math.round(e.revenue * 0.35));
+      eq(e.subsidy, 5000);
+    });
+
+    assert('premium prices raise spend per visit and lower footfall', function() {
+      var g = B_newGame('highstreet');
+      var low = B_computeEconomy(leversWith({ price:'low' }), g.scenario, g.values, B_blankMods(), g.rent, g.subsidy);
+      var high = B_computeEconomy(leversWith({ price:'high' }), g.scenario, g.values, B_blankMods(), g.rent, g.subsidy);
+      ok(high.spend > low.spend, 'spend');
+      ok(high.footfall < low.footfall, 'footfall');
+    });
+
+    assert('long hours on campus add a security charge; elsewhere they do not', function() {
+      var c = B_newGame('campus'), h = B_newGame('highstreet');
+      eq(B_computeEconomy(leversWith({ hours:'long' }), c.scenario, c.values, B_blankMods(), c.rent, c.subsidy).security, 2000);
+      eq(B_computeEconomy(leversWith({ hours:'long' }), h.scenario, h.values, B_blankMods(), h.rent, h.subsidy).security, 0);
+    });
+
+    suite('Builder — scoring and verdicts');
+
+    assert('disruptionOf sums lever weights', function() {
+      eq(B_disruptionOf({}), 0);
+      eq(B_disruptionOf({ entry:{}, price:{} }), B_LEVER_INDEX.entry.disruption + B_LEVER_INDEX.price.disruption);
+    });
+
+    assert('scoreOf is the rounded mean of the eight values', function() {
+      var v = { ng:100, lv:100, cv:100, ac:100, rg:0, lp:0, pm:0, ha:0 };
+      eq(B_scoreOf(v), 50);
+    });
+
+    assert('statusOf maps thresholds', function() {
+      eq(B_statusOf(65), 'present'); eq(B_statusOf(64), 'ambiguous'); eq(B_statusOf(40), 'ambiguous'); eq(B_statusOf(39), 'absent');
+    });
+
+    assert('verdictOf covers closed, third place, in the making, venue and second place', function() {
+      function all(n) { return { ng:n, lv:n, cv:n, ac:n, rg:n, lp:n, pm:n, ha:n }; }
+      eq(B_verdictOf(all(90), true).id, 'closed');
+      eq(B_verdictOf(all(80), false).id, 'third');
+      var weak = all(80); weak.rg = 30;
+      eq(B_verdictOf(weak, false).id, 'making', 'one weak characteristic should block the top verdict');
+      eq(B_verdictOf(all(60), false).id, 'making');
+      eq(B_verdictOf(all(45), false).id, 'venue');
+      eq(B_verdictOf(all(20), false).id, 'second');
+    });
+
+    suite('Builder — game loop');
+
+    assert('newGame starts in season 1 with scenario money and no regulars', function() {
+      var g = B_newGame('community');
+      eq(g.season, 1); eq(g.money, 14000); eq(g.rent, 1500);
+      ok(g.values.rg < 15, 'regulars should start low');
+      eq(g.closed, false); eq(g.finished, false); eq(g.history.length, 0);
+      eq(B_actionsAllowed(g), 3);
+    });
+
+    assert('previewOption reports direct deltas, disruption and money change', function() {
+      var g = B_newGame('community');
+      var p = B_previewOption(g, 'entry', 'open');
+      ok(p.deltas.ng > 0, 'open door should raise Neutral Ground');
+      eq(p.disruption, B_LEVER_INDEX.entry.disruption);
+      ok(typeof p.netDelta === 'number');
+    });
+
+    assert('endSeason applies pending changes, charges costs, records history and clears the tray', function() {
+      var g = B_newGame('community');
+      g.pending = { layout:'communal', entry:'open' };
+      var r = B_endSeason(g);
+      eq(g.levers.layout, 'communal'); eq(g.levers.entry, 'open');
+      eq(r.spent, 1200);
+      eq(r.disruption, B_LEVER_INDEX.layout.disruption + B_LEVER_INDEX.entry.disruption);
+      eq(g.history.length, 1);
+      eq(Object.keys(g.pending).length, 0);
+      eq(g.money, 14000 - 1200 + r.eco.net);
+    });
+
+    assert('selecting the current option is not a change', function() {
+      var g = B_newGame('community');
+      g.pending = { price:'mid' };
+      var r = B_endSeason(g);
+      eq(Object.keys(r.changes).length, 0);
+      eq(r.disruption, 0);
+    });
+
+    assert('advanceSeason increments and finishes after the last season', function() {
+      var g = B_newGame('highstreet');
+      g.season = B_SEASONS;
+      B_advanceSeason(g);
+      eq(g.finished, true);
+      var g2 = B_newGame('highstreet');
+      B_advanceSeason(g2);
+      eq(g2.season, 2);
+      eq(B_actionsAllowed(g2), 2);
+    });
+
+    assert('a full quiet play-through ends after 8 seasons with a history entry per season', function() {
+      var g = B_newGame('campus');
+      var guard = 0;
+      while (!g.finished && guard++ < 20) {
+        B_endSeason(g);
+        if (g.pendingEvent) B_resolveEvent(g, g.pendingEvent, g.pendingEvent.choices[0].id);
+        B_advanceSeason(g);
+      }
+      eq(g.history.length, B_SEASONS);
+      eq(g.finished, true);
+    });
+
+    suite('Builder — events');
+
+    assert('insolvency event fires when overdrawn; a second overdraft closes the place', function() {
+      var g = B_newGame('community');
+      g.money = -5000;
+      eq(B_eligibleEvent(g).id, 'insolvency');
+      g.insolvencies = 1;
+      B_endSeason(g);
+      eq(g.closed, true); eq(g.finished, true);
+    });
+
+    assert('the developer sale fires in season 6 of the community scenario only', function() {
+      var g = B_newGame('community');
+      g.season = 6;
+      eq(B_eligibleEvent(g).id, 'sale');
+      var h = B_newGame('highstreet');
+      h.season = 6;
+      var ev = B_eligibleEvent(h);
+      ok(!ev || ev.id !== 'sale', 'sale should not fire on the high street');
+    });
+
+    assert('events fire at most once', function() {
+      var g = B_newGame('community');
+      g.season = 6;
+      var ev = B_eligibleEvent(g);
+      B_resolveEvent(g, ev, 'a');
+      var again = B_eligibleEvent(g);
+      ok(!again || again.id !== 'sale', 'sale fired twice');
+    });
+
+    assert('an unmet, non-tryable choice cannot be taken; a tryable one falls back', function() {
+      var g = B_newGame('community');
+      g.season = 6; g.money = 1000; g.values.rg = 10; g.values.ha = 10;
+      var ev = B_eligibleEvent(g);
+      var buy = ev.choices[2], rally = ev.choices[1];
+      eq(B_choiceSelectable(ev, buy, g), false);
+      eq(B_resolveEvent(g, ev, buy.id), null);
+      eq(B_choiceSelectable(ev, rally, g), true);
+      var res = B_resolveEvent(g, ev, rally.id);
+      eq(res.choiceLabel, ev.fallback.label);
+      eq(g.rent, 6000);
+    });
+
+    assert('resolving a choice applies levers, money and persistent modifiers', function() {
+      var g = B_newGame('community');
+      g.season = 6; g.values.rg = 80; g.values.ha = 80;
+      var ev = B_eligibleEvent(g);
+      var res = B_resolveEvent(g, ev, 'a');
+      eq(g.levers.entry, 'membership');
+      eq(g.money, 14000 + 8000);
+      ok(res.effect, 'effect returned');
+      var g2 = B_newGame('highstreet');
+      g2.season = 3;
+      var chain = B_eligibleEvent(g2);
+      eq(chain.id, 'chain');
+      B_resolveEvent(g2, chain, 'b');
+      ok(g2.mods.chain && g2.mods.chain.footfall < 1, 'footfall modifier stored');
+    });
+
+    assert('debriefOf always returns at least one lesson', function() {
+      var g = B_newGame('community');
+      ok(B_debriefOf(g).length >= 1);
+      g.closed = true;
+      ok(B_debriefOf(g).some(function(l) { return l.title.indexOf('rent') !== -1; }), 'closure lesson');
+    });
+
+    suite('Builder — render functions');
+
+    assert('money formats with pound sign and thousands separator', function() {
+      eq(B_money(14000), '£14,000');
+      eq(B_money(-424), '-£424');
+    });
+
+    assert('renderIntro and renderScenario produce expected markup', function() {
+      ok(B_renderIntro().indexOf('data-action="to-scenario"') !== -1);
+      var html = B_renderScenario();
+      eq((html.match(/scenario-card/g) || []).length, 3);
+    });
+
+    assert('renderSeason shows a card for every lever option and marks current ones', function() {
+      var g = B_newGame('community');
+      B_setGame(g);
+      var html = B_renderSeason();
+      ok(html.indexOf('data-action="end-season"') !== -1);
+      ok(html.indexOf('class="card current"') !== -1);
+      ok(html.indexOf('The Courtyard Unit') !== -1);
+    });
+
+    assert('renderResult, renderEvent and renderFinal produce HTML after a season', function() {
+      var g = B_newGame('community');
+      g.season = 6;
+      B_setGame(g);
+      B_endSeason(g);
+      var r = B_renderResult();
+      ok(r.indexOf('bar-row') !== -1 && r.indexOf('In the bank') !== -1);
+      ok(g.pendingEvent, 'expected an event');
+      B_setEventOutcome(null);
+      var e = B_renderEvent();
+      ok(e.indexOf('data-action="choose"') !== -1);
+      g.finished = true;
+      var f = B_renderFinal();
+      ok(f.indexOf('class="verdict') !== -1 && f.indexOf('For discussion') !== -1);
+    });
+
+    assert('esc escapes HTML in builder', function() {
+      ok(B_esc('<i>&</i>').indexOf('<') === -1);
+    });
+
     // =====================================================
     // ENCODING
     // =====================================================
@@ -507,6 +947,21 @@
       xhr.send();
       ok(xhr.responseText.indexOf('charset="utf-8"') !== -1 || xhr.responseText.indexOf("charset='utf-8'") !== -1 || xhr.responseText.indexOf('charset=utf-8') !== -1,
         'missing meta charset');
+    });
+
+    assert('builder.html has meta charset=utf-8', function() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'third-place-builder.html', false);
+      xhr.send();
+      ok(xhr.responseText.indexOf('charset="utf-8"') !== -1, 'missing meta charset');
+    });
+
+    assert('builder.html uses no curly quotes in its script', function() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'third-place-builder.html', false);
+      xhr.send();
+      var m = xhr.responseText.match(/<script>([\s\S]*?)<\/script>/);
+      ok(m && !/[\u2018\u2019\u201C\u201D]/.test(m[1]), 'curly quotes found');
     });
 
     assert('decoder.html has meta charset=utf-8', function() {

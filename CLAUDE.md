@@ -6,8 +6,10 @@ Interactive teaching tools for Ray Oldenburg's third-place theory. Static HTML f
 
 - `third-place-decoder.html` — Characteristic-matching quiz (Activity 1)
 - `third-place-lab.html` — Multi-phase classroom lab (Activity 2): case analysis, stress tests, synthesis
+- `third-place-builder.html` — Resource-management simulation (Activity 3): build a third place over eight seasons under money, attention and ownership constraints. Design notes in `spec.md`
 - `third-place-content.md` — Source content and curriculum notes
-- `test.html` — Test suite (42 tests) covering data integrity, pure functions, HTML generators, and encoding
+- `spec.md` — Mechanics, tuning values and design assumptions for the builder
+- `test.html` — Test suite (81 tests) covering data integrity, pure functions, HTML generators, and encoding
 
 ## Testing
 

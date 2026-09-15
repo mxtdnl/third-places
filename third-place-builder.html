@@ -1,0 +1,1461 @@
+<meta charset="utf-8">
+<title>Third Place Builder</title>
+<style>
+:root {
+  --bg: #F2DFBE;
+  --bg-card: #FFFAF2;
+  --bg-deep: #E8D2A8;
+  --text: #2A1F18;
+  --text-muted: #6A5A48;
+  --border: #D8C8A8;
+
+  --char-1: #5C3A96;
+  --char-2: #B52838;
+  --char-3: #C85218;
+  --char-4: #D4A020;
+  --char-5: #7A5828;
+  --char-6: #B83068;
+  --char-7: #CC6830;
+  --char-8: #7E58A8;
+
+  --present: #2A7A42;
+  --present-bg: #E6F4EA;
+  --ambiguous: #B98A10;
+  --ambiguous-bg: #FFF3D6;
+  --absent: #B82828;
+  --absent-bg: #FDEEEE;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  padding-inline: 16px;
+  padding-block: 0;
+}
+
+#app { max-width: 1180px; margin: 0 auto; padding-block: 1.5rem 3rem; }
+
+h1, h2, h3 { line-height: 1.2; }
+h2 { font-size: clamp(1.5rem, 3vw, 2.1rem); font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 0.5rem; }
+h3 { font-size: 0.85rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin: 1.5rem 0 0.6rem; padding-bottom: 0.35rem; border-bottom: 2px solid var(--border); }
+p { margin-bottom: 0.75rem; }
+button { font-family: inherit; }
+
+.eyebrow { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; }
+.lede { color: var(--text-muted); max-width: 640px; margin-bottom: 1.5rem; }
+.quiet { color: var(--text-muted); font-size: 0.92rem; }
+.alert { color: var(--absent); font-weight: 700; }
+.neg { color: var(--absent); }
+.pos { color: var(--present); }
+
+.btn {
+  background: var(--char-1);
+  color: #fff;
+  border: none;
+  padding: 0.85rem 2.4rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+.btn:hover:not(:disabled) { background: var(--char-2); transform: translateY(-2px); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-small { padding: 0.65rem 1.6rem; font-size: 0.85rem; }
+.btn-ghost { background: transparent; color: var(--text); border: 2px solid var(--text); }
+.btn-ghost:hover:not(:disabled) { background: var(--text); color: var(--bg); }
+
+/* ============================================================
+   INTRO
+   ============================================================ */
+.intro { position: relative; min-height: calc(100vh - 4.5rem); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.geo { position: absolute; pointer-events: none; }
+.geo-a { width: 380px; height: 380px; border-radius: 50%; background: var(--char-1); opacity: 0.1; top: -80px; right: -40px; }
+.geo-b { width: 240px; height: 110px; background: var(--char-3); opacity: 0.08; bottom: 8%; left: -30px; transform: rotate(-12deg); }
+.geo-c { width: 0; height: 0; border-left: 55px solid transparent; border-right: 55px solid transparent; border-bottom: 95px solid var(--char-2); opacity: 0.08; top: 30%; left: 8%; }
+.intro-content { max-width: 680px; text-align: center; position: relative; z-index: 1; }
+.intro-content h1 { font-size: clamp(2.2rem, 6vw, 4rem); font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.05; margin-bottom: 1.25rem; }
+.intro-sub { font-size: 1.05rem; line-height: 1.65; color: var(--text-muted); margin: 0 auto 1.5rem; max-width: 560px; }
+.intro-chars { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 2rem; }
+.char-chip { color: #fff; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 10px; }
+
+/* ============================================================
+   SCENARIO
+   ============================================================ */
+.scenario-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+.scenario-card { background: var(--bg-card); border: 2px solid var(--border); padding: 1.5rem; display: flex; flex-direction: column; position: relative; }
+.scenario-num { font-size: 2.4rem; font-weight: 800; color: var(--border); line-height: 1; margin-bottom: 0.5rem; }
+.scenario-card h3 { font-size: 1.25rem; text-transform: none; letter-spacing: 0; color: var(--text); border: none; margin: 0; padding: 0; }
+.scenario-sub { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.75rem; }
+.scenario-blurb { font-size: 0.95rem; flex: 1; }
+.constraints { list-style: none; margin: 0.5rem 0 1.25rem; font-size: 0.88rem; }
+.constraints li { padding: 0.35rem 0 0.35rem 1.1rem; border-top: 1px solid var(--border); position: relative; }
+.constraints li::before { content: ''; position: absolute; left: 0; top: 0.85rem; width: 6px; height: 6px; background: var(--char-4); }
+
+/* ============================================================
+   SEASON BOARD
+   ============================================================ */
+.board { display: grid; grid-template-columns: 300px 1fr; gap: 1.5rem; align-items: start; }
+.dash { position: sticky; top: 1rem; background: var(--bg-card); border: 2px solid var(--border); padding: 1.1rem; }
+.dash-head { margin-bottom: 0.9rem; }
+.dash-site { font-weight: 800; font-size: 1.05rem; }
+.dash-season { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+.dash-season span { font-weight: 400; letter-spacing: 0; text-transform: none; }
+.dash-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1rem; }
+.stat { background: var(--bg); padding: 0.55rem 0.7rem; }
+.stat-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+.stat-val { font-size: 1.25rem; font-weight: 800; line-height: 1.2; }
+.stat-of { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+.stat-sub { font-size: 0.7rem; color: var(--text-muted); }
+.dash-legend { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.8rem; line-height: 1.4; }
+
+.bar-row { display: grid; grid-template-columns: 1fr 44px; grid-template-areas: 'label val' 'track val'; column-gap: 0.5rem; align-items: center; padding: 0.35rem 0; }
+.bar-row.compact { padding: 0.2rem 0; }
+.bar-label { grid-area: label; font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; }
+.bar-row.compact .bar-label { font-size: 0.74rem; }
+.bar-dot { width: 9px; height: 9px; flex-shrink: 0; }
+.bar-kind { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); border: 1px solid var(--border); padding: 0 4px; }
+.bar-track { grid-area: track; position: relative; height: 8px; background: var(--bg-deep); overflow: hidden; }
+.bar-row.compact .bar-track { height: 6px; }
+.bar-fill { position: absolute; left: 0; top: 0; height: 100%; transition: width 0.7s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.bar-ghost { position: absolute; left: 0; top: 0; height: 100%; background: rgba(42,31,24,0.18); }
+.bar-val { grid-area: val; font-size: 0.85rem; font-weight: 700; text-align: right; white-space: nowrap; }
+.bar-row.compact .bar-val { font-size: 0.78rem; }
+.bar-delta { font-size: 0.72rem; font-weight: 700; }
+.bar-delta.up { color: var(--present); }
+.bar-delta.down { color: var(--absent); }
+
+.deck { min-width: 0; }
+.deck-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
+.deck-note { color: var(--text-muted); font-size: 0.92rem; max-width: 640px; }
+.actions-meter { display: flex; align-items: center; gap: 5px; padding-bottom: 0.4rem; }
+.action-pip { width: 18px; height: 18px; border: 2px solid var(--text); background: transparent; }
+.action-pip.used { background: var(--text); }
+.actions-meter.full .action-pip.used { background: var(--char-2); border-color: var(--char-2); }
+.actions-text { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-left: 0.4rem; }
+
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; margin: 1rem 0 1.25rem; border-bottom: 2px solid var(--border); }
+.tab { background: transparent; border: none; border-bottom: 3px solid transparent; margin-bottom: -2px; padding: 0.55rem 0.9rem; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); cursor: pointer; }
+.tab.active { color: var(--text); border-bottom-color: var(--text); }
+.tab-badge { display: inline-block; background: var(--char-1); color: #fff; font-size: 0.68rem; padding: 0 6px; margin-left: 4px; }
+
+.lever { margin-bottom: 1.5rem; }
+.lever-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+.lever-head h3 { margin: 0; padding: 0; border: none; color: var(--text); font-size: 0.95rem; }
+.lever-current { font-size: 0.8rem; color: var(--text-muted); }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 0.6rem; }
+.card { background: var(--bg-card); border: 2px solid var(--border); border-left: 6px solid var(--border); padding: 0.85rem 0.95rem; text-align: left; cursor: pointer; display: flex; flex-direction: column; gap: 0.4rem; transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease; color: var(--text); }
+.card:hover:not(:disabled):not(.current) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(42,31,24,0.12); border-color: var(--text-muted); }
+.card.current { border-color: var(--text); border-left-color: var(--text); background: var(--bg-deep); cursor: default; }
+.card.pending { border-color: var(--char-1); border-left-color: var(--char-1); background: #F1EAF8; }
+.card.blocked { opacity: 0.45; cursor: not-allowed; }
+.card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+.card-label { font-weight: 700; font-size: 0.92rem; line-height: 1.3; }
+.card-cost { font-size: 0.75rem; font-weight: 700; white-space: nowrap; color: var(--text-muted); }
+.card-tag { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; background: var(--text); color: var(--bg); padding: 2px 6px; white-space: nowrap; }
+.card-tag.pending { background: var(--char-1); color: #fff; }
+.card-desc { font-size: 0.82rem; color: var(--text-muted); line-height: 1.45; margin: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; }
+.chip { display: inline-flex; align-items: center; gap: 4px; font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border: 1.5px solid var(--border); background: #fff; white-space: nowrap; }
+.chip-dot { width: 7px; height: 7px; }
+.chip.up { color: var(--present); }
+.chip.down { color: var(--absent); }
+.chip.warn { color: var(--char-5); border-color: var(--char-5); border-style: dashed; }
+.chip.money-up { color: var(--present); border-color: var(--present); }
+.chip.money-down { color: var(--absent); border-color: var(--absent); }
+
+.tray { position: sticky; bottom: 0; background: var(--bg-card); border: 2px solid var(--text); padding: 0.9rem 1rem; margin-top: 1rem; display: flex; flex-direction: column; gap: 0.6rem; box-shadow: 0 -6px 18px rgba(42,31,24,0.08); }
+.tray-empty { font-size: 0.9rem; color: var(--text-muted); }
+.tray-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.tray-item { display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; background: var(--bg); padding: 4px 8px 4px 10px; }
+.tray-cost { color: var(--text-muted); }
+.tray-x { background: none; border: none; font-size: 1rem; cursor: pointer; color: var(--text-muted); line-height: 1; padding: 0 2px; }
+.tray-x:hover { color: var(--absent); }
+.tray-foot { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.tray-total { font-size: 0.85rem; font-weight: 700; }
+.tray-total em { color: var(--absent); font-style: normal; font-weight: 400; }
+
+/* ============================================================
+   RESULT / EVENT / FINAL
+   ============================================================ */
+.result, .event, .final, .scenario { max-width: 960px; margin: 0 auto; }
+.result-grid, .final-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+.change-list { list-style: none; font-size: 0.92rem; }
+.change-list li { padding: 0.4rem 0 0.4rem 1rem; border-left: 3px solid var(--char-1); margin-bottom: 0.35rem; background: var(--bg-card); }
+.eco { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.eco td { padding: 0.35rem 0; border-bottom: 1px solid var(--border); }
+.eco td:last-child { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.eco-net td { font-weight: 800; border-top: 2px solid var(--text); }
+.eco-bank td { font-weight: 800; }
+.result-bars .bar-row { padding: 0.45rem 0; }
+.score-line { margin-top: 1rem; font-size: 1rem; }
+.score-line strong { font-size: 1.4rem; }
+.verdict-inline { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-left: 0.5rem; }
+.result-foot, .final-foot { margin-top: 2rem; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+
+.event-text { font-size: 1.1rem; line-height: 1.6; max-width: 720px; background: var(--bg-card); border-left: 6px solid var(--char-2); padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+.choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.75rem; }
+.choice { background: var(--bg-card); border: 2px solid var(--border); border-left: 6px solid var(--char-1); padding: 1rem 1.1rem; text-align: left; cursor: pointer; display: flex; flex-direction: column; gap: 0.35rem; color: var(--text); transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.choice:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(42,31,24,0.12); }
+.choice.unavailable { border-left-color: var(--border); }
+.choice:disabled { opacity: 0.5; cursor: not-allowed; }
+.choice-label { font-weight: 800; font-size: 1rem; }
+.choice-desc { font-size: 0.88rem; color: var(--text-muted); }
+.choice-req { font-size: 0.75rem; font-weight: 700; color: var(--absent); }
+.outcome { background: var(--bg-card); border: 2px solid var(--border); padding: 1.25rem; max-width: 720px; }
+.outcome-choice { font-size: 0.85rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; }
+.outcome-note { font-size: 1.05rem; font-style: italic; }
+
+.verdict { font-size: clamp(1.8rem, 5vw, 3rem); }
+.verdict-third { color: var(--present); }
+.verdict-making { color: var(--ambiguous); }
+.verdict-venue { color: var(--char-3); }
+.verdict-second, .verdict-closed { color: var(--absent); }
+.verdict-text { font-size: 1.05rem; max-width: 680px; color: var(--text-muted); }
+.final-stats { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 1.25rem 0; }
+.final-stats .stat { background: var(--bg-card); border: 2px solid var(--border); min-width: 150px; }
+.final-bars .bar-row { padding: 0.5rem 0; }
+.final-bars .bar-row[data-status="present"] .bar-track { outline: 2px solid var(--present); outline-offset: 1px; }
+.final-bars .bar-row[data-status="ambiguous"] .bar-track { outline: 2px solid var(--ambiguous); outline-offset: 1px; }
+.final-bars .bar-row[data-status="absent"] .bar-track { outline: 2px solid var(--absent); outline-offset: 1px; }
+.final-bars .bar-row { grid-template-columns: 1fr 110px; }
+.status-tag { display: inline-block; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 6px; margin-left: 4px; }
+.status-tag.present { background: var(--present-bg); color: var(--present); }
+.status-tag.ambiguous { background: var(--ambiguous-bg); color: var(--ambiguous); }
+.status-tag.absent { background: var(--absent-bg); color: var(--absent); }
+.timeline { display: flex; gap: 6px; align-items: flex-end; height: 140px; padding-top: 0.5rem; }
+.tl-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; }
+.tl-bar { flex: 1; width: 100%; background: var(--bg-deep); position: relative; }
+.tl-fill { position: absolute; bottom: 0; left: 0; width: 100%; background: var(--char-1); }
+.tl-label { font-size: 0.72rem; font-weight: 700; margin-top: 4px; }
+.tl-money { font-size: 0.6rem; color: var(--text-muted); white-space: nowrap; }
+.tl-money.neg { color: var(--absent); }
+.lesson { background: var(--bg-card); border-left: 5px solid var(--char-4); padding: 0.85rem 1rem; margin-bottom: 0.75rem; }
+.lesson-title { font-weight: 800; margin-bottom: 0.25rem; }
+.lesson p { font-size: 0.9rem; margin: 0; line-height: 1.5; }
+.reflect { margin-top: 2rem; max-width: 720px; }
+.reflect ol { padding-left: 1.4rem; font-size: 0.95rem; }
+.reflect li { margin-bottom: 0.5rem; }
+
+@media (max-width: 860px) {
+  .board { grid-template-columns: 1fr; }
+  .dash { position: static; }
+  .dash-bars { display: grid; grid-template-columns: 1fr 1fr; column-gap: 1rem; }
+  .result-grid, .final-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) {
+  .dash-bars { grid-template-columns: 1fr; }
+  .dash-stats { grid-template-columns: 1fr 1fr; }
+}
+
+@media print {
+  body { background: #fff !important; padding: 0 !important; }
+  #app { padding: 0; max-width: 100%; }
+  .final-foot, .reflect { display: none !important; }
+  .final-grid { grid-template-columns: 1fr 1fr; }
+  .bar-fill, .tl-fill, .bar-dot, .status-tag, .lesson { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .lesson { break-inside: avoid; }
+}
+</style>
+
+<div id="app"></div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+var CHARS = [
+  { id:'ng', name:'Neutral Ground',                   hex:'#5C3A96', kind:'direct',   def:'People can come and go freely, without obligation, invitation, or the need to play host.' },
+  { id:'lv', name:'The Leveler',                      hex:'#B52838', kind:'direct',   def:'Rank, status and roles from the outside world carry no weight inside.' },
+  { id:'cv', name:'Conversation is the Main Activity', hex:'#C85218', kind:'direct',   def:'Lively, wide-ranging talk is the primary activity, valued for its own sake.' },
+  { id:'ac', name:'Accessibility and Accommodation',  hex:'#D4A020', kind:'direct',   def:'Easy to reach, open when people are free, and usable without planning.' },
+  { id:'rg', name:'The Regulars',                     hex:'#7A5828', kind:'emergent', def:'A core of repeat visitors who set the tone and draw newcomers in.' },
+  { id:'lp', name:'A Low Profile',                    hex:'#B83068', kind:'direct',   def:'Plain, unpretentious and lived-in rather than curated or branded.' },
+  { id:'pm', name:'The Mood is Playful',              hex:'#CC6830', kind:'emergent', def:'Humour, banter and lightness are the default register.' },
+  { id:'ha', name:'A Home Away from Home',            hex:'#7E58A8', kind:'emergent', def:'Rootedness, warmth and a sense of possession; absences are noticed.' }
+];
+
+var CHAR_INDEX = {};
+CHARS.forEach(function(c, i) { CHAR_INDEX[c.id] = i; });
+
+var SEASONS = 8;
+var SEASON_NAMES = ['Autumn, Year 1', 'Winter, Year 1', 'Spring, Year 1', 'Summer, Year 1', 'Autumn, Year 2', 'Winter, Year 2', 'Spring, Year 2', 'Summer, Year 2'];
+
+var SCENARIOS = [
+  {
+    id:'community', num:'01', name:'The Courtyard Unit', subtitle:'Ground-floor unit in a new housing development',
+    blurb:'Written into the planning permission as a "community amenity space" and run by your small social enterprise. A peppercorn rent while the amenity agreement holds, a modest start-up grant, and a few hundred residents on your doorstep. The developer still owns the unit.',
+    constraints:['Peppercorn rent of £1,500 a season while the amenity agreement holds', 'Start-up grant of £14,000', 'Footfall comes from residents, not passing trade', 'The developer owns the unit and can sell it'],
+    money:14000, rent:1500, rentLabel:'Rent', subsidy:0, baseFootfall:420, location:'residential', locationLabel:'Residential courtyard'
+  },
+  {
+    id:'highstreet', num:'02', name:'The High Street Lease', subtitle:'Former retail unit on a busy high street',
+    blurb:'Excellent passing trade, and long opening hours are possible. But the rent is commercial, the landlord reviews it every two years, and you have borrowed to fit the place out. Every season has to pay for itself.',
+    constraints:['Commercial rent of £16,000 a season, reviewed in Year 2', 'Fit-out loan of £32,000 to work with', 'High footfall, mostly strangers passing through', 'Chains compete for the same customers'],
+    money:32000, rent:16000, rentLabel:'Rent', subsidy:0, baseFootfall:1100, location:'highstreet', locationLabel:'High street'
+  },
+  {
+    id:'campus', num:'03', name:'The Campus Room', subtitle:'Spare ground-floor room in a university building',
+    blurb:'No rent beyond a service charge, a catering subsidy of £5,000 a season, and thousands of students passing daily in term time. But the estates department owns the room, the building shuts at 6pm and at weekends unless you pay for security, and the subsidy is reviewed every year.',
+    constraints:['No rent, but a £2,500 service charge and the estates department sets the rules', 'Catering subsidy of £5,000 a season, reviewed annually', 'Long hours cost £2,000 a season in building security', 'A cohort graduates every summer'],
+    money:6000, rent:2500, rentLabel:'Service charge', subsidy:5000, baseFootfall:600, location:'campus', locationLabel:'University campus'
+  }
+];
+
+var INITIAL_LEVERS = { entry:'purchase', price:'mid', hours:'short', layout:'individual', noise:'moderate', decor:'scuffed', wifi:'none', staffing:'lean', programme:'none', kids:'none', loyalty:'none' };
+
+// Each lever option is an action card. cost = one-off cost of switching to it.
+// run = running cost per season (negative = income). Disruption is charged when the lever changes.
+var LEVERS = [
+  { id:'entry', name:'Entry policy', group:'access', disruption:10, options:[
+    { id:'open',       label:'Open door',            cost:0,    run:0,   desc:'Anyone can sit without buying anything. A donation tin by the door.' },
+    { id:'purchase',   label:'Customers only',       cost:0,    run:0,   desc:'A purchase is expected if you want a seat. Staff ask people nursing an empty cup to buy again or move on.' },
+    { id:'booking',    label:'Bookable seats',       cost:900,  run:300, desc:'Seats are reserved through an online booking system. Guarantees a table, kills the drop-in.' },
+    { id:'membership', label:'Members only',         cost:2500, run:400, desc:'Keycard entry for members paying £45 a month. Reliable income from a narrow crowd.' }
+  ]},
+  { id:'price', name:'Prices', group:'access', disruption:6, options:[
+    { id:'free', label:'Pay what you can',  cost:0, run:0, desc:'No fixed prices. Most people give a little; some give nothing.' },
+    { id:'low',  label:'Low (£1.80 coffee)', cost:0, run:0, desc:'Affordable enough to visit every day on a student loan or a pension.' },
+    { id:'mid',  label:'Mid (£3.20 coffee)', cost:0, run:0, desc:'Ordinary independent café pricing.' },
+    { id:'high', label:'Premium (£4.80 coffee)', cost:0, run:0, desc:'Speciality prices. Fewer visits, more money per visit.' }
+  ]},
+  { id:'hours', name:'Opening hours', group:'access', disruption:5, options:[
+    { id:'short',    label:'Short (10am to 4pm, weekdays)', cost:0, run:0, desc:'Cheap to staff. Closed when most people are free.' },
+    { id:'standard', label:'Standard (8am to 6pm, weekdays)', cost:0, run:0, desc:'Office hours. Shut in the evenings and at weekends.' },
+    { id:'long',     label:'Long (7am to 9pm, six days)', cost:0, run:0, desc:'Open before work and after it.' },
+    { id:'extended', label:'Extended (7am to 11pm, seven days)', cost:0, run:0, desc:'Always there in the gaps between obligations. Expensive to staff.' }
+  ]},
+  { id:'layout', name:'Layout', group:'space', disruption:8, options:[
+    { id:'communal',   label:'One long communal table', cost:1200, run:0, desc:'Strangers end up sitting next to each other. Nowhere to hide behind a laptop.' },
+    { id:'mixed',      label:'Shared table plus small tables', cost:600, run:0, desc:'A bit of both. Groups can gather; pairs can keep to themselves.' },
+    { id:'individual', label:'Individual tables with sockets', cost:1500, run:0, desc:'Every seat faces a wall or a screen. Ideal for solo work, poor for talk.' }
+  ]},
+  { id:'noise', name:'Noise', group:'rules', disruption:4, options:[
+    { id:'lively',   label:'Music on, talk welcome', cost:0,   run:0, desc:'A background hum that gives people permission to be loud.' },
+    { id:'moderate', label:'No policy', cost:0,   run:0, desc:'People sort it out between themselves.' },
+    { id:'quiet',    label:'Quiet-use policy', cost:150, run:0, desc:'Signage and staff enforcement. Laptop workers love it. Conversation goes elsewhere.' }
+  ]},
+  { id:'decor', name:'Interior', group:'space', disruption:7, options:[
+    { id:'scuffed',  label:'Second-hand and mismatched', cost:0,    run:0,    desc:'Donated sofas, a battered bookshelf, chairs that do not match. Looks lived-in because it is.' },
+    { id:'homely',   label:'Repaired and comfortable', cost:1500, run:250,  desc:'The same furniture, mended, with decent lighting. No branding.' },
+    { id:'designed', label:'Professionally designed', cost:6000, run:900,  desc:'An interior designer, a colour scheme, feature lighting. Photographs well. Draws visitors who come to look.' },
+    { id:'branded',  label:'Full brand identity', cost:9000, run:2200, desc:'Logo, uniforms, branded cups, motivational wall text. Draws footfall from people who trust brands.' }
+  ]},
+  { id:'wifi', name:'Wi-Fi', group:'space', disruption:2, options:[
+    { id:'none',  label:'No Wi-Fi', cost:0,   run:0,   desc:'Phones still work. Laptops do not stay long.' },
+    { id:'basic', label:'Basic Wi-Fi', cost:200, run:180, desc:'Enough to check email. Not enough to camp on.' },
+    { id:'fast',  label:'Fast Wi-Fi and sockets everywhere', cost:1200, run:540, desc:'Remote workers arrive at nine and leave at five, one coffee each, headphones on.' }
+  ]},
+  { id:'staffing', name:'Staffing', group:'people', disruption:7, options:[
+    { id:'volunteer', label:'Volunteer rota', cost:0,    run:800,   desc:'Cheap and warm, but different faces every day and gaps in the rota.' },
+    { id:'lean',      label:'One part-time barista', cost:0,    run:6500,  desc:'One person holds the place together. If they leave, so does the memory of who takes what.' },
+    { id:'stable',    label:'Two staff on permanent contracts', cost:1200, run:11000, desc:'The same people behind the counter for years. They learn names and orders.' },
+    { id:'managed',   label:'Manager plus agency staff', cost:2000, run:15000, desc:'Professional, efficient, and a different agency barista every week.' }
+  ]},
+  { id:'programme', name:'Programme', group:'people', disruption:3, options:[
+    { id:'none',      label:'No programme', cost:0,   run:0,     desc:'The space is what people make of it.' },
+    { id:'community', label:'Weekly community events', cost:300, run:700,   desc:'A knitting circle, toddler story time, a language exchange. Costs staff time; grows regulars.' },
+    { id:'corporate', label:'Private hire and networking evenings', cost:500, run:-2500, desc:'Paid corporate hire two evenings a week. Good money. The regulars are asked to leave at six.' }
+  ]},
+  { id:'kids', name:'Children', group:'people', disruption:3, options:[
+    { id:'none',   label:'No provision for children', cost:0,   run:0,   desc:'Parents with small children do not stay long.' },
+    { id:'corner', label:'Children\'s corner', cost:700, run:150, desc:'Books, crayons and a rug. Parents linger; a few laptop workers leave.' }
+  ]},
+  { id:'loyalty', name:'Marketing', group:'rules', disruption:3, options:[
+    { id:'none',   label:'Word of mouth only', cost:0,   run:0,   desc:'No adverts, no app. People find it because someone told them.' },
+    { id:'scheme', label:'Loyalty app and promotions', cost:600, run:400, desc:'Stamps, push notifications and branded packaging. Lifts spend and footfall; looks like every other chain.' }
+  ]}
+];
+
+var LEVER_INDEX = {};
+LEVERS.forEach(function(l) { LEVER_INDEX[l.id] = l; });
+
+var GROUPS = [
+  { id:'access', label:'Access and price' },
+  { id:'space',  label:'The space' },
+  { id:'people', label:'People and programme' },
+  { id:'rules',  label:'Rules and marketing' }
+];
+
+var ACTIONS_PER_SEASON = 2;
+var ACTIONS_FIRST_SEASON = 3;
+
+// ============================================================
+// MODEL — pure functions
+// ============================================================
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+function getOption(leverId, optId) {
+  var l = LEVER_INDEX[leverId];
+  for (var i = 0; i < l.options.length; i++) if (l.options[i].id === optId) return l.options[i];
+  return null;
+}
+
+function blankMods() {
+  return { ng:0, lv:0, cv:0, ac:0, lp:0, rg:0, pm:0, ha:0, pressure:0, footfall:1, spend:1 };
+}
+
+function sumMods(modList) {
+  var m = blankMods();
+  modList.forEach(function(x) {
+    Object.keys(x).forEach(function(k) {
+      if (k === 'footfall' || k === 'spend') m[k] *= x[k];
+      else if (m.hasOwnProperty(k)) m[k] += x[k];
+    });
+  });
+  return m;
+}
+
+// Targets for the five direct characteristics, given levers, scenario and persistent modifiers.
+function computeTargets(levers, scenario, mods, rg) {
+  mods = mods || blankMods();
+  rg = rg || 0;
+  var t = {};
+
+  t.ng = { open:95, purchase:78, booking:32, membership:22 }[levers.entry];
+  if (levers.loyalty === 'scheme') t.ng -= 6;
+  if (levers.noise === 'quiet') t.ng -= 8;
+  if (levers.programme === 'corporate') t.ng -= 6;
+  t.ng += mods.ng;
+
+  t.lv = { free:92, low:82, mid:62, high:36 }[levers.price];
+  if (levers.entry === 'membership') t.lv -= 25;
+  if (levers.entry === 'booking') t.lv -= 8;
+  if (levers.kids === 'corner') t.lv += 8;
+  if (levers.layout === 'communal') t.lv += 6;
+  if (levers.layout === 'individual') t.lv -= 6;
+  if (levers.programme === 'corporate') t.lv -= 12;
+  if (levers.decor === 'branded') t.lv -= 6;
+  if (levers.decor === 'designed') t.lv -= 4;
+  if (levers.loyalty === 'scheme') t.lv -= 4;
+  t.lv += mods.lv;
+
+  t.cv = { communal:84, mixed:62, individual:34 }[levers.layout];
+  t.cv += { lively:8, moderate:0, quiet:-34 }[levers.noise];
+  t.cv += { none:4, basic:-4, fast:-16 }[levers.wifi];
+  if (levers.programme === 'community') t.cv += 6;
+  if (levers.programme === 'corporate') t.cv -= 4;
+  t.cv += 0.12 * rg;
+  t.cv += mods.cv;
+
+  t.ac = { short:34, standard:58, long:78, extended:92 }[levers.hours];
+  t.ac += { residential:-6, highstreet:6, campus:-10 }[scenario.location];
+  t.ac += { free:8, low:4, mid:0, high:-14 }[levers.price];
+  t.ac += { open:3, purchase:0, booking:-28, membership:-30 }[levers.entry];
+  t.ac += { none:0, basic:2, fast:4 }[levers.wifi];
+  t.ac += mods.ac;
+
+  t.lp = { scuffed:92, homely:82, designed:42, branded:16 }[levers.decor];
+  if (levers.loyalty === 'scheme') t.lp -= 10;
+  if (levers.programme === 'corporate') t.lp -= 8;
+  if (levers.wifi === 'fast') t.lp -= 4;
+  t.lp += mods.lp;
+
+  Object.keys(t).forEach(function(k) { t[k] = clamp(t[k], 0, 100); });
+  return t;
+}
+
+function continuityOf(levers) {
+  return { volunteer:0.6, lean:0.7, stable:1.0, managed:0.65 }[levers.staffing];
+}
+
+function pressureOf(levers, mods) {
+  var p = { lively:0, moderate:20, quiet:60 }[levers.noise];
+  if (levers.entry === 'booking') p += 20;
+  if (levers.entry === 'membership') p += 15;
+  if (levers.programme === 'corporate') p += 25;
+  p += mods.pressure;
+  return clamp(p, 0, 100);
+}
+
+function disruptionOf(changes) {
+  var d = 0;
+  Object.keys(changes).forEach(function(k) { d += LEVER_INDEX[k].disruption; });
+  return d;
+}
+
+// Advance characteristic values one season. Returns a new values object.
+function stepCharacteristics(values, levers, scenario, mods, disruption) {
+  var t = computeTargets(levers, scenario, mods, values.rg);
+  var v = {};
+  ['ng', 'lv', 'cv', 'ac', 'lp'].forEach(function(k) {
+    v[k] = values[k] + (t[k] - values[k]) * 0.7;
+  });
+  var cont = continuityOf(levers);
+  var stability = disruption === 0 ? 3 : 0;
+
+  var rgTarget = ((v.ng + v.ac + v.cv) / 3) * (0.55 + 0.45 * cont);
+  v.rg = values.rg + (rgTarget - values.rg) * 0.35 - disruption * 0.9 + stability + mods.rg;
+
+  var pmTarget = 0.45 * v.cv + 0.3 * v.rg + 0.25 * (100 - pressureOf(levers, mods));
+  v.pm = values.pm + (pmTarget - values.pm) * 0.5 + mods.pm;
+
+  var haTarget = (0.4 * v.rg + 0.2 * v.ng + 0.2 * v.lp + 0.2 * v.ac) * (0.7 + 0.3 * cont);
+  v.ha = values.ha + (haTarget - values.ha) * 0.3 - disruption * 0.5 + mods.ha;
+
+  Object.keys(v).forEach(function(k) { v[k] = clamp(Math.round(v[k] * 10) / 10, 0, 100); });
+  return v;
+}
+
+function initialValues(levers, scenario) {
+  var t = computeTargets(levers, scenario, blankMods(), 0);
+  return { ng:t.ng, lv:t.lv, cv:t.cv, ac:t.ac, lp:t.lp, rg:8, pm:20, ha:6 };
+}
+
+// Economy for one season.
+function computeEconomy(levers, scenario, values, mods, rentOverride, subsidyOverride) {
+  var rent = typeof rentOverride === 'number' ? rentOverride : scenario.rent;
+  var subsidy = typeof subsidyOverride === 'number' ? subsidyOverride : scenario.subsidy;
+
+  var f = scenario.baseFootfall;
+  f *= { short:0.7, standard:1.0, long:1.2, extended:1.3 }[levers.hours];
+  f *= { free:1.2, low:1.08, mid:1.0, high:0.72 }[levers.price];
+  f *= { open:1.05, purchase:1.0, booking:0.6, membership:0.3 }[levers.entry];
+  f *= { scuffed:0.88, homely:1.0, designed:1.12, branded:1.18 }[levers.decor];
+  f *= { none:0.9, basic:1.0, fast:1.15 }[levers.wifi];
+  f *= { none:1.0, community:1.06, corporate:0.97 }[levers.programme];
+  if (levers.kids === 'corner') f *= scenario.location === 'residential' ? 1.06 : 1.02;
+  if (levers.loyalty === 'scheme') f *= 1.05;
+  if (levers.noise === 'quiet') f *= scenario.location === 'residential' ? 0.92 : 1.05;
+  f *= 1 + values.rg / 250;
+  f *= mods.footfall;
+  f = Math.round(f);
+
+  var spend = { free:0.6, low:1.9, mid:3.1, high:4.6 }[levers.price];
+  if (levers.entry === 'membership') spend = 7.5;
+  if (levers.entry === 'purchase') spend *= 1.15;
+  if (levers.entry === 'booking') spend *= 1.05;
+  if (levers.wifi === 'fast') spend *= 0.85;
+  if (levers.loyalty === 'scheme') spend *= 1.1;
+  spend *= mods.spend;
+
+  var revenue = Math.round(f * 12 * spend);
+
+  var staff = Math.round(getOption('staffing', levers.staffing).run * { short:0.8, standard:1.0, long:1.25, extended:1.5 }[levers.hours]);
+  var security = (scenario.location === 'campus' && (levers.hours === 'long' || levers.hours === 'extended')) ? 2000 : 0;
+  var running = 0;
+  LEVERS.forEach(function(l) { if (l.id !== 'staffing') running += getOption(l.id, levers[l.id]).run; });
+
+  var supplies = Math.round(revenue * 0.35);
+  var costs = rent + staff + security + running + supplies;
+  return {
+    footfall:f, spend:Math.round(spend * 100) / 100, revenue:revenue, subsidy:subsidy,
+    rent:rent, staff:staff, security:security, running:running, supplies:supplies, costs:costs,
+    net: revenue + subsidy - costs
+  };
+}
+
+function scoreOf(values) {
+  var s = 0;
+  CHARS.forEach(function(c) { s += values[c.id]; });
+  return Math.round(s / CHARS.length);
+}
+
+function verdictOf(values, closed) {
+  if (closed) return { id:'closed', label:'Closed', text:'The place could not pay for itself. Whatever it was becoming, it is not there any more.' };
+  var score = scoreOf(values);
+  var weakest = 100;
+  CHARS.forEach(function(c) { weakest = Math.min(weakest, values[c.id]); });
+  if (score >= 72 && weakest >= 50) return { id:'third', label:'A third place', text:'All eight characteristics are in reasonable shape and the emergent ones have had time to grow. This is the kind of place Oldenburg was describing.' };
+  if (score >= 55) return { id:'making', label:'A third place in the making', text:'Most of the conditions are there, but at least one characteristic is weak or the community has not yet taken root. Another year of stability might do it.' };
+  if (score >= 38) return { id:'venue', label:'A venue, not a third place', text:'People use it, but it does not level, anchor or amuse them. It is somewhere to be, not somewhere to belong.' };
+  return { id:'second', label:'A second place in disguise', text:'Gated, priced, branded or hushed into a satellite workplace. It may be viable. It is not a third place.' };
+}
+
+function statusOf(v) {
+  if (v >= 65) return 'present';
+  if (v >= 40) return 'ambiguous';
+  return 'absent';
+}
+
+// ============================================================
+// EVENTS — deterministic, state-conditional dilemmas
+// ============================================================
+// An effect can carry: money (one-off), shock (immediate change to values), mod (persistent target modifier,
+// keyed by event id), levers (forced settings), rent (new rent), subsidy (new subsidy), footfall (persistent multiplier).
+var EVENTS = [
+  {
+    id:'noise', scenarios:['community'], priority:60,
+    when:function(s) { return s.season >= 2 && (s.levers.noise === 'lively' || s.levers.hours === 'extended'); },
+    title:'The residents upstairs complain',
+    text:'A letter from the residents\' association: music and late voices are carrying up through the courtyard. Two families have complained to the developer. The developer reminds you that the amenity agreement can be reviewed.',
+    choices:[
+      { id:'a', label:'Turn it down and close earlier', desc:'Music off, doors shut by nine.', effect:{ levers:{ noise:'moderate', hours:'long' }, note:'Quieter and shorter. The evening crowd drifts away.' } },
+      { id:'b', label:'Soundproof the ceiling (£3,500)', desc:'Fix the building rather than the behaviour.', effect:{ money:-3500, note:'Expensive, but the atmosphere survives intact.' } },
+      { id:'c', label:'Ignore it', desc:'They knew there was a café when they bought the flat.', effect:{ mod:{ ha:-6, ng:-5 }, footfall:0.95, note:'The residents stop coming. Some of them were regulars.' } }
+    ]
+  },
+  {
+    id:'lapse', scenarios:['community'], priority:70,
+    when:function(s) { return s.season === 4; },
+    title:'The amenity agreement lapses',
+    text:'The developer\'s obligation to provide a community amenity space expired with the final phase of building. From next season the unit is let at a "community rate" of £4,500 a season. There is a council grant for spaces with a demonstrable community programme.',
+    choices:[
+      { id:'a', label:'Accept the new rent', desc:'Find the money somewhere.', effect:{ rent:4500, note:'Rent triples. The margins were thin already.' } },
+      { id:'b', label:'Apply for the council grant', desc:'Succeeds if you run community events or have a children\'s corner.', requires:function(s) { return s.levers.programme === 'community' || s.levers.kids === 'corner'; }, requiresText:'Needs a community programme or a children\'s corner', effect:{ rent:3000, money:5000, note:'The grant covers part of the rent and a one-off £5,000. The council wants a report every year.' } }
+    ]
+  },
+  {
+    id:'sale', scenarios:['community'], priority:90,
+    when:function(s) { return s.season === 6; },
+    title:'The developer sells the unit',
+    text:'The developer has sold the café unit to a private operator who wants to rebrand it as a co-working space called HIVE: keycard entry, £75 a month, hot-desks where the communal table is, corporate networking on Thursdays. They offer to keep you on as manager.',
+    choices:[
+      { id:'a', label:'Take the job', desc:'Manage HIVE. The community can find somewhere else.', effect:{ money:8000, levers:{ entry:'membership', layout:'individual', decor:'branded', programme:'corporate', kids:'none', price:'high' }, shock:{ rg:-30, ha:-25, pm:-20 }, note:'The old regulars are gone within a month. The new ones are there to work.' } },
+      { id:'b', label:'Rally the residents to buy the lease', desc:'Succeeds if the regulars and the sense of home are strong enough to raise the money.', tryable:true, requires:function(s) { return s.values.rg >= 55 && s.values.ha >= 50; }, requiresText:'Needs Regulars at 55 or more and Home Away from Home at 50 or more', effect:{ money:-6000, rent:2000, shock:{ ha:8, rg:4 }, note:'Two hundred residents chip in. The lease is held by a community trust. Nobody can sell it now.' } },
+      { id:'c', label:'Buy the lease yourself (£15,000)', desc:'If you have the money.', requires:function(s) { return s.money >= 15000; }, requiresText:'Needs £15,000 in the bank', effect:{ money:-15000, rent:0, note:'No rent, ever. But the reserve is gone.' } }
+    ],
+    fallback:{ id:'x', label:'The campaign falls short', effect:{ rent:6000, shock:{ ha:-10 }, note:'The new owner keeps you as a tenant at a commercial rent.' } }
+  },
+  {
+    id:'parents', scenarios:['community', 'campus'], priority:30,
+    when:function(s) { return s.season >= 2 && s.levers.kids === 'none' && s.values.lv >= 60; },
+    title:'The parents ask for a corner',
+    text:'A group of parents who come after the school run ask whether there could be a rug and some books for the children. They would bring the books.',
+    choices:[
+      { id:'a', label:'Yes (£700)', desc:'Install a children\'s corner.', effect:{ money:-700, levers:{ kids:'corner' }, note:'The afternoons get louder and warmer.' } },
+      { id:'b', label:'No', desc:'It is not that kind of place.', effect:{ mod:{ lv:-5 }, note:'The parents keep coming, less often, and stop asking.' } }
+    ]
+  },
+  {
+    id:'chain', scenarios:['highstreet'], priority:60,
+    when:function(s) { return s.season === 3; },
+    title:'A chain opens next door',
+    text:'A national coffee chain opens two doors down: fast Wi-Fi, a loyalty app, a queue out of the door on the first Saturday. Your footfall drops.',
+    choices:[
+      { id:'a', label:'Compete on their terms', desc:'Fast Wi-Fi, a loyalty app, and a designer refit (£6,000 plus the running costs).', effect:{ money:-6000, levers:{ wifi:'fast', loyalty:'scheme', decor:'designed' }, note:'You look like them now. The people who came for something different notice.' } },
+      { id:'b', label:'Hold your nerve', desc:'Rely on the people who already come. Footfall recovers only if the regulars are established.', effect:{ footfall:0.85, note:'Passing trade goes next door. Whether anyone else stays depends on whether they were ever really yours.', conditional:{ test:function(s) { return s.values.rg >= 45; }, footfall:0.96, note:'The strangers go next door. The regulars do not.' } } },
+      { id:'c', label:'Undercut them', desc:'Drop prices to the lowest tier.', effect:{ levers:{ price:'low' }, note:'The queue comes back. So do the margins.' } }
+    ]
+  },
+  {
+    id:'rentreview', scenarios:['highstreet'], priority:80,
+    when:function(s) { return s.season === 5; },
+    title:'Rent review',
+    text:'The landlord\'s agent writes: the rent rises 35 per cent from next season, in line with the high street. Alternatively they will fix it at 20 per cent for five years for a £4,000 premium. Or there is a side-street unit at 60 per cent of the rent, if you are prepared to move.',
+    choices:[
+      { id:'a', label:'Accept the 35 per cent rise', desc:'Stay put.', effect:{ rentMult:1.35, note:'Rent up. Something else has to give.' } },
+      { id:'b', label:'Pay the £4,000 premium', desc:'Fix at 20 per cent above the current rent.', requires:function(s) { return s.money >= 4000; }, requiresText:'Needs £4,000 in the bank', effect:{ money:-4000, rentMult:1.2, note:'Certainty, at a price.' } },
+      { id:'c', label:'Move to the side street', desc:'Cheaper, quieter, harder to find.', effect:{ rentMult:0.6, footfall:0.7, shock:{ rg:-15, ha:-15 }, mod:{ ac:-8 }, note:'Half the regulars make the move. The passing trade does not.' } }
+    ]
+  },
+  {
+    id:'levy', scenarios:['highstreet'], priority:50,
+    when:function(s) { return s.season >= 4 && (s.levers.price === 'high' || s.levers.decor === 'branded' || s.levers.entry === 'membership'); },
+    title:'The council\'s community levy',
+    text:'The council introduces a levy on high street outlets it judges "exclusionary": premium pricing, gated entry or corporate branding. You can pay £3,000 a season, or partition off a free community area, or make the whole place free to sit in.',
+    choices:[
+      { id:'a', label:'Pay the levy', desc:'£3,000 a season.', effect:{ rentAdd:3000, note:'Paid. Nothing else changes.' } },
+      { id:'b', label:'Partition a free area', desc:'Hard plastic chairs behind a glass divider. No purchase required on that side.', effect:{ money:-1500, mod:{ lv:-10, ng:4, cv:-4 }, note:'Two tiers, visible to everyone. The free side is used, but nobody stays long enough to talk.' } },
+      { id:'c', label:'Open the whole place', desc:'Nobody has to buy anything to sit.', effect:{ levers:{ entry:'open' }, note:'The levy is waived. Spend per head falls.' } }
+    ]
+  },
+  {
+    id:'estates', scenarios:['campus'], priority:80,
+    when:function(s) { return s.season === 3; },
+    title:'Estates reclassifies the room',
+    text:'The estates department needs exam-season study space. From next term the room is a "bookable study space" from 10am to 4pm with ID scanning at the door and a quiet-use policy. You can comply, negotiate, or make the case that the room already does something the university needs.',
+    choices:[
+      { id:'a', label:'Comply', desc:'Booking system, ID scan, quiet policy.', effect:{ levers:{ entry:'booking', noise:'quiet' }, note:'Attendance is logged. The afternoon group disperses across campus.' } },
+      { id:'b', label:'Negotiate: quiet policy only', desc:'Keep the door open; accept the signage.', effect:{ levers:{ noise:'quiet' }, mod:{ ac:-6 }, note:'The door stays open but the banter goes.' } },
+      { id:'c', label:'Make the case', desc:'Succeeds if the regulars and the sense of home are strong enough for staff to speak up for the room.', tryable:true, requires:function(s) { return s.values.rg >= 40 && s.values.ha >= 25; }, requiresText:'Needs Regulars at 40 or more and Home Away from Home at 25 or more', effect:{ shock:{ ha:5 }, note:'Forty emails from students and three from professors. Estates finds another room.' } }
+    ],
+    fallback:{ id:'x', label:'Estates is unmoved', effect:{ levers:{ entry:'booking', noise:'quiet' }, note:'Nobody outside the room could say why it mattered. It becomes a study space.' } }
+  },
+  {
+    id:'graduation', scenarios:['campus'], priority:70,
+    when:function(s) { return s.season === 4 && s.values.rg >= 25; },
+    title:'The cohort graduates',
+    text:'It is summer. The postgraduates who made the corner their own have submitted, celebrated and left. The room is quiet.',
+    choices:[
+      { id:'a', label:'Let it turn over', desc:'New students in the autumn will make it their own, or not.', effect:{ shock:{ rg:-22, ha:-15, pm:-8 }, note:'The regulars are gone. Whoever comes next starts from nothing.' } },
+      { id:'b', label:'Alumni Thursdays (£500)', desc:'Invite the graduates back one evening a week.', effect:{ money:-500, levers:{ programme:'community' }, shock:{ rg:-12, ha:-8, pm:-4 }, note:'Some come back. The continuity survives, thinner than before.' } }
+    ]
+  },
+  {
+    id:'subsidycut', scenarios:['campus'], priority:80,
+    when:function(s) { return s.season === 5; },
+    title:'The catering subsidy is withdrawn',
+    text:'The annual review removes the £5,000 subsidy. Catering services suggest three ways to fill the gap.',
+    choices:[
+      { id:'a', label:'Raise prices to premium', desc:'£4.80 a coffee.', effect:{ subsidy:0, levers:{ price:'high' }, note:'The daily visitors become weekly visitors.' } },
+      { id:'b', label:'Absorb it', desc:'Take the hit and hope the numbers hold.', effect:{ subsidy:0, note:'The gap has to come from somewhere.' } },
+      { id:'c', label:'Take a sponsor', desc:'A bank sponsors the room: £3,000 a season for their branding on every surface.', effect:{ subsidy:3000, levers:{ decor:'branded' }, note:'The room has a logo now.' } }
+    ]
+  },
+  {
+    id:'award', scenarios:['community', 'highstreet', 'campus'], priority:20,
+    when:function(s) { return s.season >= 2 && (s.levers.decor === 'designed' || s.levers.decor === 'branded'); },
+    title:'A design award',
+    text:'The refit has been shortlisted for a regional interiors award. The magazine wants photographs and a feature.',
+    choices:[
+      { id:'a', label:'Accept and publicise', desc:'Photographs, feature, a plaque by the door.', effect:{ footfall:1.15, mod:{ lp:-14, cv:-5 }, note:'People come to look at the room. They do not talk to each other.' } },
+      { id:'b', label:'Decline the feature', desc:'Take the plaque, skip the photographs.', effect:{ mod:{ lp:-4 }, note:'A small plaque. Most people do not notice it.' } }
+    ]
+  },
+  {
+    id:'viral', scenarios:['highstreet', 'campus'], priority:40,
+    when:function(s) { return s.season >= 3 && (s.levers.decor === 'designed' || s.levers.decor === 'branded' || s.levers.wifi === 'fast'); },
+    title:'Going viral',
+    text:'A video of the window seats has three million views. There is a queue of people staging flat-lays of their drinks, and they shush anyone whose conversation ruins the audio.',
+    choices:[
+      { id:'a', label:'Lean in', desc:'Ring light by the window, a hashtag on the cups.', effect:{ money:3000, footfall:1.25, shock:{ cv:-20, pm:-15, ng:-8, lp:-10 }, mod:{ cv:-8, pm:-6, lp:-6 }, note:'The takings are extraordinary. Nobody who used to come in still does.' } },
+      { id:'b', label:'Quietly discourage it', desc:'Curtains on the window seats, no photographs of staff.', effect:{ money:-300, footfall:1.05, shock:{ pm:-4 }, note:'It passes in a season. A few of the newcomers stay.' } },
+      { id:'c', label:'Ban filming', desc:'A sign on the door.', effect:{ shock:{ ng:-6, pm:-3 }, note:'The first rule on the door. It will not be the last.' } }
+    ]
+  },
+  {
+    id:'clique', scenarios:['community', 'highstreet', 'campus'], priority:45,
+    when:function(s) { return s.season >= 3 && s.values.rg >= 55 && s.values.lv <= 72; },
+    title:'The regulars close ranks',
+    text:'Inside jokes, a claimed corner, a WhatsApp group they reference in front of newcomers. Someone posts online: "Basically a private club. Don\'t bother unless you know them."',
+    choices:[
+      { id:'a', label:'Leave them to it', desc:'They are the heart of the place.', effect:{ mod:{ lv:-18, ng:-10, pm:-6 }, shock:{ rg:5 }, note:'The regulars are happier than ever. Nobody new stays.' } },
+      { id:'b', label:'Ask them to host a newcomers\' evening (£600)', desc:'Turn the gatekeepers into hosts.', effect:{ money:-600, mod:{ lv:4, ng:3 }, shock:{ rg:-4, pm:-3 }, note:'Grumbling, then a few new faces at the corner table.' } },
+      { id:'c', label:'Break up the corner', desc:'Rotate the furniture; nothing is anyone\'s.', effect:{ shock:{ rg:-18, ha:-12 }, mod:{ lv:6 }, note:'Fairer, and colder. Two of the regulars stop coming.' } }
+    ]
+  },
+  {
+    id:'laptops', scenarios:['community', 'highstreet', 'campus'], priority:35,
+    when:function(s) { return s.season >= 2 && s.levers.wifi === 'fast' && s.levers.layout === 'individual'; },
+    title:'Every seat taken by nine',
+    text:'Remote workers arrive at opening time, plug in, put headphones on and stay until five. One coffee each. Anyone who comes to talk finds nowhere to sit.',
+    choices:[
+      { id:'a', label:'Fine, they pay', desc:'Reliable occupancy is reliable income.', effect:{ spend:1.1, mod:{ cv:-8, pm:-5 }, note:'A quiet, full, profitable room.' } },
+      { id:'b', label:'Laptop-free afternoons', desc:'Lids down after two.', effect:{ footfall:0.95, mod:{ cv:8, ng:-3 }, note:'The afternoons come back. A rule on the wall, though.' } },
+      { id:'c', label:'Remove the sockets', desc:'Back to basic Wi-Fi.', effect:{ levers:{ wifi:'basic' }, note:'The workers move next door.' } }
+    ]
+  },
+  {
+    id:'quit', scenarios:['community', 'highstreet', 'campus'], priority:40,
+    when:function(s) { return s.season >= 2 && s.levers.staffing === 'lean' && s.values.rg >= 30; },
+    title:'Your barista hands in their notice',
+    text:'The one person who knew everyone\'s order has found a job with a pension. Their last day is Friday.',
+    choices:[
+      { id:'a', label:'Agency cover (£800)', desc:'Someone behind the counter by Monday.', effect:{ money:-800, shock:{ rg:-10, ha:-6 }, note:'The new barista asks the regulars their names. Twice.' } },
+      { id:'b', label:'Offer a proper contract (£1,200)', desc:'Two staff on permanent terms.', effect:{ money:-1200, levers:{ staffing:'stable' }, shock:{ rg:-4 }, note:'They stay. So does the memory of who takes what.' } },
+      { id:'c', label:'Run it on volunteers', desc:'A rota of regulars and friends.', effect:{ levers:{ staffing:'volunteer' }, shock:{ rg:-6, pm:3 }, note:'Warm, chaotic, closed on Tuesdays when nobody turns up.' } }
+    ]
+  },
+  {
+    id:'anchor', scenarios:['community', 'highstreet', 'campus'], priority:10,
+    when:function(s) { return s.values.rg >= 65 && s.values.ha >= 55; },
+    title:'"Our place"',
+    text:'A regular who has not been in for a fortnight gets three messages asking if they are all right. Someone refers to "our place" without noticing. A newcomer is waved over to the corner table.',
+    choices:[
+      { id:'a', label:'Carry on', desc:'This is what it was for.', effect:{ shock:{ ha:5 }, note:'Nothing to decide. Something to notice.' } }
+    ]
+  }
+];
+
+var INSOLVENCY_EVENT = {
+  id:'insolvency', priority:100,
+  title:'The money has run out',
+  text:'The account is overdrawn and the bank will not extend it. Something has to change this season, or the doors close.',
+  choices:[
+    { id:'a', label:'Raise prices to premium', desc:'£4.80 a coffee.', effect:{ levers:{ price:'high' }, note:'Fewer visits, more per visit.' } },
+    { id:'b', label:'Cut the hours', desc:'10am to 4pm, weekdays.', effect:{ levers:{ hours:'short' }, note:'Cheaper to staff. Closed when people are free.' } },
+    { id:'c', label:'Take corporate hire', desc:'Private networking evenings twice a week.', effect:{ levers:{ programme:'corporate' }, note:'Money in. The regulars are asked to leave at six.' } },
+    { id:'d', label:'Close', desc:'Wind it up.', effect:{ close:true, note:'The shutters come down.' } }
+  ]
+};
+
+function eligibleEvent(s) {
+  if (s.money < 0) return INSOLVENCY_EVENT;
+  var best = null;
+  EVENTS.forEach(function(ev) {
+    if (ev.scenarios.indexOf(s.scenario.id) === -1) return;
+    if (s.firedEvents.indexOf(ev.id) !== -1) return;
+    if (!ev.when(s)) return;
+    if (!best || ev.priority > best.priority) best = ev;
+  });
+  return best;
+}
+
+function choiceAvailable(choice, s) {
+  return !choice.requires || choice.requires(s);
+}
+
+// A choice can be taken if its requirements are met, or if it is marked tryable and the event has a fallback outcome.
+function choiceSelectable(ev, choice, s) {
+  return choiceAvailable(choice, s) || (!!choice.tryable && !!ev.fallback);
+}
+
+// Apply an event choice to state. Returns a list of change notes.
+function applyEffect(s, effect, eventId) {
+  if (effect.money) s.money += effect.money;
+  if (typeof effect.rent === 'number') s.rent = effect.rent;
+  if (effect.rentMult) s.rent = Math.round(s.rent * effect.rentMult);
+  if (effect.rentAdd) s.rent += effect.rentAdd;
+  if (typeof effect.subsidy === 'number') s.subsidy = effect.subsidy;
+  if (effect.levers) Object.keys(effect.levers).forEach(function(k) { s.levers[k] = effect.levers[k]; });
+  if (effect.shock) Object.keys(effect.shock).forEach(function(k) { s.values[k] = clamp(s.values[k] + effect.shock[k], 0, 100); });
+  var mod = {};
+  var hasMod = false;
+  if (effect.mod) { Object.keys(effect.mod).forEach(function(k) { mod[k] = effect.mod[k]; hasMod = true; }); }
+  if (effect.footfall) { mod.footfall = effect.footfall; hasMod = true; }
+  if (effect.spend) { mod.spend = effect.spend; hasMod = true; }
+  if (hasMod) s.mods[eventId] = mod;
+  if (effect.close) s.closed = true;
+}
+
+// Resolve an event choice, honouring conditional outcomes and fallbacks.
+function resolveEvent(s, ev, choiceId) {
+  var choice = null;
+  ev.choices.forEach(function(c) { if (c.id === choiceId) choice = c; });
+  if (!choice) return null;
+  if (!choiceSelectable(ev, choice, s)) return null;
+  var effect = choice.effect;
+  var label = choice.label;
+  if (!choiceAvailable(choice, s)) {
+    effect = ev.fallback.effect;
+    label = ev.fallback.label;
+  } else if (effect.conditional && effect.conditional.test(s)) {
+    var c2 = {};
+    Object.keys(effect).forEach(function(k) { if (k !== 'conditional') c2[k] = effect[k]; });
+    Object.keys(effect.conditional).forEach(function(k) { if (k !== 'test') c2[k] = effect.conditional[k]; });
+    effect = c2;
+  }
+  applyEffect(s, effect, ev.id);
+  if (ev.id !== 'insolvency') s.firedEvents.push(ev.id);
+  else s.insolvencies++;
+  return { eventId:ev.id, title:ev.title, choiceLabel:label, note:effect.note, effect:effect };
+}
+
+// ============================================================
+// GAME STATE
+// ============================================================
+function newGame(scenarioId) {
+  var sc = null;
+  SCENARIOS.forEach(function(x) { if (x.id === scenarioId) sc = x; });
+  var levers = {};
+  Object.keys(INITIAL_LEVERS).forEach(function(k) { levers[k] = INITIAL_LEVERS[k]; });
+  return {
+    scenario:sc,
+    season:1,
+    money:sc.money,
+    rent:sc.rent,
+    subsidy:sc.subsidy,
+    levers:levers,
+    values:initialValues(levers, sc),
+    mods:{},
+    firedEvents:[],
+    insolvencies:0,
+    closed:false,
+    finished:false,
+    history:[],
+    pending:{},          // leverId -> optionId chosen this season
+    lastResult:null,
+    pendingEvent:null
+  };
+}
+
+function actionsAllowed(s) {
+  return s.season === 1 ? ACTIONS_FIRST_SEASON : ACTIONS_PER_SEASON;
+}
+
+function pendingCost(s) {
+  var c = 0;
+  Object.keys(s.pending).forEach(function(k) { c += getOption(k, s.pending[k]).cost; });
+  return c;
+}
+
+function currentMods(s) {
+  var list = [];
+  Object.keys(s.mods).forEach(function(k) { list.push(s.mods[k]); });
+  return sumMods(list);
+}
+
+// Preview the effect of switching one lever, for card chips.
+function previewOption(s, leverId, optId) {
+  var mods = currentMods(s);
+  var before = computeTargets(s.levers, s.scenario, mods, s.values.rg);
+  var lv2 = {};
+  Object.keys(s.levers).forEach(function(k) { lv2[k] = s.levers[k]; });
+  lv2[leverId] = optId;
+  var after = computeTargets(lv2, s.scenario, mods, s.values.rg);
+  var deltas = {};
+  ['ng', 'lv', 'cv', 'ac', 'lp'].forEach(function(k) { deltas[k] = Math.round(after[k] - before[k]); });
+  var ecoBefore = computeEconomy(s.levers, s.scenario, s.values, mods, s.rent, s.subsidy);
+  var ecoAfter = computeEconomy(lv2, s.scenario, s.values, mods, s.rent, s.subsidy);
+  return { deltas:deltas, netDelta:ecoAfter.net - ecoBefore.net, disruption:LEVER_INDEX[leverId].disruption };
+}
+
+// Commit the pending actions and advance one season.
+function endSeason(s) {
+  var changes = {};
+  var spent = 0;
+  Object.keys(s.pending).forEach(function(k) {
+    if (s.pending[k] !== s.levers[k]) {
+      changes[k] = { from:s.levers[k], to:s.pending[k] };
+      spent += getOption(k, s.pending[k]).cost;
+      s.levers[k] = s.pending[k];
+    }
+  });
+  s.money -= spent;
+  var disruption = disruptionOf(changes);
+  var mods = currentMods(s);
+  var before = {};
+  Object.keys(s.values).forEach(function(k) { before[k] = s.values[k]; });
+  s.values = stepCharacteristics(s.values, s.levers, s.scenario, mods, disruption);
+  var eco = computeEconomy(s.levers, s.scenario, s.values, mods, s.rent, s.subsidy);
+  s.money += eco.net;
+  var result = {
+    season:s.season, name:SEASON_NAMES[s.season - 1], changes:changes, spent:spent, disruption:disruption,
+    before:before, after:s.values, eco:eco, moneyAfter:s.money, score:scoreOf(s.values), event:null
+  };
+  s.history.push(result);
+  s.lastResult = result;
+  s.pending = {};
+  if (s.money < 0 && s.insolvencies >= 1) {
+    s.closed = true;
+    s.finished = true;
+  } else {
+    s.pendingEvent = eligibleEvent(s);
+  }
+  return result;
+}
+
+function advanceSeason(s) {
+  s.pendingEvent = null;
+  if (s.closed) { s.finished = true; return; }
+  if (s.season >= SEASONS) { s.finished = true; return; }
+  s.season++;
+}
+
+// Debrief: which lessons did this play-through demonstrate?
+function debriefOf(s) {
+  var lessons = [];
+  var totalDisruption = 0, seasonsQuiet = 0, everHigh = false, everGated = false, everDesigned = false, everQuiet = false, everCorporate = false;
+  s.history.forEach(function(h) {
+    totalDisruption += h.disruption;
+    if (h.disruption === 0) seasonsQuiet++;
+  });
+  var final = s.values;
+  var direct = (final.ng + final.lv + final.cv + final.ac + final.lp) / 5;
+  var emergent = (final.rg + final.pm + final.ha) / 3;
+  s.history.forEach(function(h) {
+    Object.keys(h.changes).forEach(function(k) {
+      var to = h.changes[k].to;
+      if (k === 'price' && to === 'high') everHigh = true;
+      if (k === 'entry' && (to === 'membership' || to === 'booking')) everGated = true;
+      if (k === 'decor' && (to === 'designed' || to === 'branded')) everDesigned = true;
+      if (k === 'noise' && to === 'quiet') everQuiet = true;
+      if (k === 'programme' && to === 'corporate') everCorporate = true;
+    });
+  });
+  if (s.levers.price === 'high') everHigh = true;
+  if (s.levers.entry === 'membership' || s.levers.entry === 'booking') everGated = true;
+  if (s.levers.decor === 'designed' || s.levers.decor === 'branded') everDesigned = true;
+  if (s.levers.noise === 'quiet') everQuiet = true;
+  if (s.levers.programme === 'corporate') everCorporate = true;
+
+  if (s.closed) lessons.push({ title:'A third place still has to pay the rent', text:'Oldenburg\'s characteristics are social, but the space that hosts them is economic. Low prices, open doors and long hours are exactly the things that cost money. The Common Room survived on a subsidy; COMMON on a planning condition. Yours had neither for long enough.' });
+  if (emergent < direct - 15) lessons.push({ title:'You can build the conditions but not the community', text:'Regulars, playfulness and the sense of home cannot be bought. They grow from Neutral Ground, Accessibility and Conversation over time, and they grow slowly. Your direct characteristics averaged ' + Math.round(direct) + ' but the emergent ones only ' + Math.round(emergent) + '.' });
+  if (totalDisruption >= 45) lessons.push({ title:'Every improvement is a disruption', text:'Each change to the space, the prices or the staff unsettled the regulars, because regulars value the place partly for staying the same. You made changes worth ' + totalDisruption + ' disruption points across the game. Some of them were necessary; all of them had a cost.' });
+  if (seasonsQuiet >= 3) lessons.push({ title:'Stability paid off', text:'You left things alone for ' + seasonsQuiet + ' seasons. That is when the regulars settled in and the sense of home grew. Third places are grown more than they are built.' });
+  if (everHigh) lessons.push({ title:'Pricing is a filter', text:'Premium prices are the most reliable route to viability and the most reliable way to lose the Leveler. At £4.80 a coffee the space selects for financial comfort, as Starbucks on the High Street does. Whoever cannot afford daily visits stops being a regular.' });
+  if (everGated) lessons.push({ title:'Gates end Neutral Ground', text:'Membership and booking systems replace drop-in with logged, scheduled attendance. The Common Room lost its afternoon group to a booking system; COMMON lost everything to a keycard. Reliable income, unreliable sociability.' });
+  if (everDesigned) lessons.push({ title:'Investment works against Low Profile', text:'The more you spend on how the space looks, the less it looks like a place people can make their own. Elm Road Library won a design award and lost its homeliness. A third place is unimpressive on purpose.' });
+  if (everQuiet) lessons.push({ title:'Rules trade talk for order', text:'A quiet-use policy suits solo workers and institutions and directly suppresses the main activity of a third place. Every rule on the wall is a reason the mood is not playful.' });
+  if (everCorporate) lessons.push({ title:'Programming for money displaces the regulars', text:'Corporate hire is the easiest income in the game. It also asks the people who make the place a third place to leave at six, twice a week, and tells them who the space is really for.' });
+  if (s.firedEvents.indexOf('clique') !== -1) lessons.push({ title:'Success has its own failure mode', text:'Strong regulars can become gatekeepers. The Common Room\'s postgraduates were welcomers until their in-jokes made newcomers feel they were intruding. The Leveler and Neutral Ground are the characteristics regulars most easily erode.' });
+  if (s.firedEvents.indexOf('viral') !== -1 || s.firedEvents.indexOf('sale') !== -1 || s.firedEvents.indexOf('estates') !== -1) lessons.push({ title:'Somebody else owns the space', text:'A developer, an estates department, an algorithm. The characteristics live in the social life of the place, but the place itself belongs to someone with other priorities. A third place that does not control its own premises is always one decision away from being something else.' });
+  if (lessons.length === 0) lessons.push({ title:'A balanced run', text:'You avoided the obvious traps. Compare your final profile with COMMON in its initial state and ask which characteristics you would have to defend if the unit were sold tomorrow.' });
+  return lessons;
+}
+// ============================================================
+// UI
+// ============================================================
+var game = null;
+var screen = 'intro';       // intro | scenario | season | result | event | final
+var activeGroup = 'access';
+var eventOutcome = null;
+var lastScreen = '';
+
+function esc(s) {
+  var d = document.createElement('div');
+  d.textContent = s == null ? '' : String(s);
+  return d.innerHTML;
+}
+
+function money(n) {
+  var v = Math.round(n);
+  var sign = v < 0 ? '-' : '';
+  return sign + '£' + Math.abs(v).toLocaleString('en-GB');
+}
+
+function signed(n, suffix) {
+  var v = Math.round(n);
+  if (v === 0) return '0' + (suffix || '');
+  return (v > 0 ? '+' : '-') + Math.abs(v) + (suffix || '');
+}
+
+function signedMoney(n) {
+  var v = Math.round(n);
+  if (v === 0) return '£0';
+  return (v > 0 ? '+' : '-') + '£' + Math.abs(v).toLocaleString('en-GB');
+}
+
+function charById(id) { return CHARS[CHAR_INDEX[id]]; }
+
+function arrows(delta) {
+  var a = Math.abs(delta);
+  var sym = delta > 0 ? '↑' : '↓';
+  if (a >= 30) return sym + sym + sym;
+  if (a >= 12) return sym + sym;
+  return sym;
+}
+
+function barRow(c, value, opts) {
+  opts = opts || {};
+  var v = Math.round(value);
+  var status = statusOf(v);
+  var html = '<div class="bar-row' + (opts.compact ? ' compact' : '') + '" data-status="' + status + '">';
+  html += '<div class="bar-label"><span class="bar-dot" style="background:' + c.hex + '"></span>' + esc(c.name);
+  if (c.kind === 'emergent' && !opts.compact) html += ' <span class="bar-kind" title="Grows over time from the other characteristics; cannot be set directly">emergent</span>';
+  html += '</div>';
+  html += '<div class="bar-track"><div class="bar-fill" data-bar="' + c.id + '" style="width:' + (opts.animate ? 0 : v) + '%;background:' + c.hex + '"></div></div>';
+  html += '<div class="bar-val">' + v + (typeof opts.delta === 'number' && Math.round(opts.delta) !== 0 ? ' <span class="bar-delta ' + (opts.delta > 0 ? 'up' : 'down') + '">' + signed(opts.delta) + '</span>' : '') + '</div>';
+  html += '</div>';
+  return html;
+}
+
+function render() {
+  var app = document.getElementById('app');
+  var html = '';
+  switch (screen) {
+    case 'intro':    html = renderIntro(); break;
+    case 'scenario': html = renderScenario(); break;
+    case 'season':   html = renderSeason(); break;
+    case 'result':   html = renderResult(); break;
+    case 'event':    html = renderEvent(); break;
+    case 'final':    html = renderFinal(); break;
+  }
+  app.innerHTML = html;
+  if (screen !== lastScreen) window.scrollTo(0, 0);
+  document.body.setAttribute('data-screen', screen);
+  if ((screen === 'final' || screen === 'result') && screen !== lastScreen) {
+    requestAnimationFrame(function() { requestAnimationFrame(animateBars); });
+  }
+  lastScreen = screen;
+}
+
+function animateBars() {
+  var bars = document.querySelectorAll('.bar-fill[data-target]');
+  for (var i = 0; i < bars.length; i++) bars[i].style.width = bars[i].getAttribute('data-target') + '%';
+}
+
+// ------------------------------------------------------------
+function renderIntro() {
+  var html = '<section class="intro">';
+  html += '<div class="geo geo-a"></div><div class="geo geo-b"></div><div class="geo geo-c"></div>';
+  html += '<div class="intro-content">';
+  html += '<p class="eyebrow">Activity 3</p>';
+  html += '<h1>Build a<br>third place</h1>';
+  html += '<p class="intro-sub">You have a room, a budget and two years. Spend money and attention to give the place Oldenburg\'s eight characteristics. Five of them you can set directly. Three of them only grow, slowly, if the other five are right and you stop changing things. Somebody else owns the building.</p>';
+  html += '<div class="intro-chars">';
+  CHARS.forEach(function(c) { html += '<span class="char-chip" style="background:' + c.hex + '">' + esc(c.name) + '</span>'; });
+  html += '</div>';
+  html += '<button class="btn" data-action="to-scenario">Choose a site</button>';
+  html += '</div></section>';
+  return html;
+}
+
+function renderScenario() {
+  var html = '<section class="scenario">';
+  html += '<p class="eyebrow">Choose a site</p>';
+  html += '<h2>Where will it be?</h2>';
+  html += '<p class="lede">Each site has different money, different footfall and a different person who can take it away from you.</p>';
+  html += '<div class="scenario-grid">';
+  SCENARIOS.forEach(function(sc) {
+    html += '<div class="scenario-card">';
+    html += '<div class="scenario-num">' + sc.num + '</div>';
+    html += '<h3>' + esc(sc.name) + '</h3>';
+    html += '<p class="scenario-sub">' + esc(sc.subtitle) + '</p>';
+    html += '<p class="scenario-blurb">' + esc(sc.blurb) + '</p>';
+    html += '<ul class="constraints">';
+    sc.constraints.forEach(function(c) { html += '<li>' + esc(c) + '</li>'; });
+    html += '</ul>';
+    html += '<button class="btn btn-small" data-action="start" data-scenario="' + sc.id + '">Take it</button>';
+    html += '</div>';
+  });
+  html += '</div></section>';
+  return html;
+}
+
+// ------------------------------------------------------------
+function projectedEconomy(s) {
+  var lv2 = {};
+  Object.keys(s.levers).forEach(function(k) { lv2[k] = s.levers[k]; });
+  Object.keys(s.pending).forEach(function(k) { lv2[k] = s.pending[k]; });
+  return computeEconomy(lv2, s.scenario, s.values, currentMods(s), s.rent, s.subsidy);
+}
+
+function renderDash(s) {
+  var eco = projectedEconomy(s);
+  var cost = pendingCost(s);
+  var html = '<aside class="dash">';
+  html += '<div class="dash-head"><div class="dash-site">' + esc(s.scenario.name) + '</div><div class="dash-season">Season ' + s.season + ' of ' + SEASONS + ' <span>' + esc(SEASON_NAMES[s.season - 1]) + '</span></div></div>';
+  html += '<div class="dash-stats">';
+  html += '<div class="stat"><div class="stat-label">In the bank</div><div class="stat-val' + (s.money < 0 ? ' neg' : '') + '">' + money(s.money) + '</div></div>';
+  html += '<div class="stat"><div class="stat-label">Projected this season</div><div class="stat-val' + (eco.net - cost < 0 ? ' neg' : ' pos') + '">' + signedMoney(eco.net - cost) + '</div><div class="stat-sub">' + (cost ? money(cost) + ' one-off, then ' : '') + signedMoney(eco.net) + ' a season</div></div>';
+  html += '<div class="stat"><div class="stat-label">Visits a week</div><div class="stat-val">' + eco.footfall.toLocaleString('en-GB') + '</div></div>';
+  html += '<div class="stat"><div class="stat-label">Third-place score</div><div class="stat-val">' + scoreOf(s.values) + '<span class="stat-of">/100</span></div></div>';
+  html += '</div>';
+  html += '<div class="dash-bars">';
+  CHARS.forEach(function(c) { html += barRow(c, s.values[c.id], { compact:true }); });
+  html += '</div>';
+  html += '<div class="dash-legend">Bars marked <em>emergent</em> in the cards cannot be set. They grow from Neutral Ground, Accessibility and Conversation, and shrink whenever you change things.</div>';
+  html += '</aside>';
+  return html;
+}
+
+function effectChips(preview, leverId, isCurrent) {
+  if (isCurrent) return '';
+  var html = '<div class="chips">';
+  var any = false;
+  ['ng', 'lv', 'cv', 'ac', 'lp'].forEach(function(k) {
+    var d = preview.deltas[k];
+    if (Math.abs(d) < 3) return;
+    any = true;
+    var c = charById(k);
+    html += '<span class="chip ' + (d > 0 ? 'up' : 'down') + '" style="border-color:' + c.hex + '"><span class="chip-dot" style="background:' + c.hex + '"></span>' + esc(c.name.replace('Accessibility and Accommodation', 'Accessibility').replace('Conversation is the Main Activity', 'Conversation').replace('A Home Away from Home', 'Home Away').replace('A Low Profile', 'Low Profile').replace('The Mood is Playful', 'Playful Mood').replace('The Leveler', 'Leveler')) + ' ' + arrows(d) + '</span>';
+  });
+  html += '<span class="chip warn">Unsettles regulars −' + Math.round(preview.disruption * 0.9) + '</span>';
+  var nd = preview.netDelta;
+  if (Math.abs(nd) >= 100) html += '<span class="chip ' + (nd > 0 ? 'money-up' : 'money-down') + '">' + signedMoney(nd) + ' a season</span>';
+  html += '</div>';
+  return html;
+}
+
+function renderSeason() {
+  var s = game;
+  var allowed = actionsAllowed(s);
+  var used = Object.keys(s.pending).length;
+  var html = '<section class="board">';
+  html += renderDash(s);
+  html += '<main class="deck">';
+  html += '<div class="deck-head">';
+  html += '<div><p class="eyebrow">Decide</p><h2>What will you change this season?</h2></div>';
+  html += '<div class="actions-meter' + (used >= allowed ? ' full' : '') + '">';
+  for (var i = 0; i < allowed; i++) html += '<span class="action-pip' + (i < used ? ' used' : '') + '"></span>';
+  html += '<span class="actions-text">' + used + ' of ' + allowed + ' actions</span></div>';
+  html += '</div>';
+  html += '<p class="deck-note">You have the attention for ' + allowed + ' change' + (allowed === 1 ? '' : 's') + ' a season. Each one costs money and unsettles the regulars. Changing nothing is a choice: a quiet season lets them settle in.</p>';
+
+  html += '<div class="tabs">';
+  GROUPS.forEach(function(g) {
+    var pendingInGroup = 0;
+    LEVERS.forEach(function(l) { if (l.group === g.id && s.pending[l.id]) pendingInGroup++; });
+    html += '<button class="tab' + (g.id === activeGroup ? ' active' : '') + '" data-action="tab" data-group="' + g.id + '">' + esc(g.label) + (pendingInGroup ? ' <span class="tab-badge">' + pendingInGroup + '</span>' : '') + '</button>';
+  });
+  html += '</div>';
+
+  LEVERS.forEach(function(l) {
+    if (l.group !== activeGroup) return;
+    var cur = s.levers[l.id];
+    var pend = s.pending[l.id];
+    html += '<div class="lever">';
+    html += '<div class="lever-head"><h3>' + esc(l.name) + '</h3><span class="lever-current">Now: ' + esc(getOption(l.id, cur).label) + '</span></div>';
+    html += '<div class="cards">';
+    l.options.forEach(function(o) {
+      var isCurrent = o.id === cur;
+      var isPending = o.id === pend;
+      var blocked = !isCurrent && !isPending && !pend && used >= allowed;
+      var pv = previewOption(s, l.id, o.id);
+      var runDelta = o.run - getOption(l.id, cur).run;
+      html += '<button class="card' + (isCurrent ? ' current' : '') + (isPending ? ' pending' : '') + (blocked ? ' blocked' : '') + '" data-action="pick" data-lever="' + l.id + '" data-opt="' + o.id + '"' + (blocked ? ' disabled' : '') + '>';
+      html += '<div class="card-top"><span class="card-label">' + esc(o.label) + '</span>';
+      if (isCurrent) html += '<span class="card-tag">Current</span>';
+      else if (isPending) html += '<span class="card-tag pending">Selected</span>';
+      else html += '<span class="card-cost">' + (o.cost ? money(o.cost) : 'No cost') + '</span>';
+      html += '</div>';
+      html += '<p class="card-desc">' + esc(o.desc) + '</p>';
+      html += effectChips(pv, l.id, isCurrent);
+      html += '</button>';
+    });
+    html += '</div></div>';
+  });
+
+  html += '<div class="tray">';
+  if (used === 0) {
+    html += '<div class="tray-empty">No changes selected. End the season to let the place settle.</div>';
+  } else {
+    html += '<div class="tray-list">';
+    Object.keys(s.pending).forEach(function(k) {
+      var o = getOption(k, s.pending[k]);
+      html += '<span class="tray-item">' + esc(LEVER_INDEX[k].name) + ': <strong>' + esc(o.label) + '</strong>' + (o.cost ? ' <span class="tray-cost">' + money(o.cost) + '</span>' : '') + '<button class="tray-x" data-action="unpick" data-lever="' + k + '" title="Remove">×</button></span>';
+    });
+    html += '</div>';
+  }
+  var cost = pendingCost(s);
+  var cannot = cost > s.money && s.money >= 0;
+  html += '<div class="tray-foot">';
+  if (cost) html += '<span class="tray-total">One-off cost ' + money(cost) + (cannot ? ' <em>(more than you have)</em>' : '') + '</span>';
+  html += '<button class="btn" data-action="end-season"' + (cannot ? ' disabled' : '') + '>End season</button>';
+  html += '</div></div>';
+  html += '</main></section>';
+  return html;
+}
+
+// ------------------------------------------------------------
+function changeExplanation(k, ch) {
+  var l = LEVER_INDEX[k];
+  return esc(l.name) + ': ' + esc(getOption(k, ch.from).label) + ' → <strong>' + esc(getOption(k, ch.to).label) + '</strong>';
+}
+
+function renderResult() {
+  var s = game;
+  var r = s.lastResult;
+  var eco = r.eco;
+  var html = '<section class="result">';
+  html += '<p class="eyebrow">Season ' + r.season + ' of ' + SEASONS + '</p>';
+  html += '<h2>' + esc(r.name) + '</h2>';
+
+  html += '<div class="result-grid">';
+  html += '<div class="result-col">';
+  html += '<h3>What you changed</h3>';
+  var keys = Object.keys(r.changes);
+  if (keys.length === 0) {
+    html += '<p class="quiet">Nothing. A quiet season: the regulars settled in (+3).</p>';
+  } else {
+    html += '<ul class="change-list">';
+    keys.forEach(function(k) { html += '<li>' + changeExplanation(k, r.changes[k]) + '</li>'; });
+    html += '</ul>';
+    html += '<p class="quiet">Disruption ' + r.disruption + ': before any growth, the changes cost the regulars about ' + Math.round(r.disruption * 0.9) + ' and the sense of home about ' + Math.round(r.disruption * 0.5) + ' while people got used to them.</p>';
+  }
+  html += '<h3>The money</h3>';
+  html += '<table class="eco"><tbody>';
+  html += '<tr><td>Visits a week</td><td>' + eco.footfall.toLocaleString('en-GB') + '</td></tr>';
+  html += '<tr><td>Takings (' + money(eco.spend) + ' a visit)</td><td>' + money(eco.revenue) + '</td></tr>';
+  if (eco.subsidy) html += '<tr><td>Subsidy</td><td>' + money(eco.subsidy) + '</td></tr>';
+  html += '<tr><td>Ingredients and supplies</td><td>' + money(-eco.supplies) + '</td></tr>';
+  html += '<tr><td>' + esc(s.scenario.rentLabel) + '</td><td>' + money(-eco.rent) + '</td></tr>';
+  html += '<tr><td>Staff</td><td>' + money(-eco.staff) + '</td></tr>';
+  if (eco.security) html += '<tr><td>Building security</td><td>' + money(-eco.security) + '</td></tr>';
+  if (eco.running) html += '<tr><td>Running costs' + (eco.running < 0 ? ' and hire income' : '') + '</td><td>' + money(-eco.running) + '</td></tr>';
+  if (r.spent) html += '<tr><td>One-off spending</td><td>' + money(-r.spent) + '</td></tr>';
+  html += '<tr class="eco-net"><td>Net this season</td><td class="' + (eco.net - r.spent < 0 ? 'neg' : 'pos') + '">' + signedMoney(eco.net - r.spent) + '</td></tr>';
+  html += '<tr class="eco-bank"><td>In the bank</td><td class="' + (r.moneyAfter < 0 ? 'neg' : '') + '">' + money(r.moneyAfter) + '</td></tr>';
+  html += '</tbody></table>';
+  if (r.moneyAfter < 0) html += '<p class="alert">You are overdrawn.</p>';
+  html += '</div>';
+
+  html += '<div class="result-col">';
+  html += '<h3>The characteristics</h3>';
+  html += '<div class="result-bars">';
+  CHARS.forEach(function(c) {
+    var before = r.before[c.id], after = r.after[c.id];
+    html += '<div class="bar-row" data-status="' + statusOf(after) + '">';
+    html += '<div class="bar-label"><span class="bar-dot" style="background:' + c.hex + '"></span>' + esc(c.name) + (c.kind === 'emergent' ? ' <span class="bar-kind">emergent</span>' : '') + '</div>';
+    html += '<div class="bar-track"><div class="bar-ghost" style="width:' + Math.round(before) + '%"></div><div class="bar-fill" data-target="' + Math.round(after) + '" style="width:' + Math.round(before) + '%;background:' + c.hex + '"></div></div>';
+    html += '<div class="bar-val">' + Math.round(after) + (Math.round(after - before) !== 0 ? ' <span class="bar-delta ' + (after > before ? 'up' : 'down') + '">' + signed(after - before) + '</span>' : '') + '</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  html += '<div class="score-line">Third-place score <strong>' + r.score + '</strong> <span class="verdict-inline">' + esc(verdictOf(s.values, false).label) + '</span></div>';
+  html += '</div></div>';
+
+  html += '<div class="result-foot">';
+  if (s.finished) html += '<button class="btn" data-action="to-final">See the verdict</button>';
+  else if (s.pendingEvent) html += '<button class="btn" data-action="to-event">Something has happened</button>';
+  else html += '<button class="btn" data-action="next-season">Next season</button>';
+  html += '</div></section>';
+  return html;
+}
+
+// ------------------------------------------------------------
+function renderEvent() {
+  var s = game;
+  var ev = s.pendingEvent;
+  var html = '<section class="event">';
+  html += '<p class="eyebrow">' + (ev.id === 'insolvency' ? 'Crisis' : 'Event') + ' — ' + esc(SEASON_NAMES[s.season - 1]) + '</p>';
+  html += '<h2>' + esc(ev.title) + '</h2>';
+  html += '<p class="event-text">' + esc(ev.text) + '</p>';
+  if (!eventOutcome) {
+    html += '<div class="choices">';
+    ev.choices.forEach(function(c) {
+      var ok = choiceAvailable(c, s);
+      var selectable = choiceSelectable(ev, c, s);
+      html += '<button class="choice' + (ok ? '' : ' unavailable') + '" data-action="choose" data-choice="' + c.id + '"' + (selectable ? '' : ' disabled') + '>';
+      html += '<span class="choice-label">' + esc(c.label) + '</span>';
+      html += '<span class="choice-desc">' + esc(c.desc) + '</span>';
+      if (!ok) html += '<span class="choice-req">' + esc(c.requiresText) + ' \u2014 not met.' + (selectable ? ' You can still try.' : '') + '</span>';
+      html += '</button>';
+    });
+    html += '</div>';
+  } else {
+    html += '<div class="outcome">';
+    html += '<div class="outcome-choice">You chose: <strong>' + esc(eventOutcome.choiceLabel) + '</strong></div>';
+    html += '<p class="outcome-note">' + esc(eventOutcome.note) + '</p>';
+    if (eventOutcome.changes.length) {
+      html += '<ul class="change-list">';
+      eventOutcome.changes.forEach(function(x) { html += '<li>' + x + '</li>'; });
+      html += '</ul>';
+    }
+    html += '</div>';
+    html += '<div class="result-foot">';
+    if (s.closed || s.finished) html += '<button class="btn" data-action="to-final">See the verdict</button>';
+    else html += '<button class="btn" data-action="next-season">Next season</button>';
+    html += '</div>';
+  }
+  html += '</section>';
+  return html;
+}
+
+function describeEventChanges(before, s, effect) {
+  var out = [];
+  if (effect.money) out.push((effect.money > 0 ? 'Money in: ' : 'Money out: ') + money(Math.abs(effect.money)));
+  if (before.rent !== s.rent) out.push(esc(s.scenario.rentLabel) + ' is now ' + money(s.rent) + ' a season');
+  if (before.subsidy !== s.subsidy) out.push('Subsidy is now ' + money(s.subsidy) + ' a season');
+  Object.keys(before.levers).forEach(function(k) {
+    if (before.levers[k] !== s.levers[k]) out.push(changeExplanation(k, { from:before.levers[k], to:s.levers[k] }));
+  });
+  CHARS.forEach(function(c) {
+    var d = s.values[c.id] - before.values[c.id];
+    if (Math.abs(d) >= 1) out.push(esc(c.name) + ' ' + signed(d));
+  });
+  if (effect.mod) {
+    var parts = [];
+    Object.keys(effect.mod).forEach(function(k) { if (CHAR_INDEX[k] !== undefined) parts.push(esc(charById(k).name) + ' ' + signed(effect.mod[k])); });
+    if (parts.length) out.push('Lasting effect: ' + parts.join(', '));
+  }
+  if (effect.footfall) out.push('Footfall ' + (effect.footfall > 1 ? 'up' : 'down') + ' ' + Math.round(Math.abs(effect.footfall - 1) * 100) + '% from now on');
+  if (effect.spend) out.push('Spend per visit up ' + Math.round((effect.spend - 1) * 100) + '%');
+  if (effect.close) out.push('The place has closed.');
+  return out;
+}
+
+// ------------------------------------------------------------
+function renderFinal() {
+  var s = game;
+  var verdict = verdictOf(s.values, s.closed);
+  var html = '<section class="final">';
+  html += '<p class="eyebrow">' + esc(s.scenario.name) + ' — after ' + s.history.length + ' season' + (s.history.length === 1 ? '' : 's') + '</p>';
+  html += '<h2 class="verdict verdict-' + verdict.id + '">' + esc(verdict.label) + '</h2>';
+  html += '<p class="verdict-text">' + esc(verdict.text) + '</p>';
+  if (!s.closed && s.money < 0) html += '<p class="alert">The account is overdrawn. Whatever it has become, it would not have survived a ninth season without another hard choice.</p>';
+  html += '<div class="final-stats"><div class="stat"><div class="stat-label">Third-place score</div><div class="stat-val">' + scoreOf(s.values) + '<span class="stat-of">/100</span></div></div>';
+  html += '<div class="stat"><div class="stat-label">In the bank</div><div class="stat-val' + (s.money < 0 ? ' neg' : '') + '">' + money(s.money) + '</div></div>';
+  html += '<div class="stat"><div class="stat-label">Changes made</div><div class="stat-val">' + s.history.reduce(function(a, h) { return a + Object.keys(h.changes).length; }, 0) + '</div></div></div>';
+
+  html += '<div class="final-grid">';
+  html += '<div class="final-col"><h3>Final profile</h3><div class="final-bars">';
+  CHARS.forEach(function(c) {
+    var v = Math.round(s.values[c.id]);
+    html += '<div class="bar-row" data-status="' + statusOf(v) + '">';
+    html += '<div class="bar-label"><span class="bar-dot" style="background:' + c.hex + '"></span>' + esc(c.name) + '</div>';
+    html += '<div class="bar-track"><div class="bar-fill" data-target="' + v + '" style="width:0%;background:' + c.hex + '"></div></div>';
+    html += '<div class="bar-val">' + v + ' <span class="status-tag ' + statusOf(v) + '">' + statusOf(v) + '</span></div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  html += '<h3>Score by season</h3><div class="timeline">';
+  s.history.forEach(function(h) {
+    html += '<div class="tl-col"><div class="tl-bar"><div class="tl-fill" style="height:' + h.score + '%"></div></div><div class="tl-label">' + h.season + '</div><div class="tl-money ' + (h.moneyAfter < 0 ? 'neg' : '') + '">' + money(h.moneyAfter) + '</div></div>';
+  });
+  html += '</div></div>';
+
+  html += '<div class="final-col"><h3>What this run showed</h3>';
+  debriefOf(s).forEach(function(l) {
+    html += '<div class="lesson"><div class="lesson-title">' + esc(l.title) + '</div><p>' + esc(l.text) + '</p></div>';
+  });
+  html += '</div></div>';
+
+  html += '<div class="reflect"><h3>For discussion</h3><ol>';
+  html += '<li>Which of the eight characteristics were you never able to set directly? What did they depend on?</li>';
+  html += '<li>Which decision cost you the most money, and which cost you the most as a third place? Were they the same decision?</li>';
+  html += '<li>Whose decision, not yours, changed the place the most? What would have protected it?</li>';
+  html += '<li>Compare your final profile with COMMON in its initial state. Which of your characteristics would survive the sale of the unit?</li>';
+  html += '</ol></div>';
+
+  html += '<div class="final-foot"><button class="btn btn-ghost" data-action="print">Export results</button><button class="btn" data-action="restart">Try another site</button></div>';
+  html += '</section>';
+  return html;
+}
+
+// ============================================================
+// EVENTS
+// ============================================================
+document.getElementById('app').addEventListener('click', function(e) {
+  var el = e.target.closest('[data-action]');
+  if (!el) return;
+  var action = el.dataset.action;
+
+  if (action === 'to-scenario') { screen = 'scenario'; render(); return; }
+
+  if (action === 'start') {
+    game = newGame(el.dataset.scenario);
+    activeGroup = 'access';
+    screen = 'season';
+    render();
+    return;
+  }
+
+  if (action === 'tab') { activeGroup = el.dataset.group; render(); return; }
+
+  if (action === 'pick') {
+    var lever = el.dataset.lever, opt = el.dataset.opt;
+    if (opt === game.levers[lever]) {
+      delete game.pending[lever];
+    } else if (game.pending[lever] === opt) {
+      delete game.pending[lever];
+    } else {
+      if (!game.pending[lever] && Object.keys(game.pending).length >= actionsAllowed(game)) return;
+      game.pending[lever] = opt;
+    }
+    render();
+    return;
+  }
+
+  if (action === 'unpick') { delete game.pending[el.dataset.lever]; render(); return; }
+
+  if (action === 'end-season') {
+    endSeason(game);
+    screen = 'result';
+    render();
+    return;
+  }
+
+  if (action === 'to-event') { eventOutcome = null; screen = 'event'; render(); return; }
+
+  if (action === 'choose') {
+    var ev = game.pendingEvent;
+    var before = { rent:game.rent, subsidy:game.subsidy, levers:{}, values:{} };
+    Object.keys(game.levers).forEach(function(k) { before.levers[k] = game.levers[k]; });
+    Object.keys(game.values).forEach(function(k) { before.values[k] = game.values[k]; });
+    var res = resolveEvent(game, ev, el.dataset.choice);
+    if (!res) return;
+    if (game.closed) game.finished = true;
+    eventOutcome = { choiceLabel:res.choiceLabel, note:res.note, changes:describeEventChanges(before, game, res.effect) };
+    render();
+    return;
+  }
+
+  if (action === 'next-season') {
+    advanceSeason(game);
+    eventOutcome = null;
+    screen = game.finished ? 'final' : 'season';
+    render();
+    return;
+  }
+
+  if (action === 'to-final') { game.finished = true; screen = 'final'; render(); return; }
+
+  if (action === 'print') { window.print(); return; }
+
+  if (action === 'restart') { game = null; eventOutcome = null; screen = 'scenario'; render(); return; }
+});
+
+// ============================================================
+// INIT
+// ============================================================
+render();
+</script>
