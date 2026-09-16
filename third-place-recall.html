@@ -21,6 +21,10 @@
   --char-6: #B83068;
   --char-7: #CC6830;
   --char-8: #7E58A8;
+  --correct: #2A7A42;
+  --correct-bg: #E6F4EA;
+  --incorrect: #B82828;
+  --incorrect-bg: #FDEEEE;
 }
 
 body {
@@ -47,6 +51,15 @@ h1 {
   margin-bottom: 0.5rem;
 }
 
+h2 {
+  font-size: clamp(1.2rem, 3vw, 1.6rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+}
+
 .eyebrow {
   font-size: 0.72rem;
   font-weight: 700;
@@ -68,7 +81,7 @@ h1 {
   background: var(--bg-card);
   border: 2px solid var(--border);
   padding: 1.5rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .prompt-label {
@@ -88,31 +101,84 @@ h1 {
   font-style: italic;
 }
 
-textarea {
-  width: 100%;
-  min-height: 280px;
-  padding: 1.25rem;
-  font-family: inherit;
-  font-size: 1rem;
-  line-height: 1.6;
-  color: var(--text);
+.recall-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.recall-box {
   background: var(--bg-card);
+  border: 2px solid var(--border);
+  padding: 1rem 1.25rem;
+}
+
+.recall-box-num {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #fff;
+  background: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.recall-field-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.3rem;
+}
+
+.recall-name {
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--bg);
+  border: 2px solid var(--border);
+  outline: none;
+  margin-bottom: 0.6rem;
+}
+
+.recall-name:focus { border-color: var(--char-1); }
+
+.recall-name::placeholder {
+  color: var(--text-muted);
+  opacity: 0.5;
+  font-weight: 400;
+}
+
+.recall-desc {
+  width: 100%;
+  min-height: 60px;
+  padding: 0.5rem 0.7rem;
+  font-family: inherit;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
   border: 2px solid var(--border);
   resize: vertical;
   outline: none;
 }
 
-textarea:focus {
-  border-color: var(--char-1);
-}
+.recall-desc:focus { border-color: var(--char-1); }
 
-textarea::placeholder {
+.recall-desc::placeholder {
   color: var(--text-muted);
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 .actions {
-  margin-top: 1rem;
   display: flex;
   gap: 1rem;
   align-items: center;
@@ -141,9 +207,7 @@ button {
   transform: translateY(-2px);
 }
 
-.btn-primary:active {
-  transform: translateY(0);
-}
+.btn-primary:active { transform: translateY(0); }
 
 .btn-primary:disabled {
   opacity: 0.4;
@@ -164,9 +228,7 @@ button {
   transform: translateY(-2px);
 }
 
-.btn-ghost:active {
-  transform: translateY(0);
-}
+.btn-ghost:active { transform: translateY(0); }
 
 .divider {
   width: 100%;
@@ -175,50 +237,193 @@ button {
   margin: 2.5rem 0;
 }
 
-.reveal-section {
-  display: none;
-}
+.reveal-section { display: none; }
+.reveal-section.visible { display: block; }
 
-.reveal-section.visible {
-  display: block;
-}
-
-.comparison-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
+.score-bar {
+  text-align: center;
   margin-bottom: 2rem;
 }
 
-.comparison-col h2 {
-  font-size: clamp(1rem, 2.5vw, 1.3rem);
+.score-number {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.score-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  margin-top: 0.35rem;
+}
+
+.result-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  margin-bottom: 1rem;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.result-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.result-card.matched { border-left: 6px solid var(--correct); }
+.result-card.missed { border-left: 6px solid var(--incorrect); }
+
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+}
+
+.result-num {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.result-name {
+  font-size: 0.95rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  line-height: 1.2;
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 3px solid var(--text);
+  flex: 1;
 }
 
-.student-text {
+.result-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border: 1.5px solid;
+  flex-shrink: 0;
+}
+
+.result-badge.identified {
+  background: var(--correct-bg);
+  color: var(--correct);
+  border-color: var(--correct);
+}
+
+.result-badge.missed-badge {
+  background: var(--incorrect-bg);
+  color: var(--incorrect);
+  border-color: var(--incorrect);
+}
+
+.result-body {
+  padding: 0 1.25rem 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.result-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.result-col-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+}
+
+.result-col-label.yours { color: var(--char-1); }
+.result-col-label.correct { color: var(--correct); }
+
+.result-student-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.result-student-desc {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.result-definition {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  font-weight: 600;
+  margin-top: 1rem;
+}
+
+.unmatched-section {
+  margin-top: 1.5rem;
+}
+
+.unmatched-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin-bottom: 0.75rem;
+}
+
+.unmatched-card {
   background: var(--bg-card);
   border: 2px solid var(--border);
-  padding: 1.25rem;
-  white-space: pre-wrap;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  min-height: 200px;
-  color: var(--text);
+  border-left: 6px solid var(--char-4);
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.5rem;
 }
 
-.characteristics-heading {
-  font-size: clamp(1.2rem, 3vw, 1.6rem);
-  font-weight: 800;
+.unmatched-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.unmatched-desc {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.unmatched-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: 0.5rem;
+}
+
+.reflection-note {
+  background: var(--bg-card);
+  border-left: 5px solid var(--char-4);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.reflection-note strong {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  line-height: 1.2;
-  margin-bottom: 1.5rem;
+  color: var(--char-4);
+  margin-bottom: 0.5rem;
 }
 
 .char-card {
@@ -271,9 +476,7 @@ button {
   transition: transform 0.2s ease;
 }
 
-.char-card.expanded .char-toggle {
-  transform: rotate(180deg);
-}
+.char-card.expanded .char-toggle { transform: rotate(180deg); }
 
 .char-body {
   max-height: 0;
@@ -282,9 +485,7 @@ button {
   opacity: 0;
 }
 
-.char-card.expanded .char-body {
-  opacity: 1;
-}
+.char-card.expanded .char-body { opacity: 1; }
 
 .char-body-inner {
   padding: 0 1.25rem 1.25rem 1.25rem;
@@ -306,9 +507,7 @@ button {
   margin-bottom: 0.75rem;
 }
 
-.char-detail:last-child {
-  margin-bottom: 0;
-}
+.char-detail:last-child { margin-bottom: 0; }
 
 .char-detail-label {
   font-size: 0.68rem;
@@ -319,34 +518,17 @@ button {
   margin-bottom: 0.25rem;
 }
 
-.reflection-note {
-  background: var(--bg-card);
-  border-left: 5px solid var(--char-4);
-  padding: 1.25rem 1.5rem;
-  margin-top: 2rem;
-  font-size: 0.95rem;
-  line-height: 1.6;
-}
-
-.reflection-note strong {
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--char-4);
-  margin-bottom: 0.5rem;
-}
-
 @media (max-width: 700px) {
-  .comparison-layout {
-    grid-template-columns: 1fr;
-  }
+  .recall-grid { grid-template-columns: 1fr; }
+  .result-comparison { grid-template-columns: 1fr; }
 }
 
 @media print {
   button, .actions { display: none; }
   body { background: #fff; }
+  .recall-box { break-inside: avoid; }
+  .result-card { opacity: 1 !important; transform: none !important; break-inside: avoid; }
+  .result-num, .result-badge { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .char-body { max-height: none !important; opacity: 1 !important; }
   .char-card { opacity: 1 !important; transform: none !important; break-inside: avoid; }
   .char-number { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
@@ -357,39 +539,31 @@ button {
 <div class="container">
   <div class="eyebrow">Retrieval Exercise</div>
   <h1>Third Place Recall</h1>
-  <p class="lede">Reconstruct what you remember about Oldenburg's eight characteristics of a third place, then compare your recall against the source material.</p>
+  <p class="lede">Name and describe as many of Oldenburg's eight characteristics as you can remember, then check your answers against the source material.</p>
 
   <div class="prompt-box">
-    <div class="prompt-label">Your Prompt</div>
-    <p class="prompt-text">"From memory, describe what makes a third place thrive using the language and characteristics from last week."</p>
+    <div class="prompt-label">Your Task</div>
+    <p class="prompt-text">"From memory, name and describe each of the eight characteristics that define a third place. Use one box per characteristic -- fill in as many as you can."</p>
   </div>
 
-  <textarea id="student-input" placeholder="Write everything you can recall about the eight characteristics of a third place. Use whatever structure feels natural -- list them, describe them in prose, give examples. The goal is honest recall, not perfection."></textarea>
+  <div class="recall-grid" id="recall-grid"></div>
 
   <div class="actions">
-    <button class="btn-primary" id="reveal-btn" onclick="revealCharacteristics()">Reveal Characteristics</button>
-    <button class="btn-ghost" id="reset-btn" onclick="resetExercise()" style="display:none;">Start Over</button>
+    <button class="btn-primary" id="check-btn" onclick="checkAnswers()">Check Answers</button>
+    <button class="btn-ghost" id="reset-btn" onclick="resetExercise()" style="display:none">Start Over</button>
   </div>
 
   <div class="reveal-section" id="reveal-section">
     <div class="divider"></div>
+    <div class="score-bar" id="score-bar"></div>
+    <div id="results-list"></div>
 
-    <div class="comparison-layout">
-      <div class="comparison-col">
-        <h2>Your Recall</h2>
-        <div class="student-text" id="student-recall"></div>
-      </div>
-      <div class="comparison-col">
-        <h2>As You Read Below</h2>
-        <div class="reflection-note">
-          <strong>Reflect</strong>
-          Which characteristics did you name? Which did you miss entirely? Where did your language drift from Oldenburg's meaning -- and what does that drift reveal about how you understood the concept?
-        </div>
-      </div>
+    <div class="reflection-note">
+      <strong>Reflect</strong>
+      Compare your descriptions with the definitions above. Where did your language match Oldenburg's? Where did it drift -- and what does that drift reveal about how you understood the concept?
     </div>
 
-    <h2 class="characteristics-heading">Oldenburg's Eight Characteristics</h2>
-
+    <h2>Full Reference</h2>
     <div id="char-list"></div>
   </div>
 </div>
@@ -409,7 +583,7 @@ var CHARACTERISTICS = [
     num: 2,
     name: 'The Leveler',
     color: '#B52838',
-    definition: 'A third place is a socially levelling environment where individuals’ rank, status, and roles in the outside world carry no weight.',
+    definition: 'A third place is a socially levelling environment where individuals\' rank, status, and roles in the outside world carry no weight.',
     description: 'Participation is not contingent on prerequisites, credentials, or proof of membership. External hierarchies — job title, income, education, age — are suspended. The space functions as a social moratorium: people are evaluated on who they are in that space, not who they are outside it.',
     indicator: 'A junior employee and a CEO sit at the same table and are treated identically by staff and other patrons; no reserved sections or tiered access.',
     counter: 'VIP areas, dress codes that signal economic status, or social dynamics where people routinely ask "what do you do?" as a gatekeeping move.'
@@ -427,8 +601,8 @@ var CHARACTERISTICS = [
     num: 4,
     name: 'Accessibility and Accommodation',
     color: '#D4A020',
-    definition: 'A third place is easy to access and accommodating to its visitors’ schedules — one can go alone, at almost any time, and expect to find familiar faces.',
-    description: 'The space should be physically easy to reach and open during the times people want to use it. Activities are largely impromptu, unscheduled, and unstructured. The key test is whether the space "stands ready to serve people’s needs for sociability and relaxation in the intervals before, between, and after their mandatory appearances elsewhere."',
+    definition: 'A third place is easy to access and accommodating to its visitors\' schedules — one can go alone, at almost any time, and expect to find familiar faces.',
+    description: 'The space should be physically easy to reach and open during the times people want to use it. Activities are largely impromptu, unscheduled, and unstructured. The key test is whether the space "stands ready to serve people\'s needs for sociability and relaxation in the intervals before, between, and after their mandatory appearances elsewhere."',
     indicator: 'The space is open long hours, has no reservation requirement, is located on a daily commute route, and has affordable (or free) entry; people drop in without pre-planning.',
     counter: 'The venue is open only during narrow hours, requires advance booking, is in an out-of-the-way location, or has a price point that restricts regular attendance.'
   },
@@ -445,17 +619,17 @@ var CHARACTERISTICS = [
     num: 6,
     name: 'A Low Profile',
     color: '#B83068',
-    definition: 'Third places are characteristically unpretentious, plain, and without airs — their décor maximises comfort by avoiding ostentation.',
+    definition: 'Third places are characteristically unpretentious, plain, and without airs — their decor maximises comfort by avoiding ostentation.',
     description: 'The physical environment is homely and unimpressive-looking, which deters pretension and encourages informality. The functional principle is that plainness removes barriers to informal interaction.',
-    indicator: 'Worn furniture, mismatched décor, no branding or corporate uniformity; the space looks "lived-in" rather than curated; regulars feel ownership.',
-    counter: 'High-end interior design, visible branding, Instagram-optimised décor, or an atmosphere that signals exclusivity and discourages casual use.'
+    indicator: 'Worn furniture, mismatched decor, no branding or corporate uniformity; the space looks "lived-in" rather than curated; regulars feel ownership.',
+    counter: 'High-end interior design, visible branding, Instagram-optimised decor, or an atmosphere that signals exclusivity and discourages casual use.'
   },
   {
     num: 7,
     name: 'The Mood is Playful',
     color: '#CC6830',
     definition: 'The dominant mood of a third place is one of playfulness — frivolity, humour, verbal wit, and lightheartedness are the norm.',
-    description: 'Seriousness is treated as an intrusion. When someone introduces a weighty personal problem, the group typically redirects toward humour — not out of callousness, but because the playful mood is constitutive of the space’s identity. Oldenburg argues that "joy and acceptance reign over anxiety and alienation."',
+    description: 'Seriousness is treated as an intrusion. When someone introduces a weighty personal problem, the group typically redirects toward humour — not out of callousness, but because the playful mood is constitutive of the space\'s identity. Oldenburg argues that "joy and acceptance reign over anxiety and alienation."',
     indicator: 'Laughter is frequent; patrons tease each other good-naturedly; banter is the default register; someone who is overly serious is gently ribbed until they lighten up.',
     counter: 'The atmosphere is tense, competitive, or hushed; social norms discourage joking; people feel judged or self-conscious.'
   },
@@ -464,11 +638,214 @@ var CHARACTERISTICS = [
     name: 'A Home Away from Home',
     color: '#7E58A8',
     definition: 'A third place provides a sense of rootedness, comfort, and warmth analogous to being at home — it is a psychological anchor in daily life.',
-    description: 'Oldenburg draws on Seamon’s five traits of "home": rootedness (the space is a fixed point around which one organises comings and goings), feelings of possession (a sense of ownership without legal title), spiritual regeneration (the space restores and refreshes), ease (freedom to be oneself), and warmth (mutual caring among those present). Regular participation creates a sense of mutual care and belonging without the entangling obligations of actual domestic life.',
-    indicator: 'A patron who hasn’t appeared in a week is asked about by others; people have "their" seat or spot; the space is referenced as "my café" or "our place"; leaving feels slightly reluctant.',
+    description: 'Oldenburg draws on Seamon\'s five traits of "home": rootedness (the space is a fixed point around which one organises comings and goings), feelings of possession (a sense of ownership without legal title), spiritual regeneration (the space restores and refreshes), ease (freedom to be oneself), and warmth (mutual caring among those present). Regular participation creates a sense of mutual care and belonging without the entangling obligations of actual domestic life.',
+    indicator: 'A patron who hasn\'t appeared in a week is asked about by others; people have "their" seat or spot; the space is referenced as "my cafe" or "our place"; leaving feels slightly reluctant.',
     counter: 'No one notices absences; the space feels interchangeable with any similar venue; patrons have no sense of personal investment in the environment.'
   }
 ];
+
+var MATCH_KEYS = [
+  ['neutral ground', 'neutral'],
+  ['leveler', 'leveller', 'leveling', 'levelling'],
+  ['conversation', 'main activity'],
+  ['accessibility', 'accommodation', 'accessible'],
+  ['regulars', 'regular'],
+  ['low profile', 'unpretentious'],
+  ['playful', 'playfulness', 'mood'],
+  ['home away', 'home from home']
+];
+
+function esc(s) {
+  var d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function buildInputBoxes() {
+  var grid = document.getElementById('recall-grid');
+  var html = '';
+  for (var i = 0; i < 8; i++) {
+    html += '<div class="recall-box">' +
+      '<div class="recall-box-num">' + (i + 1) + '</div>' +
+      '<div class="recall-field-label">Name</div>' +
+      '<input type="text" class="recall-name" id="recall-name-' + i + '" placeholder="Characteristic name...">' +
+      '<div class="recall-field-label">Description</div>' +
+      '<textarea class="recall-desc" id="recall-desc-' + i + '" placeholder="Brief description..."></textarea>' +
+    '</div>';
+  }
+  grid.innerHTML = html;
+}
+
+function matchAnswers() {
+  var answers = [];
+  for (var i = 0; i < 8; i++) {
+    var name = document.getElementById('recall-name-' + i).value.trim();
+    var desc = document.getElementById('recall-desc-' + i).value.trim();
+    answers.push({
+      name: name,
+      desc: desc,
+      text: (name + ' ' + desc).toLowerCase(),
+      empty: !name && !desc
+    });
+  }
+
+  var scores = [];
+  for (var i = 0; i < 8; i++) {
+    scores[i] = [];
+    for (var j = 0; j < 8; j++) {
+      if (answers[i].empty) { scores[i][j] = 0; continue; }
+      var s = 0;
+      for (var k = 0; k < MATCH_KEYS[j].length; k++) {
+        if (answers[i].text.indexOf(MATCH_KEYS[j][k]) !== -1) {
+          s += MATCH_KEYS[j][k].length;
+        }
+      }
+      scores[i][j] = s;
+    }
+  }
+
+  var charToStudent = {};
+  var studentUsed = {};
+  for (var round = 0; round < 8; round++) {
+    var best = 0, bi = -1, bj = -1;
+    for (var i = 0; i < 8; i++) {
+      if (studentUsed[i]) continue;
+      for (var j = 0; j < 8; j++) {
+        if (charToStudent[j] !== undefined) continue;
+        if (scores[i][j] > best) { best = scores[i][j]; bi = i; bj = j; }
+      }
+    }
+    if (best === 0) break;
+    charToStudent[bj] = bi;
+    studentUsed[bi] = true;
+  }
+
+  return { charToStudent: charToStudent, answers: answers, studentUsed: studentUsed };
+}
+
+function checkAnswers() {
+  var hasContent = false;
+  for (var i = 0; i < 8; i++) {
+    if (document.getElementById('recall-name-' + i).value.trim() ||
+        document.getElementById('recall-desc-' + i).value.trim()) {
+      hasContent = true;
+      break;
+    }
+  }
+  if (!hasContent) { document.getElementById('recall-name-0').focus(); return; }
+
+  var match = matchAnswers();
+  var count = Object.keys(match.charToStudent).length;
+
+  for (var i = 0; i < 8; i++) {
+    document.getElementById('recall-name-' + i).disabled = true;
+    document.getElementById('recall-desc-' + i).disabled = true;
+  }
+  document.getElementById('check-btn').disabled = true;
+  document.getElementById('reset-btn').style.display = '';
+
+  document.getElementById('score-bar').innerHTML =
+    '<div class="score-number">' + count + ' / 8</div>' +
+    '<div class="score-label">Characteristics Identified</div>';
+
+  var html = '';
+  for (var j = 0; j < 8; j++) {
+    var c = CHARACTERISTICS[j];
+    var si = match.charToStudent[j];
+    var matched = si !== undefined;
+    var ans = matched ? match.answers[si] : null;
+
+    html += '<div class="result-card ' + (matched ? 'matched' : 'missed') + '" data-ri="' + j + '">';
+    html += '<div class="result-header">';
+    html += '<div class="result-num" style="background:' + c.color + '">' + c.num + '</div>';
+    html += '<div class="result-name">' + esc(c.name) + '</div>';
+    html += '<div class="result-badge ' + (matched ? 'identified' : 'missed-badge') + '">' +
+      (matched ? 'Identified' : 'Missed') + '</div>';
+    html += '</div>';
+
+    html += '<div class="result-body">';
+    if (matched) {
+      html += '<div class="result-comparison">';
+      html += '<div>';
+      html += '<div class="result-col-label yours">Your Answer</div>';
+      if (ans.name) html += '<div class="result-student-name">' + esc(ans.name) + '</div>';
+      if (ans.desc) html += '<div class="result-student-desc">' + esc(ans.desc) + '</div>';
+      if (!ans.desc) html += '<div class="result-student-desc" style="font-style:italic;opacity:0.6">No description provided</div>';
+      html += '</div>';
+      html += '<div>';
+      html += '<div class="result-col-label correct">Definition</div>';
+      html += '<div class="result-student-desc">' + c.definition + '</div>';
+      html += '</div>';
+      html += '</div>';
+    } else {
+      html += '<div class="result-definition">' + c.definition + '</div>';
+    }
+    html += '</div></div>';
+  }
+
+  var unmatched = [];
+  for (var i = 0; i < 8; i++) {
+    if (!match.answers[i].empty && !match.studentUsed[i]) {
+      unmatched.push(match.answers[i]);
+    }
+  }
+  if (unmatched.length > 0) {
+    html += '<div class="unmatched-section">';
+    html += '<div class="unmatched-label">Answers Not Matched</div>';
+    for (var i = 0; i < unmatched.length; i++) {
+      html += '<div class="unmatched-card">';
+      if (unmatched[i].name) html += '<div class="unmatched-name">' + esc(unmatched[i].name) + '</div>';
+      if (unmatched[i].desc) html += '<div class="unmatched-desc">' + esc(unmatched[i].desc) + '</div>';
+      html += '</div>';
+    }
+    html += '<div class="unmatched-hint">These answers could not be matched to a specific characteristic. Compare with the full reference below.</div>';
+    html += '</div>';
+  }
+
+  document.getElementById('results-list').innerHTML = html;
+
+  var section = document.getElementById('reveal-section');
+  section.classList.add('visible');
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  var cards = document.querySelectorAll('.result-card');
+  for (var i = 0; i < cards.length; i++) {
+    (function(card, delay) {
+      setTimeout(function() { card.classList.add('visible'); }, delay);
+    })(cards[i], 80 * i);
+  }
+
+  var refCards = document.querySelectorAll('.char-card');
+  var offset = 80 * cards.length + 200;
+  for (var i = 0; i < refCards.length; i++) {
+    (function(card, delay) {
+      setTimeout(function() { card.classList.add('visible'); }, delay);
+    })(refCards[i], offset + 80 * i);
+  }
+}
+
+function resetExercise() {
+  for (var i = 0; i < 8; i++) {
+    var nameEl = document.getElementById('recall-name-' + i);
+    var descEl = document.getElementById('recall-desc-' + i);
+    nameEl.value = '';
+    nameEl.disabled = false;
+    descEl.value = '';
+    descEl.disabled = false;
+  }
+  document.getElementById('check-btn').disabled = false;
+  document.getElementById('reset-btn').style.display = 'none';
+  document.getElementById('reveal-section').classList.remove('visible');
+
+  var cards = document.querySelectorAll('.char-card');
+  for (var i = 0; i < cards.length; i++) {
+    cards[i].classList.remove('visible', 'expanded');
+    document.getElementById('char-body-' + i).style.maxHeight = null;
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  setTimeout(function() { document.getElementById('recall-name-0').focus(); }, 400);
+}
 
 function buildCharCards() {
   var container = document.getElementById('char-list');
@@ -508,52 +885,7 @@ function toggleCard(index) {
   }
 }
 
-function revealCharacteristics() {
-  var input = document.getElementById('student-input');
-  var text = input.value.trim();
-  if (!text) {
-    input.focus();
-    return;
-  }
-
-  document.getElementById('student-recall').textContent = text;
-  input.disabled = true;
-  document.getElementById('reveal-btn').disabled = true;
-  document.getElementById('reset-btn').style.display = '';
-
-  var section = document.getElementById('reveal-section');
-  section.classList.add('visible');
-
-  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-  var cards = document.querySelectorAll('.char-card');
-  for (var i = 0; i < cards.length; i++) {
-    (function(card, delay) {
-      setTimeout(function() {
-        card.classList.add('visible');
-      }, delay);
-    })(cards[i], 80 * i);
-  }
-}
-
-function resetExercise() {
-  var input = document.getElementById('student-input');
-  input.value = '';
-  input.disabled = false;
-  document.getElementById('reveal-btn').disabled = false;
-  document.getElementById('reset-btn').style.display = 'none';
-  document.getElementById('reveal-section').classList.remove('visible');
-
-  var cards = document.querySelectorAll('.char-card');
-  for (var i = 0; i < cards.length; i++) {
-    cards[i].classList.remove('visible', 'expanded');
-    document.getElementById('char-body-' + i).style.maxHeight = null;
-  }
-
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  setTimeout(function() { input.focus(); }, 400);
-}
-
+buildInputBoxes();
 buildCharCards();
 </script>
 </body>
