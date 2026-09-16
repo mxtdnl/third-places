@@ -4,12 +4,18 @@ Interactive teaching tools for Ray Oldenburg's third-place theory. Static HTML f
 
 ## Files
 
+- `index.html` — Landing page with links to every activity
 - `third-place-decoder.html` — Characteristic-matching quiz (Activity 1)
 - `third-place-lab.html` — Multi-phase classroom lab (Activity 2): case analysis, stress tests, synthesis
 - `third-place-builder.html` — Resource-management simulation (Activity 3): build a third place over eight seasons under money, attention and ownership constraints. Design notes in `spec.md`
+- `third-place-portrait.html` — Visual portrait of a completed third place (Activity 4)
+- `third-place-recall.html` — Recall reconstruction exercise for the eight characteristics (Activity 5)
+- `evidence-compass.html` — Evidence evaluation across disciplinary lenses (Activity 6)
 - `third-place-content.md` — Source content and curriculum notes
 - `spec.md` — Mechanics, tuning values and design assumptions for the builder
 - `test.html` — Test suite (81 tests) covering data integrity, pure functions, HTML generators, and encoding
+
+When adding a new activity HTML file, also add a card for it in `index.html` (inside the `.activity-grid` div) and list it in this Files section.
 
 ## Testing
 
