@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Third Place Recall</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F2DFBE;
+  --bg-card: #FFFAF2;
+  --bg-deep: #E8D2A8;
+  --text: #2A1F18;
+  --text-muted: #6A5A48;
+  --border: #D8C8A8;
+  --char-1: #5C3A96;
+  --char-2: #B52838;
+  --char-3: #C85218;
+  --char-4: #D4A020;
+  --char-5: #7A5828;
+  --char-6: #B83068;
+  --char-7: #CC6830;
+  --char-8: #7E58A8;
+}
+
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 16px;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 16px;
+}
+
+h1 {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 800;
+  line-height: 1.15;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.5rem;
+}
+
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.lede {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 640px;
+  margin-bottom: 2rem;
+}
+
+.prompt-box {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.prompt-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--char-1);
+  margin-bottom: 0.75rem;
+}
+
+.prompt-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--text);
+  font-style: italic;
+}
+
+textarea {
+  width: 100%;
+  min-height: 280px;
+  padding: 1.25rem;
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  resize: vertical;
+  outline: none;
+}
+
+textarea:focus {
+  border-color: var(--char-1);
+}
+
+textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+button {
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 0.8rem 1.8rem;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.btn-primary {
+  background: var(--char-1);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--char-2);
+  transform: translateY(-2px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text);
+  border: 2px solid var(--text);
+  padding: calc(0.8rem - 2px) calc(1.8rem - 2px);
+}
+
+.btn-ghost:hover {
+  background: var(--text);
+  color: var(--bg);
+  transform: translateY(-2px);
+}
+
+.btn-ghost:active {
+  transform: translateY(0);
+}
+
+.divider {
+  width: 100%;
+  height: 2px;
+  background: var(--border);
+  margin: 2.5rem 0;
+}
+
+.reveal-section {
+  display: none;
+}
+
+.reveal-section.visible {
+  display: block;
+}
+
+.comparison-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.comparison-col h2 {
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 3px solid var(--text);
+}
+
+.student-text {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  padding: 1.25rem;
+  white-space: pre-wrap;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  min-height: 200px;
+  color: var(--text);
+}
+
+.characteristics-heading {
+  font-size: clamp(1.2rem, 3vw, 1.6rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+}
+
+.char-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  margin-bottom: 1rem;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.char-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.char-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.char-number {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.char-name {
+  font-size: 0.95rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  flex: 1;
+}
+
+.char-toggle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.char-card.expanded .char-toggle {
+  transform: rotate(180deg);
+}
+
+.char-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+
+.char-card.expanded .char-body {
+  opacity: 1;
+}
+
+.char-body-inner {
+  padding: 0 1.25rem 1.25rem 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.char-definition {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.char-detail {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.char-detail:last-child {
+  margin-bottom: 0;
+}
+
+.char-detail-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+
+.reflection-note {
+  background: var(--bg-card);
+  border-left: 5px solid var(--char-4);
+  padding: 1.25rem 1.5rem;
+  margin-top: 2rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.reflection-note strong {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--char-4);
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 700px) {
+  .comparison-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  button, .actions { display: none; }
+  body { background: #fff; }
+  .char-body { max-height: none !important; opacity: 1 !important; }
+  .char-card { opacity: 1 !important; transform: none !important; break-inside: avoid; }
+  .char-number { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="eyebrow">Retrieval Exercise</div>
+  <h1>Third Place Recall</h1>
+  <p class="lede">Reconstruct what you remember about Oldenburg's eight characteristics of a third place, then compare your recall against the source material.</p>
+
+  <div class="prompt-box">
+    <div class="prompt-label">Your Prompt</div>
+    <p class="prompt-text">"From memory, describe what makes a third place thrive using the language and characteristics from last week."</p>
+  </div>
+
+  <textarea id="student-input" placeholder="Write everything you can recall about the eight characteristics of a third place. Use whatever structure feels natural -- list them, describe them in prose, give examples. The goal is honest recall, not perfection."></textarea>
+
+  <div class="actions">
+    <button class="btn-primary" id="reveal-btn" onclick="revealCharacteristics()">Reveal Characteristics</button>
+    <button class="btn-ghost" id="reset-btn" onclick="resetExercise()" style="display:none;">Start Over</button>
+  </div>
+
+  <div class="reveal-section" id="reveal-section">
+    <div class="divider"></div>
+
+    <div class="comparison-layout">
+      <div class="comparison-col">
+        <h2>Your Recall</h2>
+        <div class="student-text" id="student-recall"></div>
+      </div>
+      <div class="comparison-col">
+        <h2>As You Read Below</h2>
+        <div class="reflection-note">
+          <strong>Reflect</strong>
+          Which characteristics did you name? Which did you miss entirely? Where did your language drift from Oldenburg's meaning -- and what does that drift reveal about how you understood the concept?
+        </div>
+      </div>
+    </div>
+
+    <h2 class="characteristics-heading">Oldenburg's Eight Characteristics</h2>
+
+    <div id="char-list"></div>
+  </div>
+</div>
+
+<script>
+var CHARACTERISTICS = [
+  {
+    num: 1,
+    name: 'Neutral Ground',
+    color: '#5C3A96',
+    definition: 'A third place is a setting where people can come and go freely, without obligation, invitation, or the need to play host.',
+    description: 'No one is financially, socially, or contractually compelled to be present. Attendance is voluntary. This freedom from entanglement creates the conditions for informal, low-stakes social interaction — people can engage as much or as little as they wish. As Sennett argues, "people can be sociable only when they have some protection from each other."',
+    indicator: 'Visitors arrive and leave at different times without anyone remarking on it or requiring explanation; no sign-in, booking, or membership check occurs.',
+    counter: 'Attendance is logged, absences are questioned by management, or entry requires formal invitation or membership approval.'
+  },
+  {
+    num: 2,
+    name: 'The Leveler',
+    color: '#B52838',
+    definition: 'A third place is a socially levelling environment where individuals’ rank, status, and roles in the outside world carry no weight.',
+    description: 'Participation is not contingent on prerequisites, credentials, or proof of membership. External hierarchies — job title, income, education, age — are suspended. The space functions as a social moratorium: people are evaluated on who they are in that space, not who they are outside it.',
+    indicator: 'A junior employee and a CEO sit at the same table and are treated identically by staff and other patrons; no reserved sections or tiered access.',
+    counter: 'VIP areas, dress codes that signal economic status, or social dynamics where people routinely ask "what do you do?" as a gatekeeping move.'
+  },
+  {
+    num: 3,
+    name: 'Conversation is the Main Activity',
+    color: '#C85218',
+    definition: 'Talk — lively, playful, wide-ranging — is the primary social activity in a third place, valued collectively for its own sake.',
+    description: 'Conversation is not merely instrumental (ordering food, transacting business) but is the central purpose of being there. Wit, storytelling, debate, and banter are prized. The quality of conversation — its breadth, inclusiveness, and playfulness — is what distinguishes a third place from a mere venue.',
+    indicator: 'Patrons linger in extended conversation well after finishing their drinks; topics range freely from the personal to the political; newcomers are drawn into existing conversations.',
+    counter: 'The space is dominated by solo activities (e.g., everyone on laptops with headphones); conversation is limited to transactional exchanges with staff; signage discourages lingering or noise.'
+  },
+  {
+    num: 4,
+    name: 'Accessibility and Accommodation',
+    color: '#D4A020',
+    definition: 'A third place is easy to access and accommodating to its visitors’ schedules — one can go alone, at almost any time, and expect to find familiar faces.',
+    description: 'The space should be physically easy to reach and open during the times people want to use it. Activities are largely impromptu, unscheduled, and unstructured. The key test is whether the space "stands ready to serve people’s needs for sociability and relaxation in the intervals before, between, and after their mandatory appearances elsewhere."',
+    indicator: 'The space is open long hours, has no reservation requirement, is located on a daily commute route, and has affordable (or free) entry; people drop in without pre-planning.',
+    counter: 'The venue is open only during narrow hours, requires advance booking, is in an out-of-the-way location, or has a price point that restricts regular attendance.'
+  },
+  {
+    num: 5,
+    name: 'The Regulars',
+    color: '#7A5828',
+    definition: 'A third place has a core group of regular visitors who set the social tone, attract newcomers, and give the space its characteristic mood.',
+    description: 'Regulars are not numerically dominant but are affectively dominant — they establish the conversational norms, the mood, and the sense of familiarity that makes newcomers feel (or not feel) welcome. Their perpetual presence ensures that on any visit, a visitor will find someone they know.',
+    indicator: 'Staff greet certain visitors by name; a newcomer entering is introduced or naturally drawn into conversation by people who are clearly "at home" there.',
+    counter: 'The clientele is entirely transient — no one recognises anyone else; there is no sense of community continuity between visits.'
+  },
+  {
+    num: 6,
+    name: 'A Low Profile',
+    color: '#B83068',
+    definition: 'Third places are characteristically unpretentious, plain, and without airs — their décor maximises comfort by avoiding ostentation.',
+    description: 'The physical environment is homely and unimpressive-looking, which deters pretension and encourages informality. The functional principle is that plainness removes barriers to informal interaction.',
+    indicator: 'Worn furniture, mismatched décor, no branding or corporate uniformity; the space looks "lived-in" rather than curated; regulars feel ownership.',
+    counter: 'High-end interior design, visible branding, Instagram-optimised décor, or an atmosphere that signals exclusivity and discourages casual use.'
+  },
+  {
+    num: 7,
+    name: 'The Mood is Playful',
+    color: '#CC6830',
+    definition: 'The dominant mood of a third place is one of playfulness — frivolity, humour, verbal wit, and lightheartedness are the norm.',
+    description: 'Seriousness is treated as an intrusion. When someone introduces a weighty personal problem, the group typically redirects toward humour — not out of callousness, but because the playful mood is constitutive of the space’s identity. Oldenburg argues that "joy and acceptance reign over anxiety and alienation."',
+    indicator: 'Laughter is frequent; patrons tease each other good-naturedly; banter is the default register; someone who is overly serious is gently ribbed until they lighten up.',
+    counter: 'The atmosphere is tense, competitive, or hushed; social norms discourage joking; people feel judged or self-conscious.'
+  },
+  {
+    num: 8,
+    name: 'A Home Away from Home',
+    color: '#7E58A8',
+    definition: 'A third place provides a sense of rootedness, comfort, and warmth analogous to being at home — it is a psychological anchor in daily life.',
+    description: 'Oldenburg draws on Seamon’s five traits of "home": rootedness (the space is a fixed point around which one organises comings and goings), feelings of possession (a sense of ownership without legal title), spiritual regeneration (the space restores and refreshes), ease (freedom to be oneself), and warmth (mutual caring among those present). Regular participation creates a sense of mutual care and belonging without the entangling obligations of actual domestic life.',
+    indicator: 'A patron who hasn’t appeared in a week is asked about by others; people have "their" seat or spot; the space is referenced as "my café" or "our place"; leaving feels slightly reluctant.',
+    counter: 'No one notices absences; the space feels interchangeable with any similar venue; patrons have no sense of personal investment in the environment.'
+  }
+];
+
+function buildCharCards() {
+  var container = document.getElementById('char-list');
+  var html = '';
+  for (var i = 0; i < CHARACTERISTICS.length; i++) {
+    var c = CHARACTERISTICS[i];
+    html += '<div class="char-card" data-ci="' + i + '">' +
+      '<div class="char-header" onclick="toggleCard(' + i + ')">' +
+        '<div class="char-number" style="background:' + c.color + '">' + c.num + '</div>' +
+        '<div class="char-name">' + c.name + '</div>' +
+        '<div class="char-toggle">▼</div>' +
+      '</div>' +
+      '<div class="char-body" id="char-body-' + i + '">' +
+        '<div class="char-body-inner">' +
+          '<p class="char-definition">' + c.definition + '</p>' +
+          '<p class="char-detail">' + c.description + '</p>' +
+          '<div class="char-detail-label">Example Indicator</div>' +
+          '<p class="char-detail">' + c.indicator + '</p>' +
+          '<div class="char-detail-label">Counter-Indicator</div>' +
+          '<p class="char-detail">' + c.counter + '</p>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+  container.innerHTML = html;
+}
+
+function toggleCard(index) {
+  var card = document.querySelector('[data-ci="' + index + '"]');
+  var body = document.getElementById('char-body-' + index);
+  if (card.classList.contains('expanded')) {
+    card.classList.remove('expanded');
+    body.style.maxHeight = null;
+  } else {
+    card.classList.add('expanded');
+    body.style.maxHeight = body.scrollHeight + 'px';
+  }
+}
+
+function revealCharacteristics() {
+  var input = document.getElementById('student-input');
+  var text = input.value.trim();
+  if (!text) {
+    input.focus();
+    return;
+  }
+
+  document.getElementById('student-recall').textContent = text;
+  input.disabled = true;
+  document.getElementById('reveal-btn').disabled = true;
+  document.getElementById('reset-btn').style.display = '';
+
+  var section = document.getElementById('reveal-section');
+  section.classList.add('visible');
+
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  var cards = document.querySelectorAll('.char-card');
+  for (var i = 0; i < cards.length; i++) {
+    (function(card, delay) {
+      setTimeout(function() {
+        card.classList.add('visible');
+      }, delay);
+    })(cards[i], 80 * i);
+  }
+}
+
+function resetExercise() {
+  var input = document.getElementById('student-input');
+  input.value = '';
+  input.disabled = false;
+  document.getElementById('reveal-btn').disabled = false;
+  document.getElementById('reset-btn').style.display = 'none';
+  document.getElementById('reveal-section').classList.remove('visible');
+
+  var cards = document.querySelectorAll('.char-card');
+  for (var i = 0; i < cards.length; i++) {
+    cards[i].classList.remove('visible', 'expanded');
+    document.getElementById('char-body-' + i).style.maxHeight = null;
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  setTimeout(function() { input.focus(); }, 400);
+}
+
+buildCharCards();
+</script>
+</body>
+</html>
