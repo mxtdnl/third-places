@@ -1,0 +1,779 @@
+<meta charset="utf-8">
+<title>Evidence Compass</title>
+<style>
+  :root {
+    --bg: #F2DFBE;
+    --bg-card: #FFFAF2;
+    --bg-deep: #E8D2A8;
+    --text: #2A1F18;
+    --text-muted: #6A5A48;
+    --border: #D8C8A8;
+
+    --char-1: #5C3A96;
+    --char-2: #B52838;
+    --char-3: #C85218;
+    --char-4: #D4A020;
+    --char-5: #7A5828;
+    --char-6: #B83068;
+    --char-7: #CC6830;
+    --char-8: #7E58A8;
+
+    --correct: #2A7A42;
+    --correct-bg: #E6F4EA;
+
+    --lens-psych: #5C3A96;
+    --lens-econ: #D4A020;
+    --lens-polit: #B52838;
+
+    --claim-1: #C85218;
+    --claim-2: #7A5828;
+    --claim-3: #B83068;
+    --claim-4: #7E58A8;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  .app-wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  h1 {
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.15;
+    margin-bottom: 0.5rem;
+  }
+
+  h2 {
+    font-size: clamp(1.5rem, 3vw, 2.1rem);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+  }
+
+  .lede {
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: var(--text-muted);
+    max-width: 720px;
+    margin-bottom: 2rem;
+  }
+
+  .eyebrow {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* ── View toggle ── */
+  .view-tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 2rem;
+  }
+  .view-tab {
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 0.75rem 1.25rem;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .view-tab:hover { color: var(--text); }
+  .view-tab.active {
+    color: var(--text);
+    border-bottom-color: var(--text);
+  }
+  .view-tab .tab-badge {
+    display: inline-block;
+    background: var(--char-1);
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  /* ── Grid view ── */
+  .view-panel { display: none; }
+  .view-panel.active { display: block; }
+
+  .compass-grid {
+    display: grid;
+    grid-template-columns: 180px repeat(3, 1fr);
+    gap: 0;
+    border: 2px solid var(--border);
+  }
+
+  .grid-corner {
+    background: var(--bg-deep);
+    border-right: 2px solid var(--border);
+    border-bottom: 2px solid var(--border);
+    padding: 1rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+  }
+  .grid-corner .corner-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-align: right;
+    line-height: 1.3;
+  }
+
+  .col-header {
+    background: var(--bg-deep);
+    border-bottom: 2px solid var(--border);
+    padding: 1rem 0.75rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .col-header:not(:last-child) {
+    border-right: 2px solid var(--border);
+  }
+  .col-header .lens-swatch {
+    width: 28px;
+    height: 4px;
+  }
+  .col-header .lens-name {
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .col-header .lens-question {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+    font-style: italic;
+  }
+
+  .row-header {
+    background: var(--bg-card);
+    border-right: 2px solid var(--border);
+    border-bottom: 2px solid var(--border);
+    padding: 1rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.3rem;
+    border-left: 6px solid var(--border);
+  }
+  .row-header .claim-num {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .row-header .claim-label {
+    font-size: 0.9rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.25;
+  }
+  .row-header .claim-desc {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  .grid-cell {
+    background: var(--bg-card);
+    border-bottom: 2px solid var(--border);
+    padding: 0;
+    position: relative;
+  }
+  .grid-cell:not(:last-child) {
+    border-right: 2px solid var(--border);
+  }
+  .grid-cell textarea {
+    width: 100%;
+    height: 100%;
+    min-height: 140px;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    padding: 0.75rem;
+    resize: none;
+    outline: none;
+  }
+  .grid-cell textarea::placeholder {
+    color: var(--text-muted);
+    opacity: 0.5;
+    font-style: italic;
+  }
+  .grid-cell textarea:focus {
+    background: rgba(92, 58, 150, 0.04);
+  }
+  .grid-cell .cell-status {
+    position: absolute;
+    bottom: 6px;
+    right: 8px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+  .grid-cell.filled .cell-status {
+    opacity: 0.5;
+  }
+
+  /* Last row cells — no bottom border (grid border handles it) */
+  .compass-grid > :nth-last-child(-n+4) {
+    border-bottom: none;
+  }
+
+  /* ── Progress bar ── */
+  .progress-section {
+    margin-top: 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .progress-track {
+    flex: 1;
+    height: 6px;
+    background: var(--bg-deep);
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--char-1);
+    transition: width 0.6s ease;
+  }
+  .progress-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  /* ── Summary view ── */
+  .summary-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+  }
+
+  .summary-grid {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .summary-claim {
+    border: 2px solid var(--border);
+    background: var(--bg-card);
+    border-left-width: 6px;
+  }
+  .summary-claim-header {
+    padding: 1rem 1.25rem 0.5rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+  }
+  .summary-claim-header .claim-num {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .summary-claim-header .claim-label {
+    font-size: 1rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .summary-lenses {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0;
+    padding: 0 1.25rem 1.25rem;
+  }
+  .summary-lens {
+    padding: 0.75rem 0;
+    border-top: 1px solid var(--border);
+  }
+  .summary-lens:not(:last-child) {
+    padding-right: 1.25rem;
+  }
+  .summary-lens-name {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .summary-lens-name .lens-pip {
+    width: 8px;
+    height: 8px;
+    display: inline-block;
+  }
+  .summary-lens-text {
+    font-size: 0.88rem;
+    line-height: 1.55;
+    color: var(--text);
+    white-space: pre-wrap;
+  }
+  .summary-lens-empty {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  /* ── Toolbar ── */
+  .toolbar {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .btn {
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    padding: 0.65rem 1.5rem;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .btn:active { transform: translateY(0); }
+  .btn-primary {
+    background: var(--char-1);
+    color: #fff;
+  }
+  .btn-primary:hover {
+    background: var(--char-2);
+    transform: translateY(-2px);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border: 2px solid var(--text);
+  }
+  .btn-ghost:hover {
+    background: var(--text);
+    color: var(--bg);
+    transform: translateY(-2px);
+  }
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* ── Print ── */
+  @media print {
+    body { background: #fff; }
+    .view-tabs, .toolbar, .progress-section { display: none; }
+    .compass-grid { break-inside: avoid; }
+    .grid-cell textarea {
+      border: 1px solid #ccc;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+    .row-header, .col-header {
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+    .summary-claim {
+      break-inside: avoid;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 860px) {
+    .compass-grid {
+      display: block;
+      border: none;
+    }
+    .grid-corner { display: none; }
+    .col-header { display: none; }
+    .row-header {
+      border: 2px solid var(--border);
+      border-bottom: none;
+      margin-top: 1.5rem;
+    }
+    .row-header:first-of-type { margin-top: 0; }
+    .grid-cell {
+      border: 2px solid var(--border);
+      border-top: none;
+    }
+    .grid-cell:last-child {
+      border-bottom: 2px solid var(--border);
+    }
+    .grid-cell::before {
+      content: attr(data-lens);
+      display: block;
+      padding: 0.5rem 0.75rem 0;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .grid-cell textarea {
+      min-height: 100px;
+    }
+    .compass-grid > :nth-last-child(-n+4) {
+      border-bottom: none;
+    }
+    .compass-grid > :last-child {
+      border-bottom: 2px solid var(--border);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .app-wrap { padding: 1rem; }
+    .summary-lenses {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="app-wrap">
+
+  <h1>Evidence Compass</h1>
+  <p class="lede">
+    The claim that third places are declining can be decomposed into four distinct sub-claims, each requiring different kinds of evidence. For each claim, consider what would count as evidence through three disciplinary lenses. What data, observations, or measures would a psychologist, economist, or political scientist look for?
+  </p>
+
+  <div class="view-tabs">
+    <button class="view-tab active" data-view="grid">Grid</button>
+    <button class="view-tab" data-view="summary">Summary <span class="tab-badge" id="filled-count">0 / 12</span></button>
+  </div>
+
+  <!-- ── GRID VIEW ── -->
+  <div class="view-panel active" id="view-grid">
+
+    <div class="progress-section">
+      <span class="progress-label">Cells completed</span>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+      </div>
+      <span class="progress-label" id="progress-text">0 / 12</span>
+    </div>
+
+    <div class="compass-grid" id="compass-grid">
+      <!-- JS-built -->
+    </div>
+
+    <div class="toolbar" style="margin-top: 1.5rem;">
+      <button class="btn btn-ghost" id="btn-clear" disabled>Clear All</button>
+    </div>
+  </div>
+
+  <!-- ── SUMMARY VIEW ── -->
+  <div class="view-panel" id="view-summary">
+    <div class="toolbar">
+      <button class="btn btn-ghost" id="btn-print" onclick="window.print()">Print</button>
+    </div>
+    <div id="summary-content"></div>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  var CLAIMS = [
+    {
+      id: 'supply',
+      num: 'Claim 1',
+      label: 'Supply Is Shrinking',
+      desc: 'Fewer third places exist than before',
+      color: 'var(--claim-1)'
+    },
+    {
+      id: 'use',
+      num: 'Claim 2',
+      label: 'Use Is Falling',
+      desc: 'People visit third places less often or for shorter periods',
+      color: 'var(--claim-2)'
+    },
+    {
+      id: 'quality',
+      num: 'Claim 3',
+      label: 'Quality Is Degrading',
+      desc: 'Surviving spaces exhibit fewer third-place characteristics',
+      color: 'var(--claim-3)'
+    },
+    {
+      id: 'outcomes',
+      num: 'Claim 4',
+      label: 'Outcomes Are Weakening',
+      desc: 'Social capital, wellbeing, or civic gains are diminishing',
+      color: 'var(--claim-4)'
+    }
+  ];
+
+  var LENSES = [
+    {
+      id: 'psych',
+      name: 'Psychological',
+      question: 'Behaviour, cognition, wellbeing',
+      color: 'var(--lens-psych)'
+    },
+    {
+      id: 'econ',
+      name: 'Economic',
+      question: 'Markets, costs, incentives',
+      color: 'var(--lens-econ)'
+    },
+    {
+      id: 'polit',
+      name: 'Political',
+      question: 'Policy, power, institutions',
+      color: 'var(--lens-polit)'
+    }
+  ];
+
+  var grid = document.getElementById('compass-grid');
+  var textareas = {};
+
+  function buildGrid() {
+    var html = '';
+
+    html += '<div class="grid-corner"><span class="corner-label">Claims &#8595;<br>Lenses &#8594;</span></div>';
+
+    for (var l = 0; l < LENSES.length; l++) {
+      var lens = LENSES[l];
+      html += '<div class="col-header">';
+      html += '<div class="lens-swatch" style="background: ' + lens.color + '"></div>';
+      html += '<div class="lens-name">' + lens.name + '</div>';
+      html += '<div class="lens-question">' + lens.question + '</div>';
+      html += '</div>';
+    }
+
+    for (var c = 0; c < CLAIMS.length; c++) {
+      var claim = CLAIMS[c];
+
+      html += '<div class="row-header" style="border-left-color: ' + claim.color + '">';
+      html += '<span class="claim-num" style="color: ' + claim.color + '">' + claim.num + '</span>';
+      html += '<span class="claim-label">' + claim.label + '</span>';
+      html += '<span class="claim-desc">' + claim.desc + '</span>';
+      html += '</div>';
+
+      for (var ll = 0; ll < LENSES.length; ll++) {
+        var key = claim.id + '-' + LENSES[ll].id;
+        html += '<div class="grid-cell" data-lens="' + LENSES[ll].name + '">';
+        html += '<textarea id="cell-' + key + '" data-key="' + key + '" placeholder="What evidence would a ' + LENSES[ll].name.toLowerCase() + ' lens seek for \'' + claim.label.toLowerCase() + '\'?"></textarea>';
+        html += '<span class="cell-status">&#10003;</span>';
+        html += '</div>';
+      }
+    }
+
+    grid.innerHTML = html;
+
+    var areas = grid.querySelectorAll('textarea');
+    for (var i = 0; i < areas.length; i++) {
+      var ta = areas[i];
+      textareas[ta.getAttribute('data-key')] = ta;
+      ta.addEventListener('input', onInput);
+    }
+  }
+
+  function onInput() {
+    updateProgress();
+    saveState();
+  }
+
+  function getFilledCount() {
+    var count = 0;
+    var keys = Object.keys(textareas);
+    for (var i = 0; i < keys.length; i++) {
+      if (textareas[keys[i]].value.trim().length > 0) count++;
+    }
+    return count;
+  }
+
+  function updateProgress() {
+    var filled = getFilledCount();
+    var total = 12;
+    var pct = Math.round((filled / total) * 100);
+
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-text').textContent = filled + ' / ' + total;
+    document.getElementById('filled-count').textContent = filled + ' / ' + total;
+    document.getElementById('btn-clear').disabled = filled === 0;
+
+    var cells = grid.querySelectorAll('.grid-cell');
+    for (var i = 0; i < cells.length; i++) {
+      var ta = cells[i].querySelector('textarea');
+      if (ta && ta.value.trim().length > 0) {
+        cells[i].classList.add('filled');
+      } else {
+        cells[i].classList.remove('filled');
+      }
+    }
+  }
+
+  function saveState() {
+    try {
+      var state = {};
+      var keys = Object.keys(textareas);
+      for (var i = 0; i < keys.length; i++) {
+        var v = textareas[keys[i]].value;
+        if (v) state[keys[i]] = v;
+      }
+      localStorage.setItem('evidence-compass', JSON.stringify(state));
+    } catch (e) {}
+  }
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem('evidence-compass');
+      if (!raw) return;
+      var state = JSON.parse(raw);
+      var keys = Object.keys(state);
+      for (var i = 0; i < keys.length; i++) {
+        if (textareas[keys[i]]) {
+          textareas[keys[i]].value = state[keys[i]];
+        }
+      }
+    } catch (e) {}
+  }
+
+  function clearAll() {
+    var keys = Object.keys(textareas);
+    for (var i = 0; i < keys.length; i++) {
+      textareas[keys[i]].value = '';
+    }
+    updateProgress();
+    saveState();
+  }
+
+  function renderSummary() {
+    var container = document.getElementById('summary-content');
+    var filled = getFilledCount();
+
+    if (filled === 0) {
+      container.innerHTML = '<div class="summary-empty"><p class="eyebrow">No entries yet</p><p style="margin-top:0.5rem;color:var(--text-muted)">Return to the grid and enter evidence for at least one cell.</p></div>';
+      return;
+    }
+
+    var html = '<div class="summary-grid">';
+
+    for (var c = 0; c < CLAIMS.length; c++) {
+      var claim = CLAIMS[c];
+      var hasAny = false;
+
+      for (var l = 0; l < LENSES.length; l++) {
+        var key = claim.id + '-' + LENSES[l].id;
+        if (textareas[key].value.trim().length > 0) { hasAny = true; break; }
+      }
+
+      if (!hasAny) continue;
+
+      html += '<div class="summary-claim" style="border-left-color: ' + claim.color + '">';
+      html += '<div class="summary-claim-header">';
+      html += '<span class="claim-num" style="color: ' + claim.color + '">' + claim.num + '</span>';
+      html += '<span class="claim-label">' + claim.label + '</span>';
+      html += '</div>';
+      html += '<div class="summary-lenses">';
+
+      for (var ll = 0; ll < LENSES.length; ll++) {
+        var lkey = claim.id + '-' + LENSES[ll].id;
+        var val = textareas[lkey].value.trim();
+
+        html += '<div class="summary-lens">';
+        html += '<div class="summary-lens-name">';
+        html += '<span class="lens-pip" style="background: ' + LENSES[ll].color + '"></span>';
+        html += LENSES[ll].name;
+        html += '</div>';
+
+        if (val) {
+          html += '<div class="summary-lens-text">' + escapeHtml(val) + '</div>';
+        } else {
+          html += '<div class="summary-lens-empty">Not yet entered</div>';
+        }
+
+        html += '</div>';
+      }
+
+      html += '</div></div>';
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+  }
+
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // View switching
+  var tabs = document.querySelectorAll('.view-tab');
+  for (var t = 0; t < tabs.length; t++) {
+    tabs[t].addEventListener('click', function() {
+      var view = this.getAttribute('data-view');
+
+      for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+      this.classList.add('active');
+
+      document.getElementById('view-grid').classList.remove('active');
+      document.getElementById('view-summary').classList.remove('active');
+      document.getElementById('view-' + view).classList.add('active');
+
+      if (view === 'summary') renderSummary();
+    });
+  }
+
+  // Clear button
+  document.getElementById('btn-clear').addEventListener('click', function() {
+    if (confirm('Clear all entries? This cannot be undone.')) clearAll();
+  });
+
+  // Init
+  buildGrid();
+  loadState();
+  updateProgress();
+})();
+</script>
