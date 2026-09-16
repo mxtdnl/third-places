@@ -18,8 +18,12 @@
   --char-7: #CC6830;
   --char-8: #7E58A8;
 
-  --present: #2A7A42;
-  --present-bg: #E6F4EA;
+  --correct: #2A7A42;
+  --correct-bg: #E6F4EA;
+  --incorrect: #B82828;
+  --incorrect-bg: #FDEEEE;
+  --hint-bg: #FFF3D6;
+  --hint: #B98A10;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -33,7 +37,7 @@ body {
   padding-inline: 16px;
 }
 
-#app { max-width: 760px; margin: 0 auto; padding-block: 1.5rem 3rem; }
+#app { max-width: 860px; margin: 0 auto; padding-block: 1.5rem 3rem; }
 
 h1, h2, h3 { line-height: 1.2; }
 h1 { font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.1; margin-bottom: 0.5rem; }
@@ -64,9 +68,7 @@ h3 { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.1em; text-transform
 .btn-ghost:hover:not(:disabled) { background: var(--text); color: var(--bg); }
 .btn-small { padding: 0.6rem 1.4rem; font-size: 0.85rem; }
 
-/* ============================================================
-   INTRO
-   ============================================================ */
+/* INTRO */
 .intro { position: relative; min-height: calc(100vh - 4.5rem); display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .geo { position: absolute; pointer-events: none; }
 .geo-a { width: 380px; height: 380px; border-radius: 50%; background: var(--char-1); opacity: 0.1; top: -80px; right: -40px; }
@@ -74,12 +76,109 @@ h3 { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.1em; text-transform
 .geo-c { width: 0; height: 0; border-left: 55px solid transparent; border-right: 55px solid transparent; border-bottom: 95px solid var(--char-2); opacity: 0.08; top: 30%; left: 8%; }
 .intro-content { max-width: 640px; text-align: center; position: relative; z-index: 1; }
 .intro-sub { font-size: 1.05rem; line-height: 1.65; color: var(--text-muted); margin: 0 auto 1.5rem; max-width: 560px; }
-.intro-svg { margin: 0 auto 2rem; max-width: 360px; }
-.intro-svg svg { width: 100%; height: auto; display: block; }
+.mode-btns { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+.mode-desc { margin-top: 0.75rem; }
 
-/* ============================================================
-   PLACE SELECTOR
-   ============================================================ */
+/* PLACE SELECT */
+.place-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; margin-top: 1rem; }
+.place-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.place-card:hover { border-color: var(--text); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(42,31,24,0.1); }
+.place-card-title { font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.25rem; }
+.place-card-desc { font-size: 0.85rem; color: var(--text-muted); }
+.place-card svg { width: 100%; height: auto; display: block; margin-bottom: 0.75rem; }
+
+/* GAME SCREEN */
+.game-top { margin-bottom: 1.5rem; }
+.game-svg-wrap { width: 100%; max-width: 800px; margin: 0 auto 1rem; }
+.game-svg-wrap svg { width: 100%; height: auto; display: block; }
+.game-progress { display: flex; gap: 6px; justify-content: center; margin-bottom: 1rem; }
+.game-dot {
+  width: 28px; height: 28px;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; font-weight: 700; color: var(--text-muted);
+  transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+.game-dot.done { border-color: var(--correct); color: #fff; }
+.game-dot.current { border-color: var(--text); background: var(--bg-deep); color: var(--text); }
+
+.game-char-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+.game-char-swatch { width: 14px; height: 14px; flex-shrink: 0; }
+.game-char-name { font-size: 1.1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
+.game-current { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 0.75rem; line-height: 1.6; border-left: 4px solid var(--border); padding-left: 1rem; }
+.game-prompt { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; }
+
+.game-options { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+.game-opt {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  padding: 0.85rem 1.1rem;
+  font-size: 0.95rem;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text);
+  line-height: 1.5;
+  transition: border-color 0.15s ease, transform 0.15s ease, opacity 0.2s ease;
+}
+.game-opt:hover:not(:disabled):not(.tried) { border-color: var(--text); transform: translateY(-1px); }
+.game-opt.correct-pick { border-color: var(--correct); border-left: 6px solid var(--correct); background: var(--correct-bg); }
+.game-opt.wrong-pick { border-color: var(--incorrect); border-left: 6px solid var(--incorrect); background: var(--incorrect-bg); }
+.game-opt.tried { opacity: 0.35; cursor: not-allowed; }
+.game-opt:disabled { cursor: not-allowed; }
+
+.game-feedback {
+  padding: 1rem 1.25rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  display: none;
+}
+.game-feedback.visible { display: block; }
+.game-feedback.correct { border-left: 5px solid var(--correct); background: var(--correct-bg); }
+.game-feedback.wrong { border-left: 5px solid var(--hint); background: var(--hint-bg); }
+.game-feedback-text { margin-bottom: 0.5rem; }
+.game-next { margin-top: 0.5rem; }
+
+.score-box {
+  text-align: center;
+  padding: 1.5rem;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+.score-num { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; color: var(--char-1); }
+.score-label { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); }
+
+/* SVG ANIMATION */
+@keyframes svgPulse { 0% { transform: scale(1); } 50% { transform: scale(1.015); } 100% { transform: scale(1); } }
+.svg-pulse { animation: svgPulse 0.4s ease; }
+
+/* SUMMARY / PORTRAIT */
+.portrait-header { text-align: center; margin-bottom: 1.5rem; }
+.portrait-place-name { font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; line-height: 1.1; margin-bottom: 0.25rem; }
+.portrait-subtitle { font-size: 0.85rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); }
+
+.portrait-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.portrait-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-left: 6px solid var(--border);
+  padding: 1.25rem 1.5rem;
+}
+.portrait-card-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+.portrait-card-swatch { width: 12px; height: 12px; flex-shrink: 0; }
+.portrait-card-name { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.portrait-card-body { font-size: 0.95rem; line-height: 1.6; }
+
+.portrait-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; margin-top: 2rem; }
+
+/* SOLO MODE */
 .place-section { margin-bottom: 2rem; }
 .place-presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 0.75rem; }
 .place-chip {
@@ -110,11 +209,12 @@ h3 { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.1em; text-transform
 .place-custom:focus { outline: none; border-color: var(--char-1); }
 .place-custom::placeholder { color: var(--border); }
 
-/* ============================================================
-   CHARACTERISTIC CARDS
-   ============================================================ */
-.char-cards { display: flex; flex-direction: column; gap: 1.25rem; margin-bottom: 2rem; }
+.progress-section { margin-bottom: 1.5rem; }
+.progress-track { height: 8px; background: var(--bg-deep); position: relative; margin-top: 0.4rem; }
+.progress-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--char-1); transition: width 0.5s ease; }
+.progress-text { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
 
+.char-cards { display: flex; flex-direction: column; gap: 1.25rem; margin-bottom: 2rem; }
 .char-card {
   background: var(--bg-card);
   border: 2px solid var(--border);
@@ -122,65 +222,50 @@ h3 { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.1em; text-transform
   padding: 1.25rem 1.5rem;
   transition: border-color 0.15s ease;
 }
-.char-card.filled { border-left-color: var(--present); }
-
+.char-card.filled { border-left-color: var(--correct); }
 .char-card-head { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.35rem; }
 .char-swatch { width: 12px; height: 12px; flex-shrink: 0; }
 .char-num { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; color: var(--text-muted); }
 .char-name { font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
-
 .char-def { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 0.75rem; line-height: 1.55; }
-
-.char-prompt { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; }
-
+.char-prompt { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.3rem; }
 .char-input {
   width: 100%;
-  min-height: 80px;
+  min-height: 56px;
   background: var(--bg);
   border: 2px solid var(--border);
-  padding: 0.75rem 1rem;
+  padding: 0.6rem 0.85rem;
   font-size: 0.95rem;
   font-family: inherit;
   color: var(--text);
   line-height: 1.5;
   resize: vertical;
+  margin-bottom: 0.5rem;
 }
 .char-input:focus { outline: none; border-color: var(--char-1); }
 .char-input::placeholder { color: var(--border); }
 
-/* ============================================================
-   PROGRESS BAR
-   ============================================================ */
-.progress-section { margin-bottom: 1.5rem; }
-.progress-track { height: 8px; background: var(--bg-deep); position: relative; margin-top: 0.4rem; }
-.progress-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--char-1); transition: width 0.5s ease; }
-.progress-text { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
-
-/* ============================================================
-   PORTRAIT OUTPUT
-   ============================================================ */
-.portrait-section { display: none; }
-.portrait-section.visible { display: block; }
-
-.portrait-header { text-align: center; margin-bottom: 2rem; }
-.portrait-place-name { font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; line-height: 1.1; margin-bottom: 0.25rem; }
-.portrait-subtitle { font-size: 0.85rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); }
-.portrait-svg-wrap { max-width: 500px; margin: 1.5rem auto; }
-.portrait-svg-wrap svg { width: 100%; height: auto; display: block; }
-
-.portrait-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-
-.portrait-card {
-  background: var(--bg-card);
+.rating-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+.rating-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+.rating-dots { display: flex; gap: 4px; }
+.rating-dot {
+  width: 24px; height: 24px;
   border: 2px solid var(--border);
-  border-left: 6px solid var(--border);
-  padding: 1.25rem 1.5rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 700; color: var(--text-muted);
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
-.portrait-card-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
-.portrait-card-name { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
-.portrait-card-body { font-size: 0.95rem; line-height: 1.6; }
+.rating-dot:hover { border-color: var(--text); }
+.rating-dot.active { border-color: var(--char-1); background: var(--char-1); color: #fff; }
+.rating-end { font-size: 0.68rem; color: var(--text-muted); font-style: italic; }
 
-.portrait-bar-section { margin-bottom: 2rem; }
+/* RADAR CHART */
+.radar-wrap { max-width: 400px; margin: 1.5rem auto; }
+.radar-wrap svg { width: 100%; height: auto; display: block; }
+
+/* BAR CHART */
+.bar-section { margin-bottom: 2rem; }
 .bar-row { display: grid; grid-template-columns: 1fr 44px; grid-template-areas: 'label val' 'track val'; column-gap: 0.5rem; align-items: center; padding: 0.35rem 0; }
 .bar-label { grid-area: label; font-size: 0.78rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; }
 .bar-dot { width: 9px; height: 9px; flex-shrink: 0; }
@@ -188,93 +273,122 @@ h3 { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.1em; text-transform
 .bar-fill { position: absolute; left: 0; top: 0; height: 100%; width: 0; transition: width 0.7s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .bar-val { grid-area: val; font-size: 0.82rem; font-weight: 700; text-align: right; }
 
-.portrait-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; margin-top: 2rem; }
-
-/* ============================================================
-   SCREEN TRANSITIONS
-   ============================================================ */
+/* SCREENS */
 .screen { opacity: 1; transition: opacity 0.4s ease; }
 .screen.hidden { display: none; opacity: 0; }
 
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
+/* RESPONSIVE */
 @media (max-width: 600px) {
   .portrait-grid { grid-template-columns: 1fr; }
+  .place-grid { grid-template-columns: 1fr; }
   .place-presets { gap: 4px; }
   .place-chip { padding: 0.4rem 0.75rem; font-size: 0.75rem; }
+  .game-dot { width: 24px; height: 24px; font-size: 0.6rem; }
 }
 
-/* ============================================================
-   PRINT
-   ============================================================ */
+/* PRINT */
 @media print {
   body { background: #fff; }
   .no-print { display: none !important; }
-  .portrait-card, .bar-fill, .bar-dot, .char-swatch {
+  .portrait-card, .bar-fill, .bar-dot, .char-swatch, .portrait-card-swatch, .game-dot {
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
   }
-  .portrait-section { display: block !important; }
-  .portrait-card { break-inside: avoid; }
   .portrait-actions { display: none; }
+  .portrait-card { break-inside: avoid; }
 }
 </style>
 
 <div id="app">
 
-  <!-- INTRO SCREEN -->
+  <!-- INTRO -->
   <div id="screen-intro" class="screen">
     <div class="intro">
       <div class="geo geo-a"></div>
       <div class="geo geo-b"></div>
       <div class="geo geo-c"></div>
       <div class="intro-content">
-        <div class="intro-svg" id="intro-illustration"></div>
         <h1>Third Place Portrait</h1>
-        <p class="intro-sub">Describe what each of Oldenburg's eight characteristics looks like when your assigned place is thriving. Build a portrait in your group's own words.</p>
-        <button class="btn" onclick="startEditor()">Begin</button>
+        <p class="intro-sub">Explore what makes a third place thrive by identifying the ideal state of each of Oldenburg's eight characteristics.</p>
+        <div class="mode-btns">
+          <button class="btn" onclick="startClass()">Class Mode</button>
+          <button class="btn btn-ghost" onclick="startSolo()">Solo Mode</button>
+        </div>
+        <p class="quiet mode-desc">Class: identify ideal states for a given place. Solo: describe your own.</p>
       </div>
     </div>
   </div>
 
-  <!-- EDITOR SCREEN -->
-  <div id="screen-editor" class="screen hidden">
-    <div class="eyebrow">Activity 4</div>
-    <h2>Build Your Portrait</h2>
+  <!-- CLASS: PLACE SELECT -->
+  <div id="screen-class-place" class="screen hidden">
+    <div class="eyebrow">Activity 4 &mdash; Class Mode</div>
+    <h2>Choose a Third Place</h2>
+    <p class="lede">Select a place to transform. For each of its eight characteristics, you will identify the change that brings it closer to the ideal.</p>
+    <div class="place-grid" id="place-grid"></div>
+  </div>
 
+  <!-- CLASS: GAME -->
+  <div id="screen-class-game" class="screen hidden">
+    <div class="game-top">
+      <div class="game-progress" id="game-progress"></div>
+      <div class="game-svg-wrap" id="game-svg"></div>
+    </div>
+    <div id="game-question">
+      <div class="game-char-head" id="game-char-head"></div>
+      <div class="game-current" id="game-current"></div>
+      <div class="game-prompt">Which change would strengthen this characteristic?</div>
+      <div class="game-options" id="game-options"></div>
+      <div class="game-feedback" id="game-feedback"></div>
+    </div>
+  </div>
+
+  <!-- CLASS: SUMMARY -->
+  <div id="screen-class-summary" class="screen hidden">
+    <div class="portrait-header">
+      <div class="portrait-subtitle">A Thriving Third Place</div>
+      <div class="portrait-place-name" id="summary-name"></div>
+    </div>
+    <div class="game-svg-wrap" id="summary-svg"></div>
+    <div class="score-box" id="score-box"></div>
+    <h3>The Eight Improvements</h3>
+    <div class="portrait-grid" id="summary-grid"></div>
+    <div class="portrait-actions no-print">
+      <button class="btn btn-ghost btn-small" onclick="resetGame()">Play Again</button>
+      <button class="btn btn-small" onclick="window.print()">Print</button>
+    </div>
+  </div>
+
+  <!-- SOLO: EDITOR -->
+  <div id="screen-solo-editor" class="screen hidden">
+    <div class="eyebrow">Activity 4 &mdash; Solo Mode</div>
+    <h2>Build Your Portrait</h2>
     <div class="place-section">
       <h3>Your Third Place</h3>
       <div class="place-presets" id="place-presets"></div>
       <input type="text" class="place-custom" id="place-custom" placeholder="Or type your own...">
     </div>
-
     <div class="progress-section no-print">
       <div class="progress-text"><span id="progress-count">0</span> of 8 characteristics described</div>
       <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
     </div>
-
     <div class="char-cards" id="char-cards"></div>
-
     <div style="text-align:center">
-      <button class="btn" id="btn-generate" onclick="generatePortrait()" disabled>Generate Portrait</button>
+      <button class="btn" id="btn-generate" onclick="generateSoloPortrait()" disabled>Generate Portrait</button>
       <p class="quiet" id="btn-hint" style="margin-top:0.5rem">Describe all eight characteristics to generate your portrait.</p>
     </div>
   </div>
 
-  <!-- PORTRAIT SCREEN -->
-  <div id="screen-portrait" class="portrait-section">
+  <!-- SOLO: PORTRAIT -->
+  <div id="screen-solo-portrait" class="screen hidden">
     <div class="portrait-header">
       <div class="portrait-subtitle">A Thriving Third Place</div>
-      <div class="portrait-place-name" id="portrait-name"></div>
-      <div class="portrait-svg-wrap" id="portrait-illustration"></div>
+      <div class="portrait-place-name" id="solo-portrait-name"></div>
     </div>
-
-    <div class="portrait-bar-section" id="portrait-bars"></div>
-    <div class="portrait-grid" id="portrait-grid"></div>
-
+    <div class="radar-wrap" id="solo-radar"></div>
+    <div class="bar-section" id="solo-bars"></div>
+    <div class="portrait-grid" id="solo-grid"></div>
     <div class="portrait-actions no-print">
-      <button class="btn-ghost btn btn-small" onclick="backToEditor()">Edit</button>
+      <button class="btn btn-ghost btn-small" onclick="backToSoloEditor()">Edit</button>
       <button class="btn btn-small" onclick="window.print()">Print</button>
     </div>
   </div>
@@ -284,149 +398,1129 @@ h3 { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.1em; text-transform
 <script>
 var CHARS = [
   { id: 1, name: 'Neutral Ground', color: 'var(--char-1)', hex: '#5C3A96',
-    def: 'A setting where people come and go freely, without obligation, invitation, or the need to play host.' },
+    def: 'A setting where people come and go freely, without obligation, invitation, or the need to play host.',
+    prompts: ['How do people arrive and leave — freely, or through some gatekeeping process?', 'What obligations, if any, do visitors carry? (minimum spend, dress code, membership)'] },
   { id: 2, name: 'The Leveler', color: 'var(--char-2)', hex: '#B52838',
-    def: 'A socially levelling environment where rank, status, and roles from the outside world carry no weight.' },
+    def: 'A socially levelling environment where rank, status, and roles from the outside world carry no weight.',
+    prompts: ['How does the space treat people of different status, income, or background?', 'Are there visible markers of hierarchy? (VIP areas, differential service, dress codes)'] },
   { id: 3, name: 'Conversation is the Main Activity', color: 'var(--char-3)', hex: '#C85218',
-    def: 'Talk — lively, playful, wide-ranging — is the primary social activity, valued collectively for its own sake.' },
+    def: 'Talk — lively, playful, wide-ranging — is the primary social activity, valued collectively for its own sake.',
+    prompts: ['What do people actually do here — talk to each other, or focus on solo activities?', 'How does the layout encourage or discourage conversation?'] },
   { id: 4, name: 'Accessibility and Accommodation', color: 'var(--char-4)', hex: '#D4A020',
-    def: 'Easy to access and accommodating to visitors’ schedules — one can go alone, at almost any time, and find familiar faces.' },
+    def: 'Easy to access and accommodating to visitors’ schedules — one can go alone, at almost any time, and find familiar faces.',
+    prompts: ['When is the space available, and how easy is it to get to?', 'Can someone visit alone, without planning, and still feel comfortable?'] },
   { id: 5, name: 'The Regulars', color: 'var(--char-5)', hex: '#7A5828',
-    def: 'A core group of regular visitors who set the social tone, attract newcomers, and give the space its characteristic mood.' },
+    def: 'A core group of regular visitors who set the social tone, attract newcomers, and give the space its characteristic mood.',
+    prompts: ['Is there a core group who come repeatedly and know each other?', 'How do regulars shape the atmosphere for newcomers?'] },
   { id: 6, name: 'A Low Profile', color: 'var(--char-6)', hex: '#B83068',
-    def: 'Characteristically unpretentious, plain, and without airs — décor maximises comfort by avoiding ostentation.' },
+    def: 'Characteristically unpretentious, plain, and without airs — décor maximises comfort by avoiding ostentation.',
+    prompts: ['Is the space pretentious or plain? Designed for comfort or for show?', 'Would someone in work clothes feel out of place?'] },
   { id: 7, name: 'The Mood is Playful', color: 'var(--char-7)', hex: '#CC6830',
-    def: 'The dominant mood is one of playfulness — frivolity, humour, verbal wit, and lightheartedness are the norm.' },
+    def: 'The dominant mood is one of playfulness — frivolity, humour, verbal wit, and lightheartedness are the norm.',
+    prompts: ['What is the emotional register — serious, businesslike, or lighthearted?', 'How do people respond to humour, banter, or silliness?'] },
   { id: 8, name: 'A Home Away from Home', color: 'var(--char-8)', hex: '#7E58A8',
-    def: 'A sense of rootedness, comfort, and warmth analogous to being at home — a psychological anchor in daily life.' }
+    def: 'A sense of rootedness, comfort, and warmth analogous to being at home — a psychological anchor in daily life.',
+    prompts: ['Do people feel a sense of belonging or ownership here?', 'Would someone’s absence be noticed and remarked upon?'] }
 ];
 
-var PRESETS = ['Pub', 'Barbershop', 'Community Centre', 'Park', 'Café', 'Bookshop', 'Market', 'Library'];
+var SOLO_PRESETS = ['Pub', 'Barbershop', 'Community Centre', 'Park', 'Café', 'Bookshop', 'Market', 'Library'];
 
-var state = {
-  placeName: '',
-  placePreset: '',
-  responses: ['', '', '', '', '', '', '', '']
-};
+var PLACES = [
+  {
+    id: 'pub', name: 'The Local Pub',
+    desc: 'A neighbourhood pub with a bar, tables, and a back room.',
+    questions: [
+      { charIdx: 0,
+        current: 'The pub requires a membership card to enter. Tables near the fireplace are permanently reserved for regulars, and newcomers must stand at the bar.',
+        options: [
+          { text: 'Remove the membership policy — anyone can walk in and sit wherever they like', type: 'correct' },
+          { text: 'Introduce a loyalty programme with tiered benefits for frequent visitors', type: 'worse' },
+          { text: 'Add a dartboard and a shelf of board games near the bar', type: 'other', target: 6 },
+          { text: 'Put up a chalkboard outside showing daily specials and opening hours', type: 'other', target: 3 }
+        ],
+        feedback: 'Removing membership barriers means anyone can enter freely, without obligation or gatekeeping — the defining feature of neutral ground.' },
+      { charIdx: 1,
+        current: 'The pub has a separate lounge with leather seats for professionals, while the public bar has basic furniture. The landlord greets regulars by job title.',
+        options: [
+          { text: 'Remove the separate lounge — one shared space with identical seating for everyone', type: 'correct' },
+          { text: 'Add a business networking hour with name badges showing job titles', type: 'worse' },
+          { text: 'Extend opening hours to include late mornings and early afternoons', type: 'other', target: 3 },
+          { text: 'Hang photos of long-standing regulars on the wall', type: 'other', target: 4 }
+        ],
+        feedback: 'When everyone shares the same space and seating, outside status becomes invisible — the pub levels everyone to equal social footing.' },
+      { charIdx: 2,
+        current: 'Multiple large TVs show sport at high volume. Most customers face the screens rather than each other. The background music is loud.',
+        options: [
+          { text: 'Turn off the TVs during the week and rearrange seating into small clusters facing each other', type: 'correct' },
+          { text: 'Install individual tablet screens at each table for ordering and entertainment', type: 'worse' },
+          { text: 'Repaint the interior in muted, comfortable colours and remove flashy signage', type: 'other', target: 5 },
+          { text: 'Let a group of Friday-evening regulars host a weekly quiz', type: 'other', target: 4 }
+        ],
+        feedback: 'When screens go dark and seats face each other, talk becomes the main event — not background noise to passive entertainment.' },
+      { charIdx: 3,
+        current: 'The pub opens only from 6pm to 11pm, has no signage from the street, and the entrance is up a narrow flight of stairs.',
+        options: [
+          { text: 'Add a street-level entrance with a clear sign, and open from noon daily', type: 'correct' },
+          { text: 'Switch to an appointment-only tasting-room model with advance bookings', type: 'worse' },
+          { text: 'Place comfortable mismatched armchairs in a corner by the fireplace', type: 'other', target: 7 },
+          { text: 'Remove dress-code expectations — welcome anyone in work clothes or casual wear', type: 'other', target: 1 }
+        ],
+        feedback: 'Long hours, clear signage, and step-free entry mean anyone can drop in at almost any time — the space stands ready when people need it.' },
+      { charIdx: 4,
+        current: 'Customer turnover is high — mostly one-time visitors passing through. Staff rotate every few weeks and do not recognise faces.',
+        options: [
+          { text: 'Keep consistent bar staff who learn names, and let a corner become the spot the same group gravitates to nightly', type: 'correct' },
+          { text: 'Run aggressive social media campaigns targeting tourists and new demographics each week', type: 'worse' },
+          { text: 'Remove entrance fees and cover charges entirely', type: 'other', target: 0 },
+          { text: 'Encourage the landlord to join conversations rather than staying behind the bar', type: 'other', target: 2 }
+        ],
+        feedback: 'Consistent staff who know faces and names create the continuity that turns strangers into regulars — they become the social anchors of the space.' },
+      { charIdx: 5,
+        current: 'The pub was recently refurbished with designer lighting, branded glassware, and a curated cocktail menu on illuminated display boards.',
+        options: [
+          { text: 'Replace the designer fittings with plain sturdy furniture and hand-written specials on a chalkboard', type: 'correct' },
+          { text: 'Hire a PR firm to feature the pub in lifestyle magazines and social media', type: 'worse' },
+          { text: 'Start closing later on weekends and opening earlier on Sundays', type: 'other', target: 3 },
+          { text: 'Introduce a house rule that regulars help newcomers choose their first drink', type: 'other', target: 1 }
+        ],
+        feedback: 'Stripping away designer fittings removes pretension — plain, functional surroundings invite informality and discourage showing off.' },
+      { charIdx: 6,
+        current: 'The atmosphere is hushed and formal. A sign reads "Please keep noise to a minimum." Staff enforce a strict no-standing policy.',
+        options: [
+          { text: 'Remove the noise rules, add a dartboard, and encourage pub games and friendly banter', type: 'correct' },
+          { text: 'Introduce fines for boisterous behaviour and a formal complaints procedure', type: 'worse' },
+          { text: 'Display hand-drawn posters by local artists instead of corporate prints', type: 'other', target: 5 },
+          { text: 'Make sure anyone can pull up a chair without asking — no reserved tables', type: 'other', target: 0 }
+        ],
+        feedback: 'Dartboards, banter, and laughter replace enforced silence — the mood becomes lighthearted and spontaneous.' },
+      { charIdx: 7,
+        current: 'The pub is clinical and new-looking. Furniture is modern and uniform. There is nothing on the walls. It feels like any other chain pub.',
+        options: [
+          { text: 'Add a bookshelf with well-thumbed novels, photos from community events, a fireplace, and potted plants', type: 'correct' },
+          { text: 'Renovate again with a minimalist aesthetic to appeal to a broader market', type: 'worse' },
+          { text: 'Host a weekly open-mic or storytelling evening', type: 'other', target: 6 },
+          { text: 'Keep the same menu and layout year after year so regulars always know what to expect', type: 'other', target: 4 }
+        ],
+        feedback: 'Personal touches — books, photos, a fireplace — create the sense of rootedness and warmth that makes a place feel like home.' }
+    ]
+  },
+  {
+    id: 'barbershop', name: 'The Barbershop',
+    desc: 'A neighbourhood barbershop with chairs, mirrors, and a waiting area.',
+    questions: [
+      { charIdx: 0,
+        current: 'The barbershop is appointment-only and caters exclusively to a small client list. Walk-ins are turned away at the door.',
+        options: [
+          { text: 'Accept walk-ins alongside bookings with a comfortable waiting area where anyone can sit', type: 'correct' },
+          { text: 'Introduce a preferred-clients tier with priority scheduling and exclusive services', type: 'worse' },
+          { text: 'Add a radio tuned to local stations as background and conversation starter', type: 'other', target: 2 },
+          { text: 'Keep prices simple and affordable so cost never excludes anyone', type: 'other', target: 1 }
+        ],
+        feedback: 'Walk-ins alongside bookings and an open waiting area remove gatekeeping — the chair is available to anyone who turns up.' },
+      { charIdx: 1,
+        current: 'Pricing varies dramatically — a premium chair costs five times more and comes with better service. The barber treats well-dressed clients with more attention.',
+        options: [
+          { text: 'One price, one standard of service, same chair — the CEO and the student get identical treatment', type: 'correct' },
+          { text: 'Add a VIP experience package with complimentary drinks and a private room', type: 'worse' },
+          { text: 'Open earlier for shift workers who finish at dawn', type: 'other', target: 3 },
+          { text: 'Let long-standing customers keep a personal mug on the shelf', type: 'other', target: 4 }
+        ],
+        feedback: 'Same chair, same price, same conversation for everyone — the barbershop does not distinguish between a CEO and a student.' },
+      { charIdx: 2,
+        current: 'The barber works in silence with headphones in. A TV plays at high volume. Customers scroll their phones while waiting.',
+        options: [
+          { text: 'Lose the headphones, turn off the TV — the barber asks about your week and the waiting customers join in', type: 'correct' },
+          { text: 'Install privacy screens between each chair so clients can have a personal experience', type: 'worse' },
+          { text: 'Add a bench outside with a simple hand-painted sign', type: 'other', target: 5 },
+          { text: 'Put up a community corkboard where locals post notices and events', type: 'other', target: 3 }
+        ],
+        feedback: 'When the barber puts away the headphones and turns off the screen, talk becomes the natural rhythm of the cut.' },
+      { charIdx: 3,
+        current: 'The shop is open by appointment only, 10am to 4pm on weekdays. There is no sign outside and you need to know the phone number.',
+        options: [
+          { text: 'Put up a visible sign, open six days a week from early morning to evening, welcome walk-ins', type: 'correct' },
+          { text: 'Switch to an online-only booking system with 48-hour minimum notice', type: 'worse' },
+          { text: 'Let regulars hang their own photos and art on the wall', type: 'other', target: 7 },
+          { text: 'Remove any screens between chairs and let conversation flow naturally', type: 'other', target: 2 }
+        ],
+        feedback: 'A visible sign, long hours, and walk-in availability mean the shop fits into people’s routines rather than demanding they adapt.' },
+      { charIdx: 4,
+        current: 'The barber changes every few months — it is a rotating chair rental. No customer sees the same face twice.',
+        options: [
+          { text: 'Keep the same barber for years — someone who knows everyone’s name, order, and life story', type: 'correct' },
+          { text: 'Actively market to new demographics each season and rebrand to stay fresh', type: 'worse' },
+          { text: 'Make the space welcoming regardless of age, background, or appearance', type: 'other', target: 1 },
+          { text: 'Let the mood be loose — laughter, ribbing, stories about the weekend', type: 'other', target: 6 }
+        ],
+        feedback: 'A consistent barber who knows everyone creates the continuity that makes the shop a social institution, not just a service.' },
+      { charIdx: 5,
+        current: 'The barbershop was recently featured in a design magazine. It has designer furniture, artisanal products on display, and a curated playlist.',
+        options: [
+          { text: 'Strip it back to basics — a proper chair, a clean mirror, clippers, and chat', type: 'correct' },
+          { text: 'Commission a celebrity endorsement and display it prominently in the window', type: 'worse' },
+          { text: 'Keep the same opening hours and routine week after week, reliable as clockwork', type: 'other', target: 3 },
+          { text: 'Welcome anyone through the door regardless of background — no dress code', type: 'other', target: 0 }
+        ],
+        feedback: 'Basic equipment and plain surroundings signal neighbourhood shop, not boutique experience — comfort over style.' },
+      { charIdx: 6,
+        current: 'The atmosphere is businesslike and efficient. Clients come in, sit down, get cut, pay, and leave. Minimal interaction.',
+        options: [
+          { text: 'Encourage banter, let customers rib each other, keep a running joke going, debate the football', type: 'correct' },
+          { text: 'Put up signs enforcing quiet and a professional atmosphere', type: 'worse' },
+          { text: 'Swap the expensive décor for something that says neighbourhood, not boutique', type: 'other', target: 5 },
+          { text: 'Ensure conversations do not exclude newcomers — pull everyone in', type: 'other', target: 1 }
+        ],
+        feedback: 'Banter, ribbing, and laughter replace businesslike efficiency — being there becomes fun, not just functional.' },
+      { charIdx: 7,
+        current: 'The shop feels transactional — clean but impersonal. Nothing about it says stay a while. Customers leave immediately after their cut.',
+        options: [
+          { text: 'Add a kettle for tea, a stack of newspapers, and an old sofa in the waiting area', type: 'correct' },
+          { text: 'Redesign the space for maximum throughput — remove the waiting area and add more chairs', type: 'worse' },
+          { text: 'Host a monthly first-cut event for new parents bringing their children', type: 'other', target: 4 },
+          { text: 'Remove booking requirements — just drop in when you feel like it', type: 'other', target: 0 }
+        ],
+        feedback: 'A kettle, newspapers, and a comfortable waiting area say stay a while — the visit extends beyond the service.' }
+    ]
+  },
+  {
+    id: 'laundromat', name: 'The Laundromat',
+    desc: 'A neighbourhood laundromat with machines, a folding table, and seating.',
+    questions: [
+      { charIdx: 0,
+        current: 'The owners reserve half the machines for their own dry-cleaning business during peak hours. A sign reads "Management reserves the right to refuse service."',
+        options: [
+          { text: 'All machines available to everyone equally, no reservations — use whatever is free', type: 'correct' },
+          { text: 'Introduce a membership card that gives priority access to machines during busy times', type: 'worse' },
+          { text: 'Add a small lending-library shelf where people swap paperbacks while they wait', type: 'other', target: 6 },
+          { text: 'Keep the place open from early morning to late evening, seven days a week', type: 'other', target: 3 }
+        ],
+        feedback: 'Equal access to all machines, no reservations — the space belongs to whoever walks in, not to management.' },
+      { charIdx: 1,
+        current: 'There is a premium section with newer machines at triple the price and a separate seating area. Staff are noticeably more attentive to premium customers.',
+        options: [
+          { text: 'One set of machines, one price, same seats — the student and the executive fold at the same table', type: 'correct' },
+          { text: 'Add a concierge wash service where staff do everything for premium customers', type: 'worse' },
+          { text: 'Have the same attendant working every day so people get to know them by name', type: 'other', target: 4 },
+          { text: 'Make the space feel lived-in — mismatched chairs, a rug, potted plants', type: 'other', target: 7 }
+        ],
+        feedback: 'One set of machines at one price levels the playing field — everyone folds their clothes at the same table.' },
+      { charIdx: 2,
+        current: 'Everyone wears headphones. The machines are loud. Seating faces the wall. There is no reason to talk to anyone.',
+        options: [
+          { text: 'Rearrange seating to face each other around a shared table, add a kettle, and dampen the machine noise', type: 'correct' },
+          { text: 'Install individual entertainment tablets above each machine so nobody needs to interact', type: 'worse' },
+          { text: 'Offer reliable, no-frills service every day — nothing fancy, just clean machines that work', type: 'other', target: 5 },
+          { text: 'Remove the customers-only sign — let anyone sit down', type: 'other', target: 0 }
+        ],
+        feedback: 'Facing seats and a shared table turn waiting time into social time — the kettle gives people a reason to linger and talk.' },
+      { charIdx: 3,
+        current: 'The laundromat is open 9am to 5pm on weekdays only, hidden down a side street with no signage. Payment is exact change only.',
+        options: [
+          { text: 'Open early-to-late seven days, put up a clear sign, accept cards and coins', type: 'correct' },
+          { text: 'Switch to an app-only payment system requiring registration and a smartphone', type: 'worse' },
+          { text: 'Keep prices the same for everyone regardless of load size', type: 'other', target: 1 },
+          { text: 'Encourage regulars to welcome newcomers and show them how the machines work', type: 'other', target: 4 }
+        ],
+        feedback: 'Long hours, card payment, and clear signage remove practical barriers — laundry happens when it suits you, not the owner.' },
+      { charIdx: 4,
+        current: 'Nobody comes at the same time twice. The attendant changes every shift. There is no sense that anyone belongs here.',
+        options: [
+          { text: 'Keep a consistent attendant who recognises faces and let natural rhythms form — the Thursday-evening crowd, the Sunday-morning group', type: 'correct' },
+          { text: 'Run promotions to constantly attract new first-time users from different neighbourhoods', type: 'worse' },
+          { text: 'Let people drop in even when they have no laundry — just to sit and chat', type: 'other', target: 0 },
+          { text: 'Arrange machines so the waiting area is central and sociable', type: 'other', target: 2 }
+        ],
+        feedback: 'A consistent attendant and natural rhythms let familiar faces emerge — the Thursday-evening crowd becomes a community.' },
+      { charIdx: 5,
+        current: 'The laundromat was rebranded as a "laundry lounge" with Instagram-worthy décor, branded merchandise, and influencer events.',
+        options: [
+          { text: 'Drop the branding — plain signage, functional machines, clean floors, nothing more', type: 'correct' },
+          { text: 'Partner with a clothing brand for co-branded pop-up events in the space', type: 'worse' },
+          { text: 'Make sure prices are fair and hours suit working people', type: 'other', target: 3 },
+          { text: 'Let the regulars’ banter and card games set the tone, not the décor', type: 'other', target: 6 }
+        ],
+        feedback: 'Dropping the branding and lifestyle positioning returns the focus to what matters — the people, not the aesthetic.' },
+      { charIdx: 6,
+        current: 'Fluorescent lighting, a list of rules on the wall, and a stern attendant who enforces a "no food, no drink, no loitering" policy.',
+        options: [
+          { text: 'Let people bring coffee, add a pack of cards and a community puzzle on the folding table', type: 'correct' },
+          { text: 'Add more rules, install security cameras, and remove all seating to discourage lingering', type: 'worse' },
+          { text: 'Make the space welcoming for anyone regardless of what they are wearing', type: 'other', target: 1 },
+          { text: 'Keep the same layout and routine — regulars know exactly where everything is', type: 'other', target: 7 }
+        ],
+        feedback: 'Cards, coffee, and relaxed rules transform dead time into enjoyable time — waiting becomes the best part.' },
+      { charIdx: 7,
+        current: 'The space is harshly lit, smells of chemicals, and has plastic chairs bolted to the floor. Nobody would stay a moment longer than they have to.',
+        options: [
+          { text: 'Warm the lighting, add plants and a community noticeboard, put out comfortable chairs', type: 'correct' },
+          { text: 'Remove all seating and install a timer that charges extra if clothes are not collected within five minutes', type: 'worse' },
+          { text: 'Start a tradition where the morning regulars bring pastries to share', type: 'other', target: 6 },
+          { text: 'Make sure conversation includes everyone — no cliques, no cold shoulders', type: 'other', target: 1 }
+        ],
+        feedback: 'Plants, warm lighting, and comfortable seating make the space somewhere you would choose to be, not endure.' }
+    ]
+  }
+];
 
+/* ============================================================
+   SVG HELPERS
+   ============================================================ */
 function esc(s) {
   var d = document.createElement('div');
   d.textContent = s;
   return d.innerHTML;
 }
 
-function buildIntroSVG() {
-  return '<svg viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg">'
-    + '<rect width="360" height="200" fill="#E8D2A8"/>'
-    + '<rect x="20" y="60" width="120" height="90" fill="#FFFAF2" stroke="#D8C8A8" stroke-width="2"/>'
-    + '<rect x="220" y="60" width="120" height="90" fill="#FFFAF2" stroke="#D8C8A8" stroke-width="2"/>'
-    + '<rect x="120" y="40" width="120" height="110" fill="#FFFAF2" stroke="#D8C8A8" stroke-width="2"/>'
-    + '<rect x="30" y="70" width="40" height="30" fill="#5C3A96" opacity="0.2"/>'
-    + '<rect x="30" y="105" width="100" height="3" fill="#D8C8A8"/>'
-    + '<rect x="30" y="112" width="80" height="3" fill="#D8C8A8"/>'
-    + '<rect x="30" y="119" width="90" height="3" fill="#D8C8A8"/>'
-    + '<rect x="130" y="50" width="40" height="30" fill="#B52838" opacity="0.2"/>'
-    + '<rect x="130" y="85" width="100" height="3" fill="#D8C8A8"/>'
-    + '<rect x="130" y="92" width="80" height="3" fill="#D8C8A8"/>'
-    + '<rect x="130" y="99" width="90" height="3" fill="#D8C8A8"/>'
-    + '<rect x="130" y="110" width="70" height="3" fill="#D8C8A8"/>'
-    + '<rect x="230" y="70" width="40" height="30" fill="#C85218" opacity="0.2"/>'
-    + '<rect x="230" y="105" width="100" height="3" fill="#D8C8A8"/>'
-    + '<rect x="230" y="112" width="80" height="3" fill="#D8C8A8"/>'
-    + '<rect x="230" y="119" width="90" height="3" fill="#D8C8A8"/>'
-    + '<rect x="80" y="70" width="12" height="30" fill="#D4A020" opacity="0.3"/>'
-    + '<rect x="95" y="75" width="12" height="25" fill="#7A5828" opacity="0.3"/>'
-    + '<rect x="270" y="70" width="12" height="30" fill="#B83068" opacity="0.3"/>'
-    + '<rect x="285" y="75" width="12" height="25" fill="#CC6830" opacity="0.3"/>'
-    + '<rect x="165" y="50" width="12" height="30" fill="#7E58A8" opacity="0.3"/>'
-    + '<circle cx="55" cy="160" r="8" fill="#5C3A96"/><rect x="48" y="168" width="14" height="10" fill="#5C3A96"/>'
-    + '<circle cx="110" cy="158" r="8" fill="#D4A020"/><rect x="103" y="166" width="14" height="10" fill="#D4A020"/>'
-    + '<circle cx="180" cy="156" r="9" fill="#B52838"/><rect x="172" y="165" width="16" height="12" fill="#B52838"/>'
-    + '<circle cx="250" cy="158" r="8" fill="#C85218"/><rect x="243" y="166" width="14" height="10" fill="#C85218"/>'
-    + '<circle cx="305" cy="160" r="8" fill="#7E58A8"/><rect x="298" y="168" width="14" height="10" fill="#7E58A8"/>'
-    + '<rect x="85" y="165" width="50" height="2" fill="#D8C8A8" opacity="0.5"/>'
-    + '<rect x="230" y="165" width="45" height="2" fill="#D8C8A8" opacity="0.5"/>'
-    + '</svg>';
+function svgPerson(x, y, col) {
+  return '<circle cx="'+x+'" cy="'+(y-10)+'" r="7" fill="'+col+'"/>'
+       + '<rect x="'+(x-6)+'" y="'+(y-3)+'" width="12" height="16" fill="'+col+'" rx="1"/>';
 }
 
-function buildPortraitSVG(placeName) {
-  var name = (placeName || '').toUpperCase();
-  var textX = 300;
-  var fontSize = name.length > 18 ? 14 : name.length > 12 ? 18 : 22;
-  return '<svg viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">'
-    + '<rect width="600" height="300" fill="#E8D2A8"/>'
-    + '<rect x="30" y="20" width="540" height="260" fill="#FFFAF2" stroke="#D8C8A8" stroke-width="2"/>'
-    + '<rect x="50" y="45" width="500" height="3" fill="#2A1F18"/>'
-    + '<text x="300" y="38" text-anchor="middle" fill="#2A1F18" font-size="' + fontSize + '" font-weight="800" letter-spacing="0.1em" font-family="system-ui, sans-serif">' + esc(name) + '</text>'
-    + '<rect x="60" y="65" width="55" height="55" fill="#5C3A96" opacity="0.15"/>'
-    + '<rect x="130" y="65" width="55" height="55" fill="#B52838" opacity="0.15"/>'
-    + '<rect x="200" y="65" width="55" height="55" fill="#C85218" opacity="0.15"/>'
-    + '<rect x="270" y="65" width="55" height="55" fill="#D4A020" opacity="0.15"/>'
-    + '<rect x="340" y="65" width="55" height="55" fill="#7A5828" opacity="0.15"/>'
-    + '<rect x="410" y="65" width="55" height="55" fill="#B83068" opacity="0.15"/>'
-    + '<rect x="60" y="135" width="55" height="55" fill="#CC6830" opacity="0.15"/>'
-    + '<rect x="130" y="135" width="55" height="55" fill="#7E58A8" opacity="0.15"/>'
-    + '<rect x="60" y="85" width="30" height="3" fill="#5C3A96"/>'
-    + '<rect x="130" y="85" width="30" height="3" fill="#B52838"/>'
-    + '<rect x="200" y="85" width="30" height="3" fill="#C85218"/>'
-    + '<rect x="270" y="85" width="30" height="3" fill="#D4A020"/>'
-    + '<rect x="340" y="85" width="30" height="3" fill="#7A5828"/>'
-    + '<rect x="410" y="85" width="30" height="3" fill="#B83068"/>'
-    + '<rect x="60" y="155" width="30" height="3" fill="#CC6830"/>'
-    + '<rect x="130" y="155" width="30" height="3" fill="#7E58A8"/>'
-    + '<rect x="60" y="93" width="45" height="2" fill="#D8C8A8"/>'
-    + '<rect x="60" y="99" width="38" height="2" fill="#D8C8A8"/>'
-    + '<rect x="60" y="105" width="42" height="2" fill="#D8C8A8"/>'
-    + '<rect x="130" y="93" width="45" height="2" fill="#D8C8A8"/>'
-    + '<rect x="130" y="99" width="38" height="2" fill="#D8C8A8"/>'
-    + '<rect x="130" y="105" width="42" height="2" fill="#D8C8A8"/>'
-    + '<rect x="200" y="93" width="45" height="2" fill="#D8C8A8"/>'
-    + '<rect x="200" y="99" width="38" height="2" fill="#D8C8A8"/>'
-    + '<rect x="200" y="105" width="42" height="2" fill="#D8C8A8"/>'
-    + '<rect x="270" y="93" width="45" height="2" fill="#D8C8A8"/>'
-    + '<rect x="270" y="99" width="38" height="2" fill="#D8C8A8"/>'
-    + '<rect x="270" y="105" width="42" height="2" fill="#D8C8A8"/>'
-    + '<rect x="340" y="93" width="45" height="2" fill="#D8C8A8"/>'
-    + '<rect x="340" y="99" width="38" height="2" fill="#D8C8A8"/>'
-    + '<rect x="340" y="105" width="42" height="2" fill="#D8C8A8"/>'
-    + '<rect x="410" y="93" width="45" height="2" fill="#D8C8A8"/>'
-    + '<rect x="410" y="99" width="38" height="2" fill="#D8C8A8"/>'
-    + '<rect x="410" y="105" width="42" height="2" fill="#D8C8A8"/>'
-    + '<rect x="60" y="163" width="45" height="2" fill="#D8C8A8"/>'
-    + '<rect x="60" y="169" width="38" height="2" fill="#D8C8A8"/>'
-    + '<rect x="60" y="175" width="42" height="2" fill="#D8C8A8"/>'
-    + '<rect x="130" y="163" width="45" height="2" fill="#D8C8A8"/>'
-    + '<rect x="130" y="169" width="38" height="2" fill="#D8C8A8"/>'
-    + '<rect x="130" y="175" width="42" height="2" fill="#D8C8A8"/>'
-    + '<circle cx="350" cy="230" r="14" fill="#5C3A96"/><rect x="340" y="244" width="20" height="14" fill="#5C3A96"/>'
-    + '<circle cx="400" cy="228" r="14" fill="#D4A020"/><rect x="390" y="242" width="20" height="14" fill="#D4A020"/>'
-    + '<circle cx="450" cy="232" r="12" fill="#B52838"/><rect x="441" y="244" width="18" height="12" fill="#B52838"/>'
-    + '<circle cx="500" cy="230" r="13" fill="#C85218"/><rect x="490" y="243" width="20" height="13" fill="#C85218"/>'
-    + '<rect x="370" y="247" width="105" height="2" fill="#D8C8A8" opacity="0.5"/>'
-    + '<circle cx="320" cy="233" r="5" fill="#CC6830" opacity="0.5"/>'
-    + '<circle cx="335" cy="228" r="3.5" fill="#B83068" opacity="0.4"/>'
-    + '<circle cx="525" cy="228" r="4" fill="#7E58A8" opacity="0.4"/>'
-    + '<rect x="200" y="140" width="330" height="70" fill="#E8D2A8" opacity="0.5"/>'
-    + '<rect x="210" y="150" width="80" height="3" fill="#2A1F18" opacity="0.3"/>'
-    + '<rect x="210" y="158" width="300" height="2" fill="#D8C8A8"/>'
-    + '<rect x="210" y="164" width="280" height="2" fill="#D8C8A8"/>'
-    + '<rect x="210" y="170" width="290" height="2" fill="#D8C8A8"/>'
-    + '<rect x="210" y="176" width="260" height="2" fill="#D8C8A8"/>'
-    + '<rect x="210" y="182" width="270" height="2" fill="#D8C8A8"/>'
-    + '<rect x="210" y="188" width="250" height="2" fill="#D8C8A8"/>'
-    + '<rect x="210" y="194" width="200" height="2" fill="#D8C8A8"/>'
-    + '</svg>';
+function svgSmallPerson(x, y, col) {
+  return '<circle cx="'+x+'" cy="'+(y-7)+'" r="5" fill="'+col+'"/>'
+       + '<rect x="'+(x-4)+'" y="'+(y-2)+'" width="8" height="11" fill="'+col+'" rx="1"/>';
 }
 
-function init() {
-  document.getElementById('intro-illustration').innerHTML = buildIntroSVG();
+function svgSpeech(x, y) {
+  return '<ellipse cx="'+x+'" cy="'+y+'" rx="12" ry="7" fill="none" stroke="#2A1F18" stroke-width="1.5" opacity="0.5"/>'
+       + '<line x1="'+(x-3)+'" y1="'+(y+7)+'" x2="'+(x-6)+'" y2="'+(y+12)+'" stroke="#2A1F18" stroke-width="1.5" opacity="0.5"/>';
+}
 
+/* ============================================================
+   PUB SVG
+   ============================================================ */
+function buildPubSVG(r) {
+  var s = '<svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">';
+  // Room shell
+  s += '<rect width="800" height="400" fill="#E8D2A8"/>';
+  s += '<rect x="30" y="20" width="740" height="350" fill="#FFFAF2" stroke="#2A1F18" stroke-width="3"/>';
+  // Floor
+  s += '<rect x="30" y="310" width="740" height="60" fill="#A08060"/>';
+  s += '<line x1="30" y1="310" x2="770" y2="310" stroke="#8B6B4A" stroke-width="2"/>';
+  // Ceiling
+  s += '<rect x="30" y="20" width="740" height="14" fill="#6A5A48"/>';
+
+  // Window
+  s += '<rect x="100" y="70" width="100" height="110" fill="#C8D8E8" stroke="#2A1F18" stroke-width="2"/>';
+  s += '<line x1="150" y1="70" x2="150" y2="180" stroke="#2A1F18" stroke-width="1.5"/>';
+  s += '<line x1="100" y1="125" x2="200" y2="125" stroke="#2A1F18" stroke-width="1.5"/>';
+
+  // Door
+  s += '<rect x="50" y="150" width="50" height="160" fill="#A08060" stroke="#2A1F18" stroke-width="2"/>';
+  s += '<circle cx="90" cy="230" r="4" fill="#D4A020"/>';
+  // Char 0: Remove members sign / add welcome
+  if (!r[0]) {
+    s += '<rect x="52" y="160" width="46" height="18" fill="#FDEEEE" stroke="#B82828" stroke-width="1"/>';
+    s += '<text x="75" y="173" text-anchor="middle" font-size="6" font-weight="700" fill="#B82828" font-family="system-ui">MEMBERS</text>';
+  } else {
+    s += '<rect x="52" y="160" width="46" height="18" fill="#E6F4EA" stroke="#2A7A42" stroke-width="1"/>';
+    s += '<text x="75" y="173" text-anchor="middle" font-size="6" font-weight="700" fill="#2A7A42" font-family="system-ui">WELCOME</text>';
+  }
+
+  // Bar counter
+  s += '<rect x="520" y="190" width="220" height="18" fill="#6A4028" stroke="#2A1F18" stroke-width="2"/>';
+  s += '<rect x="520" y="208" width="220" height="102" fill="#5A3018"/>';
+  // Shelves + bottles
+  s += '<rect x="550" y="55" width="190" height="6" fill="#6A4028"/>';
+  s += '<rect x="550" y="90" width="190" height="6" fill="#6A4028"/>';
+  s += '<rect x="550" y="125" width="190" height="6" fill="#6A4028"/>';
+  var bottleColors = ['#5C3A96','#B52838','#C85218','#D4A020','#7A5828','#B83068','#CC6830','#7E58A8','#5C3A96','#B52838'];
+  for (var i = 0; i < 10; i++) {
+    s += '<rect x="'+(560+i*18)+'" y="'+(40+(i%2)*3)+'" width="8" height="'+(15-i%2*3)+'" fill="'+bottleColors[i]+'" opacity="0.5"/>';
+  }
+
+  // Char 5: Regulars mugs on shelf
+  if (r[4]) {
+    for (var i = 0; i < 4; i++) {
+      s += '<rect x="'+(560+i*20)+'" y="'+(119)+'" width="10" height="8" fill="'+CHARS[i].hex+'" opacity="0.7"/>';
+      s += '<rect x="'+(569+i*20)+'" y="'+(121)+'" width="3" height="4" fill="'+CHARS[i].hex+'" opacity="0.7"/>';
+    }
+  }
+
+  // Bar stools
+  for (var i = 0; i < 3; i++) {
+    s += '<rect x="'+(540+i*50)+'" y="275" width="20" height="4" fill="#A08060"/>';
+    s += '<rect x="'+(548+i*50)+'" y="279" width="4" height="31" fill="#A08060"/>';
+  }
+
+  // Tables
+  s += '<rect x="240" y="240" width="90" height="8" fill="#6A4028"/>';
+  s += '<rect x="280" y="248" width="4" height="62" fill="#6A4028"/>';
+  s += '<rect x="380" y="240" width="90" height="8" fill="#6A4028"/>';
+  s += '<rect x="420" y="248" width="4" height="62" fill="#6A4028"/>';
+
+  // Chairs
+  var chairPositions = [[235,260],[335,260],[375,260],[475,260]];
+  for (var i = 0; i < chairPositions.length; i++) {
+    s += '<rect x="'+chairPositions[i][0]+'" y="'+chairPositions[i][1]+'" width="16" height="24" fill="#A08060" opacity="0.8"/>';
+    s += '<rect x="'+chairPositions[i][0]+'" y="'+chairPositions[i][1]+'" width="16" height="4" fill="#8B6B4A"/>';
+  }
+
+  // Pendant lights
+  if (!r[5]) {
+    // Fancy lights (pre-low-profile)
+    for (var i = 0; i < 3; i++) {
+      var lx = 200 + i * 170;
+      s += '<line x1="'+lx+'" y1="34" x2="'+lx+'" y2="52" stroke="#D4A020" stroke-width="2"/>';
+      s += '<polygon points="'+(lx-14)+',52 '+(lx+14)+',52 '+(lx+10)+',65 '+(lx-10)+',65" fill="#D4A020" opacity="0.6"/>';
+      s += '<circle cx="'+lx+'" cy="58" r="3" fill="#FFF3D6"/>';
+    }
+  } else {
+    // Simple lights
+    for (var i = 0; i < 3; i++) {
+      var lx = 200 + i * 170;
+      s += '<line x1="'+lx+'" y1="34" x2="'+lx+'" y2="55" stroke="#6A5A48" stroke-width="1.5"/>';
+      s += '<circle cx="'+lx+'" cy="60" r="6" fill="#FFF3D6" stroke="#6A5A48" stroke-width="1"/>';
+    }
+  }
+
+  // Char 1: VIP rope (removed when leveler done)
+  if (!r[1]) {
+    s += '<rect x="360" y="200" width="4" height="110" fill="#B82828"/>';
+    s += '<circle cx="362" cy="200" r="6" fill="#B82828"/>';
+    s += '<line x1="362" y1="210" x2="362" y2="240" stroke="#D4A020" stroke-width="2" stroke-dasharray="4,3"/>';
+    s += '<text x="366" y="218" font-size="7" fill="#B82828" font-weight="700" font-family="system-ui">VIP</text>';
+  }
+
+  // Char 2: TV (removed when conversation done)
+  if (!r[2]) {
+    s += '<rect x="300" y="60" width="80" height="55" fill="#1A1510" stroke="#2A1F18" stroke-width="2"/>';
+    s += '<rect x="310" y="68" width="60" height="38" fill="#3A5A8A"/>';
+    s += '<rect x="335" y="115" width="10" height="10" fill="#6A5A48"/>';
+  }
+
+  // Char 3: Accessibility sign + clock
+  if (r[3]) {
+    // Outside sign
+    s += '<rect x="35" y="100" width="40" height="20" fill="#D4A020" opacity="0.8"/>';
+    s += '<text x="55" y="114" text-anchor="middle" font-size="7" font-weight="700" fill="#2A1F18" font-family="system-ui">PUB</text>';
+    // Clock
+    s += '<circle cx="270" cy="55" r="14" fill="#FFFAF2" stroke="#2A1F18" stroke-width="1.5"/>';
+    s += '<text x="270" y="59" text-anchor="middle" font-size="6" font-weight="700" fill="#2A1F18" font-family="system-ui">12-11</text>';
+  }
+
+  // Char 2: Speech bubbles + rearranged people (conversation)
+  if (r[2]) {
+    s += svgPerson(260, 270, '#C85218');
+    s += svgPerson(310, 272, '#D4A020');
+    s += svgSpeech(285, 240);
+    s += svgPerson(400, 270, '#7A5828');
+    s += svgPerson(450, 268, '#B83068');
+    s += svgSpeech(425, 238);
+  }
+
+  // Char 1: Diverse people (leveler)
+  if (r[1]) {
+    s += svgSmallPerson(555, 268, '#5C3A96');
+    s += svgSmallPerson(595, 270, '#CC6830');
+    s += svgSmallPerson(635, 266, '#2A7A42');
+  }
+
+  // Char 4: Barkeeper (regulars)
+  if (r[4]) {
+    s += svgPerson(620, 180, '#7A5828');
+    s += '<line x1="630" y1="170" x2="638" y2="163" stroke="#7A5828" stroke-width="2"/>';
+  }
+
+  // Char 5: Chalkboard (low profile)
+  if (r[5]) {
+    s += '<rect x="300" y="60" width="80" height="55" fill="#2A1F18"/>';
+    s += '<text x="340" y="80" text-anchor="middle" font-size="7" fill="#FFFAF2" font-family="system-ui">SPECIALS</text>';
+    s += '<line x1="310" y1="86" x2="370" y2="86" stroke="#FFFAF2" stroke-width="0.5" opacity="0.5"/>';
+    s += '<line x1="310" y1="93" x2="360" y2="93" stroke="#FFFAF2" stroke-width="0.5" opacity="0.5"/>';
+    s += '<line x1="310" y1="100" x2="365" y2="100" stroke="#FFFAF2" stroke-width="0.5" opacity="0.5"/>';
+  }
+
+  // Char 6: Dartboard + games (playful)
+  if (r[6]) {
+    s += '<circle cx="230" cy="80" r="18" fill="#FFFAF2" stroke="#2A1F18" stroke-width="2"/>';
+    s += '<circle cx="230" cy="80" r="12" fill="#B52838" opacity="0.3"/>';
+    s += '<circle cx="230" cy="80" r="6" fill="#2A7A42" opacity="0.3"/>';
+    s += '<circle cx="230" cy="80" r="2" fill="#B52838"/>';
+    // Cards on table
+    s += '<rect x="395" y="232" width="12" height="16" fill="#FFFAF2" stroke="#2A1F18" stroke-width="1" transform="rotate(-10 401 240)"/>';
+    s += '<rect x="405" y="230" width="12" height="16" fill="#FFFAF2" stroke="#2A1F18" stroke-width="1" transform="rotate(8 411 238)"/>';
+  }
+
+  // Char 7: Fireplace, bookshelf, plant (home)
+  if (r[7]) {
+    // Fireplace
+    s += '<rect x="120" y="200" width="60" height="110" fill="#6A5A48"/>';
+    s += '<rect x="125" y="210" width="50" height="60" fill="#2A1F18"/>';
+    s += '<polygon points="135,260 150,235 165,260" fill="#CC6830" opacity="0.7"/>';
+    s += '<polygon points="140,260 150,242 160,260" fill="#D4A020" opacity="0.6"/>';
+    s += '<rect x="115" y="195" width="70" height="8" fill="#6A4028"/>';
+    // Bookshelf
+    s += '<rect x="695" y="60" width="50" height="120" fill="#6A4028" stroke="#2A1F18" stroke-width="1.5"/>';
+    s += '<rect x="698" y="65" width="44" height="6" fill="#5C3A96" opacity="0.4"/>';
+    s += '<rect x="698" y="73" width="44" height="6" fill="#B52838" opacity="0.4"/>';
+    s += '<rect x="698" y="81" width="44" height="6" fill="#C85218" opacity="0.4"/>';
+    s += '<rect x="695" y="90" width="50" height="3" fill="#5A3018"/>';
+    s += '<rect x="698" y="95" width="44" height="6" fill="#D4A020" opacity="0.4"/>';
+    s += '<rect x="698" y="103" width="44" height="6" fill="#7E58A8" opacity="0.4"/>';
+    // Plant
+    s += '<rect x="485" y="280" width="14" height="20" fill="#A08060"/>';
+    s += '<circle cx="492" cy="272" r="12" fill="#2A7A42" opacity="0.5"/>';
+    s += '<circle cx="486" cy="268" r="8" fill="#2A7A42" opacity="0.4"/>';
+    // Photos on wall
+    s += '<rect x="680" y="200" width="22" height="18" fill="#E8D2A8" stroke="#6A5A48" stroke-width="1"/>';
+    s += '<rect x="710" y="205" width="18" height="14" fill="#E8D2A8" stroke="#6A5A48" stroke-width="1"/>';
+  }
+
+  s += '</svg>';
+  return s;
+}
+
+/* ============================================================
+   BARBERSHOP SVG
+   ============================================================ */
+function buildBarbershopSVG(r) {
+  var s = '<svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">';
+  s += '<rect width="800" height="400" fill="#E8D2A8"/>';
+  s += '<rect x="30" y="20" width="740" height="350" fill="#FFFAF2" stroke="#2A1F18" stroke-width="3"/>';
+  s += '<rect x="30" y="310" width="740" height="60" fill="#C8B898"/>';
+  s += '<line x1="30" y1="310" x2="770" y2="310" stroke="#A09878" stroke-width="2"/>';
+  s += '<rect x="30" y="20" width="740" height="14" fill="#6A5A48"/>';
+
+  // Door
+  s += '<rect x="50" y="140" width="55" height="170" fill="#A08060" stroke="#2A1F18" stroke-width="2"/>';
+  s += '<rect x="55" y="150" width="45" height="60" fill="#C8D8E8" opacity="0.6"/>';
+  s += '<circle cx="97" cy="230" r="4" fill="#D4A020"/>';
+
+  // Char 0: Appointment sign / welcome sign
+  if (!r[0]) {
+    s += '<rect x="52" y="215" width="51" height="16" fill="#FDEEEE" stroke="#B82828" stroke-width="1"/>';
+    s += '<text x="77" y="226" text-anchor="middle" font-size="5.5" font-weight="700" fill="#B82828" font-family="system-ui">APPT ONLY</text>';
+  } else {
+    s += '<rect x="52" y="215" width="51" height="16" fill="#E6F4EA" stroke="#2A7A42" stroke-width="1"/>';
+    s += '<text x="77" y="226" text-anchor="middle" font-size="5.5" font-weight="700" fill="#2A7A42" font-family="system-ui">WALK-INS OK</text>';
+  }
+
+  // Barber pole (outside)
+  if (r[3]) {
+    s += '<rect x="35" y="100" width="12" height="50" fill="#FFFAF2" stroke="#2A1F18" stroke-width="1.5"/>';
+    for (var i = 0; i < 5; i++) {
+      s += '<rect x="36" y="'+(102+i*10)+'" width="10" height="3" fill="#B52838" opacity="0.7"/>';
+      s += '<rect x="36" y="'+(105+i*10)+'" width="10" height="3" fill="#3A5A8A" opacity="0.5"/>';
+    }
+    s += '<circle cx="41" cy="98" r="7" fill="#D4A020" opacity="0.7"/>';
+  }
+
+  // Mirrors on back wall
+  for (var i = 0; i < 3; i++) {
+    var mx = 200 + i * 180;
+    s += '<rect x="'+mx+'" y="50" width="80" height="100" fill="#C8D8E8" stroke="#6A5A48" stroke-width="2"/>';
+  }
+
+  // Barber chairs
+  for (var i = 0; i < 3; i++) {
+    var cx = 210 + i * 180;
+    // Chair base
+    s += '<rect x="'+(cx)+'" y="250" width="60" height="8" fill="#2A1F18"/>';
+    s += '<rect x="'+(cx+10)+'" y="258" width="40" height="52" fill="#6A5A48"/>';
+    s += '<rect x="'+(cx+5)+'" y="210" width="50" height="42" fill="#A08060"/>';
+    // Armrests
+    s += '<rect x="'+(cx)+'" y="225" width="8" height="20" fill="#8B6B4A"/>';
+    s += '<rect x="'+(cx+52)+'" y="225" width="8" height="20" fill="#8B6B4A"/>';
+
+    // Char 1: VIP label on first chair (removed when leveler)
+    if (!r[1] && i === 0) {
+      s += '<rect x="'+(cx+15)+'" y="215" width="30" height="12" fill="#D4A020"/>';
+      s += '<text x="'+(cx+30)+'" y="224" text-anchor="middle" font-size="6" font-weight="700" fill="#2A1F18" font-family="system-ui">VIP</text>';
+    }
+  }
+
+  // Counter/register
+  s += '<rect x="650" y="220" width="100" height="15" fill="#6A4028"/>';
+  s += '<rect x="650" y="235" width="100" height="75" fill="#5A3018"/>';
+  s += '<rect x="680" y="200" width="40" height="22" fill="#6A5A48" stroke="#2A1F18" stroke-width="1"/>';
+
+  // Char 2: TV or no TV / headphones
+  if (!r[2]) {
+    s += '<rect x="660" y="55" width="70" height="50" fill="#1A1510" stroke="#2A1F18" stroke-width="2"/>';
+    s += '<rect x="668" y="61" width="54" height="36" fill="#3A5A8A"/>';
+    // Barber with headphones
+    s += svgPerson(250, 200, '#6A5A48');
+    s += '<rect x="240" y="182" width="20" height="4" fill="#2A1F18" rx="2"/>';
+  } else {
+    // Barber without headphones + speech
+    s += svgPerson(250, 200, '#6A5A48');
+    s += svgSpeech(270, 172);
+    s += svgPerson(430, 200, '#6A5A48');
+    s += svgSpeech(450, 175);
+  }
+
+  // Waiting area (left)
+  s += '<rect x="120" y="255" width="60" height="20" fill="#A08060"/>';
+  s += '<rect x="120" y="245" width="60" height="12" fill="#8B6B4A"/>';
+
+  // Char 3: Clock + sign (accessibility)
+  if (r[3]) {
+    s += '<circle cx="150" cy="55" r="14" fill="#FFFAF2" stroke="#2A1F18" stroke-width="1.5"/>';
+    s += '<text x="150" y="59" text-anchor="middle" font-size="6" font-weight="700" fill="#2A1F18" font-family="system-ui">8-8</text>';
+    s += '<rect x="35" y="70" width="40" height="18" fill="#D4A020" opacity="0.8"/>';
+    s += '<text x="55" y="83" text-anchor="middle" font-size="6" font-weight="700" fill="#2A1F18" font-family="system-ui">OPEN</text>';
+  }
+
+  // Char 4: Same barber + photos (regulars)
+  if (r[4]) {
+    s += svgPerson(680, 195, '#7A5828');
+    // Photo wall
+    s += '<rect x="130" y="60" width="20" height="16" fill="#E8D2A8" stroke="#6A5A48" stroke-width="1"/>';
+    s += '<rect x="155" y="65" width="16" height="13" fill="#E8D2A8" stroke="#6A5A48" stroke-width="1"/>';
+    s += '<rect x="130" y="82" width="18" height="14" fill="#E8D2A8" stroke="#6A5A48" stroke-width="1"/>';
+  }
+
+  // Char 5: Simple vs designer products (low profile)
+  if (!r[5]) {
+    // Designer products on shelf
+    for (var i = 0; i < 5; i++) {
+      s += '<rect x="'+(660+i*14)+'" y="158" width="10" height="20" fill="'+['#5C3A96','#B83068','#CC6830','#D4A020','#7E58A8'][i]+'" opacity="0.6"/>';
+    }
+    s += '<rect x="655" y="178" width="80" height="3" fill="#D4A020"/>';
+  } else {
+    // Simple bottles
+    for (var i = 0; i < 3; i++) {
+      s += '<rect x="'+(665+i*20)+'" y="164" width="8" height="16" fill="#6A5A48" opacity="0.5"/>';
+    }
+    s += '<rect x="655" y="178" width="80" height="3" fill="#6A4028"/>';
+  }
+
+  // Char 6: Playful elements
+  if (r[6]) {
+    // Radio
+    s += '<rect x="656" y="132" width="30" height="20" fill="#6A5A48" stroke="#2A1F18" stroke-width="1"/>';
+    s += '<circle cx="671" cy="142" r="5" fill="#A08060"/>';
+    s += '<rect x="680" y="135" width="3" height="12" fill="#2A1F18"/>';
+    // Laughter lines
+    s += '<text x="290" y="168" font-size="10" fill="#CC6830" opacity="0.6" font-family="system-ui">~</text>';
+    s += '<text x="460" y="172" font-size="10" fill="#CC6830" opacity="0.6" font-family="system-ui">~</text>';
+    // People in waiting area relaxed
+    s += svgSmallPerson(135, 245, '#CC6830');
+    s += svgSmallPerson(160, 247, '#D4A020');
+  }
+
+  // Char 7: Kettle, newspaper, sofa (home)
+  if (r[7]) {
+    // Replace bench with sofa (wider, cushioned look)
+    s += '<rect x="115" y="250" width="70" height="25" fill="#A08060" stroke="#8B6B4A" stroke-width="1.5"/>';
+    s += '<rect x="115" y="240" width="70" height="12" fill="#8B6B4A"/>';
+    s += '<rect x="112" y="238" width="5" height="37" fill="#6A4028"/>';
+    s += '<rect x="185" y="238" width="5" height="37" fill="#6A4028"/>';
+    // Kettle
+    s += '<rect x="692" y="209" width="12" height="11" fill="#6A5A48" stroke="#2A1F18" stroke-width="1"/>';
+    s += '<rect x="695" y="206" width="6" height="4" fill="#A08060"/>';
+    // Newspaper stack
+    s += '<rect x="120" y="243" width="16" height="3" fill="#E8D2A8"/>';
+    s += '<rect x="118" y="240" width="18" height="3" fill="#D8C8A8"/>';
+    // Plant
+    s += '<rect x="108" y="290" width="10" height="14" fill="#A08060"/>';
+    s += '<circle cx="113" cy="284" r="8" fill="#2A7A42" opacity="0.5"/>';
+  }
+
+  s += '</svg>';
+  return s;
+}
+
+/* ============================================================
+   LAUNDROMAT SVG
+   ============================================================ */
+function buildLaundromatSVG(r) {
+  var s = '<svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">';
+  s += '<rect width="800" height="400" fill="#E8D2A8"/>';
+  s += '<rect x="30" y="20" width="740" height="350" fill="#FFFAF2" stroke="#2A1F18" stroke-width="3"/>';
+  s += '<rect x="30" y="310" width="740" height="60" fill="#B8B0A0"/>';
+  s += '<line x1="30" y1="310" x2="770" y2="310" stroke="#A09888" stroke-width="2"/>';
+  s += '<rect x="30" y="20" width="740" height="14" fill="#6A5A48"/>';
+
+  // Storefront window
+  s += '<rect x="50" y="50" width="120" height="100" fill="#C8D8E8" stroke="#2A1F18" stroke-width="2"/>';
+  // Door
+  s += '<rect x="50" y="160" width="50" height="150" fill="#C8D8E8" stroke="#2A1F18" stroke-width="2"/>';
+  s += '<rect x="50" y="160" width="50" height="8" fill="#6A5A48"/>';
+  s += '<circle cx="92" cy="240" r="3" fill="#D4A020"/>';
+
+  // Char 5: Branding sign (removed when low profile)
+  if (!r[5]) {
+    s += '<rect x="55" y="56" width="110" height="22" fill="#B83068" opacity="0.8"/>';
+    s += '<text x="110" y="72" text-anchor="middle" font-size="8" font-weight="700" fill="#fff" font-family="system-ui">LAUNDRY LOUNGE</text>';
+  } else {
+    s += '<rect x="55" y="56" width="110" height="22" fill="#FFFAF2" stroke="#6A5A48" stroke-width="1"/>';
+    s += '<text x="110" y="72" text-anchor="middle" font-size="7" font-weight="700" fill="#6A5A48" font-family="system-ui">LAUNDROMAT</text>';
+  }
+
+  // Washing machines row
+  for (var i = 0; i < 5; i++) {
+    var mx = 220 + i * 100;
+    s += '<rect x="'+mx+'" y="160" width="70" height="80" fill="#D8D0C8" stroke="#2A1F18" stroke-width="2"/>';
+    s += '<circle cx="'+(mx+35)+'" cy="210" r="22" fill="#C8D8E8" stroke="#6A5A48" stroke-width="1.5"/>';
+    s += '<circle cx="'+(mx+35)+'" cy="210" r="14" fill="#FFFAF2" opacity="0.5"/>';
+    s += '<rect x="'+(mx+10)+'" y="165" width="50" height="8" fill="#A09888"/>';
+    s += '<circle cx="'+(mx+55)+'" cy="169" r="3" fill="'+(i<2 && !r[1] ? '#D4A020' : '#6A5A48')+'"/>';
+  }
+
+  // Char 0: Reserved signs on machines (removed when neutral ground)
+  if (!r[0]) {
+    s += '<rect x="222" y="245" width="66" height="12" fill="#FDEEEE" stroke="#B82828" stroke-width="1"/>';
+    s += '<text x="255" y="254" text-anchor="middle" font-size="5" font-weight="700" fill="#B82828" font-family="system-ui">RESERVED</text>';
+    s += '<rect x="322" y="245" width="66" height="12" fill="#FDEEEE" stroke="#B82828" stroke-width="1"/>';
+    s += '<text x="355" y="254" text-anchor="middle" font-size="5" font-weight="700" fill="#B82828" font-family="system-ui">RESERVED</text>';
+  }
+
+  // Char 1: Premium barrier (removed when leveler)
+  if (!r[1]) {
+    s += '<line x1="415" y1="155" x2="415" y2="310" stroke="#D4A020" stroke-width="2" stroke-dasharray="6,3"/>';
+    s += '<text x="518" y="152" text-anchor="middle" font-size="7" font-weight="700" fill="#D4A020" font-family="system-ui">PREMIUM</text>';
+  }
+
+  // Folding table
+  s += '<rect x="240" y="280" width="160" height="8" fill="#A08060"/>';
+  s += '<rect x="260" y="288" width="4" height="22" fill="#8B6B4A"/>';
+  s += '<rect x="376" y="288" width="4" height="22" fill="#8B6B4A"/>';
+
+  // Seating
+  if (!r[2]) {
+    // Chairs facing wall
+    s += '<rect x="140" y="230" width="20" height="25" fill="#A09888"/>';
+    s += '<rect x="140" y="260" width="20" height="25" fill="#A09888"/>';
+    s += '<rect x="140" y="290" width="20" height="14" fill="#A09888"/>';
+  } else {
+    // Chairs facing each other around table
+    s += '<rect x="220" y="270" width="16" height="20" fill="#A08060"/>';
+    s += '<rect x="406" y="270" width="16" height="20" fill="#A08060"/>';
+    // Kettle
+    s += '<rect x="310" y="272" width="14" height="10" fill="#6A5A48" stroke="#2A1F18" stroke-width="1"/>';
+    s += '<rect x="313" y="268" width="8" height="5" fill="#A08060"/>';
+    // Speech bubbles
+    s += svgSpeech(260, 256);
+    s += svgSpeech(385, 258);
+    // People chatting
+    s += svgSmallPerson(228, 275, '#C85218');
+    s += svgSmallPerson(414, 273, '#D4A020');
+  }
+
+  // Fluorescent lights (change to warm when home)
+  if (!r[7]) {
+    for (var i = 0; i < 4; i++) {
+      s += '<rect x="'+(180+i*130)+'" y="34" width="60" height="6" fill="#D8D0C8" stroke="#A09888" stroke-width="1"/>';
+    }
+  } else {
+    for (var i = 0; i < 4; i++) {
+      var lx = 210 + i * 130;
+      s += '<line x1="'+lx+'" y1="34" x2="'+lx+'" y2="48" stroke="#6A5A48" stroke-width="1.5"/>';
+      s += '<circle cx="'+lx+'" cy="53" r="6" fill="#FFF3D6" stroke="#D4A020" stroke-width="1"/>';
+    }
+  }
+
+  // Counter
+  s += '<rect x="650" y="260" width="100" height="15" fill="#6A4028"/>';
+  s += '<rect x="650" y="275" width="100" height="35" fill="#5A3018"/>';
+
+  // Char 3: Clock + card reader + sign (accessibility)
+  if (r[3]) {
+    s += '<circle cx="680" cy="55" r="14" fill="#FFFAF2" stroke="#2A1F18" stroke-width="1.5"/>';
+    s += '<text x="680" y="59" text-anchor="middle" font-size="5.5" font-weight="700" fill="#2A1F18" font-family="system-ui">7-10</text>';
+    // Card reader
+    s += '<rect x="700" y="248" width="16" height="12" fill="#6A5A48" stroke="#2A1F18" stroke-width="1"/>';
+    s += '<rect x="704" y="251" width="8" height="3" fill="#2A7A42"/>';
+    // Outside sign
+    s += '<rect x="35" y="95" width="40" height="20" fill="#D4A020" opacity="0.8"/>';
+    s += '<text x="55" y="109" text-anchor="middle" font-size="6" font-weight="700" fill="#2A1F18" font-family="system-ui">OPEN</text>';
+  }
+
+  // Char 4: Attendant (regulars)
+  if (r[4]) {
+    s += svgPerson(680, 250, '#7A5828');
+    s += '<line x1="690" y1="240" x2="698" y2="233" stroke="#7A5828" stroke-width="2"/>';
+    // Community board
+    s += '<rect x="140" y="60" width="50" height="40" fill="#A08060" stroke="#6A5A48" stroke-width="1.5"/>';
+    s += '<rect x="145" y="65" width="12" height="9" fill="#FFFAF2"/>';
+    s += '<rect x="160" y="67" width="10" height="7" fill="#D4A020" opacity="0.5"/>';
+    s += '<rect x="147" y="78" width="14" height="8" fill="#C85218" opacity="0.3"/>';
+    s += '<rect x="164" y="76" width="10" height="10" fill="#FFFAF2"/>';
+  }
+
+  // Char 6: Cards + coffee (playful)
+  if (r[6]) {
+    s += '<rect x="280" y="272" width="10" height="14" fill="#FFFAF2" stroke="#2A1F18" stroke-width="1" transform="rotate(-8 285 279)"/>';
+    s += '<rect x="290" y="271" width="10" height="14" fill="#FFFAF2" stroke="#2A1F18" stroke-width="1" transform="rotate(6 295 278)"/>';
+    // Coffee cups
+    s += '<rect x="340" y="274" width="8" height="7" fill="#6A5A48"/>';
+    s += '<rect x="352" y="275" width="8" height="7" fill="#6A5A48"/>';
+    // Radio on counter
+    s += '<rect x="656" y="245" width="24" height="15" fill="#6A5A48" stroke="#2A1F18" stroke-width="1"/>';
+    s += '<circle cx="668" cy="252" r="4" fill="#A08060"/>';
+  }
+
+  // Char 7: Plants, warm details (home)
+  if (r[7]) {
+    // Plants
+    s += '<rect x="200" y="290" width="10" height="14" fill="#A08060"/>';
+    s += '<circle cx="205" cy="283" r="9" fill="#2A7A42" opacity="0.5"/>';
+    s += '<rect x="440" y="288" width="10" height="14" fill="#A08060"/>';
+    s += '<circle cx="445" cy="281" r="9" fill="#2A7A42" opacity="0.5"/>';
+    // Noticeboard photos
+    s += '<rect x="500" y="60" width="50" height="40" fill="#A08060" stroke="#6A5A48" stroke-width="1.5"/>';
+    s += '<rect x="505" y="65" width="14" height="10" fill="#E8D2A8"/>';
+    s += '<rect x="522" y="67" width="12" height="8" fill="#D4A020" opacity="0.4"/>';
+    s += '<rect x="507" y="80" width="10" height="8" fill="#FFFAF2"/>';
+  }
+
+  s += '</svg>';
+  return s;
+}
+
+function buildPlaceSVG(placeIdx, revealed) {
+  if (placeIdx === 0) return buildPubSVG(revealed);
+  if (placeIdx === 1) return buildBarbershopSVG(revealed);
+  return buildLaundromatSVG(revealed);
+}
+
+/* ============================================================
+   PLACE PREVIEW SVGs (small thumbnails for selection)
+   ============================================================ */
+function buildPreviewSVG(placeIdx) {
+  var s = '<svg viewBox="0 0 300 160" xmlns="http://www.w3.org/2000/svg">';
+  s += '<rect width="300" height="160" fill="#E8D2A8"/>';
+  s += '<rect x="15" y="10" width="270" height="140" fill="#FFFAF2" stroke="#2A1F18" stroke-width="2"/>';
+  s += '<rect x="15" y="120" width="270" height="30" fill="#A08060" opacity="0.5"/>';
+
+  if (placeIdx === 0) {
+    // Pub: bar + stools + tables
+    s += '<rect x="180" y="70" width="85" height="10" fill="#6A4028"/>';
+    s += '<rect x="180" y="80" width="85" height="40" fill="#5A3018"/>';
+    for (var i = 0; i < 3; i++) s += '<rect x="'+(190+i*25)+'" y="105" width="10" height="15" fill="#A08060"/>';
+    s += '<rect x="60" y="90" width="40" height="5" fill="#6A4028"/>';
+    s += '<rect x="110" y="90" width="40" height="5" fill="#6A4028"/>';
+    s += '<rect x="50" y="30" width="50" height="40" fill="#C8D8E8" stroke="#2A1F18" stroke-width="1.5"/>';
+  } else if (placeIdx === 1) {
+    // Barbershop: chairs + mirrors
+    for (var i = 0; i < 3; i++) {
+      var cx = 50 + i * 80;
+      s += '<rect x="'+cx+'" y="25" width="40" height="50" fill="#C8D8E8" stroke="#6A5A48" stroke-width="1.5"/>';
+      s += '<rect x="'+(cx+5)+'" y="85" width="30" height="25" fill="#A08060"/>';
+    }
+    s += '<rect x="240" y="85" width="40" height="8" fill="#6A4028"/>';
+  } else {
+    // Laundromat: machines
+    for (var i = 0; i < 4; i++) {
+      var mx = 50 + i * 55;
+      s += '<rect x="'+mx+'" y="50" width="40" height="35" fill="#D8D0C8" stroke="#2A1F18" stroke-width="1.5"/>';
+      s += '<circle cx="'+(mx+20)+'" cy="72" r="10" fill="#C8D8E8" stroke="#6A5A48" stroke-width="1"/>';
+    }
+    s += '<rect x="60" y="100" width="80" height="5" fill="#A08060"/>';
+  }
+  s += '</svg>';
+  return s;
+}
+
+/* ============================================================
+   RADAR CHART (for solo mode)
+   ============================================================ */
+function buildRadarChart(ratings) {
+  var cx = 200, cy = 200, maxR = 150;
+  var s = '<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">';
+  s += '<rect width="400" height="400" fill="none"/>';
+
+  // Grid rings
+  for (var ring = 1; ring <= 5; ring++) {
+    var r = maxR * ring / 5;
+    var pts = '';
+    for (var i = 0; i < 8; i++) {
+      var a = (Math.PI * 2 * i / 8) - Math.PI / 2;
+      pts += (cx + r * Math.cos(a)) + ',' + (cy + r * Math.sin(a)) + ' ';
+    }
+    s += '<polygon points="' + pts.trim() + '" fill="none" stroke="#D8C8A8" stroke-width="' + (ring === 5 ? 1.5 : 0.8) + '"/>';
+  }
+
+  // Axes
+  for (var i = 0; i < 8; i++) {
+    var a = (Math.PI * 2 * i / 8) - Math.PI / 2;
+    s += '<line x1="'+cx+'" y1="'+cy+'" x2="'+(cx+maxR*Math.cos(a))+'" y2="'+(cy+maxR*Math.sin(a))+'" stroke="#D8C8A8" stroke-width="0.8"/>';
+  }
+
+  // Data polygon
+  var hasData = false;
+  var dataPts = '';
+  for (var i = 0; i < 8; i++) {
+    var val = ratings[i] || 0;
+    if (val > 0) hasData = true;
+    var r = maxR * val / 5;
+    var a = (Math.PI * 2 * i / 8) - Math.PI / 2;
+    dataPts += (cx + r * Math.cos(a)) + ',' + (cy + r * Math.sin(a)) + ' ';
+  }
+  if (hasData) {
+    s += '<polygon points="' + dataPts.trim() + '" fill="rgba(92,58,150,0.15)" stroke="#5C3A96" stroke-width="2"/>';
+    for (var i = 0; i < 8; i++) {
+      var val = ratings[i] || 0;
+      var r = maxR * val / 5;
+      var a = (Math.PI * 2 * i / 8) - Math.PI / 2;
+      if (val > 0) {
+        s += '<circle cx="'+(cx+r*Math.cos(a))+'" cy="'+(cy+r*Math.sin(a))+'" r="4" fill="'+CHARS[i].hex+'"/>';
+      }
+    }
+  }
+
+  // Labels
+  for (var i = 0; i < 8; i++) {
+    var a = (Math.PI * 2 * i / 8) - Math.PI / 2;
+    var lx = cx + (maxR + 28) * Math.cos(a);
+    var ly = cy + (maxR + 28) * Math.sin(a);
+    var anchor = 'middle';
+    if (Math.cos(a) < -0.3) anchor = 'end';
+    else if (Math.cos(a) > 0.3) anchor = 'start';
+    var shortName = CHARS[i].name.length > 16 ? CHARS[i].name.substring(0, 15) + '...' : CHARS[i].name;
+    s += '<text x="'+lx+'" y="'+(ly+3)+'" text-anchor="'+anchor+'" font-size="8" font-weight="700" fill="'+CHARS[i].hex+'" font-family="system-ui, sans-serif">'+esc(shortName)+'</text>';
+  }
+
+  s += '</svg>';
+  return s;
+}
+
+/* ============================================================
+   GAME STATE
+   ============================================================ */
+var state = {
+  mode: null,
+  placeIdx: null,
+  currentChar: 0,
+  revealed: [false, false, false, false, false, false, false, false],
+  firstAttempt: [true, true, true, true, true, true, true, true],
+  score: 0,
+  shuffledOptions: null,
+  tried: [],
+  // Solo
+  placeName: '',
+  placePreset: '',
+  responses: [['',''],['',''],['',''],['',''],['',''],['',''],['',''],['','']],
+  ratings: [0, 0, 0, 0, 0, 0, 0, 0]
+};
+
+function shuffle(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+/* ============================================================
+   SCREEN MANAGEMENT
+   ============================================================ */
+function showScreen(id) {
+  var screens = document.querySelectorAll('.screen');
+  for (var i = 0; i < screens.length; i++) screens[i].classList.add('hidden');
+  document.getElementById(id).classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+
+/* ============================================================
+   CLASS MODE
+   ============================================================ */
+function startClass() {
+  state.mode = 'class';
+  var grid = document.getElementById('place-grid');
+  var html = '';
+  for (var i = 0; i < PLACES.length; i++) {
+    html += '<div class="place-card" onclick="selectPlace(' + i + ')">'
+      + buildPreviewSVG(i)
+      + '<div class="place-card-title">' + esc(PLACES[i].name) + '</div>'
+      + '<div class="place-card-desc">' + esc(PLACES[i].desc) + '</div>'
+      + '</div>';
+  }
+  grid.innerHTML = html;
+  showScreen('screen-class-place');
+}
+
+function selectPlace(idx) {
+  state.placeIdx = idx;
+  state.currentChar = 0;
+  state.revealed = [false, false, false, false, false, false, false, false];
+  state.firstAttempt = [true, true, true, true, true, true, true, true];
+  state.score = 0;
+  state.tried = [];
+  renderQuestion();
+  showScreen('screen-class-game');
+}
+
+function renderQuestion() {
+  var place = PLACES[state.placeIdx];
+  var q = place.questions[state.currentChar];
+  var c = CHARS[q.charIdx];
+
+  // SVG
+  document.getElementById('game-svg').innerHTML = buildPlaceSVG(state.placeIdx, state.revealed);
+
+  // Progress dots
+  var dotsHtml = '';
+  for (var i = 0; i < 8; i++) {
+    var cls = 'game-dot';
+    if (state.revealed[i]) cls += ' done';
+    else if (i === state.currentChar) cls += ' current';
+    dotsHtml += '<div class="' + cls + '" style="' + (state.revealed[i] ? 'background:' + CHARS[PLACES[state.placeIdx].questions[i].charIdx].hex : '') + '">' + (i + 1) + '</div>';
+  }
+  document.getElementById('game-progress').innerHTML = dotsHtml;
+
+  // Question
+  document.getElementById('game-char-head').innerHTML =
+    '<div class="game-char-swatch" style="background:' + c.color + '"></div>'
+    + '<div class="game-char-name">' + esc(c.name) + '</div>';
+  document.getElementById('game-current').innerHTML = '<strong>Current state:</strong> ' + esc(q.current);
+
+  // Options (shuffled)
+  state.shuffledOptions = shuffle(q.options);
+  state.tried = [];
+  renderOptions();
+
+  // Hide feedback
+  var fb = document.getElementById('game-feedback');
+  fb.classList.remove('visible', 'correct', 'wrong');
+  fb.innerHTML = '';
+}
+
+function renderOptions() {
+  var html = '';
+  for (var i = 0; i < state.shuffledOptions.length; i++) {
+    var opt = state.shuffledOptions[i];
+    var cls = 'game-opt';
+    var disabled = '';
+    if (state.tried.indexOf(i) >= 0) {
+      cls += ' tried';
+      disabled = ' disabled';
+    }
+    html += '<button class="' + cls + '" onclick="selectOption(' + i + ')"' + disabled + '>' + esc(opt.text) + '</button>';
+  }
+  document.getElementById('game-options').innerHTML = html;
+}
+
+function selectOption(idx) {
+  if (state.tried.indexOf(idx) >= 0) return;
+  var place = PLACES[state.placeIdx];
+  var q = place.questions[state.currentChar];
+  var opt = state.shuffledOptions[idx];
+  var c = CHARS[q.charIdx];
+  var fb = document.getElementById('game-feedback');
+
+  // Mark the selected option visually
+  var buttons = document.querySelectorAll('.game-opt');
+
+  if (opt.type === 'correct') {
+    buttons[idx].classList.add('correct-pick');
+    // Disable all options
+    for (var i = 0; i < buttons.length; i++) buttons[i].disabled = true;
+
+    // Track score
+    if (state.firstAttempt[state.currentChar]) state.score++;
+    state.revealed[state.currentChar] = true;
+
+    // Show feedback
+    fb.className = 'game-feedback visible correct';
+    fb.innerHTML = '<div class="game-feedback-text"><strong>Correct!</strong> ' + esc(q.feedback) + '</div>'
+      + '<div class="game-next"><button class="btn btn-small" onclick="nextQuestion()">Next</button></div>';
+
+    // Update SVG with animation
+    setTimeout(function() {
+      var wrap = document.getElementById('game-svg');
+      wrap.innerHTML = buildPlaceSVG(state.placeIdx, state.revealed);
+      wrap.classList.remove('svg-pulse');
+      void wrap.offsetWidth;
+      wrap.classList.add('svg-pulse');
+      // Update dots
+      var dotsHtml = '';
+      for (var i = 0; i < 8; i++) {
+        var cls = 'game-dot';
+        if (state.revealed[i]) cls += ' done';
+        else if (i === state.currentChar) cls += ' current';
+        dotsHtml += '<div class="' + cls + '" style="' + (state.revealed[i] ? 'background:' + CHARS[PLACES[state.placeIdx].questions[i].charIdx].hex : '') + '">' + (i + 1) + '</div>';
+      }
+      document.getElementById('game-progress').innerHTML = dotsHtml;
+    }, 400);
+
+  } else {
+    buttons[idx].classList.add('wrong-pick');
+    state.tried.push(idx);
+    state.firstAttempt[state.currentChar] = false;
+
+    var msg = '';
+    if (opt.type === 'worse') {
+      msg = 'This would actually <strong>weaken</strong> ' + esc(c.name) + '. Try again.';
+    } else {
+      var otherChar = CHARS[opt.target];
+      msg = 'This would strengthen <strong>' + esc(otherChar.name) + '</strong>, not ' + esc(c.name) + '. Try again.';
+    }
+    fb.className = 'game-feedback visible wrong';
+    fb.innerHTML = '<div class="game-feedback-text">' + msg + '</div>';
+
+    // Re-enable non-tried options after brief delay
+    setTimeout(function() {
+      renderOptions();
+    }, 200);
+  }
+}
+
+function nextQuestion() {
+  if (state.currentChar < 7) {
+    state.currentChar++;
+    renderQuestion();
+  } else {
+    renderSummary();
+  }
+}
+
+function renderSummary() {
+  var place = PLACES[state.placeIdx];
+  document.getElementById('summary-name').textContent = place.name;
+  document.getElementById('summary-svg').innerHTML = buildPlaceSVG(state.placeIdx, state.revealed);
+
+  document.getElementById('score-box').innerHTML =
+    '<div class="score-num">' + state.score + ' / 8</div>'
+    + '<div class="score-label">Identified on first attempt</div>';
+
+  var gridHtml = '';
+  for (var i = 0; i < 8; i++) {
+    var q = place.questions[i];
+    var c = CHARS[q.charIdx];
+    var correctOpt = '';
+    for (var j = 0; j < q.options.length; j++) {
+      if (q.options[j].type === 'correct') { correctOpt = q.options[j].text; break; }
+    }
+    gridHtml += '<div class="portrait-card" style="border-left-color:' + c.color + '">'
+      + '<div class="portrait-card-head">'
+      + '<div class="portrait-card-swatch" style="background:' + c.color + '"></div>'
+      + '<div class="portrait-card-name">' + esc(c.name) + '</div>'
+      + '</div>'
+      + '<div class="portrait-card-body">'
+      + '<div class="quiet" style="margin-bottom:0.35rem"><strong>Ideal change:</strong> ' + esc(correctOpt) + '</div>'
+      + '<div style="font-size:0.88rem;color:var(--text-muted)">' + esc(q.feedback) + '</div>'
+      + '</div></div>';
+  }
+  document.getElementById('summary-grid').innerHTML = gridHtml;
+  showScreen('screen-class-summary');
+}
+
+function resetGame() {
+  showScreen('screen-class-place');
+}
+
+/* ============================================================
+   SOLO MODE
+   ============================================================ */
+function startSolo() {
+  state.mode = 'solo';
+  state.placeName = '';
+  state.placePreset = '';
+  state.responses = [['',''],['',''],['',''],['',''],['',''],['',''],['',''],['','']];
+  state.ratings = [0, 0, 0, 0, 0, 0, 0, 0];
+
+  // Place presets
   var presetsHtml = '';
-  for (var i = 0; i < PRESETS.length; i++) {
-    presetsHtml += '<button class="place-chip" data-preset="' + esc(PRESETS[i]) + '">' + esc(PRESETS[i]) + '</button>';
+  for (var i = 0; i < SOLO_PRESETS.length; i++) {
+    presetsHtml += '<button class="place-chip" data-preset="' + esc(SOLO_PRESETS[i]) + '">' + esc(SOLO_PRESETS[i]) + '</button>';
   }
   document.getElementById('place-presets').innerHTML = presetsHtml;
 
+  // Characteristic cards with sub-prompts and ratings
   var cardsHtml = '';
   for (var i = 0; i < CHARS.length; i++) {
     var c = CHARS[i];
@@ -436,37 +1530,50 @@ function init() {
       + '<span class="char-num">' + c.id + '.</span>'
       + '<span class="char-name">' + esc(c.name) + '</span>'
       + '</div>'
-      + '<div class="char-def">' + esc(c.def) + '</div>'
-      + '<div class="char-prompt">When this place is thriving, what does this look like?</div>'
-      + '<textarea class="char-input" data-ci="' + i + '" placeholder="Describe what this characteristic looks like in your place..."></textarea>'
+      + '<div class="char-def">' + esc(c.def) + '</div>';
+
+    for (var p = 0; p < c.prompts.length; p++) {
+      cardsHtml += '<div class="char-prompt">' + esc(c.prompts[p]) + '</div>'
+        + '<textarea class="char-input" data-ci="' + i + '" data-pi="' + p + '" placeholder="Describe what this looks like in your place..."></textarea>';
+    }
+
+    cardsHtml += '<div class="rating-row">'
+      + '<span class="rating-label">Current strength:</span>'
+      + '<div class="rating-dots" data-ci="' + i + '">';
+    for (var r = 1; r <= 5; r++) {
+      cardsHtml += '<div class="rating-dot" data-ci="' + i + '" data-val="' + r + '">' + r + '</div>';
+    }
+    cardsHtml += '</div>'
+      + '<span class="rating-end">weak</span>'
+      + '<span class="rating-end" style="margin-left:auto">strong</span>'
       + '</div>';
+
+    cardsHtml += '</div>';
   }
   document.getElementById('char-cards').innerHTML = cardsHtml;
+  document.getElementById('progress-count').textContent = '0';
+  document.getElementById('progress-fill').style.width = '0%';
+  document.getElementById('btn-generate').disabled = true;
+  document.getElementById('btn-hint').textContent = 'Describe all eight characteristics to generate your portrait.';
+
+  showScreen('screen-solo-editor');
 }
 
-function startEditor() {
-  document.getElementById('screen-intro').classList.add('hidden');
-  document.getElementById('screen-editor').classList.remove('hidden');
-}
-
-function backToEditor() {
-  document.getElementById('screen-portrait').classList.remove('visible');
-  document.getElementById('screen-editor').classList.remove('hidden');
-  window.scrollTo(0, 0);
-}
-
-function getPlaceName() {
+function getSoloPlaceName() {
   var custom = document.getElementById('place-custom').value.trim();
   if (custom) return custom;
   return state.placePreset;
 }
 
-function updateProgress() {
+function updateSoloProgress() {
   var filled = 0;
   for (var i = 0; i < 8; i++) {
-    var val = state.responses[i].trim();
+    var hasContent = false;
+    for (var p = 0; p < CHARS[i].prompts.length; p++) {
+      if (state.responses[i][p].trim()) hasContent = true;
+    }
     var card = document.querySelector('.char-card[data-ci="' + i + '"]');
-    if (val) {
+    if (hasContent) {
       filled++;
       card.classList.add('filled');
     } else {
@@ -476,7 +1583,7 @@ function updateProgress() {
   document.getElementById('progress-count').textContent = filled;
   document.getElementById('progress-fill').style.width = (filled / 8 * 100) + '%';
 
-  var hasName = getPlaceName().length > 0;
+  var hasName = getSoloPlaceName().length > 0;
   var btn = document.getElementById('btn-generate');
   var hint = document.getElementById('btn-hint');
   if (filled === 8 && hasName) {
@@ -491,57 +1598,72 @@ function updateProgress() {
   }
 }
 
-function generatePortrait() {
-  var name = getPlaceName();
-  document.getElementById('portrait-name').textContent = name;
-  document.getElementById('portrait-illustration').innerHTML = buildPortraitSVG(name);
+function generateSoloPortrait() {
+  var name = getSoloPlaceName();
+  document.getElementById('solo-portrait-name').textContent = name;
 
+  // Radar chart
+  document.getElementById('solo-radar').innerHTML = buildRadarChart(state.ratings);
+
+  // Bar chart
   var barsHtml = '';
   for (var i = 0; i < 8; i++) {
     var c = CHARS[i];
-    var wordCount = state.responses[i].trim().split(/\s+/).length;
-    var barW = Math.min(100, Math.max(10, wordCount * 4));
+    var val = state.ratings[i];
+    var barW = val > 0 ? (val / 5 * 100) : 0;
     barsHtml += '<div class="bar-row">'
       + '<div class="bar-label">'
       + '<div class="bar-dot" style="background:' + c.color + '"></div>'
       + esc(c.name)
       + '</div>'
       + '<div class="bar-track"><div class="bar-fill" data-bar="' + i + '" style="background:' + c.color + '"></div></div>'
-      + '<div class="bar-val">' + wordCount + 'w</div>'
+      + '<div class="bar-val">' + val + '/5</div>'
       + '</div>';
   }
-  document.getElementById('portrait-bars').innerHTML = barsHtml;
+  document.getElementById('solo-bars').innerHTML = barsHtml;
 
+  // Cards
   var gridHtml = '';
   for (var i = 0; i < 8; i++) {
     var c = CHARS[i];
+    var bodyHtml = '';
+    for (var p = 0; p < c.prompts.length; p++) {
+      var resp = state.responses[i][p].trim();
+      if (resp) {
+        bodyHtml += '<div style="margin-bottom:0.35rem"><span class="quiet" style="font-size:0.8rem">' + esc(c.prompts[p]) + '</span><br>' + esc(resp) + '</div>';
+      }
+    }
     gridHtml += '<div class="portrait-card" style="border-left-color:' + c.color + '">'
       + '<div class="portrait-card-head">'
-      + '<div class="char-swatch" style="background:' + c.color + '"></div>'
+      + '<div class="portrait-card-swatch" style="background:' + c.color + '"></div>'
       + '<div class="portrait-card-name">' + esc(c.name) + '</div>'
       + '</div>'
-      + '<div class="portrait-card-body">' + esc(state.responses[i].trim()) + '</div>'
-      + '</div>';
+      + '<div class="portrait-card-body">' + bodyHtml + '</div></div>';
   }
-  document.getElementById('portrait-grid').innerHTML = gridHtml;
+  document.getElementById('solo-grid').innerHTML = gridHtml;
 
-  document.getElementById('screen-editor').classList.add('hidden');
-  document.getElementById('screen-portrait').classList.add('visible');
-  window.scrollTo(0, 0);
+  showScreen('screen-solo-portrait');
 
+  // Animate bars
   setTimeout(function() {
     for (var i = 0; i < 8; i++) {
       (function(idx) {
         var el = document.querySelector('[data-bar="' + idx + '"]');
         if (!el) return;
-        var wordCount = state.responses[idx].trim().split(/\s+/).length;
-        var w = Math.min(100, Math.max(10, wordCount * 4));
+        var w = state.ratings[idx] > 0 ? (state.ratings[idx] / 5 * 100) : 0;
         setTimeout(function() { el.style.width = w + '%'; }, idx * 80);
       })(i);
     }
   }, 100);
 }
 
+function backToSoloEditor() {
+  showScreen('screen-solo-editor');
+}
+
+/* ============================================================
+   EVENT DELEGATION
+   ============================================================ */
 document.addEventListener('click', function(e) {
   if (e.target.classList.contains('place-chip')) {
     var chips = document.querySelectorAll('.place-chip');
@@ -549,15 +1671,26 @@ document.addEventListener('click', function(e) {
     e.target.classList.add('selected');
     state.placePreset = e.target.dataset.preset;
     document.getElementById('place-custom').value = '';
-    updateProgress();
+    updateSoloProgress();
+  }
+  if (e.target.classList.contains('rating-dot')) {
+    var ci = parseInt(e.target.dataset.ci);
+    var val = parseInt(e.target.dataset.val);
+    state.ratings[ci] = val;
+    var dots = document.querySelectorAll('.rating-dots[data-ci="' + ci + '"] .rating-dot');
+    for (var i = 0; i < dots.length; i++) {
+      if (parseInt(dots[i].dataset.val) <= val) dots[i].classList.add('active');
+      else dots[i].classList.remove('active');
+    }
   }
 });
 
 document.addEventListener('input', function(e) {
   if (e.target.classList.contains('char-input')) {
     var ci = parseInt(e.target.dataset.ci);
-    state.responses[ci] = e.target.value;
-    updateProgress();
+    var pi = parseInt(e.target.dataset.pi);
+    state.responses[ci][pi] = e.target.value;
+    updateSoloProgress();
   }
   if (e.target.id === 'place-custom') {
     if (e.target.value.trim()) {
@@ -565,9 +1698,7 @@ document.addEventListener('input', function(e) {
       for (var i = 0; i < chips.length; i++) chips[i].classList.remove('selected');
       state.placePreset = '';
     }
-    updateProgress();
+    updateSoloProgress();
   }
 });
-
-init();
 </script>
