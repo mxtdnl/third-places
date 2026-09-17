@@ -422,7 +422,7 @@ body {
   left: 0;
   right: 0;
   background: var(--bg-card);
-  border-top: 3px solid var(--border);
+  border-top: 4px solid var(--char-1);
   padding: 0.6rem 16px;
   display: flex;
   justify-content: space-between;
@@ -454,6 +454,183 @@ body {
   color: var(--text-muted);
 }
 
+/* Decorative geometry */
+.slide { position: relative; overflow: hidden; }
+.slide > * { position: relative; z-index: 1; }
+.deco { position: absolute !important; z-index: 0 !important; pointer-events: none; }
+
+.slide-title .accent-bar { max-width: 320px; height: 8px; }
+.slide-title::before {
+  content: ''; position: absolute;
+  width: 260px; height: 260px;
+  background: var(--char-1); border-radius: 50%;
+  opacity: 0.08; top: -70px; right: -50px; z-index: 0;
+}
+.slide-title::after {
+  content: ''; position: absolute;
+  width: 60px; height: 60px;
+  background: var(--char-4); opacity: 0.14;
+  bottom: 30px; left: -8px;
+  transform: rotate(35deg); z-index: 0;
+}
+
+.slide-why::before {
+  content: ''; position: absolute;
+  width: 140px; height: 140px;
+  border: 6px solid var(--char-3); border-radius: 50%;
+  opacity: 0.09; top: -20px; right: -10px; z-index: 0;
+}
+.slide-why::after {
+  content: ''; position: absolute;
+  width: 40px; height: 40px;
+  background: var(--char-5); opacity: 0.12;
+  bottom: 40px; right: 60px;
+  transform: rotate(20deg); z-index: 0;
+}
+
+.slide-def::before {
+  content: ''; position: absolute;
+  width: 200px; height: 50px;
+  background: var(--char-4); opacity: 0.07;
+  bottom: 30px; right: -40px;
+  transform: rotate(-4deg); z-index: 0;
+}
+.slide-def::after {
+  content: ''; position: absolute;
+  width: 90px; height: 90px;
+  border: 5px solid var(--char-8); border-radius: 50%;
+  opacity: 0.08; top: 20px; right: 40px; z-index: 0;
+}
+
+.slide-quiz1::before {
+  content: ''; position: absolute;
+  width: 100px; height: 100px;
+  background: var(--char-2); border-radius: 50%;
+  opacity: 0.06; bottom: -20px; right: -10px; z-index: 0;
+}
+
+.slide-pathway::before {
+  content: ''; position: absolute;
+  width: 220px; height: 220px;
+  background: var(--char-6); border-radius: 50%;
+  opacity: 0.06; top: 80px; right: -80px; z-index: 0;
+}
+.slide-pathway::after {
+  content: ''; position: absolute;
+  width: 45px; height: 45px;
+  background: var(--char-4); opacity: 0.10;
+  top: 30px; right: 30px;
+  transform: rotate(15deg); z-index: 0;
+}
+
+.slide-assumptions::before {
+  content: ''; position: absolute;
+  width: 160px; height: 6px;
+  background: var(--char-8); opacity: 0.15;
+  top: 60px; right: -20px;
+  transform: rotate(-3deg); z-index: 0;
+}
+.slide-assumptions::after {
+  content: ''; position: absolute;
+  width: 70px; height: 70px;
+  border: 5px solid var(--char-4);
+  opacity: 0.07; bottom: 40px; left: -20px;
+  transform: rotate(25deg); z-index: 0;
+}
+
+.slide-quiz2::before {
+  content: ''; position: absolute;
+  width: 80px; height: 80px;
+  background: var(--char-2); opacity: 0.07;
+  top: -15px; right: 20px;
+  transform: rotate(30deg); z-index: 0;
+}
+
+.slide-tests::before {
+  content: ''; position: absolute;
+  width: 180px; height: 180px;
+  border: 6px solid var(--char-6);
+  opacity: 0.07; bottom: -40px; left: -50px;
+  transform: rotate(15deg); z-index: 0;
+}
+.slide-tests::after {
+  content: ''; position: absolute;
+  width: 60px; height: 60px;
+  background: var(--char-3); border-radius: 50%;
+  opacity: 0.09; top: 10px; right: 0; z-index: 0;
+}
+
+.slide-sectors::before {
+  content: ''; position: absolute;
+  width: 320px; height: 8px;
+  background: var(--char-5); opacity: 0.12;
+  top: 70px; right: -80px;
+  transform: rotate(-3deg); z-index: 0;
+}
+.slide-sectors::after {
+  content: ''; position: absolute;
+  width: 100px; height: 100px;
+  background: var(--char-1); border-radius: 50%;
+  opacity: 0.05; bottom: -30px; left: -30px; z-index: 0;
+}
+
+.slide-career::before {
+  content: ''; position: absolute;
+  width: 120px; height: 120px;
+  background: var(--char-7); border-radius: 50%;
+  opacity: 0.08; top: -30px; right: 30px; z-index: 0;
+}
+.slide-career::after {
+  content: ''; position: absolute;
+  width: 45px; height: 45px;
+  background: var(--char-2); opacity: 0.12;
+  bottom: 60px; right: 0;
+  transform: rotate(20deg); z-index: 0;
+}
+
+.slide-cases::before {
+  content: ''; position: absolute;
+  width: 160px; height: 160px;
+  border: 5px solid var(--char-3); border-radius: 50%;
+  opacity: 0.07; bottom: -40px; right: -30px; z-index: 0;
+}
+.slide-cases::after {
+  content: ''; position: absolute;
+  width: 50px; height: 50px;
+  background: var(--char-8); opacity: 0.10;
+  top: 20px; right: 10px;
+  transform: rotate(40deg); z-index: 0;
+}
+
+.slide-describe::before {
+  content: ''; position: absolute;
+  width: 240px; height: 240px;
+  background: var(--char-1); border-radius: 50%;
+  opacity: 0.06; bottom: -80px; left: -80px; z-index: 0;
+}
+.slide-describe::after {
+  content: ''; position: absolute;
+  width: 70px; height: 70px;
+  background: var(--char-4); opacity: 0.10;
+  top: 10px; right: 20px;
+  transform: rotate(30deg); z-index: 0;
+}
+
+.slide-takeaway::before {
+  content: ''; position: absolute;
+  width: 90px; height: 90px;
+  background: var(--char-4); opacity: 0.10;
+  top: 20px; right: 0;
+  transform: rotate(25deg); z-index: 0;
+}
+.slide-takeaway::after {
+  content: ''; position: absolute;
+  width: 180px; height: 6px;
+  background: var(--char-2); opacity: 0.14;
+  bottom: 60px; left: -30px;
+  transform: rotate(-3deg); z-index: 0;
+}
+
 @media (max-width: 600px) {
   .three-cols { grid-template-columns: 1fr; }
   .sector-grid { grid-template-columns: 1fr; }
@@ -471,6 +648,7 @@ body {
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
   }
+  .slide::before, .slide::after, .deco { display: none !important; }
 }
 </style>
 
@@ -480,14 +658,15 @@ body {
   <div class="slide-counter" id="counter"></div>
 
   <!-- SLIDE 1: TITLE -->
-  <div class="slide" data-accent="var(--char-1)">
+  <div class="slide slide-title" data-accent="var(--char-1)">
     <div class="accent-bar" style="background: var(--char-1)"></div>
     <h1>Theory of Change</h1>
     <p class="lede">A methodology used across governments, international development, and the social sector to plan interventions that actually work. Today: what it is, who uses it, and why understanding it now changes how you approach the rest of this course.</p>
+    <div class="deco" style="width: 0; height: 0; border-left: 30px solid transparent; border-right: 30px solid transparent; border-bottom: 55px solid var(--char-2); opacity: 0.10; bottom: 50px; right: 50px"></div>
   </div>
 
   <!-- SLIDE 2: WHY NOW? -->
-  <div class="slide" data-accent="var(--char-3)">
+  <div class="slide slide-why" data-accent="var(--char-3)">
     <div class="accent-bar" style="background: var(--char-3)"></div>
     <div class="eyebrow" style="color: var(--char-3)">Week 3</div>
     <h2>Why Are We Talking About This Now?</h2>
@@ -503,7 +682,7 @@ body {
   </div>
 
   <!-- SLIDE 3: WHAT IS TOC -->
-  <div class="slide" data-accent="var(--char-4)">
+  <div class="slide slide-def" data-accent="var(--char-4)">
     <div class="accent-bar" style="background: var(--char-4)"></div>
     <div class="eyebrow" style="color: var(--char-4)">Definition</div>
     <h2>What Is Theory of Change?</h2>
@@ -516,7 +695,7 @@ body {
   </div>
 
   <!-- SLIDE 4: QUIZ -->
-  <div class="slide" data-accent="var(--char-2)">
+  <div class="slide slide-quiz1" data-accent="var(--char-2)">
     <div class="accent-bar" style="background: var(--char-2)"></div>
     <div class="eyebrow" style="color: var(--char-2)">Check Your Understanding</div>
     <h2>Quick Check</h2>
@@ -548,7 +727,7 @@ body {
   </div>
 
   <!-- SLIDE 5: THE CAUSAL PATHWAY -->
-  <div class="slide" data-accent="var(--char-6)">
+  <div class="slide slide-pathway" data-accent="var(--char-6)">
     <div class="accent-bar" style="background: var(--char-6)"></div>
     <div class="eyebrow" style="color: var(--char-6)">Core Structure</div>
     <h2>The Causal Pathway</h2>
@@ -601,7 +780,7 @@ body {
   </div>
 
   <!-- SLIDE 6: ASSUMPTIONS -->
-  <div class="slide" data-accent="var(--char-8)">
+  <div class="slide slide-assumptions" data-accent="var(--char-8)">
     <div class="accent-bar" style="background: var(--char-8)"></div>
     <div class="eyebrow" style="color: var(--char-8)">Critical Element</div>
     <h2>Assumptions</h2>
@@ -616,7 +795,7 @@ body {
   </div>
 
   <!-- SLIDE 7: SPOT THE ASSUMPTION -->
-  <div class="slide" data-accent="var(--char-2)">
+  <div class="slide slide-quiz2" data-accent="var(--char-2)">
     <div class="accent-bar" style="background: var(--char-2)"></div>
     <div class="eyebrow" style="color: var(--char-2)">Interactive Exercise</div>
     <h2>Spot the Assumption</h2>
@@ -654,7 +833,7 @@ body {
   </div>
 
   <!-- SLIDE 8: THREE TESTS -->
-  <div class="slide" data-accent="var(--char-6)">
+  <div class="slide slide-tests" data-accent="var(--char-6)">
     <div class="accent-bar" style="background: var(--char-6)"></div>
     <div class="eyebrow" style="color: var(--char-6)">Quality Assurance</div>
     <h2>Three Tests for a ToC</h2>
@@ -677,7 +856,7 @@ body {
   </div>
 
   <!-- SLIDE 9: WHO USES TOC -->
-  <div class="slide" data-accent="var(--char-5)">
+  <div class="slide slide-sectors" data-accent="var(--char-5)">
     <div class="accent-bar" style="background: var(--char-5)"></div>
     <div class="eyebrow" style="color: var(--char-5)">Real-World Use</div>
     <h2>Who Uses Theory of Change?</h2>
@@ -729,7 +908,7 @@ body {
   </div>
 
   <!-- SLIDE 10: YOUR CAREER -->
-  <div class="slide" data-accent="var(--char-7)">
+  <div class="slide slide-career" data-accent="var(--char-7)">
     <div class="accent-bar" style="background: var(--char-7)"></div>
     <div class="eyebrow" style="color: var(--char-7)">Why This Matters for You</div>
     <h2>A Career Skill</h2>
@@ -759,7 +938,7 @@ body {
   </div>
 
   <!-- SLIDE 11: WHAT HAPPENS WITHOUT DESCRIPTION -->
-  <div class="slide" data-accent="var(--char-3)">
+  <div class="slide slide-cases" data-accent="var(--char-3)">
     <div class="accent-bar" style="background: var(--char-3)"></div>
     <div class="eyebrow" style="color: var(--char-3)">Cautionary Tales</div>
     <h2>What Happens When You Skip Description</h2>
@@ -806,7 +985,7 @@ body {
   </div>
 
   <!-- SLIDE 12: WHY DESCRIBE FIRST -->
-  <div class="slide" data-accent="var(--char-1)">
+  <div class="slide slide-describe" data-accent="var(--char-1)">
     <div class="accent-bar" style="background: var(--char-1)"></div>
     <div class="eyebrow" style="color: var(--char-1)">The Connection</div>
     <h2>Why We Describe First</h2>
@@ -825,7 +1004,7 @@ body {
   </div>
 
   <!-- SLIDE 13: LOOKING AHEAD -->
-  <div class="slide" data-accent="var(--char-4)">
+  <div class="slide slide-takeaway" data-accent="var(--char-4)">
     <div class="accent-bar" style="background: var(--char-4)"></div>
     <div class="eyebrow" style="color: var(--char-4)">Looking Ahead</div>
     <h2>Your ToC Journey</h2>
