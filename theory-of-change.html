@@ -1,0 +1,1123 @@
+<meta charset="utf-8">
+<title>Theory of Change</title>
+<style>
+:root {
+  --bg: #F2DFBE;
+  --bg-card: #FFFAF2;
+  --bg-deep: #E8D2A8;
+  --text: #2A1F18;
+  --text-muted: #6A5A48;
+  --border: #D8C8A8;
+  --char-1: #5C3A96;
+  --char-2: #B52838;
+  --char-3: #C85218;
+  --char-4: #D4A020;
+  --char-5: #7A5828;
+  --char-6: #B83068;
+  --char-7: #CC6830;
+  --char-8: #7E58A8;
+  --correct: #2A7A42;
+  --correct-bg: #E6F4EA;
+  --incorrect: #B82828;
+  --incorrect-bg: #FDEEEE;
+  --slide-accent: var(--char-1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+#app {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 1.5rem 16px 5.5rem;
+}
+
+.progress-track {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: var(--bg-deep);
+  z-index: 100;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--slide-accent);
+  transition: width 0.4s ease, background-color 0.3s ease;
+}
+
+.slide-counter {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 1.25rem;
+}
+
+.slide {
+  display: none;
+  animation: slideIn 0.3s ease;
+}
+.slide.active { display: block; }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.slide h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1.08;
+  margin-bottom: 1rem;
+}
+
+.slide h2 {
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+  margin-bottom: 1rem;
+}
+
+.slide h3 {
+  font-size: 1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.6rem;
+}
+
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+}
+
+.slide p { max-width: 640px; margin-bottom: 1rem; font-size: 1.02rem; }
+
+.lede {
+  font-size: 1.12rem;
+  color: var(--text-muted);
+  max-width: 600px;
+  margin-bottom: 1.5rem;
+}
+
+.accent-bar {
+  height: 6px;
+  margin-bottom: 1.5rem;
+  max-width: 200px;
+}
+
+.accent-banner {
+  padding: 1.5rem 2rem;
+  color: #fff;
+  margin-bottom: 1.5rem;
+}
+.accent-banner h2, .accent-banner p { color: #fff; }
+
+.quote-block {
+  border-left: 6px solid var(--char-4);
+  padding: 1.25rem 1.5rem;
+  background: var(--bg-card);
+  margin-bottom: 1.5rem;
+  max-width: 640px;
+}
+.quote-block p { font-style: italic; margin-bottom: 0.4rem; }
+.quote-block .attribution {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-style: normal;
+  font-weight: 600;
+}
+
+.verb-sequence {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.5rem;
+  max-width: 640px;
+}
+.verb-block {
+  flex: 1;
+  padding: 1rem 0.5rem;
+  text-align: center;
+  font-weight: 800;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff;
+  transition: transform 0.2s ease;
+}
+.verb-block.current {
+  transform: scaleY(1.15);
+  box-shadow: 0 4px 12px rgba(42,31,24,0.18);
+}
+
+.pathway {
+  display: flex;
+  flex-direction: column;
+  max-width: 600px;
+  margin-bottom: 1.5rem;
+}
+.pathway-step { display: flex; align-items: stretch; }
+.pathway-marker {
+  width: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+.pathway-dot { width: 14px; height: 14px; flex-shrink: 0; }
+.pathway-line { width: 3px; flex: 1; background: var(--border); }
+.pathway-content { padding: 0.25rem 0 1.25rem 0.75rem; flex: 1; }
+.pathway-content .step-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 0.2rem;
+}
+.pathway-content .step-text { font-size: 0.92rem; }
+.pathway-assumption {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 0.4rem 0 0.4rem 0.75rem;
+  margin-left: 40px;
+  border-left: 2px dashed var(--border);
+}
+
+.ceiling-diagram { max-width: 480px; margin: 1.25rem 0 1.5rem; }
+.ceiling-zone { padding: 0.75rem 1rem; }
+.ceiling-zone .zone-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+.ceiling-zone .zone-item {
+  font-size: 0.88rem;
+  padding: 0.2rem 0;
+  color: var(--text-muted);
+}
+.ceiling-line {
+  border-top: 4px dashed var(--char-2);
+  padding: 0.4rem 1rem;
+}
+.ceiling-line-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--char-2);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.three-cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.col-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  padding: 1.1rem;
+}
+.col-card h3 { font-size: 0.88rem; margin-bottom: 0.4rem; }
+.col-card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0; }
+
+.indicator-frame {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-left: 6px solid var(--char-3);
+  padding: 1.25rem 1.5rem;
+  max-width: 640px;
+  margin-bottom: 1.5rem;
+}
+.frame-parts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: baseline;
+  font-size: 1.05rem;
+  line-height: 2.2;
+}
+.frame-part {
+  font-weight: 800;
+  padding: 0.15rem 0.5rem;
+  border-bottom: 3px solid;
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: 2rem 1fr;
+  gap: 0.15rem 0.75rem;
+  max-width: 640px;
+  margin-bottom: 1.5rem;
+}
+.step-phase {
+  grid-column: 1 / -1;
+  padding: 0.6rem 0.75rem;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-top: 0.5rem;
+}
+.step-phase:first-child { margin-top: 0; }
+.step-number {
+  font-weight: 800;
+  font-size: 0.82rem;
+  padding: 0.35rem 0;
+  text-align: right;
+  color: var(--text-muted);
+}
+.step-desc { font-size: 0.88rem; padding: 0.35rem 0; }
+
+.quiz-options { display: grid; gap: 0.6rem; max-width: 640px; margin-bottom: 0.75rem; }
+
+.quiz-option {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  padding: 0.9rem 1.1rem;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.95rem;
+  text-align: left;
+  color: var(--text);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+.quiz-option:hover:not(.disabled) { border-color: var(--text); transform: translateY(-1px); }
+.quiz-option .opt-letter {
+  font-weight: 800;
+  font-size: 0.82rem;
+  min-width: 1.2rem;
+  text-transform: uppercase;
+}
+.quiz-option.selected { border-color: var(--char-1); border-width: 3px; padding: calc(0.9rem - 1px) calc(1.1rem - 1px); }
+.quiz-option.correct { border-color: var(--correct); background: var(--correct-bg); }
+.quiz-option.incorrect { border-color: var(--incorrect); background: var(--incorrect-bg); opacity: 0.65; }
+.quiz-option.disabled { cursor: default; pointer-events: none; }
+
+.check-btn {
+  background: var(--char-3);
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.8rem;
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.check-btn:hover { background: var(--char-2); transform: translateY(-2px); }
+.check-btn:active { transform: translateY(0); }
+
+.feedback {
+  display: none;
+  border-left: 5px solid var(--correct);
+  background: var(--correct-bg);
+  padding: 0.9rem 1.1rem;
+  margin-top: 0.75rem;
+  max-width: 640px;
+  animation: feedbackIn 0.3s ease;
+}
+.feedback.wrong { border-left-color: var(--incorrect); background: var(--incorrect-bg); }
+.feedback.visible { display: block; }
+.feedback p { font-size: 0.9rem; margin-bottom: 0; }
+
+@keyframes feedbackIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.order-pool { display: grid; gap: 0.5rem; max-width: 640px; margin-bottom: 0.75rem; }
+.order-item {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.92rem;
+  text-align: left;
+  color: var(--text);
+  transition: border-color 0.15s ease, transform 0.15s ease, opacity 0.3s ease;
+}
+.order-item:hover:not(.used) { border-color: var(--text); transform: translateY(-1px); }
+.order-item.used { opacity: 0.35; cursor: default; pointer-events: none; }
+.order-item.wrong { border-color: var(--incorrect); animation: shake 0.35s ease; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.placed-list { max-width: 640px; margin-bottom: 0.75rem; min-height: 1.5rem; }
+.placed-entry {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0;
+  animation: feedbackIn 0.25s ease;
+}
+.placed-num {
+  width: 26px;
+  height: 26px;
+  background: var(--correct);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.72rem;
+  flex-shrink: 0;
+}
+.placed-text { font-size: 0.9rem; }
+
+.scenario-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  padding: 1.1rem;
+  margin-bottom: 0.6rem;
+  max-width: 640px;
+}
+.scenario-card .scenario-text { font-size: 0.92rem; font-style: italic; margin-bottom: 0.6rem; }
+.scenario-btns { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.scenario-btn {
+  background: transparent;
+  border: 2px solid var(--border);
+  padding: 0.35rem 0.9rem;
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text);
+  transition: all 0.15s ease;
+}
+.scenario-btn:hover:not(.disabled) { border-color: var(--text); }
+.scenario-btn.correct { background: var(--correct); color: #fff; border-color: var(--correct); }
+.scenario-btn.incorrect { background: var(--incorrect-bg); border-color: var(--incorrect); color: var(--incorrect); }
+.scenario-btn.disabled { pointer-events: none; }
+.scenario-explain {
+  display: none;
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  animation: feedbackIn 0.3s ease;
+}
+.scenario-explain.visible { display: block; }
+
+.reveal-trigger {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-left: 6px solid var(--slide-accent);
+  padding: 0.9rem 1.1rem;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  max-width: 640px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: border-color 0.15s ease;
+}
+.reveal-trigger:hover { border-color: var(--text); }
+.reveal-trigger .reveal-label {
+  font-weight: 700;
+  font-size: 0.88rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.reveal-trigger .arrow { transition: transform 0.2s ease; }
+.reveal-trigger.open .arrow { transform: rotate(90deg); }
+.reveal-body {
+  display: none;
+  padding: 0.9rem 1.1rem 0.9rem 1.5rem;
+  max-width: 640px;
+  margin-bottom: 0.5rem;
+  border-left: 6px solid var(--bg-deep);
+  animation: feedbackIn 0.25s ease;
+}
+.reveal-body.visible { display: block; }
+.reveal-body p { font-size: 0.92rem; margin-bottom: 0.5rem; }
+.reveal-body p:last-child { margin-bottom: 0; }
+
+.takeaway-list { list-style: none; max-width: 640px; }
+.takeaway-list li {
+  padding: 0.7rem 0 0.7rem 1.4rem;
+  position: relative;
+  font-size: 0.95rem;
+  border-bottom: 1px solid var(--border);
+}
+.takeaway-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+}
+
+.multi-select-note {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 0.5rem;
+}
+
+.nav-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  border-top: 3px solid var(--border);
+  padding: 0.6rem 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+}
+.nav-btn {
+  background: var(--char-1);
+  color: #fff;
+  border: none;
+  padding: 0.55rem 1.4rem;
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.nav-btn:hover { background: var(--char-2); transform: translateY(-2px); }
+.nav-btn:active { transform: translateY(0); }
+.nav-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.nav-btn:disabled:hover { background: var(--char-1); transform: none; }
+.nav-info {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+@media (max-width: 600px) {
+  .three-cols { grid-template-columns: 1fr; }
+  .verb-sequence { flex-wrap: wrap; }
+  .verb-block { flex: none; width: 50%; }
+  .slide h1 { font-size: clamp(1.6rem, 5vw, 2.5rem); }
+  .frame-parts { font-size: 0.92rem; }
+}
+
+@media print {
+  body { background: white; }
+  .nav-bar, .progress-track { display: none; }
+  .slide { display: block !important; page-break-after: always; animation: none; }
+  .accent-banner, .verb-block, .step-phase, .pathway-dot, .col-card,
+  .placed-num, .scenario-btn.correct, .accent-bar, .frame-part {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+</style>
+
+<div class="progress-track"><div class="progress-fill" id="progress"></div></div>
+
+<div id="app">
+  <div class="slide-counter" id="counter"></div>
+
+  <!-- SLIDE 1: TITLE -->
+  <div class="slide" data-accent="var(--char-1)">
+    <div class="accent-bar" style="background: var(--char-1)"></div>
+    <h1>Theory of Change</h1>
+    <p class="lede">A rigorous framework for planning backwards from impact. How to turn your analysis of third places into a concrete intervention for the Bodo stadium project.</p>
+    <div style="margin-top: 2rem">
+      <div class="eyebrow" style="color: var(--char-1)">PEP Challenge Course</div>
+      <p style="font-size: 0.92rem; color: var(--text-muted)">Weeks 9 - 14: The Intervene Phase</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: FROM ANALYSIS TO ACTION -->
+  <div class="slide" data-accent="var(--char-3)">
+    <div class="accent-bar" style="background: var(--char-3)"></div>
+    <div class="eyebrow" style="color: var(--char-3)">The Course Arc</div>
+    <h2>From Analysis to Action</h2>
+    <p>You have followed a strict sequence. Each verb earns the next.</p>
+    <div class="verb-sequence">
+      <div class="verb-block" style="background: var(--char-5)">Describe</div>
+      <div class="verb-block" style="background: var(--char-3)">Explain</div>
+      <div class="verb-block" style="background: var(--char-4)">Adjudicate</div>
+      <div class="verb-block current" style="background: var(--char-2)">Intervene</div>
+    </div>
+    <p>You have described the third place empirically. You have explained its decline through psychological, economic, and political lenses. You have adjudicated between competing accounts. Now: <strong>how do you intervene?</strong></p>
+    <p>Theory of Change is the methodology that bridges analysis and action. It prevents the most common failure mode in applied work: <strong>premature intervention</strong> - jumping to solutions before the problem is understood.</p>
+  </div>
+
+  <!-- SLIDE 3: WHAT IS TOC -->
+  <div class="slide" data-accent="var(--char-4)">
+    <div class="accent-bar" style="background: var(--char-4)"></div>
+    <div class="eyebrow" style="color: var(--char-4)">Definition</div>
+    <h2>What Is Theory of Change?</h2>
+    <div class="quote-block">
+      <p>"A rigorous yet participatory process whereby groups and stakeholders in a planning process articulate their long-term goals and identify the conditions they believe have to unfold for those goals to be met."</p>
+      <div class="attribution">Taplin &amp; Clark, 2012</div>
+    </div>
+    <p>The core move: <strong>start with where you want to end up</strong>, then map backwards to figure out how to get there. Every step in the chain must be justified - not hoped for, not assumed, but argued with evidence.</p>
+    <p>This separates ToC from a wish list. You are not listing activities and hoping they work. You are building a testable causal argument for <em>why</em> your intervention will produce the change you intend.</p>
+  </div>
+
+  <!-- SLIDE 4: QUIZ - FORWARD VS BACKWARD -->
+  <div class="slide" data-accent="var(--char-2)">
+    <div class="accent-bar" style="background: var(--char-2)"></div>
+    <div class="eyebrow" style="color: var(--char-2)">Check Your Understanding</div>
+    <h2>Quick Check</h2>
+    <p>Which best describes the Theory of Change approach?</p>
+    <div class="quiz-options" id="quiz1">
+      <button class="quiz-option" data-val="a">
+        <span class="opt-letter">A</span>
+        <span>Start with available resources and plan what you can do with them</span>
+      </button>
+      <button class="quiz-option" data-val="b">
+        <span class="opt-letter">B</span>
+        <span>Start with your desired long-term outcome and work backwards to identify what must happen</span>
+      </button>
+      <button class="quiz-option" data-val="c">
+        <span class="opt-letter">C</span>
+        <span>Start with a list of activities and predict their likely effects</span>
+      </button>
+      <button class="quiz-option" data-val="d">
+        <span class="opt-letter">D</span>
+        <span>Start with stakeholder preferences and build consensus on priorities</span>
+      </button>
+    </div>
+    <div class="feedback" id="quiz1-fb">
+      <p><strong>Correct.</strong> ToC works backwards from impact. Options A and C describe forward planning - the conventional approach ToC explicitly rejects. Option D describes one <em>activity</em> within a ToC process, not the approach itself.</p>
+    </div>
+    <div class="feedback wrong" id="quiz1-fb-wrong">
+      <p><strong>Not quite.</strong> Theory of Change is defined by backward mapping: you begin with the long-term outcome you want, then work backwards through the conditions that must be met. Try again.</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: THE CAUSAL PATHWAY -->
+  <div class="slide" data-accent="var(--char-6)">
+    <div class="accent-bar" style="background: var(--char-6)"></div>
+    <div class="eyebrow" style="color: var(--char-6)">Core Structure</div>
+    <h2>The Causal Pathway</h2>
+    <p>A ToC maps a chain of outcomes from your ultimate goal down to the things you can directly do. Each link carries an assumption about <em>how</em> change happens.</p>
+    <div class="pathway">
+      <div class="pathway-step">
+        <div class="pathway-marker">
+          <div class="pathway-dot" style="background: var(--char-1)"></div>
+          <div class="pathway-line"></div>
+        </div>
+        <div class="pathway-content">
+          <div class="step-label" style="color: var(--char-1)">Long-Term Outcome</div>
+          <div class="step-text">The ultimate change you seek. Set at or below the accountability ceiling.</div>
+        </div>
+      </div>
+      <div class="pathway-assumption">Assumption: intermediate outcomes are sufficient to produce this</div>
+      <div class="pathway-step">
+        <div class="pathway-marker">
+          <div class="pathway-dot" style="background: var(--char-6)"></div>
+          <div class="pathway-line"></div>
+        </div>
+        <div class="pathway-content">
+          <div class="step-label" style="color: var(--char-6)">Intermediate Outcomes</div>
+          <div class="step-text">The conditions that must exist for the long-term outcome to be reached.</div>
+        </div>
+      </div>
+      <div class="pathway-assumption">Assumption: early outcomes will produce these conditions</div>
+      <div class="pathway-step">
+        <div class="pathway-marker">
+          <div class="pathway-dot" style="background: var(--char-4)"></div>
+          <div class="pathway-line"></div>
+        </div>
+        <div class="pathway-content">
+          <div class="step-label" style="color: var(--char-4)">Early Outcomes</div>
+          <div class="step-text">The first observable changes your interventions should produce.</div>
+        </div>
+      </div>
+      <div class="pathway-assumption">Assumption: these interventions will trigger these early changes</div>
+      <div class="pathway-step">
+        <div class="pathway-marker">
+          <div class="pathway-dot" style="background: var(--char-3)"></div>
+        </div>
+        <div class="pathway-content">
+          <div class="step-label" style="color: var(--char-3)">Interventions</div>
+          <div class="step-text">What you actually do. The activities, programmes, and resources you deploy.</div>
+        </div>
+      </div>
+    </div>
+    <p style="font-size: 0.9rem; color: var(--text-muted)">Read upward: each level is a precondition for the one above it. The assumptions between levels are where your evidence goes.</p>
+  </div>
+
+  <!-- SLIDE 6: LONG-TERM OUTCOMES + ACCOUNTABILITY CEILING -->
+  <div class="slide" data-accent="var(--char-5)">
+    <div class="accent-bar" style="background: var(--char-5)"></div>
+    <div class="eyebrow" style="color: var(--char-5)">Starting Point</div>
+    <h2>Long-Term Outcomes &amp; the Accountability Ceiling</h2>
+    <p>Your ToC starts at the top: what is the ultimate change you want to see? But not every change is within your power. The <strong>accountability ceiling</strong> marks the highest-level outcome you can credibly hold yourself responsible for.</p>
+    <div class="ceiling-diagram">
+      <div class="ceiling-zone" style="background: rgba(184,40,56,0.08)">
+        <div class="zone-label" style="color: var(--char-2)">Above the Ceiling - Beyond Your Reach</div>
+        <div class="zone-item">Reduced social isolation city-wide in Bodo</div>
+        <div class="zone-item">Improved mental health outcomes for residents</div>
+        <div class="zone-item">Reversal of third-place decline nationally</div>
+      </div>
+      <div class="ceiling-line">
+        <div class="ceiling-line-label">Accountability Ceiling</div>
+      </div>
+      <div class="ceiling-zone" style="background: rgba(42,122,66,0.08)">
+        <div class="zone-label" style="color: var(--correct)">Below the Ceiling - Your Responsibility</div>
+        <div class="zone-item">A functioning community space used by diverse groups</div>
+        <div class="zone-item">Regular visitors who identify the space as their third place</div>
+        <div class="zone-item">Measurable increase in cross-group social interaction</div>
+      </div>
+    </div>
+    <p>Set your long-term outcome <em>at or below</em> the ceiling. Grand societal claims above it may be true, but you cannot be held to them, and they make your ToC untestable.</p>
+  </div>
+
+  <!-- SLIDE 7: BACKWARD MAPPING -->
+  <div class="slide" data-accent="var(--char-1)">
+    <div class="accent-bar" style="background: var(--char-1)"></div>
+    <div class="eyebrow" style="color: var(--char-1)">Method</div>
+    <h2>Backward Mapping</h2>
+    <p>From your long-term outcome, ask one question repeatedly: <strong>"What conditions must be in place for this to happen?"</strong> Each answer becomes a precondition. Keep asking until you reach things you can directly do.</p>
+    <div class="reveal-trigger" onclick="toggleReveal(this)" style="border-left-color: var(--char-1)">
+      <span class="reveal-label">Example: Bodo Stadium Third Place</span>
+      <span class="arrow">&#9654;</span>
+    </div>
+    <div class="reveal-body">
+      <p><strong>Long-term outcome:</strong> The stadium community space functions as a genuine third place for 500+ regular visitors within two years of opening.</p>
+      <p><strong>What must be true?</strong> Diverse demographic groups use the space regularly. It is not captured by a single subculture or match-day crowd.</p>
+      <p><strong>What must be true for that?</strong> The space is welcoming to non-football visitors. Programming and design signal broad community ownership.</p>
+      <p><strong>What must be true for that?</strong> Community members were involved in design decisions. The space has identity independent of the football club.</p>
+      <p><strong>What can you do?</strong> Run co-design workshops with diverse local groups. Create governance that includes non-club stakeholders. Design flexible space that accommodates multiple uses.</p>
+    </div>
+    <div class="reveal-trigger" onclick="toggleReveal(this)" style="border-left-color: var(--char-8)">
+      <span class="reveal-label">Why Backwards, Not Forwards?</span>
+      <span class="arrow">&#9654;</span>
+    </div>
+    <div class="reveal-body">
+      <p>Forward planning starts with what you <em>can</em> do and hopes it leads somewhere good. Backward mapping starts with where you <em>need</em> to be and works out what must happen.</p>
+      <p>The difference: forward planning lets your resources dictate your ambition. Backward mapping lets your ambition expose what resources you actually need - and reveals assumptions you would otherwise never examine.</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 8: INTERACTIVE ORDERING -->
+  <div class="slide" data-accent="var(--char-7)">
+    <div class="accent-bar" style="background: var(--char-7)"></div>
+    <div class="eyebrow" style="color: var(--char-7)">Interactive Exercise</div>
+    <h2>Build the Causal Chain</h2>
+    <p>Click these outcomes in order from <strong>earliest</strong> (what happens first) to <strong>latest</strong> (your ultimate goal). Think about which outcomes are preconditions for others.</p>
+    <div class="placed-list" id="placed"></div>
+    <div class="order-pool" id="order-pool"></div>
+    <div class="feedback" id="order-fb">
+      <p><strong>Well done.</strong> Notice the logic: each step is a precondition for the next. This is the causal chain that backward mapping produces. Your interventions are at the bottom; your long-term outcome is at the top.</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 9: ASSUMPTIONS -->
+  <div class="slide" data-accent="var(--char-8)">
+    <div class="accent-bar" style="background: var(--char-8)"></div>
+    <div class="eyebrow" style="color: var(--char-8)">Critical Element</div>
+    <h2>Assumptions &amp; Rationales</h2>
+    <p>Every link in your causal chain rests on an <strong>assumption</strong> - a belief about how change works. Making assumptions explicit is what separates a Theory of Change from wishful thinking.</p>
+    <div style="background: var(--bg-card); border: 2px solid var(--border); border-left: 6px solid var(--char-8); padding: 1.1rem; max-width: 640px; margin-bottom: 1rem">
+      <div class="eyebrow" style="color: var(--char-8)">Example</div>
+      <p style="margin-bottom: 0.5rem"><strong>Causal link:</strong> "If diverse groups use the space regularly, community members will report a stronger sense of belonging."</p>
+      <p style="margin-bottom: 0.5rem"><strong>Assumption:</strong> Repeated casual interaction across demographic lines builds social bonds - proximity alone is not sufficient, but structured-yet-informal contact is.</p>
+      <p style="margin-bottom: 0; font-size: 0.88rem; color: var(--text-muted)"><strong>Rationale:</strong> Contact hypothesis research (Allport, 1954; Pettigrew &amp; Tropp, 2006) shows intergroup contact reduces prejudice and builds affiliation under specific conditions: equal status, common goals, cooperation, and institutional support.</p>
+    </div>
+    <p>For every assumption, you need a <strong>rationale</strong>: the evidence or reasoning that justifies the assumption. This is where your disciplinary knowledge from the Describe, Explain, and Adjudicate phases pays off.</p>
+  </div>
+
+  <!-- SLIDE 10: INTERACTIVE - SPOT THE ASSUMPTION -->
+  <div class="slide" data-accent="var(--char-2)">
+    <div class="accent-bar" style="background: var(--char-2)"></div>
+    <div class="eyebrow" style="color: var(--char-2)">Interactive Exercise</div>
+    <h2>Spot the Assumption</h2>
+    <p>Here is a causal link from a Theory of Change:</p>
+    <div style="background: var(--bg-card); border: 2px solid var(--border); border-left: 6px solid var(--char-2); padding: 1rem; max-width: 640px; margin-bottom: 1rem">
+      <p style="font-style: italic; margin-bottom: 0">"If we provide free coffee and comfortable seating in the stadium community space, visitors will stay longer and form social connections."</p>
+    </div>
+    <p class="multi-select-note">Select all statements that are hidden assumptions in this link, then check.</p>
+    <div class="quiz-options" id="quiz2">
+      <button class="quiz-option" data-val="a" data-correct="true" onclick="toggleMulti(this)">
+        <span class="opt-letter">A</span>
+        <span>People in this community drink coffee</span>
+      </button>
+      <button class="quiz-option" data-val="b" onclick="toggleMulti(this)">
+        <span class="opt-letter">B</span>
+        <span>Coffee is more expensive than tea</span>
+      </button>
+      <button class="quiz-option" data-val="c" data-correct="true" onclick="toggleMulti(this)">
+        <span class="opt-letter">C</span>
+        <span>Staying longer leads to social connection, not just co-presence</span>
+      </button>
+      <button class="quiz-option" data-val="d" data-correct="true" onclick="toggleMulti(this)">
+        <span class="opt-letter">D</span>
+        <span>Free amenities will not undermine the sense of community ownership</span>
+      </button>
+      <button class="quiz-option" data-val="e" onclick="toggleMulti(this)">
+        <span class="opt-letter">E</span>
+        <span>The space is located near public transport</span>
+      </button>
+    </div>
+    <button class="check-btn" onclick="checkMulti()">Check Answers</button>
+    <div class="feedback" id="quiz2-fb">
+      <p><strong>A, C, and D are assumptions.</strong> A assumes cultural relevance. C assumes a mechanism (duration leads to connection) that is not automatic. D assumes no perverse incentive effects. B is an irrelevant cost comparison. E may be important but is a separate design question, not an assumption <em>within</em> this causal link.</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 11: INDICATORS -->
+  <div class="slide" data-accent="var(--char-3)">
+    <div class="accent-bar" style="background: var(--char-3)"></div>
+    <div class="eyebrow" style="color: var(--char-3)">Measurement</div>
+    <h2>Indicators</h2>
+    <p>For each outcome in your pathway, you need an <strong>indicator</strong> that tells you whether change is actually happening. An indicator without specifics is not an indicator.</p>
+    <div class="indicator-frame">
+      <div class="eyebrow" style="color: var(--char-3)">The Indicator Framework</div>
+      <div class="frame-parts">
+        <span class="frame-part" style="border-color: var(--char-1)">How many</span>
+        <span>of</span>
+        <span class="frame-part" style="border-color: var(--char-6)">who / what</span>
+        <span>will</span>
+        <span class="frame-part" style="border-color: var(--char-4)">reach what level</span>
+        <span>by</span>
+        <span class="frame-part" style="border-color: var(--char-3)">when</span>
+      </div>
+    </div>
+    <div class="reveal-trigger" onclick="toggleReveal(this)" style="border-left-color: var(--char-3)">
+      <span class="reveal-label">Example Indicator</span>
+      <span class="arrow">&#9654;</span>
+    </div>
+    <div class="reveal-body">
+      <p><strong>Outcome:</strong> Diverse demographic groups use the space regularly.</p>
+      <p><strong>Indicator:</strong> At least <span style="color: var(--char-1); font-weight: 800">200</span> unique visitors per week from <span style="color: var(--char-6); font-weight: 800">at least 4 distinct age brackets and 3 neighbourhood zones</span> use the community space <span style="color: var(--char-4); font-weight: 800">at least twice monthly</span> within <span style="color: var(--char-3); font-weight: 800">6 months of opening</span>.</p>
+    </div>
+    <div class="reveal-trigger" onclick="toggleReveal(this)" style="border-left-color: var(--char-6)">
+      <span class="reveal-label">Bad vs Good Indicators</span>
+      <span class="arrow">&#9654;</span>
+    </div>
+    <div class="reveal-body">
+      <p><strong>Bad:</strong> "The community feels more connected." (No quantity, no who, no timeline, no measurement method.)</p>
+      <p><strong>Better:</strong> "At least 60% of surveyed regular visitors (n &ge; 80) report knowing the name of at least one person they met at the space, within 12 months of opening." (Specific, measurable, time-bound, connected to the outcome.)</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 12: QUALITY REVIEW -->
+  <div class="slide" data-accent="var(--char-6)">
+    <div class="accent-bar" style="background: var(--char-6)"></div>
+    <div class="eyebrow" style="color: var(--char-6)">Quality Assurance</div>
+    <h2>Three Tests for Your ToC</h2>
+    <p>Before you present your Theory of Change, subject it to three quality tests.</p>
+    <div class="three-cols">
+      <div class="col-card" style="border-top: 6px solid var(--char-1)">
+        <h3 style="color: var(--char-1)">Plausible</h3>
+        <p>Does the causal logic hold? Is there evidence that each outcome leads to the next? Would a sceptic accept the chain?</p>
+      </div>
+      <div class="col-card" style="border-top: 6px solid var(--char-3)">
+        <h3 style="color: var(--char-3)">Feasible</h3>
+        <p>Can you actually do this? Do you have the resources, access, partnerships, and time? Is the scope realistic?</p>
+      </div>
+      <div class="col-card" style="border-top: 6px solid var(--char-4)">
+        <h3 style="color: var(--char-4)">Testable</h3>
+        <p>Can you measure it? Are your indicators specific enough to tell you if the ToC is working - or failing?</p>
+      </div>
+    </div>
+    <p>A ToC that fails any one of these tests needs rework. Plausibility without feasibility is academic. Feasibility without testability is faith.</p>
+  </div>
+
+  <!-- SLIDE 13: INTERACTIVE QUALITY CHECK -->
+  <div class="slide" data-accent="var(--char-1)">
+    <div class="accent-bar" style="background: var(--char-1)"></div>
+    <div class="eyebrow" style="color: var(--char-1)">Interactive Exercise</div>
+    <h2>Quality Check</h2>
+    <p>For each scenario, identify which quality test it <strong>fails</strong>.</p>
+    <div class="scenario-card" data-answer="plausible">
+      <div class="scenario-text">"Our ToC assumes that building an aesthetically beautiful space will automatically attract users from every demographic group in Bodo."</div>
+      <div class="scenario-btns">
+        <button class="scenario-btn" onclick="checkScenario(this, 'plausible')">Plausible</button>
+        <button class="scenario-btn" onclick="checkScenario(this, 'feasible')">Feasible</button>
+        <button class="scenario-btn" onclick="checkScenario(this, 'testable')">Testable</button>
+      </div>
+      <div class="scenario-explain">No causal logic connects aesthetics to demographic diversity. The link is asserted, not argued. This fails the plausibility test.</div>
+    </div>
+    <div class="scenario-card" data-answer="feasible">
+      <div class="scenario-text">"We plan to conduct monthly in-depth interviews with every visitor to the space for two years, building a longitudinal dataset of social connection."</div>
+      <div class="scenario-btns">
+        <button class="scenario-btn" onclick="checkScenario(this, 'plausible')">Plausible</button>
+        <button class="scenario-btn" onclick="checkScenario(this, 'feasible')">Feasible</button>
+        <button class="scenario-btn" onclick="checkScenario(this, 'testable')">Testable</button>
+      </div>
+      <div class="scenario-explain">The measurement approach is sound in theory, but the scale is unrealistic. Monthly interviews with every visitor for two years requires resources far beyond the project scope. This fails feasibility.</div>
+    </div>
+    <div class="scenario-card" data-answer="testable">
+      <div class="scenario-text">"Our key indicator is that the community space will foster a sense of togetherness and social cohesion among visitors."</div>
+      <div class="scenario-btns">
+        <button class="scenario-btn" onclick="checkScenario(this, 'plausible')">Plausible</button>
+        <button class="scenario-btn" onclick="checkScenario(this, 'feasible')">Feasible</button>
+        <button class="scenario-btn" onclick="checkScenario(this, 'testable')">Testable</button>
+      </div>
+      <div class="scenario-explain">"Togetherness" and "social cohesion" are not measurable as stated. No quantity, no threshold, no method, no timeline. This fails the testability test.</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 14: THE 11-STEP PROCESS -->
+  <div class="slide" data-accent="var(--char-5)">
+    <div class="accent-bar" style="background: var(--char-5)"></div>
+    <div class="eyebrow" style="color: var(--char-5)">Process</div>
+    <h2>The 11-Step ToC Process</h2>
+    <p>The UK Government Analysis Function organises ToC into four phases and eleven steps. This is your operational roadmap.</p>
+    <div class="steps-grid">
+      <div class="step-phase" style="background: var(--char-1)">Scope</div>
+      <div class="step-number">1</div><div class="step-desc">Identify stakeholders and agree intended impact</div>
+      <div class="step-number">2</div><div class="step-desc">Collect evidence and establish context</div>
+      <div class="step-number">3</div><div class="step-desc">Identify long-term impacts and goals</div>
+
+      <div class="step-phase" style="background: var(--char-3)">Map</div>
+      <div class="step-number">4</div><div class="step-desc">Define outcomes (SMART criteria)</div>
+      <div class="step-number">5</div><div class="step-desc">Identify outputs and activities</div>
+      <div class="step-number">6</div><div class="step-desc">Identify inputs and resources required</div>
+
+      <div class="step-phase" style="background: var(--char-2)">Test</div>
+      <div class="step-number">7</div><div class="step-desc">State assumptions explicitly</div>
+      <div class="step-number">8</div><div class="step-desc">Identify risks and mitigation strategies</div>
+      <div class="step-number">9</div><div class="step-desc">Apply and verify causal links</div>
+
+      <div class="step-phase" style="background: var(--char-4)">Document</div>
+      <div class="step-number">10</div><div class="step-desc">Produce diagram and narrative</div>
+      <div class="step-number">11</div><div class="step-desc">Create monitoring and evaluation plan</div>
+    </div>
+    <p style="font-size: 0.88rem; color: var(--text-muted)">Source: UK Government Analysis Function, Theory of Change Toolkit</p>
+  </div>
+
+  <!-- SLIDE 15: YOUR CHALLENGE + TAKEAWAYS -->
+  <div class="slide" data-accent="var(--char-7)">
+    <div class="accent-bar" style="background: var(--char-7)"></div>
+    <div class="eyebrow" style="color: var(--char-7)">Application</div>
+    <h2>Your Challenge</h2>
+    <p>Apply Theory of Change to the Bodo stadium project. Your client wants a community third place adjacent to the new stadium. Your ToC must answer:</p>
+    <div style="background: var(--bg-card); border: 2px solid var(--border); border-left: 6px solid var(--char-7); padding: 1.1rem; max-width: 640px; margin-bottom: 1.5rem">
+      <p style="margin-bottom: 0.4rem"><strong>1.</strong> What is your long-term outcome? Where is your accountability ceiling?</p>
+      <p style="margin-bottom: 0.4rem"><strong>2.</strong> What intermediate and early outcomes must occur? Map backwards.</p>
+      <p style="margin-bottom: 0.4rem"><strong>3.</strong> What interventions will you propose to the client?</p>
+      <p style="margin-bottom: 0.4rem"><strong>4.</strong> What are the assumptions at each link? What evidence supports them?</p>
+      <p style="margin-bottom: 0.4rem"><strong>5.</strong> What indicators will you set? Use the "how many of who by when" framework.</p>
+      <p style="margin-bottom: 0"><strong>6.</strong> Is your ToC plausible, feasible, and testable?</p>
+    </div>
+
+    <div style="border-top: 4px solid var(--char-1); padding-top: 1.25rem; margin-top: 1.5rem">
+      <h3 style="color: var(--char-1)">Key Takeaways</h3>
+      <ul class="takeaway-list">
+        <li style="padding-left: 0"><span style="display: inline-block; width: 10px; height: 10px; background: var(--char-1); margin-right: 0.6rem; vertical-align: middle"></span>ToC works <strong>backwards</strong> from impact, not forwards from activities</li>
+        <li style="padding-left: 0"><span style="display: inline-block; width: 10px; height: 10px; background: var(--char-3); margin-right: 0.6rem; vertical-align: middle"></span>Every causal link carries <strong>assumptions</strong> - make them explicit and evidence them</li>
+        <li style="padding-left: 0"><span style="display: inline-block; width: 10px; height: 10px; background: var(--char-4); margin-right: 0.6rem; vertical-align: middle"></span>The <strong>accountability ceiling</strong> bounds what you can credibly claim</li>
+        <li style="padding-left: 0"><span style="display: inline-block; width: 10px; height: 10px; background: var(--char-6); margin-right: 0.6rem; vertical-align: middle"></span>Indicators answer: <strong>how many</strong> of <strong>who</strong> will reach <strong>what level</strong> by <strong>when</strong></li>
+        <li style="padding-left: 0"><span style="display: inline-block; width: 10px; height: 10px; background: var(--char-2); margin-right: 0.6rem; vertical-align: middle"></span>A good ToC is <strong>plausible</strong>, <strong>feasible</strong>, and <strong>testable</strong></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="nav-bar">
+  <button class="nav-btn" id="prev-btn" onclick="go(-1)">&#9664; Prev</button>
+  <span class="nav-info" id="nav-info"></span>
+  <button class="nav-btn" id="next-btn" onclick="go(1)">Next &#9654;</button>
+</div>
+
+<script>
+var slides = document.querySelectorAll('.slide');
+var current = 0;
+var totalSlides = slides.length;
+var orderCorrect = [
+  'Run co-design workshops with diverse community groups',
+  'Space is built incorporating community input',
+  'Diverse demographic groups begin using the space',
+  'Visitors form cross-group social connections',
+  'Community reports stronger sense of belonging',
+  'A thriving third place serving 500+ regular visitors'
+];
+var orderNext = 0;
+var orderInitialised = false;
+
+function showSlide(n) {
+  slides.forEach(function(s) { s.classList.remove('active'); });
+  slides[n].classList.add('active');
+  current = n;
+
+  var accent = slides[n].getAttribute('data-accent') || 'var(--char-1)';
+  document.documentElement.style.setProperty('--slide-accent', accent);
+  document.getElementById('progress').style.width = ((n + 1) / totalSlides * 100) + '%';
+  document.getElementById('progress').style.background = accent;
+  document.getElementById('counter').textContent = 'Slide ' + (n + 1) + ' of ' + totalSlides;
+  document.getElementById('nav-info').textContent = (n + 1) + ' / ' + totalSlides;
+  document.getElementById('prev-btn').disabled = n === 0;
+  document.getElementById('next-btn').disabled = n === totalSlides - 1;
+
+  if (n === 7 && !orderInitialised) {
+    initOrder();
+    orderInitialised = true;
+  }
+
+  window.scrollTo(0, 0);
+}
+
+function go(dir) {
+  var next = current + dir;
+  if (next >= 0 && next < totalSlides) showSlide(next);
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); go(1); }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); go(-1); }
+});
+
+// Single-select quiz (slide 4)
+(function() {
+  var opts = document.querySelectorAll('#quiz1 .quiz-option');
+  opts.forEach(function(opt) {
+    opt.addEventListener('click', function() {
+      if (opt.classList.contains('disabled')) return;
+      var val = opt.getAttribute('data-val');
+      opts.forEach(function(o) {
+        o.classList.add('disabled');
+        if (o.getAttribute('data-val') === 'b') {
+          o.classList.add('correct');
+        } else if (o === opt && val !== 'b') {
+          o.classList.add('incorrect');
+        }
+      });
+      if (val === 'b') {
+        document.getElementById('quiz1-fb').classList.add('visible');
+      } else {
+        document.getElementById('quiz1-fb-wrong').classList.add('visible');
+        setTimeout(function() {
+          document.getElementById('quiz1-fb-wrong').classList.remove('visible');
+          opts.forEach(function(o) {
+            o.classList.remove('disabled', 'correct', 'incorrect');
+          });
+        }, 2500);
+      }
+    });
+  });
+})();
+
+// Multi-select quiz (slide 10)
+function toggleMulti(el) {
+  if (el.classList.contains('disabled')) return;
+  el.classList.toggle('selected');
+}
+
+function checkMulti() {
+  var opts = document.querySelectorAll('#quiz2 .quiz-option');
+  opts.forEach(function(o) {
+    o.classList.add('disabled');
+    var isCorrect = o.getAttribute('data-correct') === 'true';
+    var wasSelected = o.classList.contains('selected');
+    o.classList.remove('selected');
+    if (isCorrect) {
+      o.classList.add('correct');
+    } else if (wasSelected) {
+      o.classList.add('incorrect');
+    }
+  });
+  document.getElementById('quiz2-fb').classList.add('visible');
+  document.querySelector('#quiz2 + .check-btn').style.display = 'none';
+}
+
+// Ordering exercise (slide 8)
+function initOrder() {
+  var pool = document.getElementById('order-pool');
+  var shuffled = orderCorrect.slice();
+  for (var i = shuffled.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = tmp;
+  }
+  pool.innerHTML = '';
+  shuffled.forEach(function(text) {
+    var btn = document.createElement('button');
+    btn.className = 'order-item';
+    btn.textContent = text;
+    btn.setAttribute('data-text', text);
+    btn.addEventListener('click', function() { pickOrder(btn); });
+    pool.appendChild(btn);
+  });
+}
+
+function pickOrder(el) {
+  if (el.classList.contains('used')) return;
+  var text = el.getAttribute('data-text');
+  if (text === orderCorrect[orderNext]) {
+    el.classList.add('used');
+    orderNext++;
+    var placed = document.getElementById('placed');
+    var entry = document.createElement('div');
+    entry.className = 'placed-entry';
+    entry.innerHTML = '<div class="placed-num">' + orderNext + '</div><div class="placed-text">' + text + '</div>';
+    placed.appendChild(entry);
+    if (orderNext === orderCorrect.length) {
+      document.getElementById('order-fb').classList.add('visible');
+    }
+  } else {
+    el.classList.add('wrong');
+    setTimeout(function() { el.classList.remove('wrong'); }, 400);
+  }
+}
+
+// Scenario quality check (slide 13)
+function checkScenario(btn, answer) {
+  var card = btn.closest('.scenario-card');
+  if (card.classList.contains('answered')) return;
+  card.classList.add('answered');
+  var correct = card.getAttribute('data-answer');
+  var btns = card.querySelectorAll('.scenario-btn');
+  btns.forEach(function(b) {
+    b.classList.add('disabled');
+    var bAnswer = b.textContent.trim().toLowerCase();
+    if (bAnswer === correct) {
+      b.classList.add('correct');
+    } else if (b === btn && answer !== correct) {
+      b.classList.add('incorrect');
+    }
+  });
+  card.querySelector('.scenario-explain').classList.add('visible');
+}
+
+// Reveal toggles
+function toggleReveal(trigger) {
+  var body = trigger.nextElementSibling;
+  trigger.classList.toggle('open');
+  body.classList.toggle('visible');
+}
+
+showSlide(0);
+</script>
