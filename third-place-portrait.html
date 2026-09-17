@@ -95,7 +95,7 @@ h3 { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.1em; text-transform
 
 /* GAME SCREEN */
 .game-top { margin-bottom: 1.5rem; }
-.game-svg-wrap { width: 100%; max-width: 800px; margin: 0 auto 1rem; }
+.game-svg-wrap { width: 100%; max-width: 800px; margin: 0 auto 1rem; position: relative; }
 .game-svg-wrap svg { width: 100%; height: auto; display: block; }
 .game-progress { display: flex; gap: 6px; justify-content: center; margin-bottom: 1rem; }
 .game-dot {
@@ -156,8 +156,22 @@ h3 { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.1em; text-transform
 .score-label { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); }
 
 /* SVG ANIMATION */
-@keyframes svgPulse { 0% { transform: scale(1); } 50% { transform: scale(1.015); } 100% { transform: scale(1); } }
-.svg-pulse { animation: svgPulse 0.4s ease; }
+.svg-flash {
+  position: absolute; inset: 0; pointer-events: none; opacity: 0;
+}
+.svg-flash.active {
+  animation: flashFade 0.55s ease forwards;
+}
+@keyframes flashFade {
+  0% { opacity: 0; }
+  18% { opacity: 0.28; }
+  100% { opacity: 0; }
+}
+@keyframes svgReveal {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.svg-new { animation: svgReveal 0.5s ease both; }
 
 /* SUMMARY / PORTRAIT */
 .portrait-header { text-align: center; margin-bottom: 1.5rem; }
@@ -331,7 +345,7 @@ h3 { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.1em; text-transform
   <div id="screen-class-game" class="screen hidden">
     <div class="game-top">
       <div class="game-progress" id="game-progress"></div>
-      <div class="game-svg-wrap" id="game-svg"></div>
+      <div class="game-svg-wrap"><div id="game-svg"></div><div class="svg-flash" id="svg-flash"></div></div>
     </div>
     <div id="game-question">
       <div class="game-char-head" id="game-char-head"></div>
@@ -433,75 +447,75 @@ var PLACES = [
       { charIdx: 0,
         current: 'The pub requires a membership card to enter. Tables near the fireplace are permanently reserved for regulars, and newcomers must stand at the bar.',
         options: [
-          { text: 'Remove the membership policy — anyone can walk in and sit wherever they like', type: 'correct' },
-          { text: 'Introduce a loyalty programme with tiered benefits for frequent visitors', type: 'worse' },
-          { text: 'Add a dartboard and a shelf of board games near the bar', type: 'other', target: 6 },
-          { text: 'Put up a chalkboard outside showing daily specials and opening hours', type: 'other', target: 3 }
+          { text: 'Drop the membership requirement and reserved-table system — anyone walks in and sits wherever they like', type: 'correct' },
+          { text: 'Replace the membership card with free guest registration at the door so the pub can welcome everyone by name', type: 'worse' },
+          { text: 'Seat everyone in the same section regardless of how often they visit, with identical furniture throughout', type: 'other', target: 1 },
+          { text: 'Post the pub\'s hours and directions on a community board and add step-free access to the entrance', type: 'other', target: 3 }
         ],
-        feedback: 'Removing membership barriers means anyone can enter freely, without obligation or gatekeeping — the defining feature of neutral ground.' },
+        feedback: 'Neutral ground means no gatekeeping at all — not even a friendly registration. People must be free to come and go without any tracking or obligation.' },
       { charIdx: 1,
         current: 'The pub has a separate lounge with leather seats for professionals, while the public bar has basic furniture. The landlord greets regulars by job title.',
         options: [
-          { text: 'Remove the separate lounge — one shared space with identical seating for everyone', type: 'correct' },
-          { text: 'Add a business networking hour with name badges showing job titles', type: 'worse' },
-          { text: 'Extend opening hours to include late mornings and early afternoons', type: 'other', target: 3 },
-          { text: 'Hang photos of long-standing regulars on the wall', type: 'other', target: 4 }
+          { text: 'Remove the separate lounge — one shared space with identical seating, and the landlord uses first names only', type: 'correct' },
+          { text: 'Open the lounge to everyone but keep a premium drinks menu available only at the leather seats', type: 'worse' },
+          { text: 'Add personal touches to both areas — photos of community events, a shared bookshelf, plants on the tables', type: 'other', target: 7 },
+          { text: 'Remove the door policy entirely so anyone can walk in without membership or commitment', type: 'other', target: 0 }
         ],
-        feedback: 'When everyone shares the same space and seating, outside status becomes invisible — the pub levels everyone to equal social footing.' },
+        feedback: 'The leveler erases outside status completely. Opening a VIP area is not enough if premium pricing still signals who belongs where.' },
       { charIdx: 2,
         current: 'Multiple large TVs show sport at high volume. Most customers face the screens rather than each other. The background music is loud.',
         options: [
           { text: 'Turn off the TVs during the week and rearrange seating into small clusters facing each other', type: 'correct' },
-          { text: 'Install individual tablet screens at each table for ordering and entertainment', type: 'worse' },
-          { text: 'Repaint the interior in muted, comfortable colours and remove flashy signage', type: 'other', target: 5 },
-          { text: 'Let a group of Friday-evening regulars host a weekly quiz', type: 'other', target: 4 }
+          { text: 'Switch the TVs to curated content — local documentaries and conversation-starter clips at low volume', type: 'worse' },
+          { text: 'Set up a dartboard tournament and put board games on the tables', type: 'other', target: 6 },
+          { text: 'Replace the flashy screens and speakers with plain walls and simple decor', type: 'other', target: 5 }
         ],
-        feedback: 'When screens go dark and seats face each other, talk becomes the main event — not background noise to passive entertainment.' },
+        feedback: 'Conversation means people talking to each other as the main activity — not reacting to a screen, even an interesting one. The layout must make face-to-face talk the natural thing to do.' },
       { charIdx: 3,
         current: 'The pub opens only from 6pm to 11pm, has no signage from the street, and the entrance is up a narrow flight of stairs.',
         options: [
           { text: 'Add a street-level entrance with a clear sign, and open from noon daily', type: 'correct' },
-          { text: 'Switch to an appointment-only tasting-room model with advance bookings', type: 'worse' },
-          { text: 'Place comfortable mismatched armchairs in a corner by the fireplace', type: 'other', target: 7 },
-          { text: 'Remove dress-code expectations — welcome anyone in work clothes or casual wear', type: 'other', target: 1 }
+          { text: 'Launch an app with real-time table availability so visitors can plan their trip in advance', type: 'worse' },
+          { text: 'Remove cover charges and minimum-spend requirements so visitors feel no financial obligation', type: 'other', target: 0 },
+          { text: 'Furnish the stairway with warm lighting, a welcome mat, and photos of regulars on the wall', type: 'other', target: 7 }
         ],
-        feedback: 'Long hours, clear signage, and step-free entry mean anyone can drop in at almost any time — the space stands ready when people need it.' },
+        feedback: 'Accessibility means removing practical barriers — stairs, limited hours, invisible location. An app still requires planning; true accommodation means you can just show up.' },
       { charIdx: 4,
         current: 'Customer turnover is high — mostly one-time visitors passing through. Staff rotate every few weeks and do not recognise faces.',
         options: [
           { text: 'Keep consistent bar staff who learn names, and let a corner become the spot the same group gravitates to nightly', type: 'correct' },
-          { text: 'Run aggressive social media campaigns targeting tourists and new demographics each week', type: 'worse' },
-          { text: 'Remove entrance fees and cover charges entirely', type: 'other', target: 0 },
-          { text: 'Encourage the landlord to join conversations rather than staying behind the bar', type: 'other', target: 2 }
+          { text: 'Create a regulars\' club with a monthly subscription, private events, and a members\' social media group', type: 'worse' },
+          { text: 'Have the landlord start conversations with newcomers at the bar and introduce strangers to each other', type: 'other', target: 2 },
+          { text: 'Add a fireplace, comfortable armchairs, and a bookshelf of donated novels', type: 'other', target: 7 }
         ],
-        feedback: 'Consistent staff who know faces and names create the continuity that turns strangers into regulars — they become the social anchors of the space.' },
+        feedback: 'Regulars emerge organically through familiar faces and consistent staff — not through formal membership structures. A subscription club manufactures belonging instead of letting it grow.' },
       { charIdx: 5,
         current: 'The pub was recently refurbished with designer lighting, branded glassware, and a curated cocktail menu on illuminated display boards.',
         options: [
           { text: 'Replace the designer fittings with plain sturdy furniture and hand-written specials on a chalkboard', type: 'correct' },
-          { text: 'Hire a PR firm to feature the pub in lifestyle magazines and social media', type: 'worse' },
-          { text: 'Start closing later on weekends and opening earlier on Sundays', type: 'other', target: 3 },
-          { text: 'Introduce a house rule that regulars help newcomers choose their first drink', type: 'other', target: 1 }
+          { text: 'Rebrand with a rustic-chic aesthetic — reclaimed wood, artisanal taps, and a carefully distressed interior', type: 'worse' },
+          { text: 'Swap the cocktail menu for simple drinks at one price point so nobody feels priced out', type: 'other', target: 1 },
+          { text: 'Keep the same decor, menu, and layout year after year so returning customers always know what to expect', type: 'other', target: 4 }
         ],
-        feedback: 'Stripping away designer fittings removes pretension — plain, functional surroundings invite informality and discourage showing off.' },
+        feedback: 'A low profile means genuinely unpretentious — not a different brand of pretension. Rustic-chic is still designed to impress; plain furniture simply serves its purpose.' },
       { charIdx: 6,
         current: 'The atmosphere is hushed and formal. A sign reads "Please keep noise to a minimum." Staff enforce a strict no-standing policy.',
         options: [
           { text: 'Remove the noise rules, add a dartboard, and encourage pub games and friendly banter', type: 'correct' },
-          { text: 'Introduce fines for boisterous behaviour and a formal complaints procedure', type: 'worse' },
-          { text: 'Display hand-drawn posters by local artists instead of corporate prints', type: 'other', target: 5 },
-          { text: 'Make sure anyone can pull up a chair without asking — no reserved tables', type: 'other', target: 0 }
+          { text: 'Host organised fun nights with scheduled comedy acts and ticketed entertainment', type: 'worse' },
+          { text: 'Remove the no-standing rule so people can move freely between groups without asking', type: 'other', target: 0 },
+          { text: 'Rearrange seating so people face each other and lower the music to conversation level', type: 'other', target: 2 }
         ],
-        feedback: 'Dartboards, banter, and laughter replace enforced silence — the mood becomes lighthearted and spontaneous.' },
+        feedback: 'Playfulness arises spontaneously from the people present — darts, ribbing, banter. Scheduled entertainment makes the audience passive instead of generating their own fun.' },
       { charIdx: 7,
         current: 'The pub is clinical and new-looking. Furniture is modern and uniform. There is nothing on the walls. It feels like any other chain pub.',
         options: [
           { text: 'Add a bookshelf with well-thumbed novels, photos from community events, a fireplace, and potted plants', type: 'correct' },
-          { text: 'Renovate again with a minimalist aesthetic to appeal to a broader market', type: 'worse' },
-          { text: 'Host a weekly open-mic or storytelling evening', type: 'other', target: 6 },
-          { text: 'Keep the same menu and layout year after year so regulars always know what to expect', type: 'other', target: 4 }
+          { text: 'Commission a local artist to create a signature mural and rebrand the pub with a unique visual identity', type: 'worse' },
+          { text: 'Strip out the modern fittings and replace them with plain, mismatched second-hand furniture', type: 'other', target: 5 },
+          { text: 'Put the same bartender on every shift so they remember everyone\'s usual order', type: 'other', target: 4 }
         ],
-        feedback: 'Personal touches — books, photos, a fireplace — create the sense of rootedness and warmth that makes a place feel like home.' }
+        feedback: 'Home grows from accumulated personal touches — books people leave, photos that tell stories, a fireplace you gather around. A commissioned mural is art direction, not roots.' }
     ]
   },
   {
@@ -512,74 +526,74 @@ var PLACES = [
         current: 'The barbershop is appointment-only and caters exclusively to a small client list. Walk-ins are turned away at the door.',
         options: [
           { text: 'Accept walk-ins alongside bookings with a comfortable waiting area where anyone can sit', type: 'correct' },
-          { text: 'Introduce a preferred-clients tier with priority scheduling and exclusive services', type: 'worse' },
-          { text: 'Add a radio tuned to local stations as background and conversation starter', type: 'other', target: 2 },
-          { text: 'Keep prices simple and affordable so cost never excludes anyone', type: 'other', target: 1 }
+          { text: 'Expand the client list by letting existing clients refer friends — each referral earns a discount', type: 'worse' },
+          { text: 'Extend hours to include early mornings and Saturdays so the shop fits different work schedules', type: 'other', target: 3 },
+          { text: 'Offer one standard haircut at one price — no premium services or loyalty tiers', type: 'other', target: 1 }
         ],
-        feedback: 'Walk-ins alongside bookings and an open waiting area remove gatekeeping — the chair is available to anyone who turns up.' },
+        feedback: 'Neutral ground means anyone can walk in without gatekeeping. A referral system still requires knowing someone — it widens the list but keeps the gate.' },
       { charIdx: 1,
         current: 'Pricing varies dramatically — a premium chair costs five times more and comes with better service. The barber treats well-dressed clients with more attention.',
         options: [
           { text: 'One price, one standard of service, same chair — the CEO and the student get identical treatment', type: 'correct' },
-          { text: 'Add a VIP experience package with complimentary drinks and a private room', type: 'worse' },
-          { text: 'Open earlier for shift workers who finish at dawn', type: 'other', target: 3 },
-          { text: 'Let long-standing customers keep a personal mug on the shelf', type: 'other', target: 4 }
+          { text: 'Introduce a sliding-scale payment so lower-income clients pay less, but the barber still serves the higher-paying chair first', type: 'worse' },
+          { text: 'Replace the premium chair with basic functional seating and swap designer products for simple ones', type: 'other', target: 5 },
+          { text: 'Make the waiting area comfortable for everyone — a kettle, newspapers, and a radio', type: 'other', target: 7 }
         ],
-        feedback: 'Same chair, same price, same conversation for everyone — the barbershop does not distinguish between a CEO and a student.' },
+        feedback: 'The leveler means identical treatment regardless of who you are. A sliding scale accommodates income but still lets payment determine service order — hierarchy persists.' },
       { charIdx: 2,
         current: 'The barber works in silence with headphones in. A TV plays at high volume. Customers scroll their phones while waiting.',
         options: [
           { text: 'Lose the headphones, turn off the TV — the barber asks about your week and the waiting customers join in', type: 'correct' },
-          { text: 'Install privacy screens between each chair so clients can have a personal experience', type: 'worse' },
-          { text: 'Add a bench outside with a simple hand-painted sign', type: 'other', target: 5 },
-          { text: 'Put up a community corkboard where locals post notices and events', type: 'other', target: 3 }
+          { text: 'Play a podcast at comfortable volume so there is always something interesting to react to', type: 'worse' },
+          { text: 'Put a pack of cards and a jigsaw puzzle in the waiting area for people to share', type: 'other', target: 6 },
+          { text: 'Have the same barber work every shift so customers build a long-term relationship', type: 'other', target: 4 }
         ],
-        feedback: 'When the barber puts away the headphones and turns off the screen, talk becomes the natural rhythm of the cut.' },
+        feedback: 'Conversation means people talking to each other — not listening to a podcast together. The barber\'s question, not a broadcast, sparks real dialogue.' },
       { charIdx: 3,
         current: 'The shop is open by appointment only, 10am to 4pm on weekdays. There is no sign outside and you need to know the phone number.',
         options: [
           { text: 'Put up a visible sign, open six days a week from early morning to evening, welcome walk-ins', type: 'correct' },
-          { text: 'Switch to an online-only booking system with 48-hour minimum notice', type: 'worse' },
-          { text: 'Let regulars hang their own photos and art on the wall', type: 'other', target: 7 },
-          { text: 'Remove any screens between chairs and let conversation flow naturally', type: 'other', target: 2 }
+          { text: 'Build a website with online booking, reviews, and a virtual queue — no phone call needed', type: 'worse' },
+          { text: 'Remove the appointment requirement entirely — just show up, no booking, no commitment', type: 'other', target: 0 },
+          { text: 'Add warm lighting and framed photos in the window so passers-by feel invited', type: 'other', target: 7 }
         ],
-        feedback: 'A visible sign, long hours, and walk-in availability mean the shop fits into people’s routines rather than demanding they adapt.' },
+        feedback: 'Accessibility means you can physically find it, it is open when you need it, and you can walk in. A website still requires planning — the barber pole in the window does not.' },
       { charIdx: 4,
         current: 'The barber changes every few months — it is a rotating chair rental. No customer sees the same face twice.',
         options: [
-          { text: 'Keep the same barber for years — someone who knows everyone’s name, order, and life story', type: 'correct' },
-          { text: 'Actively market to new demographics each season and rebrand to stay fresh', type: 'worse' },
-          { text: 'Make the space welcoming regardless of age, background, or appearance', type: 'other', target: 1 },
-          { text: 'Let the mood be loose — laughter, ribbing, stories about the weekend', type: 'other', target: 6 }
+          { text: 'Keep the same barber for years — someone who knows everyone\'s name, order, and life story', type: 'correct' },
+          { text: 'Install a customer database so whoever is cutting can pull up the client\'s history and preferences', type: 'worse' },
+          { text: 'Encourage whoever is in the chair to chat openly with waiting customers', type: 'other', target: 2 },
+          { text: 'Let the mood be loose — banter, ribbing, stories about the weekend', type: 'other', target: 6 }
         ],
-        feedback: 'A consistent barber who knows everyone creates the continuity that makes the shop a social institution, not just a service.' },
+        feedback: 'Regulars form around a person, not a database. The barber who remembers your name because they know you is irreplaceable — a profile on a screen is customer service, not community.' },
       { charIdx: 5,
         current: 'The barbershop was recently featured in a design magazine. It has designer furniture, artisanal products on display, and a curated playlist.',
         options: [
           { text: 'Strip it back to basics — a proper chair, a clean mirror, clippers, and chat', type: 'correct' },
-          { text: 'Commission a celebrity endorsement and display it prominently in the window', type: 'worse' },
-          { text: 'Keep the same opening hours and routine week after week, reliable as clockwork', type: 'other', target: 3 },
-          { text: 'Welcome anyone through the door regardless of background — no dress code', type: 'other', target: 0 }
+          { text: 'Rebrand as a traditional barbershop with vintage decor, heritage products, and an old-school narrative', type: 'worse' },
+          { text: 'Add personal touches — the barber\'s own photos, a kettle for tea, newspapers on the bench', type: 'other', target: 7 },
+          { text: 'Remove premium pricing and give every customer the same service regardless of appearance', type: 'other', target: 1 }
         ],
-        feedback: 'Basic equipment and plain surroundings signal neighbourhood shop, not boutique experience — comfort over style.' },
+        feedback: 'Low profile means genuinely plain — not a different style of curation. A vintage rebrand is still performing an identity for an audience; clippers and chat need no staging.' },
       { charIdx: 6,
         current: 'The atmosphere is businesslike and efficient. Clients come in, sit down, get cut, pay, and leave. Minimal interaction.',
         options: [
           { text: 'Encourage banter, let customers rib each other, keep a running joke going, debate the football', type: 'correct' },
-          { text: 'Put up signs enforcing quiet and a professional atmosphere', type: 'worse' },
-          { text: 'Swap the expensive décor for something that says neighbourhood, not boutique', type: 'other', target: 5 },
-          { text: 'Ensure conversations do not exclude newcomers — pull everyone in', type: 'other', target: 1 }
+          { text: 'Hire an entertaining barber who performs tricks with the scissors and puts on a show', type: 'worse' },
+          { text: 'Have the barber ask open-ended questions about each customer\'s week and draw the room in', type: 'other', target: 2 },
+          { text: 'Swap the efficient layout for plain, simple fittings — no pretension, just function', type: 'other', target: 5 }
         ],
-        feedback: 'Banter, ribbing, and laughter replace businesslike efficiency — being there becomes fun, not just functional.' },
+        feedback: 'Playfulness comes from the group — everyone riffing, teasing, debating. A performing barber is entertainment you watch, not fun you make together.' },
       { charIdx: 7,
         current: 'The shop feels transactional — clean but impersonal. Nothing about it says stay a while. Customers leave immediately after their cut.',
         options: [
           { text: 'Add a kettle for tea, a stack of newspapers, and an old sofa in the waiting area', type: 'correct' },
-          { text: 'Redesign the space for maximum throughput — remove the waiting area and add more chairs', type: 'worse' },
-          { text: 'Host a monthly first-cut event for new parents bringing their children', type: 'other', target: 4 },
-          { text: 'Remove booking requirements — just drop in when you feel like it', type: 'other', target: 0 }
+          { text: 'Offer a loyalty card where every tenth cut is free — give people a reason to keep coming back', type: 'worse' },
+          { text: 'Keep the same barber on every shift so clients build a relationship over years', type: 'other', target: 4 },
+          { text: 'Put up a chalkboard for customers to doodle and write jokes while they wait', type: 'other', target: 6 }
         ],
-        feedback: 'A kettle, newspapers, and a comfortable waiting area say stay a while — the visit extends beyond the service.' }
+        feedback: 'Home is a feeling created by the space itself — a kettle, newspapers, a sofa say linger. A loyalty card creates a financial incentive to return, not a sense of belonging.' }
     ]
   },
   {
@@ -590,74 +604,74 @@ var PLACES = [
         current: 'The owners reserve half the machines for their own dry-cleaning business during peak hours. A sign reads "Management reserves the right to refuse service."',
         options: [
           { text: 'All machines available to everyone equally, no reservations — use whatever is free', type: 'correct' },
-          { text: 'Introduce a membership card that gives priority access to machines during busy times', type: 'worse' },
-          { text: 'Add a small lending-library shelf where people swap paperbacks while they wait', type: 'other', target: 6 },
-          { text: 'Keep the place open from early morning to late evening, seven days a week', type: 'other', target: 3 }
+          { text: 'Replace the owner\'s reservation with a fair digital queue — register via an app for first-come-first-served access', type: 'worse' },
+          { text: 'Offer one price per load regardless of machine or time slot — no premium tiers', type: 'other', target: 1 },
+          { text: 'Keep the place open from early morning to late evening with a clear sign on the street', type: 'other', target: 3 }
         ],
-        feedback: 'Equal access to all machines, no reservations — the space belongs to whoever walks in, not to management.' },
+        feedback: 'Neutral ground means no gatekeeping — not even a fair digital one. Registration still tracks and controls access; a truly neutral space lets you walk in and use what is free.' },
       { charIdx: 1,
         current: 'There is a premium section with newer machines at triple the price and a separate seating area. Staff are noticeably more attentive to premium customers.',
         options: [
           { text: 'One set of machines, one price, same seats — the student and the executive fold at the same table', type: 'correct' },
-          { text: 'Add a concierge wash service where staff do everything for premium customers', type: 'worse' },
-          { text: 'Have the same attendant working every day so people get to know them by name', type: 'other', target: 4 },
-          { text: 'Make the space feel lived-in — mismatched chairs, a rug, potted plants', type: 'other', target: 7 }
+          { text: 'Open the premium section to everyone but keep the higher price for the newer machines', type: 'worse' },
+          { text: 'Strip out the premium signage and branding — plain machines, simple signs, nothing flashy', type: 'other', target: 5 },
+          { text: 'Remove the management sign and let anyone use any machine without registering', type: 'other', target: 0 }
         ],
-        feedback: 'One set of machines at one price levels the playing field — everyone folds their clothes at the same table.' },
+        feedback: 'The leveler needs one standard of everything. Opening the premium area means nothing if the price still sorts people into who gets the better machines.' },
       { charIdx: 2,
         current: 'Everyone wears headphones. The machines are loud. Seating faces the wall. There is no reason to talk to anyone.',
         options: [
           { text: 'Rearrange seating to face each other around a shared table, add a kettle, and dampen the machine noise', type: 'correct' },
-          { text: 'Install individual entertainment tablets above each machine so nobody needs to interact', type: 'worse' },
-          { text: 'Offer reliable, no-frills service every day — nothing fancy, just clean machines that work', type: 'other', target: 5 },
-          { text: 'Remove the customers-only sign — let anyone sit down', type: 'other', target: 0 }
+          { text: 'Install a shared music system and a community screen showing local events at conversation-friendly volume', type: 'worse' },
+          { text: 'Add warm lighting, potted plants, and comfortable chairs so the space feels inviting', type: 'other', target: 7 },
+          { text: 'Leave out board games and playing cards on the folding table for people to share', type: 'other', target: 6 }
         ],
-        feedback: 'Facing seats and a shared table turn waiting time into social time — the kettle gives people a reason to linger and talk.' },
+        feedback: 'Conversation needs people facing each other with a reason to linger, not a shared screen. A community display is still broadcast — the kettle is the excuse to talk.' },
       { charIdx: 3,
         current: 'The laundromat is open 9am to 5pm on weekdays only, hidden down a side street with no signage. Payment is exact change only.',
         options: [
           { text: 'Open early-to-late seven days, put up a clear sign, accept cards and coins', type: 'correct' },
-          { text: 'Switch to an app-only payment system requiring registration and a smartphone', type: 'worse' },
-          { text: 'Keep prices the same for everyone regardless of load size', type: 'other', target: 1 },
-          { text: 'Encourage regulars to welcome newcomers and show them how the machines work', type: 'other', target: 4 }
+          { text: 'Add a smartphone app that lets customers reserve a time slot and pay in advance', type: 'worse' },
+          { text: 'Have a consistent attendant who works every day and knows the weekly regulars by name', type: 'other', target: 4 },
+          { text: 'Set one flat price so cost is never a reason someone skips doing their laundry', type: 'other', target: 1 }
         ],
-        feedback: 'Long hours, card payment, and clear signage remove practical barriers — laundry happens when it suits you, not the owner.' },
+        feedback: 'Accessibility means fitting into people\'s lives without friction — long hours, visible location, flexible payment. An app adds a planning step and a technology barrier.' },
       { charIdx: 4,
         current: 'Nobody comes at the same time twice. The attendant changes every shift. There is no sense that anyone belongs here.',
         options: [
           { text: 'Keep a consistent attendant who recognises faces and let natural rhythms form — the Thursday-evening crowd, the Sunday-morning group', type: 'correct' },
-          { text: 'Run promotions to constantly attract new first-time users from different neighbourhoods', type: 'worse' },
-          { text: 'Let people drop in even when they have no laundry — just to sit and chat', type: 'other', target: 0 },
-          { text: 'Arrange machines so the waiting area is central and sociable', type: 'other', target: 2 }
+          { text: 'Start a loyalty card where frequent visitors earn free washes and get invited to member events', type: 'worse' },
+          { text: 'Let people drop in even when they have no laundry — just to sit, read, and chat', type: 'other', target: 0 },
+          { text: 'Add plants, warm lighting, and a community noticeboard so the space feels like it belongs to the neighbourhood', type: 'other', target: 7 }
         ],
-        feedback: 'A consistent attendant and natural rhythms let familiar faces emerge — the Thursday-evening crowd becomes a community.' },
+        feedback: 'Regulars emerge from consistent faces and organic rhythms — not from reward programmes. A loyalty card creates customers, not a community.' },
       { charIdx: 5,
         current: 'The laundromat was rebranded as a "laundry lounge" with Instagram-worthy décor, branded merchandise, and influencer events.',
         options: [
           { text: 'Drop the branding — plain signage, functional machines, clean floors, nothing more', type: 'correct' },
-          { text: 'Partner with a clothing brand for co-branded pop-up events in the space', type: 'worse' },
-          { text: 'Make sure prices are fair and hours suit working people', type: 'other', target: 3 },
-          { text: 'Let the regulars’ banter and card games set the tone, not the décor', type: 'other', target: 6 }
+          { text: 'Replace the influencer aesthetic with an authentic-neighbourhood brand — local art, artisan soap, a curated community vibe', type: 'worse' },
+          { text: 'Take down the decor and replace it with a community puzzle, card games, and a radio', type: 'other', target: 6 },
+          { text: 'Remove the branding and rearrange seating so people face each other over a shared table', type: 'other', target: 2 }
         ],
-        feedback: 'Dropping the branding and lifestyle positioning returns the focus to what matters — the people, not the aesthetic.' },
+        feedback: 'Low profile means no brand at all — not a more tasteful one. An authentic-neighbourhood aesthetic is still curated to project an image. Plain signage projects nothing.' },
       { charIdx: 6,
         current: 'Fluorescent lighting, a list of rules on the wall, and a stern attendant who enforces a "no food, no drink, no loitering" policy.',
         options: [
           { text: 'Let people bring coffee, add a pack of cards and a community puzzle on the folding table', type: 'correct' },
-          { text: 'Add more rules, install security cameras, and remove all seating to discourage lingering', type: 'worse' },
-          { text: 'Make the space welcoming for anyone regardless of what they are wearing', type: 'other', target: 1 },
-          { text: 'Keep the same layout and routine — regulars know exactly where everything is', type: 'other', target: 7 }
+          { text: 'Replace the stern attendant with a friendly one who enforces updated rules designed to keep the space welcoming', type: 'worse' },
+          { text: 'Swap the fluorescent tubes for warm pendant lights and add a comfortable sofa', type: 'other', target: 7 },
+          { text: 'Remove rules that single out certain users — equal access and equal treatment for everyone', type: 'other', target: 1 }
         ],
-        feedback: 'Cards, coffee, and relaxed rules transform dead time into enjoyable time — waiting becomes the best part.' },
+        feedback: 'Playfulness requires freedom — coffee, cards, a puzzle generate their own fun. A friendlier enforcer still imposes structure where spontaneity needs room to breathe.' },
       { charIdx: 7,
         current: 'The space is harshly lit, smells of chemicals, and has plastic chairs bolted to the floor. Nobody would stay a moment longer than they have to.',
         options: [
           { text: 'Warm the lighting, add plants and a community noticeboard, put out comfortable chairs', type: 'correct' },
-          { text: 'Remove all seating and install a timer that charges extra if clothes are not collected within five minutes', type: 'worse' },
-          { text: 'Start a tradition where the morning regulars bring pastries to share', type: 'other', target: 6 },
-          { text: 'Make sure conversation includes everyone — no cliques, no cold shoulders', type: 'other', target: 1 }
+          { text: 'Install a cafe counter selling coffee and snacks — give people a commercial reason to stay longer', type: 'worse' },
+          { text: 'Strip out the harsh industrial fittings and replace them with plain, simple, functional decor', type: 'other', target: 5 },
+          { text: 'Keep the same attendant on every shift so faces become familiar over time', type: 'other', target: 4 }
         ],
-        feedback: 'Plants, warm lighting, and comfortable seating make the space somewhere you would choose to be, not endure.' }
+        feedback: 'Home grows from warmth and belonging — plants, soft light, a board full of neighbourhood notices. A cafe counter adds a commercial service; home is not a product you buy.' }
     ]
   }
 ];
@@ -689,15 +703,14 @@ function svgSpeech(x, y) {
 /* ============================================================
    PUB SVG
    ============================================================ */
-function buildPubSVG(r) {
+function buildPubSVG(r, ni) {
   var s = '<svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">';
+  function gn(i, inner) { return ni === i ? '<g class="svg-new">' + inner + '</g>' : inner; }
   // Room shell
   s += '<rect width="800" height="400" fill="#E8D2A8"/>';
   s += '<rect x="30" y="20" width="740" height="350" fill="#FFFAF2" stroke="#2A1F18" stroke-width="3"/>';
-  // Floor
   s += '<rect x="30" y="310" width="740" height="60" fill="#A08060"/>';
   s += '<line x1="30" y1="310" x2="770" y2="310" stroke="#8B6B4A" stroke-width="2"/>';
-  // Ceiling
   s += '<rect x="30" y="20" width="740" height="14" fill="#6A5A48"/>';
 
   // Window
@@ -708,14 +721,19 @@ function buildPubSVG(r) {
   // Door
   s += '<rect x="50" y="150" width="50" height="160" fill="#A08060" stroke="#2A1F18" stroke-width="2"/>';
   s += '<circle cx="90" cy="230" r="4" fill="#D4A020"/>';
-  // Char 0: Remove members sign / add welcome
+  // Char 0: Members sign vs welcome
+  var c0 = '';
   if (!r[0]) {
-    s += '<rect x="52" y="160" width="46" height="18" fill="#FDEEEE" stroke="#B82828" stroke-width="1"/>';
-    s += '<text x="75" y="173" text-anchor="middle" font-size="6" font-weight="700" fill="#B82828" font-family="system-ui">MEMBERS</text>';
+    c0 += '<rect x="48" y="155" width="54" height="28" fill="#FDEEEE" stroke="#B82828" stroke-width="1.5"/>';
+    c0 += '<text x="75" y="174" text-anchor="middle" font-size="8" font-weight="700" fill="#B82828" font-family="system-ui">MEMBERS</text>';
+    c0 += '<text x="75" y="131" text-anchor="middle" font-size="6" font-weight="700" fill="#B82828" font-family="system-ui">PRIVATE</text>';
+    c0 += '<line x1="55" y1="135" x2="95" y2="135" stroke="#B82828" stroke-width="1.5"/>';
   } else {
-    s += '<rect x="52" y="160" width="46" height="18" fill="#E6F4EA" stroke="#2A7A42" stroke-width="1"/>';
-    s += '<text x="75" y="173" text-anchor="middle" font-size="6" font-weight="700" fill="#2A7A42" font-family="system-ui">WELCOME</text>';
+    c0 += '<rect x="48" y="155" width="54" height="28" fill="#E6F4EA" stroke="#2A7A42" stroke-width="1.5"/>';
+    c0 += '<text x="75" y="174" text-anchor="middle" font-size="8" font-weight="700" fill="#2A7A42" font-family="system-ui">WELCOME</text>';
+    c0 += '<text x="75" y="131" text-anchor="middle" font-size="6" font-weight="700" fill="#2A7A42" font-family="system-ui">ALL WELCOME</text>';
   }
+  s += gn(0, c0);
 
   // Bar counter
   s += '<rect x="520" y="190" width="220" height="18" fill="#6A4028" stroke="#2A1F18" stroke-width="2"/>';
@@ -729,12 +747,17 @@ function buildPubSVG(r) {
     s += '<rect x="'+(560+i*18)+'" y="'+(40+(i%2)*3)+'" width="8" height="'+(15-i%2*3)+'" fill="'+bottleColors[i]+'" opacity="0.5"/>';
   }
 
-  // Char 5: Regulars mugs on shelf
+  // Char 4: Regulars mugs on shelf + barkeeper
   if (r[4]) {
-    for (var i = 0; i < 4; i++) {
-      s += '<rect x="'+(560+i*20)+'" y="'+(119)+'" width="10" height="8" fill="'+CHARS[i].hex+'" opacity="0.7"/>';
-      s += '<rect x="'+(569+i*20)+'" y="'+(121)+'" width="3" height="4" fill="'+CHARS[i].hex+'" opacity="0.7"/>';
+    var c4 = '';
+    for (var i = 0; i < 5; i++) {
+      c4 += '<rect x="'+(555+i*18)+'" y="118" width="12" height="10" fill="'+CHARS[i].hex+'" opacity="0.8"/>';
+      c4 += '<rect x="'+(566+i*18)+'" y="120" width="4" height="6" fill="'+CHARS[i].hex+'" opacity="0.8"/>';
     }
+    c4 += svgPerson(620, 180, '#7A5828');
+    c4 += '<line x1="630" y1="170" x2="640" y2="160" stroke="#7A5828" stroke-width="2.5"/>';
+    c4 += svgSmallPerson(660, 182, '#D4A020');
+    s += gn(4, c4);
   }
 
   // Bar stools
@@ -758,113 +781,137 @@ function buildPubSVG(r) {
 
   // Pendant lights
   if (!r[5]) {
-    // Fancy lights (pre-low-profile)
     for (var i = 0; i < 3; i++) {
       var lx = 200 + i * 170;
       s += '<line x1="'+lx+'" y1="34" x2="'+lx+'" y2="52" stroke="#D4A020" stroke-width="2"/>';
-      s += '<polygon points="'+(lx-14)+',52 '+(lx+14)+',52 '+(lx+10)+',65 '+(lx-10)+',65" fill="#D4A020" opacity="0.6"/>';
-      s += '<circle cx="'+lx+'" cy="58" r="3" fill="#FFF3D6"/>';
+      s += '<polygon points="'+(lx-18)+',52 '+(lx+18)+',52 '+(lx+12)+',70 '+(lx-12)+',70" fill="#D4A020" opacity="0.6"/>';
+      s += '<circle cx="'+lx+'" cy="60" r="5" fill="#FFF3D6"/>';
     }
   } else {
-    // Simple lights
+    var c5l = '';
     for (var i = 0; i < 3; i++) {
       var lx = 200 + i * 170;
-      s += '<line x1="'+lx+'" y1="34" x2="'+lx+'" y2="55" stroke="#6A5A48" stroke-width="1.5"/>';
-      s += '<circle cx="'+lx+'" cy="60" r="6" fill="#FFF3D6" stroke="#6A5A48" stroke-width="1"/>';
+      c5l += '<line x1="'+lx+'" y1="34" x2="'+lx+'" y2="55" stroke="#6A5A48" stroke-width="1.5"/>';
+      c5l += '<circle cx="'+lx+'" cy="60" r="6" fill="#FFF3D6" stroke="#6A5A48" stroke-width="1"/>';
     }
+    s += gn(5, c5l);
   }
 
-  // Char 1: VIP rope (removed when leveler done)
+  // Char 1: VIP partition wall (removed when leveler done)
   if (!r[1]) {
-    s += '<rect x="360" y="200" width="4" height="110" fill="#B82828"/>';
-    s += '<circle cx="362" cy="200" r="6" fill="#B82828"/>';
-    s += '<line x1="362" y1="210" x2="362" y2="240" stroke="#D4A020" stroke-width="2" stroke-dasharray="4,3"/>';
-    s += '<text x="366" y="218" font-size="7" fill="#B82828" font-weight="700" font-family="system-ui">VIP</text>';
+    var c1b = '';
+    c1b += '<rect x="355" y="155" width="12" height="155" fill="#6A5A48" stroke="#2A1F18" stroke-width="1.5"/>';
+    c1b += '<rect x="350" y="155" width="22" height="12" fill="#6A4028"/>';
+    c1b += '<rect x="350" y="190" width="22" height="20" fill="#D4A020" opacity="0.9"/>';
+    c1b += '<text x="361" y="204" text-anchor="middle" font-size="8" font-weight="800" fill="#2A1F18" font-family="system-ui">VIP</text>';
+    c1b += '<line x1="367" y1="220" x2="500" y2="220" stroke="#D4A020" stroke-width="2.5" stroke-dasharray="8,4"/>';
+    c1b += '<circle cx="500" cy="220" r="5" fill="#D4A020"/>';
+    s += c1b;
   }
 
   // Char 2: TV (removed when conversation done)
   if (!r[2]) {
-    s += '<rect x="300" y="60" width="80" height="55" fill="#1A1510" stroke="#2A1F18" stroke-width="2"/>';
-    s += '<rect x="310" y="68" width="60" height="38" fill="#3A5A8A"/>';
-    s += '<rect x="335" y="115" width="10" height="10" fill="#6A5A48"/>';
+    s += '<rect x="280" y="50" width="120" height="75" fill="#1A1510" stroke="#2A1F18" stroke-width="2.5"/>';
+    s += '<rect x="290" y="58" width="100" height="55" fill="#3A5A8A"/>';
+    s += '<rect x="335" y="125" width="10" height="12" fill="#6A5A48"/>';
+    s += '<line x1="400" y1="75" x2="420" y2="65" stroke="#3A5A8A" stroke-width="2" opacity="0.4"/>';
+    s += '<line x1="400" y1="85" x2="425" y2="80" stroke="#3A5A8A" stroke-width="2" opacity="0.3"/>';
+    s += '<line x1="400" y1="95" x2="420" y2="95" stroke="#3A5A8A" stroke-width="2" opacity="0.2"/>';
   }
 
   // Char 3: Accessibility sign + clock
   if (r[3]) {
-    // Outside sign
-    s += '<rect x="35" y="100" width="40" height="20" fill="#D4A020" opacity="0.8"/>';
-    s += '<text x="55" y="114" text-anchor="middle" font-size="7" font-weight="700" fill="#2A1F18" font-family="system-ui">PUB</text>';
-    // Clock
-    s += '<circle cx="270" cy="55" r="14" fill="#FFFAF2" stroke="#2A1F18" stroke-width="1.5"/>';
-    s += '<text x="270" y="59" text-anchor="middle" font-size="6" font-weight="700" fill="#2A1F18" font-family="system-ui">12-11</text>';
+    var c3 = '';
+    c3 += '<rect x="33" y="85" width="50" height="28" fill="#D4A020" opacity="0.9"/>';
+    c3 += '<text x="58" y="103" text-anchor="middle" font-size="9" font-weight="700" fill="#2A1F18" font-family="system-ui">PUB</text>';
+    c3 += '<circle cx="270" cy="55" r="18" fill="#FFFAF2" stroke="#2A1F18" stroke-width="2"/>';
+    c3 += '<text x="270" y="52" text-anchor="middle" font-size="7" font-weight="700" fill="#2A1F18" font-family="system-ui">12-11</text>';
+    c3 += '<text x="270" y="62" text-anchor="middle" font-size="5" fill="#6A5A48" font-family="system-ui">DAILY</text>';
+    c3 += '<rect x="33" y="118" width="50" height="14" fill="#E6F4EA" opacity="0.8"/>';
+    c3 += '<text x="58" y="129" text-anchor="middle" font-size="5.5" font-weight="700" fill="#2A7A42" font-family="system-ui">STEP FREE</text>';
+    s += gn(3, c3);
   }
 
   // Char 2: Speech bubbles + rearranged people (conversation)
   if (r[2]) {
-    s += svgPerson(260, 270, '#C85218');
-    s += svgPerson(310, 272, '#D4A020');
-    s += svgSpeech(285, 240);
-    s += svgPerson(400, 270, '#7A5828');
-    s += svgPerson(450, 268, '#B83068');
-    s += svgSpeech(425, 238);
+    var c2 = '';
+    c2 += svgPerson(260, 270, '#C85218');
+    c2 += svgPerson(310, 272, '#D4A020');
+    c2 += '<ellipse cx="285" cy="238" rx="18" ry="10" fill="none" stroke="#2A1F18" stroke-width="1.5" opacity="0.6"/>';
+    c2 += '<line x1="278" y1="248" x2="272" y2="255" stroke="#2A1F18" stroke-width="1.5" opacity="0.6"/>';
+    c2 += svgPerson(400, 270, '#7A5828');
+    c2 += svgPerson(450, 268, '#B83068');
+    c2 += '<ellipse cx="425" cy="236" rx="18" ry="10" fill="none" stroke="#2A1F18" stroke-width="1.5" opacity="0.6"/>';
+    c2 += '<line x1="418" y1="246" x2="412" y2="253" stroke="#2A1F18" stroke-width="1.5" opacity="0.6"/>';
+    c2 += svgSmallPerson(285, 295, '#5C3A96');
+    s += gn(2, c2);
   }
 
   // Char 1: Diverse people (leveler)
   if (r[1]) {
-    s += svgSmallPerson(555, 268, '#5C3A96');
-    s += svgSmallPerson(595, 270, '#CC6830');
-    s += svgSmallPerson(635, 266, '#2A7A42');
-  }
-
-  // Char 4: Barkeeper (regulars)
-  if (r[4]) {
-    s += svgPerson(620, 180, '#7A5828');
-    s += '<line x1="630" y1="170" x2="638" y2="163" stroke="#7A5828" stroke-width="2"/>';
+    var c1g = '';
+    c1g += svgPerson(545, 268, '#5C3A96');
+    c1g += svgPerson(585, 270, '#CC6830');
+    c1g += svgPerson(625, 266, '#2A7A42');
+    c1g += svgSmallPerson(665, 272, '#B83068');
+    s += gn(1, c1g);
   }
 
   // Char 5: Chalkboard (low profile)
   if (r[5]) {
-    s += '<rect x="300" y="60" width="80" height="55" fill="#2A1F18"/>';
-    s += '<text x="340" y="80" text-anchor="middle" font-size="7" fill="#FFFAF2" font-family="system-ui">SPECIALS</text>';
-    s += '<line x1="310" y1="86" x2="370" y2="86" stroke="#FFFAF2" stroke-width="0.5" opacity="0.5"/>';
-    s += '<line x1="310" y1="93" x2="360" y2="93" stroke="#FFFAF2" stroke-width="0.5" opacity="0.5"/>';
-    s += '<line x1="310" y1="100" x2="365" y2="100" stroke="#FFFAF2" stroke-width="0.5" opacity="0.5"/>';
+    var c5 = '';
+    c5 += '<rect x="280" y="50" width="120" height="75" fill="#2A1F18"/>';
+    c5 += '<rect x="282" y="52" width="116" height="71" fill="#2E3A28"/>';
+    c5 += '<text x="340" y="72" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFAF2" font-family="system-ui">SPECIALS</text>';
+    c5 += '<line x1="295" y1="80" x2="385" y2="80" stroke="#FFFAF2" stroke-width="0.7" opacity="0.6"/>';
+    c5 += '<text x="300" y="92" font-size="6.5" fill="#FFFAF2" opacity="0.7" font-family="system-ui">Bitter......2.80</text>';
+    c5 += '<text x="300" y="103" font-size="6.5" fill="#FFFAF2" opacity="0.7" font-family="system-ui">Stout......3.10</text>';
+    c5 += '<text x="300" y="114" font-size="6.5" fill="#FFFAF2" opacity="0.7" font-family="system-ui">Cider......2.90</text>';
+    s += gn(5, c5);
   }
 
   // Char 6: Dartboard + games (playful)
   if (r[6]) {
-    s += '<circle cx="230" cy="80" r="18" fill="#FFFAF2" stroke="#2A1F18" stroke-width="2"/>';
-    s += '<circle cx="230" cy="80" r="12" fill="#B52838" opacity="0.3"/>';
-    s += '<circle cx="230" cy="80" r="6" fill="#2A7A42" opacity="0.3"/>';
-    s += '<circle cx="230" cy="80" r="2" fill="#B52838"/>';
-    // Cards on table
-    s += '<rect x="395" y="232" width="12" height="16" fill="#FFFAF2" stroke="#2A1F18" stroke-width="1" transform="rotate(-10 401 240)"/>';
-    s += '<rect x="405" y="230" width="12" height="16" fill="#FFFAF2" stroke="#2A1F18" stroke-width="1" transform="rotate(8 411 238)"/>';
+    var c6 = '';
+    c6 += '<circle cx="230" cy="80" r="28" fill="#FFFAF2" stroke="#2A1F18" stroke-width="2.5"/>';
+    c6 += '<circle cx="230" cy="80" r="20" fill="#B52838" opacity="0.3"/>';
+    c6 += '<circle cx="230" cy="80" r="12" fill="#2A7A42" opacity="0.3"/>';
+    c6 += '<circle cx="230" cy="80" r="5" fill="#B52838"/>';
+    c6 += '<line x1="242" y1="72" x2="250" y2="68" stroke="#6A5A48" stroke-width="1.5"/>';
+    c6 += '<line x1="236" y1="66" x2="240" y2="58" stroke="#6A5A48" stroke-width="1.5"/>';
+    c6 += '<rect x="390" y="228" width="16" height="20" fill="#FFFAF2" stroke="#2A1F18" stroke-width="1" transform="rotate(-10 398 238)"/>';
+    c6 += '<rect x="405" y="226" width="16" height="20" fill="#FFFAF2" stroke="#2A1F18" stroke-width="1" transform="rotate(8 413 236)"/>';
+    c6 += '<rect x="418" y="228" width="16" height="20" fill="#FFFAF2" stroke="#2A1F18" stroke-width="1" transform="rotate(3 426 238)"/>';
+    s += gn(6, c6);
   }
 
-  // Char 7: Fireplace, bookshelf, plant (home)
+  // Char 7: Fireplace, bookshelf, plant, photos (home)
   if (r[7]) {
-    // Fireplace
-    s += '<rect x="120" y="200" width="60" height="110" fill="#6A5A48"/>';
-    s += '<rect x="125" y="210" width="50" height="60" fill="#2A1F18"/>';
-    s += '<polygon points="135,260 150,235 165,260" fill="#CC6830" opacity="0.7"/>';
-    s += '<polygon points="140,260 150,242 160,260" fill="#D4A020" opacity="0.6"/>';
-    s += '<rect x="115" y="195" width="70" height="8" fill="#6A4028"/>';
-    // Bookshelf
-    s += '<rect x="695" y="60" width="50" height="120" fill="#6A4028" stroke="#2A1F18" stroke-width="1.5"/>';
-    s += '<rect x="698" y="65" width="44" height="6" fill="#5C3A96" opacity="0.4"/>';
-    s += '<rect x="698" y="73" width="44" height="6" fill="#B52838" opacity="0.4"/>';
-    s += '<rect x="698" y="81" width="44" height="6" fill="#C85218" opacity="0.4"/>';
-    s += '<rect x="695" y="90" width="50" height="3" fill="#5A3018"/>';
-    s += '<rect x="698" y="95" width="44" height="6" fill="#D4A020" opacity="0.4"/>';
-    s += '<rect x="698" y="103" width="44" height="6" fill="#7E58A8" opacity="0.4"/>';
-    // Plant
-    s += '<rect x="485" y="280" width="14" height="20" fill="#A08060"/>';
-    s += '<circle cx="492" cy="272" r="12" fill="#2A7A42" opacity="0.5"/>';
-    s += '<circle cx="486" cy="268" r="8" fill="#2A7A42" opacity="0.4"/>';
-    // Photos on wall
-    s += '<rect x="680" y="200" width="22" height="18" fill="#E8D2A8" stroke="#6A5A48" stroke-width="1"/>';
-    s += '<rect x="710" y="205" width="18" height="14" fill="#E8D2A8" stroke="#6A5A48" stroke-width="1"/>';
+    var c7 = '';
+    c7 += '<rect x="110" y="185" width="80" height="125" fill="#6A5A48"/>';
+    c7 += '<rect x="118" y="200" width="64" height="70" fill="#2A1F18"/>';
+    c7 += '<polygon points="128,260 150,225 172,260" fill="#CC6830" opacity="0.8"/>';
+    c7 += '<polygon points="135,260 150,232 165,260" fill="#D4A020" opacity="0.7"/>';
+    c7 += '<polygon points="143,260 150,242 157,260" fill="#FFF3D6" opacity="0.5"/>';
+    c7 += '<rect x="105" y="178" width="90" height="10" fill="#6A4028"/>';
+    c7 += '<rect x="690" y="50" width="60" height="140" fill="#6A4028" stroke="#2A1F18" stroke-width="1.5"/>';
+    c7 += '<rect x="693" y="56" width="54" height="8" fill="#5C3A96" opacity="0.5"/>';
+    c7 += '<rect x="693" y="67" width="54" height="8" fill="#B52838" opacity="0.5"/>';
+    c7 += '<rect x="693" y="78" width="54" height="8" fill="#C85218" opacity="0.5"/>';
+    c7 += '<rect x="690" y="90" width="60" height="3" fill="#5A3018"/>';
+    c7 += '<rect x="693" y="96" width="54" height="8" fill="#D4A020" opacity="0.5"/>';
+    c7 += '<rect x="693" y="107" width="54" height="8" fill="#7E58A8" opacity="0.5"/>';
+    c7 += '<rect x="693" y="118" width="54" height="8" fill="#7A5828" opacity="0.5"/>';
+    c7 += '<rect x="690" y="130" width="60" height="3" fill="#5A3018"/>';
+    c7 += '<rect x="693" y="136" width="54" height="8" fill="#CC6830" opacity="0.5"/>';
+    c7 += '<rect x="693" y="147" width="54" height="8" fill="#B83068" opacity="0.5"/>';
+    c7 += '<rect x="480" y="270" width="18" height="28" fill="#A08060"/>';
+    c7 += '<circle cx="489" cy="260" r="16" fill="#2A7A42" opacity="0.5"/>';
+    c7 += '<circle cx="481" cy="254" r="10" fill="#2A7A42" opacity="0.4"/>';
+    c7 += '<rect x="670" y="200" width="28" height="22" fill="#E8D2A8" stroke="#6A5A48" stroke-width="1.5"/>';
+    c7 += '<rect x="705" y="195" width="24" height="18" fill="#E8D2A8" stroke="#6A5A48" stroke-width="1.5"/>';
+    c7 += '<rect x="678" y="228" width="20" height="16" fill="#E8D2A8" stroke="#6A5A48" stroke-width="1.5"/>';
+    s += gn(7, c7);
   }
 
   s += '</svg>';
@@ -874,8 +921,9 @@ function buildPubSVG(r) {
 /* ============================================================
    BARBERSHOP SVG
    ============================================================ */
-function buildBarbershopSVG(r) {
+function buildBarbershopSVG(r, ni) {
   var s = '<svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">';
+  function gn(i, inner) { return ni === i ? '<g class="svg-new">' + inner + '</g>' : inner; }
   s += '<rect width="800" height="400" fill="#E8D2A8"/>';
   s += '<rect x="30" y="20" width="740" height="350" fill="#FFFAF2" stroke="#2A1F18" stroke-width="3"/>';
   s += '<rect x="30" y="310" width="740" height="60" fill="#C8B898"/>';
@@ -888,22 +936,28 @@ function buildBarbershopSVG(r) {
   s += '<circle cx="97" cy="230" r="4" fill="#D4A020"/>';
 
   // Char 0: Appointment sign / welcome sign
+  var c0 = '';
   if (!r[0]) {
-    s += '<rect x="52" y="215" width="51" height="16" fill="#FDEEEE" stroke="#B82828" stroke-width="1"/>';
-    s += '<text x="77" y="226" text-anchor="middle" font-size="5.5" font-weight="700" fill="#B82828" font-family="system-ui">APPT ONLY</text>';
+    c0 += '<rect x="48" y="212" width="59" height="22" fill="#FDEEEE" stroke="#B82828" stroke-width="1.5"/>';
+    c0 += '<text x="77" y="227" text-anchor="middle" font-size="7" font-weight="700" fill="#B82828" font-family="system-ui">APPT ONLY</text>';
+    c0 += '<rect x="48" y="140" width="59" height="14" fill="#FDEEEE" stroke="#B82828" stroke-width="1"/>';
+    c0 += '<text x="77" y="150" text-anchor="middle" font-size="5" font-weight="700" fill="#B82828" font-family="system-ui">CLIENTS ONLY</text>';
   } else {
-    s += '<rect x="52" y="215" width="51" height="16" fill="#E6F4EA" stroke="#2A7A42" stroke-width="1"/>';
-    s += '<text x="77" y="226" text-anchor="middle" font-size="5.5" font-weight="700" fill="#2A7A42" font-family="system-ui">WALK-INS OK</text>';
+    c0 += '<rect x="48" y="212" width="59" height="22" fill="#E6F4EA" stroke="#2A7A42" stroke-width="1.5"/>';
+    c0 += '<text x="77" y="227" text-anchor="middle" font-size="7" font-weight="700" fill="#2A7A42" font-family="system-ui">WALK-INS OK</text>';
   }
+  s += gn(0, c0);
 
   // Barber pole (outside)
   if (r[3]) {
-    s += '<rect x="35" y="100" width="12" height="50" fill="#FFFAF2" stroke="#2A1F18" stroke-width="1.5"/>';
-    for (var i = 0; i < 5; i++) {
-      s += '<rect x="36" y="'+(102+i*10)+'" width="10" height="3" fill="#B52838" opacity="0.7"/>';
-      s += '<rect x="36" y="'+(105+i*10)+'" width="10" height="3" fill="#3A5A8A" opacity="0.5"/>';
+    var c3p = '';
+    c3p += '<rect x="33" y="90" width="16" height="60" fill="#FFFAF2" stroke="#2A1F18" stroke-width="1.5"/>';
+    for (var i = 0; i < 6; i++) {
+      c3p += '<rect x="34" y="'+(92+i*10)+'" width="14" height="3" fill="#B52838" opacity="0.7"/>';
+      c3p += '<rect x="34" y="'+(95+i*10)+'" width="14" height="3" fill="#3A5A8A" opacity="0.5"/>';
     }
-    s += '<circle cx="41" cy="98" r="7" fill="#D4A020" opacity="0.7"/>';
+    c3p += '<circle cx="41" cy="87" r="9" fill="#D4A020" opacity="0.8"/>';
+    s += gn(3, c3p);
   }
 
   // Mirrors on back wall
@@ -915,18 +969,18 @@ function buildBarbershopSVG(r) {
   // Barber chairs
   for (var i = 0; i < 3; i++) {
     var cx = 210 + i * 180;
-    // Chair base
     s += '<rect x="'+(cx)+'" y="250" width="60" height="8" fill="#2A1F18"/>';
     s += '<rect x="'+(cx+10)+'" y="258" width="40" height="52" fill="#6A5A48"/>';
     s += '<rect x="'+(cx+5)+'" y="210" width="50" height="42" fill="#A08060"/>';
-    // Armrests
     s += '<rect x="'+(cx)+'" y="225" width="8" height="20" fill="#8B6B4A"/>';
     s += '<rect x="'+(cx+52)+'" y="225" width="8" height="20" fill="#8B6B4A"/>';
 
     // Char 1: VIP label on first chair (removed when leveler)
     if (!r[1] && i === 0) {
-      s += '<rect x="'+(cx+15)+'" y="215" width="30" height="12" fill="#D4A020"/>';
-      s += '<text x="'+(cx+30)+'" y="224" text-anchor="middle" font-size="6" font-weight="700" fill="#2A1F18" font-family="system-ui">VIP</text>';
+      s += '<rect x="'+(cx+10)+'" y="210" width="40" height="16" fill="#D4A020"/>';
+      s += '<text x="'+(cx+30)+'" y="222" text-anchor="middle" font-size="8" font-weight="800" fill="#2A1F18" font-family="system-ui">VIP</text>';
+      s += '<rect x="'+(cx)+'" y="195" width="60" height="14" fill="#D4A020" opacity="0.4"/>';
+      s += '<text x="'+(cx+30)+'" y="205" text-anchor="middle" font-size="5" font-weight="700" fill="#2A1F18" font-family="system-ui">PREMIUM CHAIR</text>';
     }
   }
 
@@ -937,17 +991,23 @@ function buildBarbershopSVG(r) {
 
   // Char 2: TV or no TV / headphones
   if (!r[2]) {
-    s += '<rect x="660" y="55" width="70" height="50" fill="#1A1510" stroke="#2A1F18" stroke-width="2"/>';
-    s += '<rect x="668" y="61" width="54" height="36" fill="#3A5A8A"/>';
-    // Barber with headphones
+    s += '<rect x="650" y="50" width="90" height="60" fill="#1A1510" stroke="#2A1F18" stroke-width="2.5"/>';
+    s += '<rect x="658" y="56" width="74" height="46" fill="#3A5A8A"/>';
+    s += '<line x1="730" y1="70" x2="748" y2="62" stroke="#3A5A8A" stroke-width="2" opacity="0.3"/>';
+    s += '<line x1="730" y1="80" x2="750" y2="78" stroke="#3A5A8A" stroke-width="2" opacity="0.2"/>';
     s += svgPerson(250, 200, '#6A5A48');
-    s += '<rect x="240" y="182" width="20" height="4" fill="#2A1F18" rx="2"/>';
+    s += '<rect x="238" y="180" width="24" height="6" fill="#2A1F18" rx="3"/>';
+    s += '<rect x="236" y="178" width="4" height="8" fill="#2A1F18"/>';
+    s += '<rect x="260" y="178" width="4" height="8" fill="#2A1F18"/>';
   } else {
-    // Barber without headphones + speech
-    s += svgPerson(250, 200, '#6A5A48');
-    s += svgSpeech(270, 172);
-    s += svgPerson(430, 200, '#6A5A48');
-    s += svgSpeech(450, 175);
+    var c2 = '';
+    c2 += svgPerson(250, 200, '#6A5A48');
+    c2 += '<ellipse cx="274" cy="170" rx="16" ry="9" fill="none" stroke="#2A1F18" stroke-width="1.5" opacity="0.6"/>';
+    c2 += '<line x1="268" y1="179" x2="263" y2="185" stroke="#2A1F18" stroke-width="1.5" opacity="0.6"/>';
+    c2 += svgPerson(430, 200, '#6A5A48');
+    c2 += '<ellipse cx="454" cy="173" rx="16" ry="9" fill="none" stroke="#2A1F18" stroke-width="1.5" opacity="0.6"/>';
+    c2 += '<line x1="448" y1="182" x2="443" y2="188" stroke="#2A1F18" stroke-width="1.5" opacity="0.6"/>';
+    s += gn(2, c2);
   }
 
   // Waiting area (left)
@@ -956,66 +1016,84 @@ function buildBarbershopSVG(r) {
 
   // Char 3: Clock + sign (accessibility)
   if (r[3]) {
-    s += '<circle cx="150" cy="55" r="14" fill="#FFFAF2" stroke="#2A1F18" stroke-width="1.5"/>';
-    s += '<text x="150" y="59" text-anchor="middle" font-size="6" font-weight="700" fill="#2A1F18" font-family="system-ui">8-8</text>';
-    s += '<rect x="35" y="70" width="40" height="18" fill="#D4A020" opacity="0.8"/>';
-    s += '<text x="55" y="83" text-anchor="middle" font-size="6" font-weight="700" fill="#2A1F18" font-family="system-ui">OPEN</text>';
+    var c3 = '';
+    c3 += '<circle cx="150" cy="55" r="18" fill="#FFFAF2" stroke="#2A1F18" stroke-width="2"/>';
+    c3 += '<text x="150" y="52" text-anchor="middle" font-size="7" font-weight="700" fill="#2A1F18" font-family="system-ui">8-8</text>';
+    c3 += '<text x="150" y="62" text-anchor="middle" font-size="5" fill="#6A5A48" font-family="system-ui">MON-SAT</text>';
+    c3 += '<rect x="33" y="65" width="46" height="22" fill="#D4A020" opacity="0.9"/>';
+    c3 += '<text x="56" y="80" text-anchor="middle" font-size="7" font-weight="700" fill="#2A1F18" font-family="system-ui">OPEN</text>';
+    s += gn(3, c3);
   }
 
   // Char 4: Same barber + photos (regulars)
   if (r[4]) {
-    s += svgPerson(680, 195, '#7A5828');
-    // Photo wall
-    s += '<rect x="130" y="60" width="20" height="16" fill="#E8D2A8" stroke="#6A5A48" stroke-width="1"/>';
-    s += '<rect x="155" y="65" width="16" height="13" fill="#E8D2A8" stroke="#6A5A48" stroke-width="1"/>';
-    s += '<rect x="130" y="82" width="18" height="14" fill="#E8D2A8" stroke="#6A5A48" stroke-width="1"/>';
+    var c4 = '';
+    c4 += svgPerson(680, 195, '#7A5828');
+    c4 += '<line x1="690" y1="185" x2="700" y2="175" stroke="#7A5828" stroke-width="2.5"/>';
+    c4 += '<rect x="125" y="55" width="26" height="20" fill="#E8D2A8" stroke="#6A5A48" stroke-width="1.5"/>';
+    c4 += '<rect x="155" y="60" width="22" height="17" fill="#E8D2A8" stroke="#6A5A48" stroke-width="1.5"/>';
+    c4 += '<rect x="125" y="80" width="22" height="18" fill="#E8D2A8" stroke="#6A5A48" stroke-width="1.5"/>';
+    c4 += '<rect x="152" y="82" width="18" height="14" fill="#E8D2A8" stroke="#6A5A48" stroke-width="1.5"/>';
+    s += gn(4, c4);
   }
 
   // Char 5: Simple vs designer products (low profile)
   if (!r[5]) {
-    // Designer products on shelf
-    for (var i = 0; i < 5; i++) {
-      s += '<rect x="'+(660+i*14)+'" y="158" width="10" height="20" fill="'+['#5C3A96','#B83068','#CC6830','#D4A020','#7E58A8'][i]+'" opacity="0.6"/>';
+    for (var i = 0; i < 6; i++) {
+      s += '<rect x="'+(655+i*14)+'" y="155" width="12" height="24" fill="'+['#5C3A96','#B83068','#CC6830','#D4A020','#7E58A8','#B52838'][i]+'" opacity="0.7"/>';
     }
-    s += '<rect x="655" y="178" width="80" height="3" fill="#D4A020"/>';
+    s += '<rect x="650" y="178" width="90" height="4" fill="#D4A020"/>';
+    s += '<text x="695" y="192" text-anchor="middle" font-size="5" font-weight="700" fill="#D4A020" font-family="system-ui">ARTISANAL</text>';
   } else {
-    // Simple bottles
+    var c5 = '';
     for (var i = 0; i < 3; i++) {
-      s += '<rect x="'+(665+i*20)+'" y="164" width="8" height="16" fill="#6A5A48" opacity="0.5"/>';
+      c5 += '<rect x="'+(665+i*20)+'" y="164" width="8" height="16" fill="#6A5A48" opacity="0.5"/>';
     }
-    s += '<rect x="655" y="178" width="80" height="3" fill="#6A4028"/>';
+    c5 += '<rect x="655" y="178" width="80" height="3" fill="#6A4028"/>';
+    s += gn(5, c5);
+  }
+
+  // Char 1: Leveler people
+  if (r[1]) {
+    var c1 = '';
+    c1 += svgSmallPerson(555, 268, '#5C3A96');
+    c1 += svgSmallPerson(580, 270, '#CC6830');
+    c1 += svgSmallPerson(605, 266, '#2A7A42');
+    s += gn(1, c1);
   }
 
   // Char 6: Playful elements
   if (r[6]) {
-    // Radio
-    s += '<rect x="656" y="132" width="30" height="20" fill="#6A5A48" stroke="#2A1F18" stroke-width="1"/>';
-    s += '<circle cx="671" cy="142" r="5" fill="#A08060"/>';
-    s += '<rect x="680" y="135" width="3" height="12" fill="#2A1F18"/>';
-    // Laughter lines
-    s += '<text x="290" y="168" font-size="10" fill="#CC6830" opacity="0.6" font-family="system-ui">~</text>';
-    s += '<text x="460" y="172" font-size="10" fill="#CC6830" opacity="0.6" font-family="system-ui">~</text>';
-    // People in waiting area relaxed
-    s += svgSmallPerson(135, 245, '#CC6830');
-    s += svgSmallPerson(160, 247, '#D4A020');
+    var c6 = '';
+    c6 += '<rect x="652" y="128" width="36" height="24" fill="#6A5A48" stroke="#2A1F18" stroke-width="1.5"/>';
+    c6 += '<circle cx="670" cy="140" r="7" fill="#A08060"/>';
+    c6 += '<rect x="682" y="132" width="4" height="14" fill="#2A1F18"/>';
+    c6 += '<text x="275" y="168" font-size="14" fill="#CC6830" opacity="0.7" font-family="system-ui">~</text>';
+    c6 += '<text x="445" y="172" font-size="14" fill="#CC6830" opacity="0.7" font-family="system-ui">~</text>';
+    c6 += '<text x="360" y="165" font-size="14" fill="#CC6830" opacity="0.5" font-family="system-ui">~</text>';
+    c6 += svgSmallPerson(130, 245, '#CC6830');
+    c6 += svgSmallPerson(158, 247, '#D4A020');
+    c6 += svgSmallPerson(148, 260, '#B83068');
+    s += gn(6, c6);
   }
 
   // Char 7: Kettle, newspaper, sofa (home)
   if (r[7]) {
-    // Replace bench with sofa (wider, cushioned look)
-    s += '<rect x="115" y="250" width="70" height="25" fill="#A08060" stroke="#8B6B4A" stroke-width="1.5"/>';
-    s += '<rect x="115" y="240" width="70" height="12" fill="#8B6B4A"/>';
-    s += '<rect x="112" y="238" width="5" height="37" fill="#6A4028"/>';
-    s += '<rect x="185" y="238" width="5" height="37" fill="#6A4028"/>';
-    // Kettle
-    s += '<rect x="692" y="209" width="12" height="11" fill="#6A5A48" stroke="#2A1F18" stroke-width="1"/>';
-    s += '<rect x="695" y="206" width="6" height="4" fill="#A08060"/>';
-    // Newspaper stack
-    s += '<rect x="120" y="243" width="16" height="3" fill="#E8D2A8"/>';
-    s += '<rect x="118" y="240" width="18" height="3" fill="#D8C8A8"/>';
-    // Plant
-    s += '<rect x="108" y="290" width="10" height="14" fill="#A08060"/>';
-    s += '<circle cx="113" cy="284" r="8" fill="#2A7A42" opacity="0.5"/>';
+    var c7 = '';
+    c7 += '<rect x="110" y="245" width="80" height="30" fill="#A08060" stroke="#8B6B4A" stroke-width="1.5"/>';
+    c7 += '<rect x="110" y="235" width="80" height="14" fill="#8B6B4A"/>';
+    c7 += '<rect x="107" y="232" width="6" height="45" fill="#6A4028"/>';
+    c7 += '<rect x="190" y="232" width="6" height="45" fill="#6A4028"/>';
+    c7 += '<rect x="688" y="205" width="16" height="15" fill="#6A5A48" stroke="#2A1F18" stroke-width="1.5"/>';
+    c7 += '<rect x="691" y="201" width="10" height="5" fill="#A08060"/>';
+    c7 += '<path d="M708,210 Q712,204 716,210" fill="none" stroke="#A09878" stroke-width="1" opacity="0.5"/>';
+    c7 += '<rect x="116" y="239" width="22" height="4" fill="#E8D2A8"/>';
+    c7 += '<rect x="114" y="235" width="24" height="4" fill="#D8C8A8"/>';
+    c7 += '<rect x="140" y="237" width="20" height="4" fill="#FFFAF2"/>';
+    c7 += '<rect x="105" y="285" width="14" height="18" fill="#A08060"/>';
+    c7 += '<circle cx="112" cy="278" r="11" fill="#2A7A42" opacity="0.5"/>';
+    c7 += '<circle cx="106" cy="273" r="7" fill="#2A7A42" opacity="0.4"/>';
+    s += gn(7, c7);
   }
 
   s += '</svg>';
@@ -1025,8 +1103,9 @@ function buildBarbershopSVG(r) {
 /* ============================================================
    LAUNDROMAT SVG
    ============================================================ */
-function buildLaundromatSVG(r) {
+function buildLaundromatSVG(r, ni) {
   var s = '<svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">';
+  function gn(i, inner) { return ni === i ? '<g class="svg-new">' + inner + '</g>' : inner; }
   s += '<rect width="800" height="400" fill="#E8D2A8"/>';
   s += '<rect x="30" y="20" width="740" height="350" fill="#FFFAF2" stroke="#2A1F18" stroke-width="3"/>';
   s += '<rect x="30" y="310" width="740" height="60" fill="#B8B0A0"/>';
@@ -1040,13 +1119,16 @@ function buildLaundromatSVG(r) {
   s += '<rect x="50" y="160" width="50" height="8" fill="#6A5A48"/>';
   s += '<circle cx="92" cy="240" r="3" fill="#D4A020"/>';
 
-  // Char 5: Branding sign (removed when low profile)
+  // Char 5: Branding sign
   if (!r[5]) {
-    s += '<rect x="55" y="56" width="110" height="22" fill="#B83068" opacity="0.8"/>';
-    s += '<text x="110" y="72" text-anchor="middle" font-size="8" font-weight="700" fill="#fff" font-family="system-ui">LAUNDRY LOUNGE</text>';
+    s += '<rect x="52" y="52" width="116" height="30" fill="#B83068" opacity="0.9"/>';
+    s += '<text x="110" y="72" text-anchor="middle" font-size="9" font-weight="800" fill="#fff" font-family="system-ui">LAUNDRY LOUNGE</text>';
+    s += '<text x="110" y="92" text-anchor="middle" font-size="5" font-weight="600" fill="#B83068" font-family="system-ui">#LAUNDRYLUX</text>';
   } else {
-    s += '<rect x="55" y="56" width="110" height="22" fill="#FFFAF2" stroke="#6A5A48" stroke-width="1"/>';
-    s += '<text x="110" y="72" text-anchor="middle" font-size="7" font-weight="700" fill="#6A5A48" font-family="system-ui">LAUNDROMAT</text>';
+    var c5 = '';
+    c5 += '<rect x="55" y="56" width="110" height="24" fill="#FFFAF2" stroke="#6A5A48" stroke-width="1.5"/>';
+    c5 += '<text x="110" y="73" text-anchor="middle" font-size="8" font-weight="700" fill="#6A5A48" font-family="system-ui">LAUNDROMAT</text>';
+    s += gn(5, c5);
   }
 
   // Washing machines row
@@ -1061,16 +1143,21 @@ function buildLaundromatSVG(r) {
 
   // Char 0: Reserved signs on machines (removed when neutral ground)
   if (!r[0]) {
-    s += '<rect x="222" y="245" width="66" height="12" fill="#FDEEEE" stroke="#B82828" stroke-width="1"/>';
-    s += '<text x="255" y="254" text-anchor="middle" font-size="5" font-weight="700" fill="#B82828" font-family="system-ui">RESERVED</text>';
-    s += '<rect x="322" y="245" width="66" height="12" fill="#FDEEEE" stroke="#B82828" stroke-width="1"/>';
-    s += '<text x="355" y="254" text-anchor="middle" font-size="5" font-weight="700" fill="#B82828" font-family="system-ui">RESERVED</text>';
+    s += '<rect x="220" y="244" width="70" height="16" fill="#FDEEEE" stroke="#B82828" stroke-width="1.5"/>';
+    s += '<text x="255" y="256" text-anchor="middle" font-size="7" font-weight="700" fill="#B82828" font-family="system-ui">RESERVED</text>';
+    s += '<rect x="320" y="244" width="70" height="16" fill="#FDEEEE" stroke="#B82828" stroke-width="1.5"/>';
+    s += '<text x="355" y="256" text-anchor="middle" font-size="7" font-weight="700" fill="#B82828" font-family="system-ui">RESERVED</text>';
+    s += '<rect x="420" y="244" width="70" height="16" fill="#FDEEEE" stroke="#B82828" stroke-width="1.5"/>';
+    s += '<text x="455" y="256" text-anchor="middle" font-size="7" font-weight="700" fill="#B82828" font-family="system-ui">MGMT ONLY</text>';
   }
 
-  // Char 1: Premium barrier (removed when leveler)
+  // Char 1: Premium partition (removed when leveler)
   if (!r[1]) {
-    s += '<line x1="415" y1="155" x2="415" y2="310" stroke="#D4A020" stroke-width="2" stroke-dasharray="6,3"/>';
-    s += '<text x="518" y="152" text-anchor="middle" font-size="7" font-weight="700" fill="#D4A020" font-family="system-ui">PREMIUM</text>';
+    s += '<rect x="410" y="152" width="10" height="158" fill="#D4A020" opacity="0.8"/>';
+    s += '<circle cx="415" cy="152" r="6" fill="#D4A020"/>';
+    s += '<rect x="460" y="140" width="66" height="18" fill="#D4A020" opacity="0.9"/>';
+    s += '<text x="493" y="153" text-anchor="middle" font-size="8" font-weight="800" fill="#2A1F18" font-family="system-ui">PREMIUM</text>';
+    s += '<line x1="420" y1="250" x2="420" y2="310" stroke="#D4A020" stroke-width="3" stroke-dasharray="6,4"/>';
   }
 
   // Folding table
@@ -1080,36 +1167,38 @@ function buildLaundromatSVG(r) {
 
   // Seating
   if (!r[2]) {
-    // Chairs facing wall
-    s += '<rect x="140" y="230" width="20" height="25" fill="#A09888"/>';
-    s += '<rect x="140" y="260" width="20" height="25" fill="#A09888"/>';
-    s += '<rect x="140" y="290" width="20" height="14" fill="#A09888"/>';
+    s += '<rect x="135" y="225" width="24" height="28" fill="#A09888"/>';
+    s += '<rect x="135" y="260" width="24" height="28" fill="#A09888"/>';
+    s += '<rect x="135" y="294" width="24" height="16" fill="#A09888"/>';
   } else {
-    // Chairs facing each other around table
-    s += '<rect x="220" y="270" width="16" height="20" fill="#A08060"/>';
-    s += '<rect x="406" y="270" width="16" height="20" fill="#A08060"/>';
-    // Kettle
-    s += '<rect x="310" y="272" width="14" height="10" fill="#6A5A48" stroke="#2A1F18" stroke-width="1"/>';
-    s += '<rect x="313" y="268" width="8" height="5" fill="#A08060"/>';
-    // Speech bubbles
-    s += svgSpeech(260, 256);
-    s += svgSpeech(385, 258);
-    // People chatting
-    s += svgSmallPerson(228, 275, '#C85218');
-    s += svgSmallPerson(414, 273, '#D4A020');
+    var c2 = '';
+    c2 += '<rect x="218" y="268" width="18" height="24" fill="#A08060"/>';
+    c2 += '<rect x="406" y="268" width="18" height="24" fill="#A08060"/>';
+    c2 += '<rect x="305" y="270" width="18" height="14" fill="#6A5A48" stroke="#2A1F18" stroke-width="1.5"/>';
+    c2 += '<rect x="309" y="266" width="10" height="5" fill="#A08060"/>';
+    c2 += '<path d="M325,274 Q329,268 333,274" fill="none" stroke="#A09878" stroke-width="1" opacity="0.5"/>';
+    c2 += '<ellipse cx="258" cy="252" rx="18" ry="10" fill="none" stroke="#2A1F18" stroke-width="1.5" opacity="0.6"/>';
+    c2 += '<line x1="250" y1="262" x2="244" y2="268" stroke="#2A1F18" stroke-width="1.5" opacity="0.6"/>';
+    c2 += '<ellipse cx="388" cy="254" rx="18" ry="10" fill="none" stroke="#2A1F18" stroke-width="1.5" opacity="0.6"/>';
+    c2 += '<line x1="380" y1="264" x2="374" y2="270" stroke="#2A1F18" stroke-width="1.5" opacity="0.6"/>';
+    c2 += svgPerson(228, 272, '#C85218');
+    c2 += svgPerson(414, 270, '#D4A020');
+    s += gn(2, c2);
   }
 
   // Fluorescent lights (change to warm when home)
   if (!r[7]) {
     for (var i = 0; i < 4; i++) {
-      s += '<rect x="'+(180+i*130)+'" y="34" width="60" height="6" fill="#D8D0C8" stroke="#A09888" stroke-width="1"/>';
+      s += '<rect x="'+(180+i*130)+'" y="34" width="70" height="8" fill="#D8D0C8" stroke="#A09888" stroke-width="1"/>';
     }
   } else {
+    var c7l = '';
     for (var i = 0; i < 4; i++) {
-      var lx = 210 + i * 130;
-      s += '<line x1="'+lx+'" y1="34" x2="'+lx+'" y2="48" stroke="#6A5A48" stroke-width="1.5"/>';
-      s += '<circle cx="'+lx+'" cy="53" r="6" fill="#FFF3D6" stroke="#D4A020" stroke-width="1"/>';
+      var lx = 215 + i * 130;
+      c7l += '<line x1="'+lx+'" y1="34" x2="'+lx+'" y2="48" stroke="#6A5A48" stroke-width="1.5"/>';
+      c7l += '<circle cx="'+lx+'" cy="54" r="8" fill="#FFF3D6" stroke="#D4A020" stroke-width="1.5"/>';
     }
+    s += gn(7, c7l);
   }
 
   // Counter
@@ -1118,62 +1207,85 @@ function buildLaundromatSVG(r) {
 
   // Char 3: Clock + card reader + sign (accessibility)
   if (r[3]) {
-    s += '<circle cx="680" cy="55" r="14" fill="#FFFAF2" stroke="#2A1F18" stroke-width="1.5"/>';
-    s += '<text x="680" y="59" text-anchor="middle" font-size="5.5" font-weight="700" fill="#2A1F18" font-family="system-ui">7-10</text>';
-    // Card reader
-    s += '<rect x="700" y="248" width="16" height="12" fill="#6A5A48" stroke="#2A1F18" stroke-width="1"/>';
-    s += '<rect x="704" y="251" width="8" height="3" fill="#2A7A42"/>';
-    // Outside sign
-    s += '<rect x="35" y="95" width="40" height="20" fill="#D4A020" opacity="0.8"/>';
-    s += '<text x="55" y="109" text-anchor="middle" font-size="6" font-weight="700" fill="#2A1F18" font-family="system-ui">OPEN</text>';
+    var c3 = '';
+    c3 += '<circle cx="680" cy="55" r="18" fill="#FFFAF2" stroke="#2A1F18" stroke-width="2"/>';
+    c3 += '<text x="680" y="52" text-anchor="middle" font-size="7" font-weight="700" fill="#2A1F18" font-family="system-ui">7-10</text>';
+    c3 += '<text x="680" y="62" text-anchor="middle" font-size="5" fill="#6A5A48" font-family="system-ui">DAILY</text>';
+    c3 += '<rect x="696" y="244" width="20" height="16" fill="#6A5A48" stroke="#2A1F18" stroke-width="1.5"/>';
+    c3 += '<rect x="700" y="248" width="12" height="5" fill="#2A7A42"/>';
+    c3 += '<text x="706" y="257" text-anchor="middle" font-size="3.5" fill="#2A7A42" font-family="system-ui">TAP</text>';
+    c3 += '<rect x="33" y="90" width="46" height="24" fill="#D4A020" opacity="0.9"/>';
+    c3 += '<text x="56" y="106" text-anchor="middle" font-size="7" font-weight="700" fill="#2A1F18" font-family="system-ui">OPEN</text>';
+    s += gn(3, c3);
   }
 
-  // Char 4: Attendant (regulars)
+  // Char 0: Free access visual
+  if (r[0]) {
+    s += gn(0, '');
+  }
+
+  // Char 1: Leveler visual
+  if (r[1]) {
+    s += gn(1, '');
+  }
+
+  // Char 4: Attendant + community board (regulars)
   if (r[4]) {
-    s += svgPerson(680, 250, '#7A5828');
-    s += '<line x1="690" y1="240" x2="698" y2="233" stroke="#7A5828" stroke-width="2"/>';
-    // Community board
-    s += '<rect x="140" y="60" width="50" height="40" fill="#A08060" stroke="#6A5A48" stroke-width="1.5"/>';
-    s += '<rect x="145" y="65" width="12" height="9" fill="#FFFAF2"/>';
-    s += '<rect x="160" y="67" width="10" height="7" fill="#D4A020" opacity="0.5"/>';
-    s += '<rect x="147" y="78" width="14" height="8" fill="#C85218" opacity="0.3"/>';
-    s += '<rect x="164" y="76" width="10" height="10" fill="#FFFAF2"/>';
+    var c4 = '';
+    c4 += svgPerson(680, 250, '#7A5828');
+    c4 += '<line x1="692" y1="240" x2="702" y2="230" stroke="#7A5828" stroke-width="2.5"/>';
+    c4 += svgSpeech(700, 218);
+    c4 += '<rect x="135" y="55" width="55" height="48" fill="#A08060" stroke="#6A5A48" stroke-width="2"/>';
+    c4 += '<rect x="140" y="60" width="16" height="12" fill="#FFFAF2"/>';
+    c4 += '<rect x="160" y="62" width="14" height="10" fill="#D4A020" opacity="0.5"/>';
+    c4 += '<rect x="142" y="76" width="18" height="12" fill="#C85218" opacity="0.3"/>';
+    c4 += '<rect x="164" y="74" width="14" height="14" fill="#FFFAF2"/>';
+    s += gn(4, c4);
   }
 
-  // Char 6: Cards + coffee (playful)
+  // Char 6: Cards + coffee + puzzle (playful)
   if (r[6]) {
-    s += '<rect x="280" y="272" width="10" height="14" fill="#FFFAF2" stroke="#2A1F18" stroke-width="1" transform="rotate(-8 285 279)"/>';
-    s += '<rect x="290" y="271" width="10" height="14" fill="#FFFAF2" stroke="#2A1F18" stroke-width="1" transform="rotate(6 295 278)"/>';
-    // Coffee cups
-    s += '<rect x="340" y="274" width="8" height="7" fill="#6A5A48"/>';
-    s += '<rect x="352" y="275" width="8" height="7" fill="#6A5A48"/>';
-    // Radio on counter
-    s += '<rect x="656" y="245" width="24" height="15" fill="#6A5A48" stroke="#2A1F18" stroke-width="1"/>';
-    s += '<circle cx="668" cy="252" r="4" fill="#A08060"/>';
+    var c6 = '';
+    c6 += '<rect x="275" y="270" width="14" height="18" fill="#FFFAF2" stroke="#2A1F18" stroke-width="1" transform="rotate(-8 282 279)"/>';
+    c6 += '<rect x="288" y="269" width="14" height="18" fill="#FFFAF2" stroke="#2A1F18" stroke-width="1" transform="rotate(6 295 278)"/>';
+    c6 += '<rect x="300" y="271" width="14" height="18" fill="#FFFAF2" stroke="#2A1F18" stroke-width="1" transform="rotate(2 307 280)"/>';
+    c6 += '<rect x="340" y="272" width="10" height="10" fill="#6A5A48"/>';
+    c6 += '<rect x="342" y="270" width="6" height="3" fill="#A08060"/>';
+    c6 += '<rect x="356" y="273" width="10" height="10" fill="#6A5A48"/>';
+    c6 += '<rect x="358" y="271" width="6" height="3" fill="#A08060"/>';
+    c6 += '<rect x="652" y="241" width="30" height="20" fill="#6A5A48" stroke="#2A1F18" stroke-width="1.5"/>';
+    c6 += '<circle cx="667" cy="251" r="6" fill="#A08060"/>';
+    c6 += '<rect x="676" y="244" width="4" height="12" fill="#2A1F18"/>';
+    s += gn(6, c6);
   }
 
-  // Char 7: Plants, warm details (home)
+  // Char 7: Plants, warm details, noticeboard (home)
   if (r[7]) {
-    // Plants
-    s += '<rect x="200" y="290" width="10" height="14" fill="#A08060"/>';
-    s += '<circle cx="205" cy="283" r="9" fill="#2A7A42" opacity="0.5"/>';
-    s += '<rect x="440" y="288" width="10" height="14" fill="#A08060"/>';
-    s += '<circle cx="445" cy="281" r="9" fill="#2A7A42" opacity="0.5"/>';
-    // Noticeboard photos
-    s += '<rect x="500" y="60" width="50" height="40" fill="#A08060" stroke="#6A5A48" stroke-width="1.5"/>';
-    s += '<rect x="505" y="65" width="14" height="10" fill="#E8D2A8"/>';
-    s += '<rect x="522" y="67" width="12" height="8" fill="#D4A020" opacity="0.4"/>';
-    s += '<rect x="507" y="80" width="10" height="8" fill="#FFFAF2"/>';
+    var c7 = '';
+    c7 += '<rect x="195" y="285" width="14" height="20" fill="#A08060"/>';
+    c7 += '<circle cx="202" cy="276" r="13" fill="#2A7A42" opacity="0.5"/>';
+    c7 += '<circle cx="195" cy="270" r="8" fill="#2A7A42" opacity="0.4"/>';
+    c7 += '<rect x="435" y="283" width="14" height="20" fill="#A08060"/>';
+    c7 += '<circle cx="442" cy="274" r="13" fill="#2A7A42" opacity="0.5"/>';
+    c7 += '<circle cx="449" cy="270" r="8" fill="#2A7A42" opacity="0.4"/>';
+    c7 += '<rect x="620" y="285" width="12" height="18" fill="#A08060"/>';
+    c7 += '<circle cx="626" cy="278" r="10" fill="#2A7A42" opacity="0.5"/>';
+    c7 += '<rect x="495" y="50" width="60" height="50" fill="#A08060" stroke="#6A5A48" stroke-width="2"/>';
+    c7 += '<rect x="500" y="55" width="18" height="13" fill="#E8D2A8"/>';
+    c7 += '<rect x="522" y="57" width="14" height="10" fill="#D4A020" opacity="0.5"/>';
+    c7 += '<rect x="502" y="72" width="14" height="11" fill="#C85218" opacity="0.3"/>';
+    c7 += '<rect x="520" y="74" width="16" height="14" fill="#FFFAF2"/>';
+    s += gn(7, c7);
   }
 
   s += '</svg>';
   return s;
 }
 
-function buildPlaceSVG(placeIdx, revealed) {
-  if (placeIdx === 0) return buildPubSVG(revealed);
-  if (placeIdx === 1) return buildBarbershopSVG(revealed);
-  return buildLaundromatSVG(revealed);
+function buildPlaceSVG(placeIdx, revealed, ni) {
+  if (placeIdx === 0) return buildPubSVG(revealed, ni);
+  if (placeIdx === 1) return buildBarbershopSVG(revealed, ni);
+  return buildLaundromatSVG(revealed, ni);
 }
 
 /* ============================================================
@@ -1350,7 +1462,7 @@ function renderQuestion() {
   var c = CHARS[q.charIdx];
 
   // SVG
-  document.getElementById('game-svg').innerHTML = buildPlaceSVG(state.placeIdx, state.revealed);
+  document.getElementById('game-svg').innerHTML = buildPlaceSVG(state.placeIdx, state.revealed, -1);
 
   // Progress dots
   var dotsHtml = '';
@@ -1421,11 +1533,13 @@ function selectOption(idx) {
 
     // Update SVG with animation
     setTimeout(function() {
+      var flash = document.getElementById('svg-flash');
+      flash.style.background = c.hex;
+      flash.classList.remove('active');
+      void flash.offsetWidth;
+      flash.classList.add('active');
       var wrap = document.getElementById('game-svg');
-      wrap.innerHTML = buildPlaceSVG(state.placeIdx, state.revealed);
-      wrap.classList.remove('svg-pulse');
-      void wrap.offsetWidth;
-      wrap.classList.add('svg-pulse');
+      wrap.innerHTML = buildPlaceSVG(state.placeIdx, state.revealed, state.currentChar);
       // Update dots
       var dotsHtml = '';
       for (var i = 0; i < 8; i++) {
@@ -1471,7 +1585,7 @@ function nextQuestion() {
 function renderSummary() {
   var place = PLACES[state.placeIdx];
   document.getElementById('summary-name').textContent = place.name;
-  document.getElementById('summary-svg').innerHTML = buildPlaceSVG(state.placeIdx, state.revealed);
+  document.getElementById('summary-svg').innerHTML = buildPlaceSVG(state.placeIdx, state.revealed, -1);
 
   document.getElementById('score-box').innerHTML =
     '<div class="score-num">' + state.score + ' / 8</div>'
