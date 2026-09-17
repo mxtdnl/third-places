@@ -37,15 +37,15 @@ npx playwright test --headed  # or open http://localhost:8080/test.html
 
 ## Visual Style
 
-A warm, hard-edged Bauhaus visual language across all activities. Color is structural, not decorative — accent hues from the eight-characteristic palette mark sections, signal state and create rhythm the way a Bauhaus poster uses a red square or a yellow triangle. Neutral surfaces stay quiet so that every accent reads as deliberate. Colors are defined as CSS custom properties on `:root`. Follow these values exactly when modifying or adding UI.
+A warm, hard-edged, playful Bauhaus visual language across all activities — closer to a Kandinsky painting or a Herbert Bayer poster than a corporate UI. Pages should feel alive with colour and geometric energy: floating shapes, bold accent blocks, diagonal tension. The eight-characteristic palette is the primary expressive tool; neutral surfaces exist to let those colours sing. Colors are defined as CSS custom properties on `:root`. Follow these values exactly when modifying or adding UI.
 
 ### Design Principles
 
-1. **Color is architecture.** The eight characteristic colors are the primary visual vocabulary. Use them to identify sections, mark boundaries, signal relationships and create visual weight — not merely to label data. A page should feel color-rich from a distance.
-2. **Geometry over ornament.** Hard edges, solid color fields, thick rule lines. No gradients, no rounded-corner softness, no decorative illustration. Decoration comes from the arrangement of coloured rectangles and typographic scale.
-3. **Asymmetric balance.** Compositions are deliberately off-centre and weighted. A heavy coloured block on the left balanced by lighter type on the right. Avoid centred symmetry outside of narrow content columns.
-4. **Contrast creates hierarchy.** Use bold colour-on-neutral and neutral-on-colour pairings. A `--char-N` background with white or `--text` foreground is always preferred over a muted tint when emphasis is needed.
-5. **Economy.** Every element earns its space. If a colour block, rule or accent does not help the reader orient, remove it. Density is good; clutter is not.
+1. **Color is architecture.** The eight characteristic colors are the primary visual vocabulary. Use them generously — to identify sections, mark boundaries, signal relationships, create visual weight, and to simply make the page feel vibrant. A page should feel colour-rich and visually interesting from a distance, not muted with occasional accents.
+2. **Geometry is decoration.** Abstract geometric shapes — rectangles, circles, triangles, diagonal bars — are the ornamental system. They appear as background elements, section markers and compositional devices. No figurative illustration, no icons, no gradients. The shapes themselves, in accent colours, are the visual interest.
+3. **Playful asymmetry.** Compositions are deliberately off-centre, weighted and a little unexpected. Overlapping shapes, off-grid positioning, elements that bleed past their containers. The feel is a curated art poster, not a spreadsheet.
+4. **Contrast creates hierarchy.** Bold colour-on-neutral and neutral-on-colour pairings. A `--char-N` background with white or `--text` foreground is always preferred over a muted tint when emphasis is needed.
+5. **Confident density.** Every element earns its space, but the page should never feel sparse or clinical. Coloured shapes fill negative space. When in doubt, add a geometric accent rather than leaving a blank area.
 
 ### Themes
 
@@ -114,9 +114,10 @@ The eight `--char-N` colours are the system's primary expressive tool. Use them 
 - **Active/selected states.** When a card, tab or option becomes active, its border or background should shift to an accent colour — never just darken or lighten a neutral.
 - **Data visualisation.** Bar fills, dots, swatches and chart segments always use the characteristic colour for the data they represent. Never substitute a generic colour when a `--char-N` mapping exists.
 - **Colour pairing.** Avoid placing two adjacent accent elements in the same hue. When cycling, prefer sequences that maximise contrast: purple → gold → red → orange, not purple → lighter purple → brown.
-- **Tinted backgrounds (light theme).** For secondary emphasis, use an accent colour at `0.08`–`0.12` opacity over `--bg-card`: e.g. `rgba(92,58,150,0.08)` for a purple-tinted panel. Reserve for tooltips, expanded detail areas, or highlight states — not every card.
+- **Tinted backgrounds (light theme).** For secondary emphasis, use an accent colour at `0.08`–`0.12` opacity over `--bg-card`: e.g. `rgba(92,58,150,0.08)` for a purple-tinted panel. Use freely for expanded states, highlight panels, phase containers, or any area that benefits from a colour identity.
 - **Tinted backgrounds (dark theme).** Same principle at `0.10`–`0.15` opacity over `--bg-card`.
 - **Do not tint neutrals.** `--bg`, `--bg-card`, `--bg-deep` stay exactly as specified. Accent colours appear on top of neutrals, never mixed into them.
+- **Err toward more colour.** When choosing between a neutral treatment and a coloured one, choose the coloured one. The page should never feel monochrome or safe. If squinting at the page and it reads as "beige with text", it needs more accent colour.
 
 ### Typography
 
@@ -138,6 +139,7 @@ The eight `--char-N` colours are the system's primary expressive tool. Use them 
 - **Page padding:** `2rem` (Decoder, Lab), `16px` inline (Builder)
 - **Grids:** `repeat(auto-fill, minmax(230px–300px, 1fr))` for card grids; named two-column layouts for dashboards
 - **Compositional asymmetry.** When laying out a header area or hero block, prefer an offset arrangement — e.g. a coloured accent block or thick rule on one side, with text aligned to the other. Full-centre compositions are reserved for narrow single-column flows.
+- **Every page has a visual "poster" quality.** The combination of bold type, accent colours and decorative geometry should make each page feel like a designed composition, not a form. Headers especially should feel like they belong on a gallery wall.
 
 ### Geometry
 
@@ -149,7 +151,65 @@ The design is deliberately angular — zero border-radius on cards, buttons and 
 | Progress dots, decorative circles | `50%` |
 | Everything else | `0` |
 
-Rectangles and squares are the primary shapes. Use thick borders (`2px`–`6px`) and solid colour fills to create geometric presence. Thin `1px` borders read as incidental; default to `2px` minimum.
+Rectangles, circles and triangles are the three Bauhaus primitives. Use thick borders (`2px`–`6px`) and solid colour fills to create geometric presence. Thin `1px` borders read as incidental; default to `2px` minimum.
+
+### Decorative Geometry
+
+Abstract geometric shapes in accent colours are a core part of the visual identity — not optional flourishes. Every page should include them. They are placed via CSS `::before`/`::after` pseudo-elements or empty `<div>`s with `position: absolute` and `pointer-events: none`, sitting behind or beside content.
+
+**Shape vocabulary:**
+
+- **Rectangles and squares.** Solid `--char-N` fills. Vary scale from small accent blocks (`40px`–`80px`) to large background fields (`200px`+). Use `transform: rotate(N deg)` for diagonal energy — `12deg`–`45deg` rotations are the sweet spot.
+- **Circles.** `border-radius: 50%`. Solid fills or thick-bordered rings (`4px`–`8px border, transparent fill`). Place as floating accents near headers, in page corners, or overlapping section boundaries.
+- **Triangles.** CSS border trick (`border-left: Npx solid transparent; border-right: Npx solid transparent; border-bottom: Npx solid var(--char-N)`) or `clip-path: polygon(50% 0%, 0% 100%, 100% 100%)`. Use sparingly as directional markers or compositional punctuation.
+- **Diagonal bars.** Full-width or partial-width rectangles rotated `2deg`–`8deg`. These break the grid and add visual tension.
+
+**Placement rules:**
+
+- **Page headers.** Place 2–3 abstract shapes behind or beside the h1 area. A large low-opacity circle, a small solid square, a rotated rectangle — layered at different scales. These set the visual tone for the whole page.
+- **Section transitions.** Between major sections, use a coloured geometric element (a rotated bar, an overlapping circle) in addition to or instead of a plain horizontal rule.
+- **Empty space.** When a layout has significant negative space (beside a narrow content column, below a short section), place a decorative shape there. The page should feel composed, not vacant.
+- **Card grids.** A large background shape (rotated rectangle or circle) partially visible behind a card grid anchors the composition.
+
+**Opacity and layering:**
+
+- Background shapes use `opacity: 0.06`–`0.12` in the light theme, `0.08`–`0.15` in the dark theme — present but not competing with content.
+- Foreground accent shapes (small blocks beside headings, marker pips) use full opacity.
+- Layering: shapes sit in a `position: relative` parent, with `z-index: 0` on shapes and `z-index: 1` on content. Content always reads clearly over shapes.
+- Use `overflow: hidden` on the containing section so rotated shapes clip cleanly at the edges rather than causing horizontal scroll.
+
+**Colour selection for shapes:**
+
+- Tie shapes to the section's accent colour when one exists.
+- For page-level background shapes, pick 2–3 colours from the palette that contrast with each other (e.g. purple + gold, red + burnt orange). Never use the same colour for adjacent shapes.
+- In the dark theme, shapes can go slightly higher opacity since they sit on a dark ground.
+
+**Examples (CSS patterns):**
+
+A header with floating shapes:
+```css
+.page-header { position: relative; overflow: hidden; }
+.page-header::before {
+  content: ''; position: absolute; width: 180px; height: 180px;
+  background: var(--char-1); border-radius: 50%; opacity: 0.08;
+  top: -40px; right: -30px; z-index: 0;
+}
+.page-header::after {
+  content: ''; position: absolute; width: 60px; height: 60px;
+  background: var(--char-4); opacity: 0.10;
+  bottom: 10px; right: 80px; transform: rotate(25deg); z-index: 0;
+}
+```
+
+A diagonal accent bar between sections:
+```css
+.section-break { position: relative; height: 40px; overflow: hidden; }
+.section-break::before {
+  content: ''; position: absolute; width: 120%; height: 6px;
+  background: var(--char-2); top: 50%; left: -10%;
+  transform: rotate(-2deg);
+}
+```
 
 ### Shadows
 
