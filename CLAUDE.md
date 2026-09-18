@@ -262,3 +262,25 @@ Shadows are warm-tinted, not neutral gray. Used sparingly — the design relies 
 - Visual marker suffixes: `-dot`, `-pip`, `-swatch`, `-chip`, `-badge`
 - Utility classes: `.quiet` (muted), `.alert` (error), `.neg` (red), `.pos` (green), `.lede` (intro paragraph), `.eyebrow` (small uppercase label)
 - Data attributes for JS: `data-action`, `data-val`, `data-ci`, `data-status`, `data-bar`, `data-target`, `data-lever`, `data-opt`, `data-scenario`
+
+###Build Instructions
+You are building classroom tools for an undergraduate course, "Social Phenomena Challenge" (BSc Psychology, Economics and Politics). The course examines the decline of "third places" (Oldenburg) and works with a client: a professional football club in Bodø, Northern Norway, that wants a community third place in its new stadium. The course runs four verbs in strict order: describe, explain, adjudicate, intervene. Weeks 4–5 are EXPLAIN, weeks 6–7 are ADJUDICATE. No tool in this batch may prompt students to propose interventions or solutions. If a student-facing prompt drifts toward "what should the club do", rewrite it.
+
+Analytical spine used in every tool:
+- "Decline" is four separable claims: SUPPLY (fewer third places exist), USE (people use them less), QUALITY (those that remain function less well as third places), OUTCOME (social consequences such as belonging and trust have worsened).
+- Three disciplinary lenses: PSYCHOLOGICAL, POLITICAL, ECONOMIC.
+- Oldenburg's eight characteristics: neutral ground; leveller; conversation is the main activity; accessibility and accommodation; the regulars; low profile; playful mood; home away from home.
+
+Technical conventions (non-negotiable):
+1. Each tool is ONE self-contained .html file. Inline CSS and JS. No build step, no frameworks, no CDN dependencies, no network calls. It must work opened from the file system and from GitHub Pages.
+2. Before writing code, inspect the existing week 2 and week 3 HTML tools in this repository and match their visual language (typography, colour tokens, spacing, component patterns, header/footer). If you cannot find them, stop and ask me for the path.
+3. All editable content lives in a single `const CONFIG = {...}` object at the top of the script, heavily commented, so a non-developer can edit text. Any content you invent as a placeholder must be prefixed with the string "PLACEHOLDER:" and listed in a final report to me. Never invent study findings, statistics, citations, or facts about real places.
+4. State persistence: autosave to localStorage under a key namespaced per tool and version, wrapped in try/catch, with a visible "Reset" button and a confirm step. Also provide "Export JSON" and "Import JSON" so groups can move work between devices.
+5. Outputs: every tool has a print stylesheet (@media print) producing clean A4 output, plus a "Copy as text" button. Where specified, also print A6-proportioned cards (four per A4 page with cut lines) for a physical corkboard claim wall.
+6. Group work: tools are used by groups of 3–5 on one device. Capture group name and member names once at the start.
+7. Responsive to 360px width. Touch targets at least 44px. Keyboard navigable, visible focus states, labels on all inputs, WCAG AA contrast, respects prefers-reduced-motion.
+8. Required free-text fields enforce a minimum length (default 25 words, configurable) with a live word count. No field may be bypassed with a single character.
+9. No scoring that implies a single correct answer unless specified. These tools structure reasoning; they do not grade it.
+10. UK English spelling throughout.
+
+Process: first reply with a build plan (component list, state shape, screen flow) and any questions. Wait for my approval. Then build. Then self-test against the acceptance criteria and report results, including a list of every PLACEHOLDER string.
