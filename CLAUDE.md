@@ -12,6 +12,7 @@ Interactive teaching tools for Ray Oldenburg's third-place theory. Static HTML f
 - `third-place-recall.html` — Recall reconstruction exercise for the eight characteristics (Activity 5)
 - `evidence-compass.html` — Evidence evaluation across disciplinary lenses (Activity 6)
 - `theory-of-change.html` — Interactive slide deck on Theory of Change methodology (Activity 7)
+- `week5-field-trip-planner.html` — Week 5 field trip planner (Activity 8): plan a London site visit, record observations in the field, debrief predictions against observations and print claim wall cards
 - `third-place-content.md` — Source content and curriculum notes
 - `spec.md` — Mechanics, tuning values and design assumptions for the builder
 - `test.html` — Test suite (81 tests) covering data integrity, pure functions, HTML generators, and encoding

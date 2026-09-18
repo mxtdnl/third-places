@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Field Trip Planner</title>
+<style>
+  :root {
+    --bg: #F2DFBE;
+    --bg-card: #FFFAF2;
+    --bg-deep: #E8D2A8;
+    --text: #2A1F18;
+    --text-muted: #6A5A48;
+    --border: #D8C8A8;
+    --char-1: #5C3A96;
+    --char-2: #B52838;
+    --char-3: #C85218;
+    --char-4: #D4A020;
+    --char-5: #7A5828;
+    --char-6: #B83068;
+    --char-7: #CC6830;
+    --char-8: #7E58A8;
+    --ok: #2A7A42;
+    --ok-bg: #E6F4EA;
+    --bad: #B82828;
+    --bad-bg: #FDEEEE;
+    --amb: #B98A10;
+    --amb-bg: #FFF3D6;
+    --lens-psych: #5C3A96;
+    --lens-polit: #B52838;
+    --lens-econ: #D4A020;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    overflow-x: hidden;
+  }
+  .app-wrap { max-width: 1100px; margin: 0 auto; padding: 1.25rem 16px 5rem; position: relative; }
+
+  /* ── Header ── */
+  .page-header { position: relative; overflow: hidden; padding: 1.5rem 0 1.25rem; margin-bottom: 1rem; }
+  .page-header::before { content: ''; position: absolute; width: 220px; height: 220px; background: var(--char-1); border-radius: 50%; opacity: 0.09; top: -70px; right: -50px; z-index: 0; }
+  .page-header::after { content: ''; position: absolute; width: 90px; height: 90px; background: var(--char-4); opacity: 0.12; bottom: -10px; right: 150px; transform: rotate(22deg); z-index: 0; }
+  .header-bar { position: absolute; left: -10%; top: 8px; width: 60%; height: 6px; background: var(--char-2); transform: rotate(-2deg); z-index: 0; }
+  .header-inner { position: relative; z-index: 1; display: grid; grid-template-columns: 14px 1fr; gap: 1rem; }
+  .header-block { background: var(--char-3); }
+  .eyebrow { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--char-3); }
+  h1 { font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; line-height: 1.05; margin: 0.25rem 0 0.5rem; }
+  h2 { font-size: clamp(1.3rem, 3vw, 1.9rem); font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.2; margin-bottom: 0.75rem; }
+  h3 { font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; line-height: 1.25; margin-bottom: 0.5rem; }
+  .lede { color: var(--text-muted); max-width: 720px; font-size: 0.98rem; }
+
+  /* ── Mode switch ── */
+  .mode-switch { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .mode-tab { background: none; border: none; font-family: inherit; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); padding: 0.75rem 1rem; min-height: 44px; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: color 0.15s ease, border-color 0.15s ease; }
+  .mode-tab:hover { color: var(--text); }
+  .mode-tab:focus-visible, .btn:focus-visible, .seg button:focus-visible, .site-card:focus-visible, .coll-head:focus-visible { outline: 3px solid var(--char-4); outline-offset: 2px; }
+  .mode-tab.active { color: var(--char-1); border-bottom-color: var(--char-1); }
+  .mode-tab[data-mode="field"].active { color: var(--char-3); border-bottom-color: var(--char-3); }
+  .mode-tab[data-mode="debrief"].active { color: var(--char-6); border-bottom-color: var(--char-6); }
+  .mode-tab.locked { opacity: 0.45; }
+  .mode-tab .lock { font-size: 0.65rem; margin-left: 4px; }
+
+  /* ── Toolbar ── */
+  .toolbar { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin: 0 0 1.25rem; }
+  .btn { font-family: inherit; font-size: 0.76rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; border: none; cursor: pointer; padding: 0.7rem 1.2rem; min-height: 44px; background: var(--char-1); color: #fff; transition: background 0.15s ease, transform 0.15s ease; }
+  .btn:hover { background: var(--char-2); transform: translateY(-2px); }
+  .btn:active { transform: translateY(0); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-ghost { background: transparent; color: var(--text); border: 2px solid var(--text); }
+  .btn-ghost:hover { background: var(--text); color: var(--bg); }
+  .btn-next { background: var(--char-3); }
+  .btn-danger { background: var(--char-2); }
+  .btn-danger:hover { background: var(--text); }
+  .btn-small { padding: 0.4rem 0.8rem; min-height: 44px; font-size: 0.7rem; }
+  .save-note { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  /* ── Stepper ── */
+  .stepper { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .step-pip { display: flex; align-items: center; gap: 6px; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); background: none; border: 2px solid var(--border); padding: 0.4rem 0.7rem; min-height: 44px; font-family: inherit; cursor: pointer; }
+  .step-pip .sq { width: 10px; height: 10px; background: var(--border); }
+  .step-pip.done .sq { background: var(--ok); }
+  .step-pip.current { border-color: var(--char-1); color: var(--char-1); background: rgba(92,58,150,0.08); }
+  .step-pip.current .sq { background: var(--char-1); }
+
+  /* ── Panels and cards ── */
+  .panel { background: var(--bg-card); border: 2px solid var(--border); border-left: 6px solid var(--char-1); padding: 1.25rem; margin-bottom: 1.25rem; position: relative; overflow: hidden; }
+  .panel.c2 { border-left-color: var(--char-2); } .panel.c3 { border-left-color: var(--char-3); } .panel.c4 { border-left-color: var(--char-4); }
+  .panel.c5 { border-left-color: var(--char-5); } .panel.c6 { border-left-color: var(--char-6); } .panel.c7 { border-left-color: var(--char-7); } .panel.c8 { border-left-color: var(--char-8); }
+  .panel .eyebrow { margin-bottom: 0.25rem; }
+  .panel.c1 .eyebrow { color: var(--char-1); } .panel.c2 .eyebrow { color: var(--char-2); } .panel.c3 .eyebrow { color: var(--char-3); } .panel.c4 .eyebrow { color: var(--char-4); }
+  .panel.c5 .eyebrow { color: var(--char-5); } .panel.c6 .eyebrow { color: var(--char-6); } .panel.c7 .eyebrow { color: var(--char-7); } .panel.c8 .eyebrow { color: var(--char-8); }
+  .panel-deco { position: absolute; pointer-events: none; z-index: 0; opacity: 0.08; }
+  .panel > * { position: relative; z-index: 1; }
+  .panel > .panel-deco { z-index: 0; }
+  .banner { background: var(--char-1); color: #fff; padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; position: relative; overflow: hidden; }
+  .banner h2 { color: #fff; margin-bottom: 0.25rem; }
+  .banner p { opacity: 0.92; font-size: 0.95rem; position: relative; z-index: 1; }
+  .banner::after { content: ''; position: absolute; width: 140px; height: 140px; border: 8px solid #fff; border-radius: 50%; opacity: 0.15; right: -40px; top: -50px; }
+  .banner.c3 { background: var(--char-3); } .banner.c6 { background: var(--char-6); } .banner.c2 { background: var(--char-2); } .banner.c5 { background: var(--char-5); }
+  .help { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 0.75rem; }
+  .cluster-head { display: flex; align-items: center; gap: 0.6rem; margin: 1.25rem 0 0.6rem; }
+  .cluster-head .pip { width: 12px; height: 12px; }
+  .site-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 0.75rem; }
+  .site-card { background: var(--bg-card); border: 2px solid var(--border); border-left: 6px solid var(--border); padding: 0.9rem 1rem; cursor: pointer; text-align: left; font-family: inherit; color: inherit; transition: border-color 0.2s ease, transform 0.15s ease; min-height: 44px; }
+  .site-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(42,31,24,0.1); }
+  .site-card.selected { border-color: var(--char-1); background: rgba(92,58,150,0.08); }
+  .site-card .sname { font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.95rem; line-height: 1.2; }
+  .site-card .stype { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem; }
+  .tag { display: inline-block; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border: 1.5px solid currentColor; margin-top: 0.4rem; margin-right: 4px; }
+  .tag.restricted { color: var(--char-2); }
+  .tag.small { color: var(--char-5); border-style: dashed; }
+  .tag.sel { color: #fff; background: var(--char-1); border-color: var(--char-1); }
+
+  /* ── Forms ── */
+  label, .lbl { display: block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin: 0.75rem 0 0.3rem; }
+  label .req { color: var(--char-2); }
+  input[type=text], textarea, select { width: 100%; font-family: inherit; font-size: 1rem; color: var(--text); background: #fff; border: 2px solid var(--border); padding: 0.6rem 0.7rem; min-height: 44px; }
+  input[type=text]:focus, textarea:focus, select:focus { outline: 3px solid var(--char-4); outline-offset: 1px; border-color: var(--char-1); }
+  textarea { min-height: 96px; resize: vertical; line-height: 1.5; }
+  textarea.short { min-height: 60px; }
+  .wc { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-top: 0.25rem; }
+  .wc.ok { color: var(--ok); } .wc.low { color: var(--bad); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .seg { display: flex; flex-wrap: wrap; gap: 4px; }
+  .seg button { flex: 1 1 auto; font-family: inherit; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; background: var(--bg-card); color: var(--text-muted); border: 2px solid var(--border); padding: 0.5rem 0.6rem; min-height: 44px; cursor: pointer; transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease; }
+  .seg button.on { background: var(--char-1); border-color: var(--char-1); color: #fff; }
+  .seg button.on[data-v=present], .seg button.on[data-v=confirmed], .seg button.on[data-v=yes], .seg button.on[data-v=is], .seg button.on[data-v=supports] { background: var(--ok); border-color: var(--ok); }
+  .seg button.on[data-v=absent], .seg button.on[data-v=disconfirmed], .seg button.on[data-v=no], .seg button.on[data-v=isnot], .seg button.on[data-v=undermines] { background: var(--bad); border-color: var(--bad); }
+  .seg button.on[data-v=partial], .seg button.on[data-v=ambiguous], .seg button.on[data-v=partially], .seg button.on[data-v=complicates] { background: var(--amb); border-color: var(--amb); }
+  .seg button.on[data-v=cannot] { background: var(--char-5); border-color: var(--char-5); }
+  .seg.big button { font-size: 0.85rem; min-height: 56px; }
+  .check { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.6rem 0; border-top: 2px solid var(--border); font-size: 0.92rem; text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--text); margin: 0; cursor: pointer; }
+  .check input { width: 26px; height: 26px; flex: none; margin-top: 2px; accent-color: var(--char-1); }
+  .check.restricted { background: var(--bad-bg); border-left: 5px solid var(--bad); padding-left: 0.75rem; }
+  .check.venue { background: var(--amb-bg); border-left: 5px solid var(--amb); padding-left: 0.75rem; }
+  .notice { border-left: 5px solid var(--amb); background: var(--amb-bg); padding: 0.9rem 1.1rem; margin: 0.75rem 0; font-size: 0.9rem; }
+  .notice.bad { border-left-color: var(--bad); background: var(--bad-bg); }
+  .notice.good { border-left-color: var(--ok); background: var(--ok-bg); }
+  .notice.info { border-left-color: var(--char-1); background: rgba(92,58,150,0.08); }
+  .notice ul { margin: 0.4rem 0 0 1.1rem; }
+  .pred-row { display: grid; grid-template-columns: 200px 1fr; gap: 0.75rem; align-items: start; padding: 0.75rem 0; border-top: 2px solid var(--border); }
+  .pred-row .pname { font-weight: 800; text-transform: uppercase; font-size: 0.82rem; letter-spacing: 0.04em; line-height: 1.25; padding-left: 0.6rem; border-left: 6px solid var(--border); }
+  .pred-row .pdef { font-size: 0.78rem; color: var(--text-muted); font-weight: 400; text-transform: none; letter-spacing: 0; margin-top: 0.2rem; }
+  .pred-row textarea, .pred-row input[type=text] { margin-top: 0.4rem; }
+  .site-tabs { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 2px solid var(--border); margin-bottom: 1rem; }
+  .site-tab { background: none; border: none; border-bottom: 3px solid transparent; margin-bottom: -2px; font-family: inherit; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); padding: 0.6rem 0.9rem; min-height: 44px; cursor: pointer; }
+  .site-tab.active { color: var(--char-3); border-bottom-color: var(--char-3); }
+  .mech-box { border: 2px solid var(--border); border-top: 6px solid var(--char-4); padding: 1rem; margin-bottom: 1rem; background: var(--bg-card); }
+  .mech-box.m2 { border-top-color: var(--char-6); }
+  .proto-list { list-style: none; }
+  .proto-list li { padding: 0.5rem 0 0.5rem 1rem; border-top: 2px solid var(--border); position: relative; font-size: 0.92rem; }
+  .proto-list li::before { content: ''; position: absolute; left: 0; top: 0.9rem; width: 8px; height: 8px; background: var(--char-3); }
+  .proto-list li.custom::before { background: var(--char-6); }
+  .proto-list li.hidden-item { color: var(--text-muted); text-decoration: line-through; }
+  .exp-block { margin: 0.5rem 0 0.5rem; font-size: 0.88rem; }
+  .exp-block .exp-l { font-weight: 700; text-transform: uppercase; font-size: 0.66rem; letter-spacing: 0.1em; color: var(--ok); }
+  .exp-block .exp-l.neg { color: var(--bad); }
+  .section-break { position: relative; height: 34px; overflow: hidden; margin: 0.5rem 0; }
+  .section-break::before { content: ''; position: absolute; width: 120%; height: 5px; background: var(--char-4); top: 50%; left: -10%; transform: rotate(-2deg); }
+  .section-break.c6::before { background: var(--char-6); } .section-break.c2::before { background: var(--char-2); }
+  .nav-row { display: flex; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+
+  /* ── Field mode ── */
+  .field-wrap { max-width: 640px; }
+  .coll { border: 2px solid var(--border); border-left: 6px solid var(--char-3); margin-bottom: 0.6rem; background: var(--bg-card); }
+  .coll-head { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; background: none; border: none; font-family: inherit; text-align: left; padding: 0.9rem 1rem; min-height: 56px; cursor: pointer; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.88rem; color: var(--text); }
+  .coll-head .st { width: 12px; height: 12px; background: var(--border); flex: none; }
+  .coll.filled .coll-head .st { background: var(--ok); }
+  .coll-body { display: none; padding: 0 1rem 1rem; }
+  .coll.open .coll-body { display: block; }
+  .coll.open { border-left-color: var(--char-1); }
+  .coll-body textarea { min-height: 120px; font-size: 1.05rem; }
+  .timer-grid { display: grid; gap: 0.5rem; }
+  .timer-row { display: grid; grid-template-columns: 1fr auto auto; gap: 0.5rem; align-items: center; border: 2px solid var(--border); padding: 0.5rem 0.75rem; }
+  .timer-row .tname { font-weight: 800; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.08em; }
+  .timer-row .tval { font-variant-numeric: tabular-nums; font-size: 1.2rem; font-weight: 800; min-width: 74px; text-align: right; }
+  .timer-row.running { border-color: var(--char-3); background: rgba(200,82,24,0.08); }
+  .timer-row.stopped { border-color: var(--ok); }
+  .countdown { background: var(--char-5); color: #fff; padding: 0.9rem 1rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+  .countdown .cd-val { font-size: 1.8rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .countdown.over { background: var(--char-2); }
+  .meta-line { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.04em; margin-bottom: 0.75rem; }
+
+  /* ── Debrief ── */
+  .check-row { border-top: 2px solid var(--border); padding: 0.75rem 0; }
+  .check-row .cq { font-size: 0.92rem; margin-bottom: 0.4rem; }
+  .check-row .cq b { text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.1em; color: var(--char-1); display: block; }
+  .check-row .cq .pv { display: inline-block; font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 1px 6px; color: #fff; background: var(--char-5); margin-left: 4px; }
+  .chip-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+  .chip-grid label { display: inline-flex; align-items: center; gap: 6px; margin: 0; border: 2px solid var(--border); padding: 0.4rem 0.7rem; min-height: 44px; cursor: pointer; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.08em; font-weight: 700; color: var(--text); }
+  .chip-grid label.on { border-color: var(--char-1); background: rgba(92,58,150,0.1); color: var(--char-1); }
+  .chip-grid input { width: 20px; height: 20px; accent-color: var(--char-1); }
+  .summary-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  .summary-table th, .summary-table td { border: 2px solid var(--border); padding: 0.5rem 0.6rem; text-align: left; vertical-align: top; }
+  .summary-table th { background: var(--bg-deep); text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.1em; }
+  .summary-table tr.changed td { background: var(--amb-bg); }
+  .summary-table .pill { display: inline-block; color: #fff; padding: 2px 8px; font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+  .pill.g { background: var(--ok); } .pill.r { background: var(--bad); } .pill.a { background: var(--amb); } .pill.n { background: var(--char-5); }
+
+  /* ── Import/export dialog ── */
+  .dialog { position: fixed; inset: 0; background: rgba(42,31,24,0.55); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+  .dialog.open { display: flex; }
+  .dialog-box { background: var(--bg-card); border: 2px solid var(--text); border-top: 8px solid var(--char-1); max-width: 560px; width: 100%; padding: 1.25rem; max-height: 90vh; overflow: auto; }
+  .dialog-box textarea { min-height: 160px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.8rem; }
+  .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* ── Print area ── */
+  #print-area { display: none; }
+
+  @media (max-width: 640px) {
+    .pred-row { grid-template-columns: 1fr; }
+    .row2 { grid-template-columns: 1fr; }
+    .site-grid { grid-template-columns: 1fr; }
+    .header-inner { grid-template-columns: 8px 1fr; gap: 0.6rem; }
+    .panel { padding: 1rem 0.85rem; }
+    .btn { flex: 1 1 auto; text-align: center; }
+    .timer-row { grid-template-columns: 1fr auto; }
+    .timer-row .tval { grid-column: 1 / -1; text-align: left; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+    .btn:hover, .site-card:hover { transform: none; }
+  }
+
+  @media print {
+    @page { size: A4; margin: 12mm; }
+    body { background: #fff; color: #000; font-size: 10.5pt; }
+    .app-wrap, .dialog { display: none !important; }
+    #print-area { display: block; }
+    .print-page { page-break-after: always; break-after: page; }
+    .print-page:last-child { page-break-after: auto; break-after: auto; }
+    .pp-head { border-left: 8px solid var(--char-1); padding-left: 10px; margin-bottom: 8px; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .pp-head .eyebrow { color: var(--char-1); font-size: 8pt; }
+    .pp-head h2 { font-size: 16pt; margin: 0; }
+    .pp-meta { font-size: 8.5pt; color: #444; margin-bottom: 8px; }
+    .pp-sec { font-size: 8pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; margin: 8px 0 3px; border-bottom: 2px solid #000; }
+    .pp-table { width: 100%; border-collapse: collapse; font-size: 8.5pt; margin-bottom: 4px; }
+    .pp-table th, .pp-table td { border: 1px solid #000; padding: 2px 4px; vertical-align: top; text-align: left; }
+    .pp-table th { font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.06em; }
+    .pp-box { border: 1px solid #000; min-height: 14mm; margin-bottom: 3px; padding: 2px 4px; font-size: 8.5pt; }
+    .pp-box .bl { font-size: 7.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+    .pp-text { font-size: 9.5pt; white-space: pre-wrap; margin-bottom: 4px; overflow-wrap: anywhere; }
+    .pp-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .pp-note { font-size: 8pt; border: 1px solid #000; padding: 3px 5px; margin: 4px 0; }
+    .pp-note.bad { border-width: 2px; }
+    /* A6 card sheet: 2 x 2 per A4 with cut lines */
+    .card-sheet { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; height: 265mm; page-break-after: always; break-after: page; }
+    .card-sheet:last-child { page-break-after: auto; break-after: auto; }
+    .a6 { border: 1px dashed #888; padding: 7mm 6mm; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    .a6 .a6-bar { height: 5mm; background: var(--char-1); margin: -7mm -6mm 4mm; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .a6 .a6-site { font-size: 13pt; font-weight: 800; text-transform: uppercase; line-height: 1.1; }
+    .a6 .a6-verdict { font-size: 9pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin: 2mm 0; }
+    .a6 .a6-row { font-size: 8pt; margin-bottom: 1mm; }
+    .a6 .a6-row b { text-transform: uppercase; font-size: 7pt; letter-spacing: 0.08em; }
+    .a6 .a6-find { font-size: 10pt; margin: 3mm 0; flex: 1; overflow-wrap: anywhere; }
+    .a6 .a6-foot { font-size: 7.5pt; color: #444; border-top: 1px solid #000; padding-top: 1.5mm; }
+    .a6.empty { border-style: dashed; }
+  }
+</style>
+</head>
+<body>
+<div class="app-wrap">
+  <header class="page-header">
+    <div class="header-bar"></div>
+    <div class="header-inner">
+      <div class="header-block"></div>
+      <div>
+        <div class="eyebrow">Week 5 &middot; Explain &middot; London field visit</div>
+        <h1>Field Trip Planner</h1>
+        <p class="lede">Plan a field visit, record what you observe in situ, then debrief. The tool asks whether candidate sites function as third places and whether your explanatory mechanisms for decline are visible on the ground. It structures your reasoning; it does not grade it.</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="mode-switch" role="tablist" aria-label="Mode">
+    <button class="mode-tab active" role="tab" data-mode="plan" id="tab-plan">Plan</button>
+    <button class="mode-tab locked" role="tab" data-mode="field" id="tab-field">In the field <span class="lock" aria-hidden="true">&#9679;</span></button>
+    <button class="mode-tab locked" role="tab" data-mode="debrief" id="tab-debrief">Debrief <span class="lock" aria-hidden="true">&#9679;</span></button>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn btn-ghost btn-small" id="btn-export">Export JSON</button>
+    <button class="btn btn-ghost btn-small" id="btn-import">Import JSON</button>
+    <button class="btn btn-ghost btn-small" id="btn-copy">Copy as text</button>
+    <button class="btn btn-danger btn-small" id="btn-reset">Reset</button>
+    <span class="save-note" id="save-note" aria-live="polite">Autosaves to this device</span>
+  </div>
+
+  <main id="view"></main>
+</div>
+
+<div id="print-area" aria-hidden="true"></div>
+
+<div class="dialog" id="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+  <div class="dialog-box">
+    <div class="eyebrow" style="color:var(--char-1)">Transfer</div>
+    <h2 id="dialog-title">Import / export</h2>
+    <p class="help" id="dialog-help"></p>
+    <label for="dialog-text">JSON</label>
+    <textarea id="dialog-text" spellcheck="false"></textarea>
+    <div class="nav-row">
+      <button class="btn btn-ghost" id="dialog-close">Close</button>
+      <span>
+        <button class="btn btn-ghost" id="dialog-file" style="display:none">Choose file</button>
+        <button class="btn" id="dialog-ok">Import</button>
+      </span>
+    </div>
+    <input type="file" id="file-input" accept="application/json,.json" class="visually-hidden" aria-label="Import JSON file">
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // =====================================================================
+  // CONFIG — all editable content lives here. Edit text freely; keep the
+  // structure (field names, ids) intact. Any value starting with
+  // "PLACEHOLDER:" is a stand-in the instructor must replace.
+  // =====================================================================
+  var CONFIG = {
+    // Storage key: change the version suffix if the state shape changes.
+    storageKey: 'week5-field-trip-planner-v1',
+
+    // Site selection limits and minimum word counts for required free text.
+    minSites: 2,
+    maxSites: 3,
+    minWords: 25,
+    // Maximum words for the one-sentence finding on a claim wall card.
+    findingMaxWords: 30,
+    // Minimum number of Oldenburg characteristics a verdict must cite.
+    minCitedCharacteristics: 3,
+    // Maximum custom protocol items a group can add per site.
+    maxCustomItems: 3,
+    // Countdown (minutes) shown in Field mode for small venues.
+    smallVenueMinutes: 30,
+
+    // The nine candidate sites. Do NOT add opening hours, addresses,
+    // prices or walking times here unless the instructor has verified them.
+    // Every factual detail below is a PLACEHOLDER for the instructor.
+    sites: [
+      { id: 'granary', name: 'Granary Square', cluster: "King's Cross",
+        type: 'Privately owned public space (open square)',
+        governanceHint: 'PLACEHOLDER: who owns and manages this space, and under what rules?',
+        restricted: false, restrictionNote: '',
+        facilitatorNote: 'PLACEHOLDER: facilitator note for Granary Square (meeting point, timing, practical notes).' },
+      { id: 'library', name: 'British Library', cluster: "King's Cross",
+        type: 'National public institution (library building and forecourt)',
+        governanceHint: 'PLACEHOLDER: who owns and manages this space, and under what rules?',
+        restricted: false, restrictionNote: '',
+        facilitatorNote: 'PLACEHOLDER: facilitator note for the British Library (which areas to use, entry conditions, timing).' },
+      { id: 'valencia', name: 'Valencia Cafe', cluster: 'Bloomsbury',
+        type: 'Traditional independent cafe (greasy spoon)',
+        governanceHint: 'PLACEHOLDER: who owns and runs this cafe?',
+        restricted: false, restrictionNote: '',
+        smallVenue: true,
+        venueNote: 'Small commercial premises. One group at a time, every observer buys something, maximum 30 minutes, do not occupy tables during busy periods.',
+        facilitatorNote: 'PLACEHOLDER: facilitator note for Valencia Cafe (booking of group slots, timing).' },
+      { id: 'brunswick', name: 'The Brunswick Centre', cluster: 'Bloomsbury',
+        type: 'Mixed-use residential and retail complex with open concourse',
+        governanceHint: 'PLACEHOLDER: who owns and manages the concourse, and under what rules?',
+        restricted: false, restrictionNote: '',
+        facilitatorNote: 'PLACEHOLDER: facilitator note for The Brunswick Centre.' },
+      { id: 'museum', name: 'British Museum', cluster: 'Bloomsbury',
+        type: 'National public institution (museum, Great Court and forecourt)',
+        governanceHint: 'PLACEHOLDER: who owns and manages this space, and under what rules?',
+        restricted: false, restrictionNote: '',
+        facilitatorNote: 'PLACEHOLDER: facilitator note for the British Museum (which areas to use, entry conditions, timing).' },
+      { id: 'marylebone', name: 'Marylebone Green Playground', cluster: "Regent's Park and Euston",
+        type: 'Public playground within a Royal Park',
+        governanceHint: 'PLACEHOLDER: who owns and manages this space, and under what rules?',
+        restricted: true,
+        restrictionNote: 'Perimeter observation only. Record access rules, signage and design. Do not observe, count, photograph or describe children.',
+        facilitatorNote: 'PLACEHOLDER: facilitator note for Marylebone Green Playground (perimeter route, timing).' },
+      { id: 'corams', name: "Coram's Fields", cluster: 'Bloomsbury',
+        type: "Children's park and playground (adults admitted only with a child)",
+        governanceHint: 'PLACEHOLDER: who owns and manages this space, and under what rules?',
+        restricted: true,
+        restrictionNote: 'Perimeter observation only. Record access rules, signage and design. Do not observe, count, photograph or describe children.',
+        facilitatorNote: "PLACEHOLDER: facilitator note for Coram's Fields (perimeter route, timing)." },
+      { id: 'kimpton', name: 'Kimpton Fitzroy coffee lounge', cluster: 'Bloomsbury',
+        type: 'Hotel lobby coffee lounge (commercial, semi-public)',
+        governanceHint: 'PLACEHOLDER: who owns and runs the lounge, and what are the conditions of staying?',
+        restricted: false, restrictionNote: '',
+        facilitatorNote: 'PLACEHOLDER: facilitator note for the Kimpton Fitzroy coffee lounge (conduct, purchase expectations, timing).' },
+      { id: 'regents', name: "Regent's Place Plaza", cluster: "Regent's Park and Euston",
+        type: 'Privately owned public space (office estate plaza)',
+        governanceHint: 'PLACEHOLDER: who owns and manages this plaza, and under what rules?',
+        restricted: false, restrictionNote: '',
+        facilitatorNote: "PLACEHOLDER: facilitator note for Regent's Place Plaza." }
+    ],
+
+    // Cluster display order and accent colours.
+    clusters: [
+      { name: "King's Cross", color: 'var(--char-1)' },
+      { name: 'Bloomsbury', color: 'var(--char-3)' },
+      { name: "Regent's Park and Euston", color: 'var(--char-6)' }
+    ],
+
+    // Oldenburg's eight characteristics, one neutral sentence each.
+    oldenburg: [
+      { id: 'ng', num: 1, name: 'Neutral ground', def: 'People can come and go freely, without obligation, invitation or the need to play host.' },
+      { id: 'lv', num: 2, name: 'The leveller', def: 'Rank, status and roles from the outside world carry no weight inside the place.' },
+      { id: 'cv', num: 3, name: 'Conversation is the main activity', def: 'Talk is the primary social activity, valued for its own sake rather than as a means to something else.' },
+      { id: 'ac', num: 4, name: 'Accessibility and accommodation', def: 'The place is easy to reach and open at hours that fit around daily routines, and one can go alone and expect to be accommodated.' },
+      { id: 'rg', num: 5, name: 'The regulars', def: 'A core of regular visitors sets the social tone and draws newcomers in.' },
+      { id: 'lp', num: 6, name: 'A low profile', def: 'The place is plain and unpretentious in appearance and does not signal exclusivity.' },
+      { id: 'pm', num: 7, name: 'The mood is playful', def: 'Humour, wit and lightheartedness are the prevailing mood rather than seriousness or tension.' },
+      { id: 'ha', num: 8, name: 'A home away from home', def: 'The place offers a sense of rootedness, comfort and belonging comparable to home.' }
+    ],
+
+    // The four separable decline claims.
+    claims: [
+      { id: 'supply', name: 'Supply', def: 'Fewer third places exist than before.', color: 'var(--char-3)' },
+      { id: 'use', name: 'Use', def: 'People use the third places that exist less than before.', color: 'var(--char-5)' },
+      { id: 'quality', name: 'Quality', def: 'The third places that remain function less well as third places than before.', color: 'var(--char-6)' },
+      { id: 'outcome', name: 'Outcome', def: 'Social consequences such as belonging and trust have worsened.', color: 'var(--char-8)' }
+    ],
+
+    // Disciplinary lenses.
+    lenses: [
+      { id: 'psychological', name: 'Psychological', color: 'var(--lens-psych)' },
+      { id: 'political', name: 'Political', color: 'var(--lens-polit)' },
+      { id: 'economic', name: 'Economic', color: 'var(--lens-econ)' }
+    ],
+
+    // Fixed observation protocol. `restrictedHide: true` items are removed
+    // entirely in Field mode for restricted (perimeter-only) sites.
+    protocolItems: [
+      { id: 'present', label: 'Who is present / who is absent', prompt: 'Describe the mix of people in broad terms (age bands, groups or alone, apparent purpose). No identifying detail.', restrictedHide: true },
+      { id: 'cost', label: 'Cost of staying one hour', prompt: 'What does it cost, in money or in obligations, to stay here for an hour?', restrictedHide: false },
+      { id: 'ownership', label: 'Ownership and governance', prompt: 'Who owns and manages this space? What evidence of that is visible?', restrictedHide: false },
+      { id: 'rules', label: 'Rules and signage', prompt: 'Record every rule, sign or notice that governs conduct here.', restrictedHide: false },
+      { id: 'seating', label: 'Seating arrangement', prompt: 'Describe the seating: type, quantity, fixed or movable, arranged to face in or out, cost to use.', restrictedHide: false },
+      { id: 'regulars', label: 'Evidence of regulars', prompt: 'Any sign that people here know one another or the staff, or that some visitors come routinely?', restrictedHide: true },
+      { id: 'dwell', label: 'Dwell time of five observed parties', prompt: 'Use the timers below. Note the setting, not the people.', restrictedHide: true, timer: true },
+      { id: 'staff', label: 'Staff or security behaviour toward lingerers', prompt: 'How do staff or security respond to people who stay without buying or without an obvious purpose?', restrictedHide: false }
+    ],
+
+    // Mandatory ethics statements. All must be ticked before the plan is complete.
+    ethicsStatements: [
+      'We will observe public behaviour only and will not record anything that could identify an individual.',
+      'We will not photograph or film people. Photographs, where taken, will be of signage, design and empty space only.',
+      'We will not approach, question or interview members of the public or staff unless the instructor has arranged this.',
+      'We will follow the rules of each site, leave when asked, and behave as ordinary users of the space.',
+      'We will keep the safety of the group and of others ahead of the observation task at all times.'
+    ],
+
+    // Field mode: options for the "how busy" control.
+    busyOptions: ['Empty', 'Quiet', 'Moderate', 'Busy', 'Crowded'],
+
+    // Copy used in the interface.
+    text: {
+      priorQuestion: 'Our prior: we predict this',
+      expectLabel: 'If this explanation is true, here we would expect to see...',
+      notExpectLabel: '...and we would not expect to see...',
+      plausibilityMore: 'Which explanation did this visit make MORE plausible, and why?',
+      plausibilityLess: 'Which explanation did this visit make LESS plausible, and why?'
+    }
+  };
+
+  // =====================================================================
+  // STATE
+  // =====================================================================
+  function blankState() {
+    return {
+      version: 1,
+      mode: 'plan',
+      planStep: 0,
+      group: { name: '', members: '' },
+      sites: {},         // siteId -> { prior, predictions: {charId: {status, reason}}, customItems: [] }
+      siteOrder: [],     // selected site ids in selection order
+      mechanisms: [mechBlank(), mechBlank()],
+      ethics: { statements: {}, restricted: {}, venue: {} },
+      planComplete: false,
+      field: {},         // siteId -> { firstEntry, weather, busy, notes: {itemId: text}, parties: [], venueStart, open: {} }
+      fieldSite: '',
+      debrief: {},       // siteId -> { checks: {key: {result, obs}}, verdict, justification, cited: [], claims: [], relation, explanation, finding }
+      debriefSite: '',
+      debriefStep: 0,
+      plausibility: { more: '', less: '' }
+    };
+  }
+  function mechBlank() { return { text: '', lens: '', claim: '', perSite: {} }; }
+
+  var state = blankState();
+  var tickHandle = null;
+
+  function save() {
+    try {
+      localStorage.setItem(CONFIG.storageKey, JSON.stringify(state));
+      var n = document.getElementById('save-note');
+      n.textContent = 'Saved ' + new Date().toLocaleTimeString();
+    } catch (e) {
+      var m = document.getElementById('save-note');
+      if (m) m.textContent = 'Autosave unavailable: export JSON to keep your work';
+    }
+  }
+  function load() {
+    try {
+      var raw = localStorage.getItem(CONFIG.storageKey);
+      if (raw) state = mergeState(JSON.parse(raw));
+    } catch (e) { state = blankState(); }
+  }
+  function mergeState(obj) {
+    var s = blankState();
+    if (!obj || typeof obj !== 'object') return s;
+    for (var k in s) if (obj[k] !== undefined) s[k] = obj[k];
+    if (!Array.isArray(s.mechanisms) || s.mechanisms.length < 2) s.mechanisms = [mechBlank(), mechBlank()];
+    if (!s.ethics) s.ethics = { statements: {}, restricted: {}, venue: {} };
+    if (!s.ethics.venue) s.ethics.venue = {};
+    if (!s.plausibility) s.plausibility = { more: '', less: '' };
+    return s;
+  }
+
+  // =====================================================================
+  // UTILITIES
+  // =====================================================================
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function wordCount(s) {
+    var t = String(s || '').trim();
+    return t ? t.split(/\s+/).length : 0;
+  }
+  function siteById(id) {
+    for (var i = 0; i < CONFIG.sites.length; i++) if (CONFIG.sites[i].id === id) return CONFIG.sites[i];
+    return null;
+  }
+  function charById(id) {
+    for (var i = 0; i < CONFIG.oldenburg.length; i++) if (CONFIG.oldenburg[i].id === id) return CONFIG.oldenburg[i];
+    return null;
+  }
+  function claimById(id) {
+    for (var i = 0; i < CONFIG.claims.length; i++) if (CONFIG.claims[i].id === id) return CONFIG.claims[i];
+    return null;
+  }
+  function lensById(id) {
+    for (var i = 0; i < CONFIG.lenses.length; i++) if (CONFIG.lenses[i].id === id) return CONFIG.lenses[i];
+    return null;
+  }
+  function selectedSites() {
+    var out = [];
+    for (var i = 0; i < state.siteOrder.length; i++) {
+      var s = siteById(state.siteOrder[i]);
+      if (s && state.sites[s.id]) out.push(s);
+    }
+    return out;
+  }
+  function siteState(id) {
+    if (!state.sites[id]) state.sites[id] = { prior: '', predictions: {}, customItems: [] };
+    return state.sites[id];
+  }
+  function fieldState(id) {
+    if (!state.field[id]) state.field[id] = { firstEntry: '', weather: '', busy: '', notes: {}, parties: [], venueStart: '', open: {} };
+    var f = state.field[id];
+    if (!f.parties) f.parties = [];
+    if (!f.notes) f.notes = {};
+    if (!f.open) f.open = {};
+    return f;
+  }
+  function debriefState(id) {
+    if (!state.debrief[id]) state.debrief[id] = { checks: {}, verdict: '', justification: '', cited: [], claims: [], relation: '', explanation: '', finding: '' };
+    var d = state.debrief[id];
+    if (!d.checks) d.checks = {};
+    if (!d.cited) d.cited = [];
+    if (!d.claims) d.claims = [];
+    return d;
+  }
+  function fmtMs(ms) {
+    var s = Math.max(0, Math.floor(ms / 1000));
+    var m = Math.floor(s / 60); s = s % 60;
+    return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  }
+  function fmtDate(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString('en-GB') + ' ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  }
+  function priorLabel(p) {
+    return p === 'is' ? 'IS a third place' : p === 'isnot' ? 'IS NOT a third place' : p === 'partially' ? 'is PARTIALLY a third place' : 'No prior recorded';
+  }
+  function verdictLabel(v) {
+    return v === 'yes' ? 'Yes, a third place' : v === 'no' ? 'No, not a third place' : v === 'partially' ? 'Partially a third place' : 'No verdict yet';
+  }
+  function statusLabel(s) {
+    return { present: 'Present', partial: 'Partial', absent: 'Absent', cannot: 'Cannot tell' }[s] || 'Not predicted';
+  }
+  function wcHtml(text, min) {
+    var n = wordCount(text);
+    var cls = n >= min ? 'ok' : (n > 0 ? 'low' : '');
+    return '<div class="wc ' + cls + '" aria-live="polite">' + n + ' / ' + min + ' words minimum</div>';
+  }
+  function segHtml(name, opts, value, extra) {
+    var h = '<div class="seg' + (extra && extra.big ? ' big' : '') + '" role="group" aria-label="' + esc(name) + '">';
+    for (var i = 0; i < opts.length; i++) {
+      h += '<button type="button" data-seg="' + esc(name) + '" data-v="' + esc(opts[i].v) + '" class="' + (value === opts[i].v ? 'on' : '') + '" aria-pressed="' + (value === opts[i].v) + '">' + esc(opts[i].l) + '</button>';
+    }
+    return h + '</div>';
+  }
+  function deco(color, kind, style) {
+    return '<div class="panel-deco" style="background:' + color + ';' + (kind === 'circle' ? 'border-radius:50%;' : '') + style + '"></div>';
+  }
+
+  // =====================================================================
+  // VALIDATION (plan)
+  // =====================================================================
+  function validateGroup() {
+    var e = [];
+    if (!state.group.name.trim()) e.push('Enter a group name.');
+    if (!state.group.members.trim()) e.push('Enter at least one member name.');
+    return e;
+  }
+  function validateSelection() {
+    var e = [], sites = selectedSites();
+    if (sites.length < CONFIG.minSites) e.push('Select at least ' + CONFIG.minSites + ' sites.');
+    if (sites.length > CONFIG.maxSites) e.push('Select no more than ' + CONFIG.maxSites + ' sites.');
+    var hasIs = false, hasOther = false;
+    for (var i = 0; i < sites.length; i++) {
+      var p = siteState(sites[i].id).prior;
+      if (!p) e.push('Record a prior for ' + sites[i].name + '.');
+      if (p === 'is') hasIs = true;
+      if (p === 'isnot' || p === 'partially') hasOther = true;
+    }
+    if (sites.length && !hasIs) e.push('At least one site must be predicted to be a third place (IS).');
+    if (sites.length && !hasOther) e.push('At least one site must be predicted IS NOT or PARTIALLY a third place.');
+    return e;
+  }
+  function clusterWarning() {
+    var sites = selectedSites(), seen = {}, n = 0;
+    for (var i = 0; i < sites.length; i++) if (!seen[sites[i].cluster]) { seen[sites[i].cluster] = true; n++; }
+    return n > 2 ? 'Your selection spans ' + n + ' clusters. That is allowed, but travel between clusters will cut into observation time.' : '';
+  }
+  function validatePredictions() {
+    var e = [], sites = selectedSites();
+    for (var i = 0; i < sites.length; i++) {
+      var ss = siteState(sites[i].id), missing = 0, noReason = 0;
+      for (var c = 0; c < CONFIG.oldenburg.length; c++) {
+        var p = ss.predictions[CONFIG.oldenburg[c].id];
+        if (!p || !p.status) missing++;
+        else if (!String(p.reason || '').trim()) noReason++;
+      }
+      if (missing) e.push(sites[i].name + ': ' + missing + ' characteristic(s) not yet predicted.');
+      if (noReason) e.push(sites[i].name + ': ' + noReason + ' prediction(s) without a reason.');
+    }
+    return e;
+  }
+  function validateMechanisms() {
+    var e = [], sites = selectedSites();
+    for (var m = 0; m < 2; m++) {
+      var mech = state.mechanisms[m], label = 'Explanation ' + (m + 1);
+      if (wordCount(mech.text) < CONFIG.minWords) e.push(label + ': explanation needs at least ' + CONFIG.minWords + ' words.');
+      if (!mech.lens) e.push(label + ': choose a lens.');
+      if (!mech.claim) e.push(label + ': choose the decline claim it addresses.');
+      for (var i = 0; i < sites.length; i++) {
+        var ps = mech.perSite[sites[i].id] || {};
+        if (!String(ps.expect || '').trim()) e.push(label + ' at ' + sites[i].name + ': fill in what you would expect to see.');
+        if (!String(ps.notExpect || '').trim()) e.push(label + ' at ' + sites[i].name + ': fill in what you would not expect to see.');
+      }
+    }
+    return e;
+  }
+  function validateEthics() {
+    var e = [];
+    for (var i = 0; i < CONFIG.ethicsStatements.length; i++) if (!state.ethics.statements[i]) e.push('Tick every ethics statement.');
+    var sites = selectedSites();
+    for (var s = 0; s < sites.length; s++) {
+      if (sites[s].restricted && !state.ethics.restricted[sites[s].id]) e.push('Acknowledge the restriction for ' + sites[s].name + '.');
+      if (sites[s].smallVenue && !state.ethics.venue[sites[s].id]) e.push('Acknowledge the venue rules for ' + sites[s].name + '.');
+    }
+    return e.filter(function(v, i, a) { return a.indexOf(v) === i; });
+  }
+  var PLAN_STEPS = [
+    { id: 'group', label: 'Group', validate: validateGroup },
+    { id: 'sites', label: 'Sites', validate: validateSelection },
+    { id: 'predict', label: 'Predictions', validate: validatePredictions },
+    { id: 'mech', label: 'Mechanisms', validate: validateMechanisms },
+    { id: 'protocol', label: 'Protocol', validate: function() { return []; } },
+    { id: 'ethics', label: 'Ethics', validate: validateEthics },
+    { id: 'output', label: 'Output', validate: function() { return []; } }
+  ];
+  function planErrorsUpTo(n) {
+    var all = [];
+    for (var i = 0; i <= n && i < PLAN_STEPS.length; i++) all = all.concat(PLAN_STEPS[i].validate());
+    return all;
+  }
+  function recomputePlanComplete() {
+    state.planComplete = planErrorsUpTo(5).length === 0;
+    return state.planComplete;
+  }
+
+  // =====================================================================
+  // RENDER: shell
+  // =====================================================================
+  var view = document.getElementById('view');
+
+  function render() {
+    recomputePlanComplete();
+    if (state.mode !== 'plan' && !state.planComplete) state.mode = 'plan';
+    var tabs = document.querySelectorAll('.mode-tab');
+    for (var i = 0; i < tabs.length; i++) {
+      var m = tabs[i].getAttribute('data-mode');
+      var locked = m !== 'plan' && !state.planComplete;
+      tabs[i].classList.toggle('locked', locked);
+      tabs[i].classList.toggle('active', state.mode === m);
+      tabs[i].setAttribute('aria-selected', state.mode === m);
+      tabs[i].setAttribute('aria-disabled', locked);
+    }
+    if (tickHandle) { clearInterval(tickHandle); tickHandle = null; }
+    if (state.mode === 'plan') renderPlan();
+    else if (state.mode === 'field') renderField();
+    else renderDebrief();
+    save();
+  }
+
+  // =====================================================================
+  // RENDER: PLAN
+  // =====================================================================
+  function renderPlan() {
+    var h = '<div class="stepper" role="tablist" aria-label="Plan steps">';
+    for (var i = 0; i < PLAN_STEPS.length; i++) {
+      var done = PLAN_STEPS[i].validate().length === 0 && i < 6;
+      h += '<button type="button" class="step-pip' + (i === state.planStep ? ' current' : '') + (done ? ' done' : '') + '" data-step="' + i + '"><span class="sq"></span>' + (i + 1) + ' ' + PLAN_STEPS[i].label + '</button>';
+    }
+    h += '</div>';
+    var fns = [renderGroup, renderSites, renderPredict, renderMech, renderProtocol, renderEthics, renderOutput];
+    h += fns[state.planStep]();
+    h += '<div class="nav-row">';
+    h += '<button type="button" class="btn btn-ghost" data-action="prev"' + (state.planStep === 0 ? ' disabled' : '') + '>Back</button>';
+    if (state.planStep < 6) h += '<button type="button" class="btn btn-next" data-action="next">Next step</button>';
+    h += '</div>';
+    view.innerHTML = h;
+  }
+
+  function errorsHtml(errs) {
+    if (!errs.length) return '';
+    var h = '<div class="notice bad" role="alert"><strong>Before moving on:</strong><ul>';
+    for (var i = 0; i < errs.length; i++) h += '<li>' + esc(errs[i]) + '</li>';
+    return h + '</ul></div>';
+  }
+
+  function renderGroup() {
+    var h = '<div class="banner"><h2>1. Group setup</h2><p>Groups of three to five work on one device. Enter names once; they appear on every printed output.</p></div>';
+    h += '<div class="panel c1">' + deco('var(--char-4)', 'sq', 'width:120px;height:120px;right:-30px;top:-30px;transform:rotate(20deg)');
+    h += '<label for="g-name">Group name <span class="req">*</span></label><input type="text" id="g-name" data-bind="group.name" value="' + esc(state.group.name) + '" autocomplete="off">';
+    h += '<label for="g-members">Members (one per line) <span class="req">*</span></label><textarea id="g-members" data-bind="group.members">' + esc(state.group.members) + '</textarea>';
+    h += '</div>';
+    return h;
+  }
+
+  function renderSites() {
+    var sites = selectedSites();
+    var h = '<div class="banner c3"><h2>2. Site selection</h2><p>Choose ' + CONFIG.minSites + ' to ' + CONFIG.maxSites + ' sites. For each, record your prior. Your selection must include at least one site you expect IS a third place and at least one you expect IS NOT or is only PARTIALLY one.</p></div>';
+    var warn = clusterWarning();
+    if (warn) h += '<div class="notice" role="status">' + esc(warn) + '</div>';
+    for (var c = 0; c < CONFIG.clusters.length; c++) {
+      var cl = CONFIG.clusters[c];
+      h += '<div class="cluster-head"><span class="pip" style="background:' + cl.color + '"></span><h3 style="margin:0;color:' + cl.color + '">' + esc(cl.name) + '</h3></div><div class="site-grid">';
+      for (var i = 0; i < CONFIG.sites.length; i++) {
+        var s = CONFIG.sites[i];
+        if (s.cluster !== cl.name) continue;
+        var sel = !!state.sites[s.id];
+        h += '<button type="button" class="site-card' + (sel ? ' selected' : '') + '" data-site-toggle="' + s.id + '" aria-pressed="' + sel + '" style="border-left-color:' + (sel ? 'var(--char-1)' : cl.color) + '">';
+        h += '<div class="sname">' + esc(s.name) + '</div><div class="stype">' + esc(s.type) + '</div>';
+        if (s.restricted) h += '<span class="tag restricted">Perimeter only</span>';
+        if (s.smallVenue) h += '<span class="tag small">Small venue</span>';
+        if (sel) h += '<span class="tag sel">Selected</span>';
+        h += '</button>';
+      }
+      h += '</div>';
+    }
+    if (sites.length) {
+      h += '<div class="section-break"></div><div class="panel c2"><div class="eyebrow">Priors</div><h3>' + esc(CONFIG.text.priorQuestion) + '</h3>';
+      for (var k = 0; k < sites.length; k++) {
+        var st = siteState(sites[k].id);
+        h += '<div class="pred-row"><div class="pname" style="border-left-color:var(--char-' + ((k % 8) + 1) + ')">' + esc(sites[k].name) + '<div class="pdef">' + esc(sites[k].type) + '</div></div><div>';
+        h += segHtml('prior:' + sites[k].id, [{ v: 'is', l: 'IS a third place' }, { v: 'isnot', l: 'IS NOT' }, { v: 'partially', l: 'is PARTIALLY' }], st.prior);
+        if (sites[k].smallVenue) h += '<div class="notice" style="margin-bottom:0"><strong>Venue rules.</strong> ' + esc(sites[k].venueNote) + '</div>';
+        if (sites[k].restricted) h += '<div class="notice bad" style="margin-bottom:0"><strong>Restricted site.</strong> ' + esc(sites[k].restrictionNote) + '</div>';
+        h += '<div class="help" style="margin-top:0.5rem"><strong>Facilitator note:</strong> ' + esc(sites[k].facilitatorNote) + '</div>';
+        h += '</div></div>';
+      }
+      h += '</div>';
+    }
+    return h;
+  }
+
+  function renderPredict() {
+    var sites = selectedSites();
+    var h = '<div class="banner c6"><h2>3. Oldenburg predictions</h2><p>For each site, predict whether each characteristic will be present, partial or absent, and give a short reason. This is a prediction, not an answer: the debrief tests it.</p></div>';
+    if (!sites.length) return h + '<div class="notice bad">Select sites first.</div>';
+    for (var i = 0; i < sites.length; i++) {
+      var ss = siteState(sites[i].id);
+      h += '<div class="panel c' + ((i % 8) + 1) + '">' + deco('var(--char-' + (((i + 3) % 8) + 1) + ')', 'circle', 'width:160px;height:160px;right:-50px;bottom:-60px');
+      h += '<div class="eyebrow">Site ' + (i + 1) + ' &middot; prior: ' + esc(priorLabel(ss.prior)) + '</div><h3>' + esc(sites[i].name) + '</h3>';
+      for (var c = 0; c < CONFIG.oldenburg.length; c++) {
+        var ch = CONFIG.oldenburg[c], p = ss.predictions[ch.id] || { status: '', reason: '' };
+        var key = 'pred:' + sites[i].id + ':' + ch.id;
+        h += '<div class="pred-row"><div class="pname" style="border-left-color:var(--char-' + ch.num + ')">' + ch.num + '. ' + esc(ch.name) + '<div class="pdef">' + esc(ch.def) + '</div></div><div>';
+        h += segHtml(key, [{ v: 'present', l: 'Present' }, { v: 'partial', l: 'Partial' }, { v: 'absent', l: 'Absent' }, { v: 'cannot', l: 'Cannot tell' }], p.status);
+        h += '<label class="visually-hidden" for="' + key + '-r">Reason for ' + esc(ch.name) + ' at ' + esc(sites[i].name) + '</label>';
+        h += '<input type="text" id="' + key + '-r" data-pred-reason="' + sites[i].id + ':' + ch.id + '" placeholder="Short reason" value="' + esc(p.reason) + '">';
+        h += '</div></div>';
+      }
+      h += '</div>';
+    }
+    return h;
+  }
+
+  function renderMech() {
+    var sites = selectedSites();
+    var h = '<div class="banner c5"><h2>4. Mechanisms</h2><p>Carry two explanations from the week 4 claim wall. State each one, its lens and the decline claim it addresses. Then, for each chosen site, write what you would expect and would not expect to see if the explanation is true. These become your test conditions.</p></div>';
+    for (var m = 0; m < 2; m++) {
+      var mech = state.mechanisms[m];
+      h += '<div class="mech-box' + (m ? ' m2' : '') + '"><div class="eyebrow" style="color:var(--char-' + (m ? 6 : 4) + ')">Explanation ' + (m + 1) + '</div>';
+      h += '<label for="mech-' + m + '-text">Explanation (from the claim wall) <span class="req">*</span></label><textarea id="mech-' + m + '-text" data-mech="' + m + ':text">' + esc(mech.text) + '</textarea>' + wcHtml(mech.text, CONFIG.minWords);
+      h += '<div class="row2"><div><label for="mech-' + m + '-lens">Lens <span class="req">*</span></label><select id="mech-' + m + '-lens" data-mech="' + m + ':lens"><option value="">Choose a lens</option>';
+      for (var l = 0; l < CONFIG.lenses.length; l++) h += '<option value="' + CONFIG.lenses[l].id + '"' + (mech.lens === CONFIG.lenses[l].id ? ' selected' : '') + '>' + esc(CONFIG.lenses[l].name) + '</option>';
+      h += '</select></div><div><label for="mech-' + m + '-claim">Decline claim it addresses <span class="req">*</span></label><select id="mech-' + m + '-claim" data-mech="' + m + ':claim"><option value="">Choose a claim</option>';
+      for (var c = 0; c < CONFIG.claims.length; c++) h += '<option value="' + CONFIG.claims[c].id + '"' + (mech.claim === CONFIG.claims[c].id ? ' selected' : '') + '>' + esc(CONFIG.claims[c].name) + ': ' + esc(CONFIG.claims[c].def) + '</option>';
+      h += '</select></div></div>';
+      if (!sites.length) h += '<div class="notice bad">Select sites first.</div>';
+      for (var i = 0; i < sites.length; i++) {
+        var ps = mech.perSite[sites[i].id] || { expect: '', notExpect: '' };
+        h += '<div class="section-break' + (m ? ' c6' : '') + '"></div><h3 style="color:var(--char-' + ((i % 8) + 1) + ')">At ' + esc(sites[i].name) + '</h3>';
+        h += '<label for="mech-' + m + '-' + sites[i].id + '-e">' + esc(CONFIG.text.expectLabel) + ' <span class="req">*</span></label><textarea class="short" id="mech-' + m + '-' + sites[i].id + '-e" data-mech-site="' + m + ':' + sites[i].id + ':expect">' + esc(ps.expect) + '</textarea>';
+        h += '<label for="mech-' + m + '-' + sites[i].id + '-n">' + esc(CONFIG.text.notExpectLabel) + ' <span class="req">*</span></label><textarea class="short" id="mech-' + m + '-' + sites[i].id + '-n" data-mech-site="' + m + ':' + sites[i].id + ':notExpect">' + esc(ps.notExpect) + '</textarea>';
+      }
+      h += '</div>';
+    }
+    return h;
+  }
+
+  function protocolItemsFor(site) {
+    var out = [];
+    for (var i = 0; i < CONFIG.protocolItems.length; i++) {
+      var it = CONFIG.protocolItems[i];
+      if (site.restricted && it.restrictedHide) continue;
+      out.push(it);
+    }
+    return out;
+  }
+
+  function renderProtocol() {
+    var sites = selectedSites();
+    var h = '<div class="banner c3"><h2>5. Protocol review</h2><p>The assembled checklist for each site: the fixed protocol plus your expected and not-expected observations. Add up to ' + CONFIG.maxCustomItems + ' custom items per site.</p></div>';
+    for (var i = 0; i < sites.length; i++) {
+      var s = sites[i], ss = siteState(s.id);
+      h += '<div class="panel c' + ((i % 8) + 1) + '"><div class="eyebrow">Site ' + (i + 1) + '</div><h3>' + esc(s.name) + '</h3>';
+      if (s.restricted) h += '<div class="notice bad"><strong>Restricted site.</strong> ' + esc(s.restrictionNote) + ' Items struck through below are removed from this site\'s protocol.</div>';
+      if (s.smallVenue) h += '<div class="notice"><strong>Venue rules.</strong> ' + esc(s.venueNote) + '</div>';
+      h += '<div class="lbl">Fixed protocol</div><ul class="proto-list">';
+      for (var p = 0; p < CONFIG.protocolItems.length; p++) {
+        var it = CONFIG.protocolItems[p], hidden = s.restricted && it.restrictedHide;
+        h += '<li class="' + (hidden ? 'hidden-item' : '') + '"><strong>' + esc(it.label) + '</strong>' + (hidden ? ' (removed for restricted site)' : '<br><span class="help" style="margin:0">' + esc(it.prompt) + '</span>') + '</li>';
+      }
+      h += '</ul><div class="lbl">Expected and not-expected observations</div>';
+      for (var m = 0; m < 2; m++) {
+        var ps = state.mechanisms[m].perSite[s.id] || {};
+        h += '<div class="exp-block"><strong>Explanation ' + (m + 1) + '</strong> (' + esc((lensById(state.mechanisms[m].lens) || {}).name || 'no lens') + ', ' + esc((claimById(state.mechanisms[m].claim) || {}).name || 'no claim') + ')';
+        h += '<div><span class="exp-l">Expect:</span> ' + esc(ps.expect || 'not yet written') + '</div><div><span class="exp-l neg">Not expect:</span> ' + esc(ps.notExpect || 'not yet written') + '</div></div>';
+      }
+      h += '<div class="lbl">Custom items (max ' + CONFIG.maxCustomItems + ')</div><ul class="proto-list">';
+      for (var c = 0; c < ss.customItems.length; c++) {
+        h += '<li class="custom"><label class="visually-hidden" for="ci-' + s.id + '-' + c + '">Custom item ' + (c + 1) + '</label><div style="display:flex;gap:6px;align-items:center"><input type="text" id="ci-' + s.id + '-' + c + '" data-custom="' + s.id + ':' + c + '" value="' + esc(ss.customItems[c]) + '" placeholder="Custom observation item"><button type="button" class="btn btn-ghost btn-small" data-custom-del="' + s.id + ':' + c + '" aria-label="Remove custom item ' + (c + 1) + '">&times;</button></div></li>';
+      }
+      h += '</ul>';
+      if (ss.customItems.length < CONFIG.maxCustomItems) h += '<button type="button" class="btn btn-ghost btn-small" data-custom-add="' + s.id + '" style="margin-top:0.5rem">Add custom item</button>';
+      h += '</div>';
+    }
+    return h;
+  }
+
+  function renderEthics() {
+    var sites = selectedSites();
+    var h = '<div class="banner c2"><h2>6. Ethics gate</h2><p>Every statement must be ticked by the group before the field and debrief modes unlock.</p></div><div class="panel c2">';
+    for (var i = 0; i < CONFIG.ethicsStatements.length; i++) {
+      h += '<label class="check"><input type="checkbox" data-ethics="' + i + '"' + (state.ethics.statements[i] ? ' checked' : '') + '><span>' + esc(CONFIG.ethicsStatements[i]) + '</span></label>';
+    }
+    for (var s = 0; s < sites.length; s++) {
+      if (sites[s].restricted) h += '<label class="check restricted"><input type="checkbox" data-ethics-restricted="' + sites[s].id + '"' + (state.ethics.restricted[sites[s].id] ? ' checked' : '') + '><span><strong>' + esc(sites[s].name) + ' is a restricted site.</strong> ' + esc(sites[s].restrictionNote) + ' We acknowledge and will follow this.</span></label>';
+      if (sites[s].smallVenue) h += '<label class="check venue"><input type="checkbox" data-ethics-venue="' + sites[s].id + '"' + (state.ethics.venue[sites[s].id] ? ' checked' : '') + '><span><strong>' + esc(sites[s].name) + ' is a small venue.</strong> ' + esc(sites[s].venueNote) + ' We acknowledge and will follow this.</span></label>';
+    }
+    return h + '</div>';
+  }
+
+  function renderOutput() {
+    var errs = planErrorsUpTo(5);
+    var h = '<div class="banner"><h2>7. Field plan output</h2><p>Print one A4 page per site, and export JSON so the plan can be opened on a phone in the field.</p></div>';
+    if (errs.length) h += errorsHtml(errs);
+    else h += '<div class="notice good"><strong>Plan complete.</strong> Field and Debrief modes are unlocked. Export JSON now if you will use a different device in the field.</div>';
+    h += '<div class="toolbar"><button type="button" class="btn" data-action="print-plan"' + (errs.length ? ' disabled' : '') + '>Print field plan</button><button type="button" class="btn btn-ghost" data-action="export">Export JSON</button></div>';
+    var sites = selectedSites();
+    h += '<div class="panel c4"><div class="eyebrow">Summary</div><h3>' + esc(state.group.name || 'Unnamed group') + '</h3><ul class="proto-list">';
+    for (var i = 0; i < sites.length; i++) h += '<li><strong>' + esc(sites[i].name) + '</strong> &middot; ' + esc(priorLabel(siteState(sites[i].id).prior)) + '</li>';
+    return h + '</ul></div>';
+  }
+
+  // =====================================================================
+  // RENDER: IN THE FIELD
+  // =====================================================================
+  function renderField() {
+    var sites = selectedSites();
+    var h = '<div class="field-wrap"><div class="banner c3"><h2>In the field</h2><p>Select the site you are at. Everything you type is saved as you go.</p></div>';
+    h += '<div class="site-tabs" role="tablist" aria-label="Site">';
+    for (var i = 0; i < sites.length; i++) h += '<button type="button" class="site-tab' + (state.fieldSite === sites[i].id ? ' active' : '') + '" role="tab" data-field-site="' + sites[i].id + '" aria-selected="' + (state.fieldSite === sites[i].id) + '">' + esc(sites[i].name) + '</button>';
+    h += '</div>';
+    var site = siteById(state.fieldSite);
+    if (!site || !state.sites[site.id]) return void (view.innerHTML = h + '<div class="notice info">Choose a site above to begin.</div></div>');
+    var f = fieldState(site.id);
+    if (!f.firstEntry) f.firstEntry = new Date().toISOString();
+    if (site.smallVenue && !f.venueStart) f.venueStart = f.firstEntry;
+    h += '<div class="meta-line">Arrived ' + esc(fmtDate(f.firstEntry)) + ' &middot; prior: ' + esc(priorLabel(siteState(site.id).prior)) + '</div>';
+    if (site.restricted) h += '<div class="notice bad"><strong>Restricted site.</strong> ' + esc(site.restrictionNote) + '</div>';
+    if (site.smallVenue) h += '<div class="countdown" id="countdown" role="timer" aria-live="off"><div><div class="eyebrow" style="color:#fff">Time remaining at this venue</div><div class="cd-val" id="cd-val">--:--</div></div><div style="font-size:0.8rem;max-width:260px">' + esc(site.venueNote) + '</div></div>';
+    h += '<div class="panel c3"><div class="row2"><div><label for="f-weather">Weather</label><input type="text" id="f-weather" data-field="weather" value="' + esc(f.weather) + '"></div><div><div class="lbl">How busy</div>' + segHtml('busy', CONFIG.busyOptions.map(function(o) { return { v: o, l: o }; }), f.busy) + '</div></div></div>';
+    var items = protocolItemsFor(site);
+    for (var p = 0; p < items.length; p++) {
+      var it = items[p], filled = it.timer ? f.parties.some(function(x) { return x.elapsed > 0; }) : !!String(f.notes[it.id] || '').trim();
+      h += '<div class="coll' + (f.open[it.id] ? ' open' : '') + (filled ? ' filled' : '') + '"><button type="button" class="coll-head" data-coll="' + it.id + '" aria-expanded="' + !!f.open[it.id] + '"><span>' + esc(it.label) + '</span><span class="st" aria-hidden="true"></span></button><div class="coll-body"><p class="help">' + esc(it.prompt) + '</p>';
+      if (it.timer) h += timerHtml(f);
+      h += '<label for="fn-' + it.id + '">Notes</label><textarea id="fn-' + it.id + '" data-field-note="' + it.id + '">' + esc(f.notes[it.id] || '') + '</textarea></div></div>';
+    }
+    var ss = siteState(site.id);
+    for (var c = 0; c < ss.customItems.length; c++) {
+      var cid = 'custom' + c;
+      if (!String(ss.customItems[c] || '').trim()) continue;
+      h += '<div class="coll' + (f.open[cid] ? ' open' : '') + (String(f.notes[cid] || '').trim() ? ' filled' : '') + '" style="border-left-color:var(--char-6)"><button type="button" class="coll-head" data-coll="' + cid + '" aria-expanded="' + !!f.open[cid] + '"><span>' + esc(ss.customItems[c]) + '</span><span class="st" aria-hidden="true"></span></button><div class="coll-body"><label for="fn-' + cid + '">Notes</label><textarea id="fn-' + cid + '" data-field-note="' + cid + '">' + esc(f.notes[cid] || '') + '</textarea></div></div>';
+    }
+    for (var m = 0; m < 2; m++) {
+      var ps = state.mechanisms[m].perSite[site.id] || {}, mid = 'mech' + m;
+      h += '<div class="coll' + (f.open[mid] ? ' open' : '') + (String(f.notes[mid] || '').trim() ? ' filled' : '') + '" style="border-left-color:var(--char-' + (m ? 6 : 4) + ')"><button type="button" class="coll-head" data-coll="' + mid + '" aria-expanded="' + !!f.open[mid] + '"><span>Explanation ' + (m + 1) + ' test conditions</span><span class="st" aria-hidden="true"></span></button><div class="coll-body">';
+      h += '<div class="exp-block"><div><span class="exp-l">Expect:</span> ' + esc(ps.expect) + '</div><div><span class="exp-l neg">Not expect:</span> ' + esc(ps.notExpect) + '</div></div>';
+      h += '<label for="fn-' + mid + '">What did you actually see?</label><textarea id="fn-' + mid + '" data-field-note="' + mid + '">' + esc(f.notes[mid] || '') + '</textarea></div></div>';
+    }
+    view.innerHTML = h + '</div>';
+    tickHandle = setInterval(tick, 1000);
+    tick();
+  }
+
+  function timerHtml(f) {
+    var h = '<div class="timer-grid">';
+    for (var i = 0; i < 5; i++) {
+      var p = f.parties[i] || { start: 0, elapsed: 0, running: false };
+      h += '<div class="timer-row' + (p.running ? ' running' : (p.elapsed ? ' stopped' : '')) + '"><span class="tname">Party ' + (i + 1) + '</span>';
+      h += '<span class="tval" data-tval="' + i + '">' + fmtMs(p.elapsed + (p.running ? Date.now() - p.start : 0)) + '</span>';
+      h += '<button type="button" class="btn btn-small' + (p.running ? ' btn-danger' : '') + '" data-timer="' + i + '">' + (p.running ? 'Stop' : (p.elapsed ? 'Resume' : 'Start')) + '</button></div>';
+    }
+    return h + '</div><p class="help" style="margin-top:0.5rem">Timers record only how long a party stays. Do not describe the people.</p>';
+  }
+
+  function tick() {
+    var site = siteById(state.fieldSite);
+    if (!site) return;
+    var f = fieldState(site.id);
+    var vals = view.querySelectorAll('[data-tval]');
+    for (var i = 0; i < vals.length; i++) {
+      var p = f.parties[+vals[i].getAttribute('data-tval')];
+      if (p && p.running) vals[i].textContent = fmtMs(p.elapsed + (Date.now() - p.start));
+    }
+    var cd = document.getElementById('cd-val');
+    if (cd && f.venueStart) {
+      var remain = CONFIG.smallVenueMinutes * 60000 - (Date.now() - new Date(f.venueStart).getTime());
+      cd.textContent = (remain < 0 ? '-' : '') + fmtMs(Math.abs(remain));
+      document.getElementById('countdown').classList.toggle('over', remain < 0);
+    }
+  }
+
+  function toggleTimer(i) {
+    var f = fieldState(state.fieldSite);
+    var p = f.parties[i] || { start: 0, elapsed: 0, running: false };
+    if (p.running) { p.elapsed += Date.now() - p.start; p.running = false; p.start = 0; }
+    else { p.start = Date.now(); p.running = true; }
+    f.parties[i] = p;
+    render();
+  }
+
+  // =====================================================================
+  // RENDER: DEBRIEF
+  // =====================================================================
+  var DEBRIEF_STEPS = ['Prediction check', 'Verdict', 'Link to decline', 'Summary', 'Outputs'];
+
+  function predictionChecks(site) {
+    var out = [], ss = siteState(site.id);
+    for (var c = 0; c < CONFIG.oldenburg.length; c++) {
+      var ch = CONFIG.oldenburg[c], p = ss.predictions[ch.id] || {};
+      out.push({ key: 'char:' + ch.id, label: ch.num + '. ' + ch.name, predicted: statusLabel(p.status), detail: p.reason || '' });
+    }
+    for (var m = 0; m < 2; m++) {
+      var ps = state.mechanisms[m].perSite[site.id] || {};
+      out.push({ key: 'mech:' + m + ':expect', label: 'Explanation ' + (m + 1) + ': expected to see', predicted: 'Expected', detail: ps.expect || '' });
+      out.push({ key: 'mech:' + m + ':notExpect', label: 'Explanation ' + (m + 1) + ': not expected to see', predicted: 'Not expected', detail: ps.notExpect || '' });
+    }
+    return out;
+  }
+
+  function validateDebriefSite(site) {
+    var e = [], d = debriefState(site.id), checks = predictionChecks(site);
+    for (var i = 0; i < checks.length; i++) {
+      var c = d.checks[checks[i].key] || {};
+      if (!c.result) e.push(checks[i].label + ': choose confirmed, disconfirmed or ambiguous.');
+      else if (!String(c.obs || '').trim()) e.push(checks[i].label + ': add the supporting observation.');
+    }
+    if (!d.verdict) e.push('Choose a verdict.');
+    if (wordCount(d.justification) < CONFIG.minWords) e.push('Justification needs at least ' + CONFIG.minWords + ' words.');
+    if (citedCount(d) < CONFIG.minCitedCharacteristics) e.push('Cite at least ' + CONFIG.minCitedCharacteristics + ' Oldenburg characteristics in the verdict.');
+    if (!d.claims.length) e.push('Select at least one decline claim the site bears on.');
+    if (!d.relation) e.push('Choose supports, undermines or complicates.');
+    if (wordCount(d.explanation) < CONFIG.minWords) e.push('Link-to-decline explanation needs at least ' + CONFIG.minWords + ' words.');
+    if (!String(d.finding || '').trim()) e.push('Write the one-sentence finding for the claim wall card.');
+    else if (wordCount(d.finding) > CONFIG.findingMaxWords) e.push('The claim wall finding must be ' + CONFIG.findingMaxWords + ' words or fewer.');
+    return e;
+  }
+  function citedCount(d) {
+    var found = {};
+    for (var i = 0; i < d.cited.length; i++) found[d.cited[i]] = true;
+    var low = String(d.justification || '').toLowerCase();
+    for (var c = 0; c < CONFIG.oldenburg.length; c++) {
+      var name = CONFIG.oldenburg[c].name.toLowerCase().replace(/^(the|a)\s+/, '');
+      if (low.indexOf(name) !== -1) found[CONFIG.oldenburg[c].id] = true;
+    }
+    return Object.keys(found).length;
+  }
+
+  function renderDebrief() {
+    var sites = selectedSites();
+    var h = '<div class="banner c6"><h2>Debrief</h2><p>Test each prediction against what you observed, reach a verdict, and say what the visit does to your explanations.</p></div>';
+    h += '<div class="stepper" role="tablist" aria-label="Debrief steps">';
+    for (var i = 0; i < DEBRIEF_STEPS.length; i++) h += '<button type="button" class="step-pip' + (i === state.debriefStep ? ' current' : '') + '" data-dstep="' + i + '"><span class="sq"></span>' + (i + 1) + ' ' + DEBRIEF_STEPS[i] + '</button>';
+    h += '</div>';
+    if (state.debriefStep < 3) {
+      h += '<div class="site-tabs" role="tablist" aria-label="Site">';
+      for (var s = 0; s < sites.length; s++) h += '<button type="button" class="site-tab' + (state.debriefSite === sites[s].id ? ' active' : '') + '" role="tab" data-debrief-site="' + sites[s].id + '" aria-selected="' + (state.debriefSite === sites[s].id) + '">' + esc(sites[s].name) + '</button>';
+      h += '</div>';
+      var site = siteById(state.debriefSite);
+      if (!site || !state.sites[site.id]) h += '<div class="notice info">Choose a site above.</div>';
+      else h += [renderPredCheck, renderVerdict, renderLink][state.debriefStep](site);
+    } else if (state.debriefStep === 3) h += renderSummary();
+    else h += renderDebriefOutputs();
+    h += '<div class="nav-row"><button type="button" class="btn btn-ghost" data-action="dprev"' + (state.debriefStep === 0 ? ' disabled' : '') + '>Back</button>';
+    if (state.debriefStep < 4) h += '<button type="button" class="btn btn-next" data-action="dnext">Next</button>';
+    view.innerHTML = h + '</div>';
+  }
+
+  function fieldNotesHtml(site) {
+    var f = state.field[site.id];
+    if (!f) return '<div class="notice info">No field notes recorded for this site.</div>';
+    var h = '<details><summary class="lbl" style="cursor:pointer">Your field notes (tap to show)</summary>';
+    var items = protocolItemsFor(site);
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].timer) {
+        var parts = [];
+        for (var p = 0; p < (f.parties || []).length; p++) if (f.parties[p] && f.parties[p].elapsed) parts.push('Party ' + (p + 1) + ': ' + fmtMs(f.parties[p].elapsed));
+        if (parts.length) h += '<div class="exp-block"><strong>Dwell times.</strong> ' + esc(parts.join('; ')) + '</div>';
+      }
+      if (f.notes[items[i].id]) h += '<div class="exp-block"><strong>' + esc(items[i].label) + '.</strong> ' + esc(f.notes[items[i].id]) + '</div>';
+    }
+    for (var m = 0; m < 2; m++) if (f.notes['mech' + m]) h += '<div class="exp-block"><strong>Explanation ' + (m + 1) + ' observations.</strong> ' + esc(f.notes['mech' + m]) + '</div>';
+    return h + '</details>';
+  }
+
+  function renderPredCheck(site) {
+    var d = debriefState(site.id), checks = predictionChecks(site);
+    var h = '<div class="panel c6"><div class="eyebrow">Step 1 &middot; ' + esc(site.name) + '</div><h3>Prediction check</h3><p class="help">For each prediction and test condition, say whether the visit confirmed it, disconfirmed it or left it ambiguous, and quote the observation that supports your judgement.</p>' + fieldNotesHtml(site);
+    for (var i = 0; i < checks.length; i++) {
+      var c = d.checks[checks[i].key] || { result: '', obs: '' };
+      h += '<div class="check-row"><div class="cq"><b>' + esc(checks[i].label) + '</b>' + esc(checks[i].detail || 'nothing recorded') + ' <span class="pv">' + esc(checks[i].predicted) + '</span></div>';
+      h += segHtml('check:' + checks[i].key, [{ v: 'confirmed', l: 'Confirmed' }, { v: 'disconfirmed', l: 'Disconfirmed' }, { v: 'ambiguous', l: 'Ambiguous' }], c.result);
+      h += '<label for="obs-' + i + '">Observation that supports this <span class="req">*</span></label><textarea class="short" id="obs-' + i + '" data-check-obs="' + esc(checks[i].key) + '">' + esc(c.obs) + '</textarea></div>';
+    }
+    return h + '</div>';
+  }
+
+  function renderVerdict(site) {
+    var d = debriefState(site.id);
+    var h = '<div class="panel c1"><div class="eyebrow">Step 2 &middot; ' + esc(site.name) + '</div><h3>Verdict: is this a third place?</h3><p class="help">Your prior was: <strong>' + esc(priorLabel(siteState(site.id).prior)) + '</strong>.</p>';
+    h += segHtml('verdict', [{ v: 'yes', l: 'Yes' }, { v: 'no', l: 'No' }, { v: 'partially', l: 'Partially' }], d.verdict, { big: true });
+    h += '<label for="just">Justification <span class="req">*</span></label><textarea id="just" data-debrief="justification">' + esc(d.justification) + '</textarea>' + wcHtml(d.justification, CONFIG.minWords);
+    h += '<div class="lbl">Characteristics cited (tick at least ' + CONFIG.minCitedCharacteristics + ', or name them in the text)</div><div class="chip-grid">';
+    for (var c = 0; c < CONFIG.oldenburg.length; c++) {
+      var on = d.cited.indexOf(CONFIG.oldenburg[c].id) !== -1;
+      h += '<label class="' + (on ? 'on' : '') + '"><input type="checkbox" data-cited="' + CONFIG.oldenburg[c].id + '"' + (on ? ' checked' : '') + '>' + CONFIG.oldenburg[c].num + ' ' + esc(CONFIG.oldenburg[c].name) + '</label>';
+    }
+    var n = citedCount(d);
+    h += '</div><div class="wc ' + (n >= CONFIG.minCitedCharacteristics ? 'ok' : 'low') + '">' + n + ' / ' + CONFIG.minCitedCharacteristics + ' characteristics cited</div>';
+    return h + '</div>';
+  }
+
+  function renderLink(site) {
+    var d = debriefState(site.id);
+    var h = '<div class="panel c3"><div class="eyebrow">Step 3 &middot; ' + esc(site.name) + '</div><h3>Link to decline</h3><div class="lbl">Which of the four claims does this site bear on?</div><div class="chip-grid">';
+    for (var c = 0; c < CONFIG.claims.length; c++) {
+      var on = d.claims.indexOf(CONFIG.claims[c].id) !== -1;
+      h += '<label class="' + (on ? 'on' : '') + '" title="' + esc(CONFIG.claims[c].def) + '"><input type="checkbox" data-dclaim="' + CONFIG.claims[c].id + '"' + (on ? ' checked' : '') + '>' + esc(CONFIG.claims[c].name) + '</label>';
+    }
+    h += '</div><div class="lbl">What you observed here...</div>' + segHtml('relation', [{ v: 'supports', l: 'Supports the claim' }, { v: 'undermines', l: 'Undermines it' }, { v: 'complicates', l: 'Complicates it' }], d.relation);
+    h += '<label for="expl">Explanation <span class="req">*</span></label><textarea id="expl" data-debrief="explanation">' + esc(d.explanation) + '</textarea>' + wcHtml(d.explanation, CONFIG.minWords);
+    h += '<label for="finding">One-sentence finding for the claim wall card (max ' + CONFIG.findingMaxWords + ' words)</label><textarea class="short" id="finding" data-debrief="finding">' + esc(d.finding) + '</textarea><div class="wc ' + (wordCount(d.finding) > CONFIG.findingMaxWords ? 'low' : (wordCount(d.finding) ? 'ok' : '')) + '">' + wordCount(d.finding) + ' / ' + CONFIG.findingMaxWords + ' words maximum</div>';
+    h += '</div><div class="section-break c6"></div><div class="panel c8"><div class="eyebrow">Across all sites</div><h3>Explanations after the visit</h3>';
+    h += '<label for="pl-more">' + esc(CONFIG.text.plausibilityMore) + '</label><textarea id="pl-more" data-plaus="more">' + esc(state.plausibility.more) + '</textarea>' + wcHtml(state.plausibility.more, CONFIG.minWords);
+    h += '<label for="pl-less">' + esc(CONFIG.text.plausibilityLess) + '</label><textarea id="pl-less" data-plaus="less">' + esc(state.plausibility.less) + '</textarea>' + wcHtml(state.plausibility.less, CONFIG.minWords);
+    return h + '</div>';
+  }
+
+  function priorVerdictAgree(prior, verdict) {
+    if (!prior || !verdict) return null;
+    var map = { is: 'yes', isnot: 'no', partially: 'partially' };
+    return map[prior] === verdict;
+  }
+
+  function renderSummary() {
+    var sites = selectedSites();
+    var h = '<div class="panel c4"><div class="eyebrow">Step 4</div><h3>Prior versus verdict</h3><p class="help">Highlighted rows are sites where the group changed its mind.</p><div style="overflow-x:auto"><table class="summary-table"><thead><tr><th>Site</th><th>Prior</th><th>Verdict</th><th>Claims</th><th>Relation</th></tr></thead><tbody>';
+    for (var i = 0; i < sites.length; i++) {
+      var ss = siteState(sites[i].id), d = debriefState(sites[i].id), agree = priorVerdictAgree(ss.prior, d.verdict);
+      var pc = ss.prior === 'is' ? 'g' : ss.prior === 'isnot' ? 'r' : ss.prior === 'partially' ? 'a' : 'n';
+      var vc = d.verdict === 'yes' ? 'g' : d.verdict === 'no' ? 'r' : d.verdict === 'partially' ? 'a' : 'n';
+      h += '<tr class="' + (agree === false ? 'changed' : '') + '"><td><strong>' + esc(sites[i].name) + '</strong>' + (agree === false ? '<br><span class="eyebrow" style="color:var(--amb)">Changed mind</span>' : '') + '</td>';
+      h += '<td><span class="pill ' + pc + '">' + esc(priorLabel(ss.prior)) + '</span></td><td><span class="pill ' + vc + '">' + esc(verdictLabel(d.verdict)) + '</span></td>';
+      h += '<td>' + esc(d.claims.map(function(c) { return (claimById(c) || {}).name || c; }).join(', ') || 'none') + '</td><td>' + esc(d.relation || 'not set') + '</td></tr>';
+    }
+    h += '</tbody></table></div></div>';
+    var errs = [];
+    for (var s = 0; s < sites.length; s++) errs = errs.concat(validateDebriefSite(sites[s]).map(function(e) { return sites[s].name + ': ' + e; }));
+    if (wordCount(state.plausibility.more) < CONFIG.minWords) errs.push('The MORE plausible explanation needs at least ' + CONFIG.minWords + ' words.');
+    if (wordCount(state.plausibility.less) < CONFIG.minWords) errs.push('The LESS plausible explanation needs at least ' + CONFIG.minWords + ' words.');
+    h += errs.length ? errorsHtml(errs) : '<div class="notice good"><strong>Debrief complete for every site.</strong></div>';
+    return h;
+  }
+
+  function renderDebriefOutputs() {
+    var h = '<div class="panel c1"><div class="eyebrow">Step 5</div><h3>Outputs</h3><p class="help">Site reports print one A4 page per site. Claim wall cards print four A6 cards per A4 sheet with cut lines. Cards use the one-sentence finding written in step 3.</p>';
+    h += '<div class="toolbar"><button type="button" class="btn" data-action="print-reports">Print site reports</button><button type="button" class="btn btn-next" data-action="print-cards">Print claim wall cards</button><button type="button" class="btn btn-ghost" data-action="export">Export JSON</button></div></div>';
+    return h;
+  }
+
+  // =====================================================================
+  // PRINT OUTPUTS
+  // =====================================================================
+  var printArea = document.getElementById('print-area');
+  function memberLine() { return state.group.members.split(/\n+/).map(function(s) { return s.trim(); }).filter(Boolean).join(', '); }
+  function metaLine() { return esc(state.group.name || 'Unnamed group') + (memberLine() ? ' &middot; ' + esc(memberLine()) : '') + ' &middot; ' + esc(new Date().toLocaleDateString('en-GB')); }
+  function doPrint(html) {
+    printArea.innerHTML = html;
+    window.print();
+  }
+
+  function planPageHtml(site, idx) {
+    var ss = siteState(site.id);
+    var h = '<div class="print-page"><div class="pp-head" style="border-left-color:var(--char-' + ((idx % 8) + 1) + ')"><div class="eyebrow">Field plan &middot; site ' + (idx + 1) + ' &middot; ' + esc(site.cluster) + '</div><h2>' + esc(site.name) + '</h2></div>';
+    h += '<div class="pp-meta">' + metaLine() + '<br>' + esc(site.type) + ' &middot; Prior: <strong>' + esc(priorLabel(ss.prior)) + '</strong></div>';
+    if (site.restricted) h += '<div class="pp-note bad"><strong>Restricted site.</strong> ' + esc(site.restrictionNote) + '</div>';
+    if (site.smallVenue) h += '<div class="pp-note"><strong>Venue rules.</strong> ' + esc(site.venueNote) + '</div>';
+    h += '<div class="pp-sec">Oldenburg predictions</div><table class="pp-table"><thead><tr><th style="width:32%">Characteristic</th><th style="width:13%">Predicted</th><th>Reason</th><th style="width:20%">Observed</th></tr></thead><tbody>';
+    for (var c = 0; c < CONFIG.oldenburg.length; c++) {
+      var p = ss.predictions[CONFIG.oldenburg[c].id] || {};
+      h += '<tr><td>' + CONFIG.oldenburg[c].num + '. ' + esc(CONFIG.oldenburg[c].name) + '</td><td>' + esc(statusLabel(p.status)) + '</td><td>' + esc(p.reason || '') + '</td><td></td></tr>';
+    }
+    h += '</tbody></table><div class="pp-sec">Test conditions</div><table class="pp-table"><thead><tr><th style="width:18%">Explanation</th><th>Expect to see</th><th>Do not expect to see</th></tr></thead><tbody>';
+    for (var m = 0; m < 2; m++) {
+      var mech = state.mechanisms[m], ps = mech.perSite[site.id] || {};
+      h += '<tr><td>' + (m + 1) + ': ' + esc((lensById(mech.lens) || {}).name || '') + ' / ' + esc((claimById(mech.claim) || {}).name || '') + '</td><td>' + esc(ps.expect || '') + '</td><td>' + esc(ps.notExpect || '') + '</td></tr>';
+    }
+    h += '</tbody></table><div class="pp-sec">Protocol checklist</div><div class="pp-2col">';
+    var items = protocolItemsFor(site);
+    for (var i = 0; i < items.length; i++) h += '<div class="pp-box"><div class="bl">' + esc(items[i].label) + '</div></div>';
+    for (var k = 0; k < ss.customItems.length; k++) if (String(ss.customItems[k]).trim()) h += '<div class="pp-box"><div class="bl">Custom: ' + esc(ss.customItems[k]) + '</div></div>';
+    h += '<div class="pp-box"><div class="bl">Weather / how busy / arrival time</div></div></div></div>';
+    return h;
+  }
+  function printPlan() {
+    var sites = selectedSites(), h = '';
+    for (var i = 0; i < sites.length; i++) h += planPageHtml(sites[i], i);
+    doPrint(h);
+  }
+
+  function reportPageHtml(site, idx) {
+    var ss = siteState(site.id), d = debriefState(site.id), f = state.field[site.id] || { notes: {}, parties: [] }, checks = predictionChecks(site);
+    var h = '<div class="print-page"><div class="pp-head" style="border-left-color:var(--char-' + ((idx % 8) + 1) + ')"><div class="eyebrow">Site report &middot; site ' + (idx + 1) + ' &middot; ' + esc(site.cluster) + '</div><h2>' + esc(site.name) + '</h2></div>';
+    h += '<div class="pp-meta">' + metaLine() + '<br>Visited ' + esc(fmtDate(f.firstEntry)) + (f.weather ? ' &middot; ' + esc(f.weather) : '') + (f.busy ? ' &middot; ' + esc(f.busy) : '') + '</div>';
+    h += '<div class="pp-2col"><div><div class="pp-sec">Prior</div><div class="pp-text">' + esc(priorLabel(ss.prior)) + '</div></div><div><div class="pp-sec">Verdict</div><div class="pp-text">' + esc(verdictLabel(d.verdict)) + '</div></div></div>';
+    h += '<div class="pp-sec">Justification</div><div class="pp-text">' + esc(d.justification) + '</div>';
+    h += '<div class="pp-sec">Prediction check</div><table class="pp-table"><thead><tr><th style="width:30%">Prediction</th><th style="width:14%">Result</th><th>Supporting observation</th></tr></thead><tbody>';
+    for (var i = 0; i < checks.length; i++) {
+      var c = d.checks[checks[i].key] || {};
+      h += '<tr><td>' + esc(checks[i].label) + '</td><td>' + esc(c.result || '') + '</td><td>' + esc(c.obs || '') + '</td></tr>';
+    }
+    h += '</tbody></table><div class="pp-sec">Link to decline</div><div class="pp-text">Claims: ' + esc(d.claims.map(function(x) { return (claimById(x) || {}).name || x; }).join(', ') || 'none') + ' &middot; ' + esc(d.relation || '') + '\n' + esc(d.explanation) + '</div>';
+    var notes = [], items = protocolItemsFor(site);
+    for (var n = 0; n < items.length; n++) if (f.notes[items[n].id]) notes.push('<strong>' + esc(items[n].label) + ':</strong> ' + esc(f.notes[items[n].id]));
+    var parts = [];
+    for (var p = 0; p < (f.parties || []).length; p++) if (f.parties[p] && f.parties[p].elapsed) parts.push('Party ' + (p + 1) + ' ' + fmtMs(f.parties[p].elapsed));
+    if (parts.length) notes.push('<strong>Dwell times:</strong> ' + esc(parts.join(', ')));
+    if (notes.length) h += '<div class="pp-sec">Field notes</div><div class="pp-text">' + notes.join('<br>') + '</div>';
+    return h + '</div>';
+  }
+  function printReports() {
+    var sites = selectedSites(), h = '';
+    for (var i = 0; i < sites.length; i++) h += reportPageHtml(sites[i], i);
+    h += '<div class="print-page"><div class="pp-head"><div class="eyebrow">Debrief</div><h2>Explanations after the visit</h2></div><div class="pp-meta">' + metaLine() + '</div>';
+    h += '<div class="pp-sec">' + esc(CONFIG.text.plausibilityMore) + '</div><div class="pp-text">' + esc(state.plausibility.more) + '</div>';
+    h += '<div class="pp-sec">' + esc(CONFIG.text.plausibilityLess) + '</div><div class="pp-text">' + esc(state.plausibility.less) + '</div></div>';
+    doPrint(h);
+  }
+
+  function printCards() {
+    var sites = selectedSites(), cards = [];
+    for (var i = 0; i < sites.length; i++) {
+      var d = debriefState(sites[i].id), lenses = [];
+      for (var m = 0; m < 2; m++) if (state.mechanisms[m].lens && lenses.indexOf(state.mechanisms[m].lens) === -1) lenses.push(state.mechanisms[m].lens);
+      var vcol = d.verdict === 'yes' ? 'var(--ok)' : d.verdict === 'no' ? 'var(--bad)' : 'var(--amb)';
+      cards.push('<div class="a6"><div class="a6-bar" style="background:' + vcol + '"></div><div class="a6-site">' + esc(sites[i].name) + '</div><div class="a6-verdict">' + esc(verdictLabel(d.verdict)) + '</div>'
+        + '<div class="a6-row"><b>Claim:</b> ' + esc(d.claims.map(function(x) { return (claimById(x) || {}).name || x; }).join(', ') || 'none') + ' (' + esc(d.relation || '') + ')</div>'
+        + '<div class="a6-row"><b>Lens:</b> ' + esc(lenses.map(function(l) { return (lensById(l) || {}).name; }).join(', ') || 'none') + '</div>'
+        + '<div class="a6-find">' + esc(d.finding) + '</div>'
+        + '<div class="a6-foot">' + esc(state.group.name || 'Unnamed group') + ' &middot; ' + esc(new Date().toLocaleDateString('en-GB')) + '</div></div>');
+    }
+    while (cards.length % 4) cards.push('<div class="a6 empty"></div>');
+    var h = '';
+    for (var k = 0; k < cards.length; k += 4) h += '<div class="card-sheet">' + cards.slice(k, k + 4).join('') + '</div>';
+    doPrint(h);
+  }
+
+  // =====================================================================
+  // COPY AS TEXT
+  // =====================================================================
+  function asText() {
+    var L = [], sites = selectedSites();
+    L.push('FIELD TRIP PLANNER');
+    L.push('Group: ' + (state.group.name || '') + ' | Members: ' + memberLine());
+    L.push('');
+    for (var i = 0; i < sites.length; i++) {
+      var s = sites[i], ss = siteState(s.id), d = state.debrief[s.id], f = state.field[s.id];
+      L.push('== ' + s.name + ' (' + s.cluster + ') ==');
+      L.push('Prior: ' + priorLabel(ss.prior));
+      for (var c = 0; c < CONFIG.oldenburg.length; c++) {
+        var p = ss.predictions[CONFIG.oldenburg[c].id] || {};
+        L.push('  ' + CONFIG.oldenburg[c].name + ': ' + statusLabel(p.status) + (p.reason ? ' - ' + p.reason : ''));
+      }
+      for (var m = 0; m < 2; m++) {
+        var ps = state.mechanisms[m].perSite[s.id] || {};
+        L.push('  Explanation ' + (m + 1) + ' expect: ' + (ps.expect || '') + ' | not expect: ' + (ps.notExpect || ''));
+      }
+      if (f) {
+        L.push('Field: arrived ' + fmtDate(f.firstEntry) + ' | weather ' + (f.weather || '') + ' | ' + (f.busy || ''));
+        for (var k in f.notes) if (f.notes[k]) L.push('  ' + k + ': ' + f.notes[k]);
+        for (var q = 0; q < (f.parties || []).length; q++) if (f.parties[q] && f.parties[q].elapsed) L.push('  Party ' + (q + 1) + ' dwell: ' + fmtMs(f.parties[q].elapsed));
+      }
+      if (d) {
+        L.push('Verdict: ' + verdictLabel(d.verdict));
+        L.push('Justification: ' + (d.justification || ''));
+        for (var key in d.checks) if (d.checks[key].result) L.push('  ' + key + ': ' + d.checks[key].result + ' - ' + (d.checks[key].obs || ''));
+        L.push('Claims: ' + d.claims.join(', ') + ' | ' + (d.relation || '') + ' | ' + (d.explanation || ''));
+        L.push('Finding: ' + (d.finding || ''));
+      }
+      L.push('');
+    }
+    for (var mm = 0; mm < 2; mm++) L.push('Explanation ' + (mm + 1) + ' [' + state.mechanisms[mm].lens + ' / ' + state.mechanisms[mm].claim + ']: ' + state.mechanisms[mm].text);
+    L.push('More plausible: ' + state.plausibility.more);
+    L.push('Less plausible: ' + state.plausibility.less);
+    return L.join('\n');
+  }
+  function copyText() {
+    var t = asText();
+    function fallback() { openDialog('Copy the text below.', t, false); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(function() { document.getElementById('save-note').textContent = 'Copied as text'; }, fallback);
+    else fallback();
+  }
+
+  // =====================================================================
+  // IMPORT / EXPORT / RESET
+  // =====================================================================
+  var dialog = document.getElementById('dialog'), dialogText = document.getElementById('dialog-text'), dialogOk = document.getElementById('dialog-ok');
+  function openDialog(help, text, importing) {
+    document.getElementById('dialog-help').textContent = help;
+    dialogText.value = text;
+    dialogText.readOnly = !importing;
+    dialogOk.style.display = importing ? '' : 'none';
+    document.getElementById('dialog-file').style.display = importing ? '' : 'none';
+    dialog.classList.add('open');
+    dialogText.focus();
+  }
+  function closeDialog() { dialog.classList.remove('open'); }
+  function exportJson() {
+    var json = JSON.stringify(state, null, 2);
+    var name = 'field-trip-' + (state.group.name || 'group').replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '.json';
+    try {
+      var blob = new Blob([json], { type: 'application/json' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = name;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function() { URL.revokeObjectURL(a.href); }, 2000);
+    } catch (e) {}
+    openDialog('A file download has started. If it did not, copy this JSON and save it as a .json file, or paste it into Import on the other device.', json, false);
+  }
+  function importJson(text) {
+    try {
+      var obj = JSON.parse(text);
+      if (!obj || typeof obj !== 'object' || !obj.sites) throw new Error('bad');
+      state = mergeState(obj);
+      closeDialog();
+      render();
+    } catch (e) { alert('That does not look like a field trip planner export.'); }
+  }
+  function resetAll() {
+    if (!confirm('Reset everything? This deletes the plan, field notes and debrief on this device. Export JSON first if you want to keep them.')) return;
+    state = blankState();
+    try { localStorage.removeItem(CONFIG.storageKey); } catch (e) {}
+    render();
+  }
+
+  // =====================================================================
+  // EVENTS
+  // =====================================================================
+  function setPath(path, value) {
+    var parts = path.split('.'), o = state;
+    for (var i = 0; i < parts.length - 1; i++) o = o[parts[i]];
+    o[parts[parts.length - 1]] = value;
+  }
+  function refreshWc(el) {
+    var wc = el.nextElementSibling;
+    if (wc && wc.classList.contains('wc') && /minimum/.test(wc.textContent)) {
+      var n = wordCount(el.value);
+      wc.textContent = n + ' / ' + CONFIG.minWords + ' words minimum';
+      wc.className = 'wc ' + (n >= CONFIG.minWords ? 'ok' : (n ? 'low' : ''));
+    }
+  }
+
+  view.addEventListener('input', function(e) {
+    var t = e.target, a;
+    if ((a = t.getAttribute('data-bind'))) setPath(a, t.value);
+    else if ((a = t.getAttribute('data-pred-reason'))) { var pr = a.split(':'), ssp = siteState(pr[0]); ssp.predictions[pr[1]] = ssp.predictions[pr[1]] || { status: '' }; ssp.predictions[pr[1]].reason = t.value; }
+    else if ((a = t.getAttribute('data-mech'))) { var mp = a.split(':'); state.mechanisms[+mp[0]][mp[1]] = t.value; }
+    else if ((a = t.getAttribute('data-mech-site'))) { var ms = a.split(':'), mech = state.mechanisms[+ms[0]]; mech.perSite[ms[1]] = mech.perSite[ms[1]] || { expect: '', notExpect: '' }; mech.perSite[ms[1]][ms[2]] = t.value; }
+    else if ((a = t.getAttribute('data-custom'))) { var cp = a.split(':'); siteState(cp[0]).customItems[+cp[1]] = t.value; }
+    else if ((a = t.getAttribute('data-field'))) fieldState(state.fieldSite)[a] = t.value;
+    else if ((a = t.getAttribute('data-field-note'))) { fieldState(state.fieldSite).notes[a] = t.value; var coll = t.closest('.coll'); if (coll) coll.classList.toggle('filled', !!t.value.trim()); }
+    else if ((a = t.getAttribute('data-check-obs'))) { var dd = debriefState(state.debriefSite); dd.checks[a] = dd.checks[a] || { result: '' }; dd.checks[a].obs = t.value; }
+    else if ((a = t.getAttribute('data-debrief'))) debriefState(state.debriefSite)[a] = t.value;
+    else if ((a = t.getAttribute('data-plaus'))) state.plausibility[a] = t.value;
+    else return;
+    refreshWc(t);
+    save();
+  });
+
+  view.addEventListener('change', function(e) {
+    var t = e.target, a;
+    if ((a = t.getAttribute('data-ethics'))) state.ethics.statements[a] = t.checked;
+    else if ((a = t.getAttribute('data-ethics-restricted'))) state.ethics.restricted[a] = t.checked;
+    else if ((a = t.getAttribute('data-ethics-venue'))) state.ethics.venue[a] = t.checked;
+    else if ((a = t.getAttribute('data-cited'))) { var d = debriefState(state.debriefSite), ix = d.cited.indexOf(a); if (t.checked && ix === -1) d.cited.push(a); if (!t.checked && ix !== -1) d.cited.splice(ix, 1); render(); return; }
+    else if ((a = t.getAttribute('data-dclaim'))) { var d2 = debriefState(state.debriefSite), ix2 = d2.claims.indexOf(a); if (t.checked && ix2 === -1) d2.claims.push(a); if (!t.checked && ix2 !== -1) d2.claims.splice(ix2, 1); render(); return; }
+    else if (t.tagName === 'SELECT') return;
+    else return;
+    save();
+  });
+
+  view.addEventListener('click', function(e) {
+    var b = e.target.closest('button'), a;
+    if (!b) return;
+    if ((a = b.getAttribute('data-step')) !== null) { state.planStep = +a; render(); }
+    else if ((a = b.getAttribute('data-dstep')) !== null) { state.debriefStep = +a; render(); }
+    else if ((a = b.getAttribute('data-action'))) {
+      if (a === 'next') {
+        var errs = PLAN_STEPS[state.planStep].validate();
+        if (errs.length) { render(); view.querySelector('.nav-row').insertAdjacentHTML('beforebegin', errorsHtml(errs)); view.querySelector('.notice.bad').scrollIntoView({ block: 'center' }); return; }
+        state.planStep++; window.scrollTo(0, 0); render();
+      }
+      else if (a === 'prev') { state.planStep--; render(); }
+      else if (a === 'dnext') { state.debriefStep++; window.scrollTo(0, 0); render(); }
+      else if (a === 'dprev') { state.debriefStep--; render(); }
+      else if (a === 'export') exportJson();
+      else if (a === 'print-plan') printPlan();
+      else if (a === 'print-reports') printReports();
+      else if (a === 'print-cards') printCards();
+    }
+    else if ((a = b.getAttribute('data-site-toggle'))) {
+      if (state.sites[a]) { delete state.sites[a]; state.siteOrder = state.siteOrder.filter(function(x) { return x !== a; }); }
+      else if (selectedSites().length >= CONFIG.maxSites) { alert('Maximum ' + CONFIG.maxSites + ' sites. Deselect one first.'); return; }
+      else { siteState(a); state.siteOrder.push(a); }
+      render();
+    }
+    else if ((a = b.getAttribute('data-seg'))) { onSeg(a, b.getAttribute('data-v')); }
+    else if ((a = b.getAttribute('data-custom-add'))) { siteState(a).customItems.push(''); render(); }
+    else if ((a = b.getAttribute('data-custom-del'))) { var cp = a.split(':'); siteState(cp[0]).customItems.splice(+cp[1], 1); render(); }
+    else if ((a = b.getAttribute('data-field-site'))) { state.fieldSite = a; render(); }
+    else if ((a = b.getAttribute('data-debrief-site'))) { state.debriefSite = a; render(); }
+    else if ((a = b.getAttribute('data-coll'))) { var f = fieldState(state.fieldSite); f.open[a] = !f.open[a]; render(); }
+    else if ((a = b.getAttribute('data-timer')) !== null) toggleTimer(+a);
+  });
+
+  function onSeg(name, v) {
+    var p = name.split(':');
+    if (p[0] === 'prior') siteState(p[1]).prior = v;
+    else if (p[0] === 'pred') { var ss = siteState(p[1]); ss.predictions[p[2]] = ss.predictions[p[2]] || { reason: '' }; ss.predictions[p[2]].status = v; }
+    else if (p[0] === 'busy') fieldState(state.fieldSite).busy = v;
+    else if (p[0] === 'check') { var d = debriefState(state.debriefSite), key = p.slice(1).join(':'); d.checks[key] = d.checks[key] || { obs: '' }; d.checks[key].result = v; }
+    else if (p[0] === 'verdict') debriefState(state.debriefSite).verdict = v;
+    else if (p[0] === 'relation') debriefState(state.debriefSite).relation = v;
+    // Re-render only the segmented control to keep typing focus elsewhere intact.
+    var segs = view.querySelectorAll('[data-seg="' + name.replace(/"/g, '&quot;') + '"]');
+    for (var i = 0; i < segs.length; i++) { var on = segs[i].getAttribute('data-v') === v; segs[i].classList.toggle('on', on); segs[i].setAttribute('aria-pressed', on); }
+    save();
+  }
+
+  document.querySelector('.mode-switch').addEventListener('click', function(e) {
+    var b = e.target.closest('.mode-tab');
+    if (!b) return;
+    var m = b.getAttribute('data-mode');
+    if (m !== 'plan' && !state.planComplete) { alert('Complete the plan first (or import a completed plan via JSON).'); return; }
+    state.mode = m;
+    if (m === 'field' && !state.fieldSite && selectedSites().length) state.fieldSite = selectedSites()[0].id;
+    if (m === 'debrief' && !state.debriefSite && selectedSites().length) state.debriefSite = selectedSites()[0].id;
+    window.scrollTo(0, 0);
+    render();
+  });
+
+  document.getElementById('btn-export').addEventListener('click', exportJson);
+  document.getElementById('btn-import').addEventListener('click', function() { openDialog('Paste the JSON exported from another device, or choose the file.', '', true); });
+  document.getElementById('btn-copy').addEventListener('click', copyText);
+  document.getElementById('btn-reset').addEventListener('click', resetAll);
+  document.getElementById('dialog-close').addEventListener('click', closeDialog);
+  dialogOk.addEventListener('click', function() { importJson(dialogText.value); });
+  document.getElementById('dialog-file').addEventListener('click', function() { document.getElementById('file-input').click(); });
+  document.getElementById('file-input').addEventListener('change', function(e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var r = new FileReader();
+    r.onload = function() { importJson(String(r.result)); };
+    r.readAsText(file);
+    e.target.value = '';
+  });
+  dialog.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeDialog(); });
+  window.addEventListener('afterprint', function() { printArea.innerHTML = ''; });
+
+  load();
+  render();
+})();
+</script>
+</body>
+</html>
