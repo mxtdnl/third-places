@@ -263,8 +263,8 @@ Shadows are warm-tinted, not neutral gray. Used sparingly — the design relies 
 - Utility classes: `.quiet` (muted), `.alert` (error), `.neg` (red), `.pos` (green), `.lede` (intro paragraph), `.eyebrow` (small uppercase label)
 - Data attributes for JS: `data-action`, `data-val`, `data-ci`, `data-status`, `data-bar`, `data-target`, `data-lever`, `data-opt`, `data-scenario`
 
-###Build Instructions
-You are building classroom tools for an undergraduate course, "Social Phenomena Challenge" (BSc Psychology, Economics and Politics). The course examines the decline of "third places" (Oldenburg) and works with a client: a professional football club in Bodø, Northern Norway, that wants a community third place in its new stadium. The course runs four verbs in strict order: describe, explain, adjudicate, intervene. Weeks 4–5 are EXPLAIN, weeks 6–7 are ADJUDICATE. No tool in this batch may prompt students to propose interventions or solutions. If a student-facing prompt drifts toward "what should the club do", rewrite it.
+### Build Instructions
+You are building classroom tools for an undergraduate course, "Social Phenomena Challenge" (BSc Psychology, Economics and Politics). The course examines the decline of "third places" (Oldenburg) and works with a client: a professional football club in Bodø, Northern Norway, that wants a community third place in its new stadium. The course runs four verbs in strict order: describe, explain, adjudicate, intervene. Weeks 4–5 are EXPLAIN, weeks 6–7 are ADJUDICATE. Tools for weeks 4–7 (explain, adjudicate) must not prompt for interventions; tools for weeks 9–14 may. .
 
 Analytical spine used in every tool:
 - "Decline" is four separable claims: SUPPLY (fewer third places exist), USE (people use them less), QUALITY (those that remain function less well as third places), OUTCOME (social consequences such as belonging and trust have worsened).
