@@ -100,11 +100,11 @@
 
   function loadScripts(callback) {
     var loaded = 0;
-    var labCode, decoderCode, builderCode;
+    var labCode, decoderCode, builderCode, benchCode;
 
     function done() {
       loaded++;
-      if (loaded < 3) return;
+      if (loaded < 4) return;
 
       // Execute decoder in a namespace
       try {
@@ -212,8 +212,23 @@
         assert('builder.html parses without syntax errors', function() { throw e; });
       }
 
+      // Execute adjudication bench (its init is guarded on #bench-app, absent here; it exposes window.W6B)
+      try {
+        var benchFn = new Function(benchCode);
+        benchFn();
+      } catch(e) {
+        suite('LOAD ERRORS');
+        assert('week6b-adjudication-bench.html parses without syntax errors', function() { throw e; });
+      }
+
       callback();
     }
+
+    var xhr4 = new XMLHttpRequest();
+    xhr4.open('GET', 'week6b-adjudication-bench.html');
+    xhr4.onload = function() { benchCode = extractAndRun(xhr4.responseText, 'bench'); done(); };
+    xhr4.onerror = function() { benchCode = ''; done(); };
+    xhr4.send();
 
     var xhr1 = new XMLHttpRequest();
     xhr1.open('GET', 'third-place-decoder.html');
@@ -970,6 +985,113 @@
       xhr.send();
       ok(xhr.responseText.indexOf('charset="utf-8"') !== -1 || xhr.responseText.indexOf("charset='utf-8'") !== -1 || xhr.responseText.indexOf('charset=utf-8') !== -1,
         'missing meta charset');
+    });
+
+    // =====================================================
+    // ADJUDICATION BENCH (week 6b)
+    // =====================================================
+
+    suite('Adjudication Bench — Config integrity');
+
+    assert('W6B test hook is exposed', function() {
+      ok(window.W6B && W6B.CONFIG, 'missing W6B');
+    });
+
+    assert('CONFIG has 1 to 3 cases, each with exactly two explanations', function() {
+      var cases = W6B.CONFIG.cases;
+      ok(cases.length >= 1 && cases.length <= 3, 'case count ' + cases.length);
+      cases.forEach(function(c) { eq(c.explanations.length, 2, c.id); });
+    });
+
+    assert('Each explanation has id, label, valid lens and each case a valid claim type', function() {
+      W6B.CONFIG.cases.forEach(function(c) {
+        ok(W6B.CONFIG.claimTypes[c.claim.type], 'bad claim type ' + c.claim.type);
+        c.explanations.forEach(function(e) {
+          ok(e.id && e.label && e.mechanism, 'missing fields on ' + e.id);
+          ok(W6B.CONFIG.lenses[e.lens], 'bad lens ' + e.lens);
+          ok(Array.isArray(e.evidenceCards) && e.evidenceCards.length > 0, 'no cards on ' + e.id);
+        });
+      });
+    });
+
+    assert('Evidence card ids are unique within each case', function() {
+      W6B.CONFIG.cases.forEach(function(c) {
+        var seen = {};
+        c.explanations.forEach(function(e) { e.evidenceCards.forEach(function(k) {
+          ok(!seen[k.id], 'duplicate card id ' + k.id + ' in ' + c.id); seen[k.id] = true;
+          ok(k.title && k.summary, 'card ' + k.id + ' missing text');
+        }); });
+      });
+    });
+
+    assert('Four criteria, each with 2 to 3 guiding questions', function() {
+      eq(W6B.CONFIG.criteria.length, 4);
+      eq(W6B.CONFIG.criteria.map(function(c) { return c.id; }).join(','), 'causal,scope,implications,method');
+      W6B.CONFIG.criteria.forEach(function(c) { ok(c.questions.length >= 2 && c.questions.length <= 3, c.id); });
+    });
+
+    assert('Rating scale and verdict lists match the specification', function() {
+      eq(W6B.CONFIG.ratingScale.map(function(r) { return r.id; }).join(','), 'strong,moderate,weak,none');
+      eq(W6B.CONFIG.verdicts.map(function(v) { return v.id; }).join(','), 'survives,scope-limited,fails,undecidable');
+      eq(W6B.CONFIG.relations.length, 6);
+      eq(W6B.CONFIG.designTypes.length, 7);
+    });
+
+    suite('Adjudication Bench — Validation rules');
+
+    assert('wordCount splits on whitespace', function() {
+      eq(W6B.wordCount('  one two\nthree  '), 3);
+      eq(W6B.wordCount(''), 0);
+    });
+
+    assert('validatePrediction enforces prefix and minimum words', function() {
+      ok(W6B.validatePrediction('Fewer visits.').length === 2, 'short and wrong prefix');
+      ok(W6B.validatePrediction('If this is true, we would expect one two three four five six seven eight nine ten.').length === 0, 'valid rejected');
+    });
+
+    assert('validateCell rejects a rated cell with zero cited cards', function() {
+      var w = 'word '.repeat(30);
+      ok(W6B.validateCell({ rating: 'strong', warrant: w, cited: [] }).length === 1);
+      ok(W6B.validateCell({ rating: 'weak', warrant: w, cited: [] }).length === 1);
+    });
+
+    assert('validateCell accepts "no evidence" with zero cited cards and a full warrant', function() {
+      var w = 'word '.repeat(30);
+      eq(W6B.validateCell({ rating: 'none', warrant: w, cited: [] }).length, 0);
+      ok(W6B.validateCell({ rating: 'none', warrant: 'too short', cited: [] }).length === 1, 'short warrant');
+    });
+
+    assert('buildExport output validates against the documented schema', function() {
+      var st = W6B.blankState();
+      st.caseId = W6B.CONFIG.cases[0].id;
+      st.group.name = 'Test';
+      W6B.setState(st);
+      var out = W6B.buildExport();
+      eq(out.schema, 'week6b-adjudication-bench');
+      eq(out.explanations.length, 2);
+      ['id', 'label', 'lens', 'claimType', 'verdict', 'scopeLimits', 'ratings'].forEach(function(k) { ok(k in out.explanations[0], 'missing ' + k); });
+      eq(W6B.validateExport(out).length, 0, W6B.validateExport(out).join('; '));
+    });
+
+    assert('validateExport rejects a foreign schema', function() {
+      ok(W6B.validateExport({ schema: 'other' }).length > 0);
+    });
+
+    suite('Adjudication Bench — Encoding');
+
+    assert('week6b-adjudication-bench.html has meta charset=utf-8', function() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'week6b-adjudication-bench.html', false);
+      xhr.send();
+      ok(xhr.responseText.indexOf('<meta charset="utf-8">') === 0, 'charset must be the first thing in the file');
+    });
+
+    assert('week6b-adjudication-bench.html uses no curly quotes in its script', function() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'week6b-adjudication-bench.html', false);
+      xhr.send();
+      var m = xhr.responseText.match(/<script>([\s\S]*?)<\/script>/);
+      ok(m && !/[\u2018\u2019\u201C\u201D]/.test(m[1]), 'curly quotes found');
     });
 
     // =====================================================

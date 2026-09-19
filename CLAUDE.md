@@ -12,9 +12,10 @@ Interactive teaching tools for Ray Oldenburg's third-place theory. Static HTML f
 - `third-place-recall.html` — Recall reconstruction exercise for the eight characteristics (Activity 5)
 - `evidence-compass.html` — Evidence evaluation across disciplinary lenses (Activity 6)
 - `theory-of-change.html` — Interactive slide deck on Theory of Change methodology (Activity 7)
+- `week6b-adjudication-bench.html` — Adjudication Bench (Activity 8, week 6b): groups adjudicate between two competing explanations for a decline claim using four criteria, with predictions locked before evidence. Export JSON schema is documented in the file header for the week 7 tool
 - `third-place-content.md` — Source content and curriculum notes
 - `spec.md` — Mechanics, tuning values and design assumptions for the builder
-- `test.html` — Test suite (81 tests) covering data integrity, pure functions, HTML generators, and encoding
+- `test.html` — Test suite (95 tests) covering data integrity, pure functions, HTML generators, and encoding
 
 When adding a new activity HTML file, also add a card for it in `index.html` (inside the `.activity-grid` div) and list it in this Files section.
 
