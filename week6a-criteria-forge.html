@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Criteria Forge</title>
+<style>
+  :root {
+    --bg: #F2DFBE;
+    --bg-card: #FFFAF2;
+    --bg-deep: #E8D2A8;
+    --text: #2A1F18;
+    --text-muted: #6A5A48;
+    --border: #D8C8A8;
+    --char-1: #5C3A96;
+    --char-2: #B52838;
+    --char-3: #C85218;
+    --char-4: #D4A020;
+    --char-5: #7A5828;
+    --char-6: #B83068;
+    --char-7: #CC6830;
+    --char-8: #7E58A8;
+    --ok: #2A7A42;
+    --ok-bg: #E6F4EA;
+    --bad: #B82828;
+    --bad-bg: #FDEEEE;
+    --amb: #B98A10;
+    --amb-bg: #FFF3D6;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    overflow-x: hidden;
+  }
+  .app-wrap { max-width: 1100px; margin: 0 auto; padding: 1.25rem 16px 5rem; position: relative; }
+
+  /* ── Header ── */
+  .page-header { position: relative; overflow: hidden; padding: 1.5rem 0 1.25rem; margin-bottom: 1rem; }
+  .page-header::before { content: ''; position: absolute; width: 230px; height: 230px; background: var(--char-1); border-radius: 50%; opacity: 0.09; top: -75px; right: -55px; z-index: 0; }
+  .page-header::after { content: ''; position: absolute; width: 84px; height: 84px; background: var(--char-4); opacity: 0.12; bottom: -14px; right: 160px; transform: rotate(24deg); z-index: 0; }
+  .header-bar { position: absolute; left: -10%; top: 6px; width: 58%; height: 6px; background: var(--char-2); transform: rotate(-2deg); z-index: 0; }
+  .header-tri { position: absolute; left: 38%; bottom: -6px; width: 0; height: 0; border-left: 34px solid transparent; border-right: 34px solid transparent; border-bottom: 56px solid var(--char-6); opacity: 0.10; z-index: 0; }
+  .header-inner { position: relative; z-index: 1; display: grid; grid-template-columns: 14px 1fr; gap: 1rem; }
+  .header-block { background: var(--char-3); }
+  .eyebrow { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--char-3); }
+  h1 { font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; line-height: 1.05; margin: 0.25rem 0 0.5rem; }
+  h2 { font-size: clamp(1.3rem, 3vw, 1.9rem); font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.2; margin-bottom: 0.75rem; }
+  h3 { font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; line-height: 1.25; margin-bottom: 0.5rem; }
+  .lede { color: var(--text-muted); max-width: 720px; font-size: 0.98rem; }
+
+  /* ── Toolbar ── */
+  .toolbar { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin: 0 0 1.25rem; }
+  .btn { font-family: inherit; font-size: 0.76rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; border: none; cursor: pointer; padding: 0.7rem 1.2rem; min-height: 44px; background: var(--char-1); color: #fff; transition: background 0.15s ease, transform 0.15s ease; }
+  .btn:hover { background: var(--char-2); transform: translateY(-2px); }
+  .btn:active { transform: translateY(0); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-ghost { background: transparent; color: var(--text); border: 2px solid var(--text); }
+  .btn-ghost:hover { background: var(--text); color: var(--bg); }
+  .btn-next { background: var(--char-3); }
+  .btn-danger { background: var(--char-2); }
+  .btn-danger:hover { background: var(--text); }
+  .btn-small { padding: 0.4rem 0.8rem; min-height: 44px; font-size: 0.7rem; }
+  .btn-tiny { padding: 0.3rem 0.6rem; min-height: 44px; font-size: 0.64rem; letter-spacing: 0.08em; }
+  .save-note { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .btn:focus-visible, .step-pip:focus-visible, .coll-head:focus-visible, .seg button:focus-visible, .brk:focus-visible, .chip-grid label:focus-within { outline: 3px solid var(--char-4); outline-offset: 2px; }
+
+  /* ── Stepper ── */
+  .stepper { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .step-pip { display: flex; align-items: center; gap: 6px; font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); background: none; border: 2px solid var(--border); padding: 0.4rem 0.7rem; min-height: 44px; font-family: inherit; cursor: pointer; text-align: left; }
+  .step-pip .sq { width: 10px; height: 10px; background: var(--border); flex: none; }
+  .step-pip.done .sq { background: var(--ok); }
+  .step-pip.current { border-color: var(--char-1); color: var(--char-1); background: rgba(92,58,150,0.08); }
+  .step-pip.current .sq { background: var(--char-1); }
+  .step-pip.locked { opacity: 0.45; cursor: not-allowed; }
+  .step-pip .num { font-variant-numeric: tabular-nums; }
+
+  /* ── Panels, banners, notices ── */
+  .panel { background: var(--bg-card); border: 2px solid var(--border); border-left: 6px solid var(--char-1); padding: 1.25rem; margin-bottom: 1.25rem; position: relative; overflow: hidden; }
+  .panel.c2 { border-left-color: var(--char-2); } .panel.c3 { border-left-color: var(--char-3); } .panel.c4 { border-left-color: var(--char-4); }
+  .panel.c5 { border-left-color: var(--char-5); } .panel.c6 { border-left-color: var(--char-6); } .panel.c7 { border-left-color: var(--char-7); } .panel.c8 { border-left-color: var(--char-8); }
+  .panel.c1 .eyebrow { color: var(--char-1); } .panel.c2 .eyebrow { color: var(--char-2); } .panel.c3 .eyebrow { color: var(--char-3); } .panel.c4 .eyebrow { color: var(--char-4); }
+  .panel.c5 .eyebrow { color: var(--char-5); } .panel.c6 .eyebrow { color: var(--char-6); } .panel.c7 .eyebrow { color: var(--char-7); } .panel.c8 .eyebrow { color: var(--char-8); }
+  .panel .eyebrow { margin-bottom: 0.25rem; }
+  .panel-deco { position: absolute; pointer-events: none; z-index: 0; opacity: 0.08; }
+  .panel > * { position: relative; z-index: 1; }
+  .panel > .panel-deco { z-index: 0; }
+  .banner { background: var(--char-1); color: #fff; padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; position: relative; overflow: hidden; }
+  .banner h2 { color: #fff; margin-bottom: 0.25rem; position: relative; z-index: 1; }
+  .banner .eyebrow { color: #fff; opacity: 0.8; position: relative; z-index: 1; }
+  .banner p { opacity: 0.94; font-size: 0.95rem; position: relative; z-index: 1; max-width: 760px; }
+  .banner::after { content: ''; position: absolute; width: 150px; height: 150px; border: 8px solid #fff; border-radius: 50%; opacity: 0.15; right: -45px; top: -55px; }
+  .banner.c2 { background: var(--char-2); } .banner.c3 { background: var(--char-3); } .banner.c5 { background: var(--char-5); } .banner.c6 { background: var(--char-6); } .banner.c8 { background: var(--char-8); }
+  .notice { border-left: 5px solid var(--amb); background: var(--amb-bg); padding: 0.9rem 1.1rem; margin: 0.75rem 0; font-size: 0.9rem; }
+  .notice.bad { border-left-color: var(--bad); background: var(--bad-bg); }
+  .notice.good { border-left-color: var(--ok); background: var(--ok-bg); }
+  .notice.info { border-left-color: var(--char-1); background: rgba(92,58,150,0.08); }
+  .notice ul { margin: 0.4rem 0 0 1.1rem; }
+  .help { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 0.75rem; max-width: 720px; }
+  .section-break { position: relative; height: 34px; overflow: hidden; margin: 0.5rem 0; }
+  .section-break::before { content: ''; position: absolute; width: 120%; height: 5px; background: var(--char-4); top: 50%; left: -10%; transform: rotate(-2deg); }
+  .section-break.c6::before { background: var(--char-6); } .section-break.c2::before { background: var(--char-2); }
+  .nav-row { display: flex; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+  .meta-line { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.04em; margin-bottom: 0.75rem; }
+  .tag { display: inline-block; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border: 1.5px solid currentColor; margin-right: 4px; }
+  .tag.solid { color: #fff; }
+  .pip { width: 12px; height: 12px; display: inline-block; flex: none; }
+
+  /* ── Forms ── */
+  label, .lbl { display: block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin: 0.75rem 0 0.3rem; }
+  label .req { color: var(--char-2); }
+  input[type=text], textarea { width: 100%; font-family: inherit; font-size: 1rem; color: var(--text); background: #fff; border: 2px solid var(--border); padding: 0.6rem 0.7rem; min-height: 44px; }
+  input[type=text]:focus, textarea:focus { outline: 3px solid var(--char-4); outline-offset: 1px; border-color: var(--char-1); }
+  textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
+  textarea.short { min-height: 60px; }
+  .wc { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-top: 0.25rem; }
+  .wc.ok { color: var(--ok); } .wc.low { color: var(--bad); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .seg { display: flex; flex-wrap: wrap; gap: 4px; }
+  .seg button { flex: 1 1 auto; font-family: inherit; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; background: var(--bg-card); color: var(--text-muted); border: 2px solid var(--border); padding: 0.5rem 0.6rem; min-height: 44px; cursor: pointer; transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease; }
+  .seg button.on { background: var(--char-1); border-color: var(--char-1); color: #fff; }
+  .seg.big button { font-size: 0.8rem; min-height: 56px; }
+  .chip-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+  .chip-grid label { display: inline-flex; align-items: center; gap: 6px; margin: 0; border: 2px solid var(--border); padding: 0.4rem 0.7rem; min-height: 44px; cursor: pointer; text-transform: none; font-size: 0.82rem; letter-spacing: 0; font-weight: 600; color: var(--text); background: var(--bg-card); max-width: 100%; }
+  .chip-grid label.on { border-color: var(--char-1); background: rgba(92,58,150,0.1); color: var(--char-1); }
+  .chip-grid input { width: 20px; height: 20px; flex: none; accent-color: var(--char-1); }
+
+  /* ── Brief: two explanations side by side ── */
+  .exp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start; }
+  .exp-col { background: var(--bg-card); border: 2px solid var(--border); border-top: 8px solid var(--char-1); padding: 1rem; position: relative; overflow: hidden; }
+  .exp-col.b { border-top-color: var(--char-3); }
+  .exp-col::after { content: ''; position: absolute; width: 130px; height: 130px; border-radius: 50%; background: var(--char-1); opacity: 0.07; right: -45px; bottom: -50px; pointer-events: none; }
+  .exp-col.b::after { background: var(--char-3); }
+  .exp-col > * { position: relative; z-index: 1; }
+  .exp-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; flex-wrap: wrap; }
+  .exp-key { font-size: 1.4rem; font-weight: 800; line-height: 1; color: #fff; background: var(--char-1); width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; flex: none; }
+  .exp-col.b .exp-key { background: var(--char-3); }
+  .exp-label { font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.98rem; line-height: 1.2; overflow-wrap: anywhere; }
+  .lens-tag { color: var(--char-1); }
+  .exp-col.b .lens-tag { color: var(--char-3); }
+  .exp-summary { font-size: 0.94rem; margin: 0.5rem 0 0.9rem; overflow-wrap: anywhere; }
+  .coll { border: 2px solid var(--border); border-left: 6px solid var(--char-4); margin-bottom: 0.5rem; background: #fff; }
+  .coll-head { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; background: none; border: none; font-family: inherit; text-align: left; padding: 0.7rem 0.8rem; min-height: 52px; cursor: pointer; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.78rem; color: var(--text); }
+  .coll-head .ind { font-size: 0.9rem; flex: none; color: var(--char-4); font-weight: 800; }
+  .coll-body { display: none; padding: 0 0.8rem 0.8rem; }
+  .coll.open .coll-body { display: block; }
+  .coll.open { border-left-color: var(--char-6); }
+  .coll.open .coll-head .ind { color: var(--char-6); }
+  .ev-row { display: grid; grid-template-columns: 90px 1fr; gap: 0.5rem; padding: 0.4rem 0; border-top: 2px solid var(--border); font-size: 0.88rem; }
+  .ev-row .evl { font-size: 0.64rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+  .ev-row .evv { overflow-wrap: anywhere; }
+  .ev-row.limit .evl { color: var(--char-2); }
+
+  /* ── Dissect: sentence rows ── */
+  .sent-row { background: var(--bg-card); border: 2px solid var(--border); border-left: 6px solid var(--char-6); padding: 0.9rem 1rem; margin-bottom: 0.7rem; }
+  .sent-row.untagged { border-left-color: var(--border); }
+  .sent-head { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.5rem; }
+  .sent-num { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--char-6); flex: none; }
+  .sent-text { font-size: 1rem; overflow-wrap: anywhere; }
+  .sent-tools { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 0.6rem; }
+  .split-wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; margin-top: 0.5rem; padding: 0.6rem; background: rgba(184,48,104,0.08); border: 2px dashed var(--char-6); }
+  .split-wrap .w { font-size: 0.92rem; padding: 2px 1px; }
+  .brk { background: var(--char-6); border: none; width: 12px; min-width: 12px; height: 30px; padding: 0; cursor: pointer; opacity: 0.35; }
+  .brk:hover { opacity: 1; }
+  .other-wrap { margin-top: 0.5rem; }
+
+  /* ── Reveal: bars ── */
+  .crit-card { background: var(--bg-card); border: 2px solid var(--border); border-left: 6px solid var(--char-1); padding: 1rem; margin-bottom: 0.75rem; }
+  .crit-card.k2 { border-left-color: var(--char-4); } .crit-card.k3 { border-left-color: var(--char-2); } .crit-card.k4 { border-left-color: var(--char-7); }
+  .crit-card.unused { border-style: dashed; background: rgba(212,160,32,0.10); }
+  .crit-name { font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.95rem; }
+  .crit-def { font-size: 0.9rem; color: var(--text-muted); margin: 0.25rem 0 0.6rem; overflow-wrap: anywhere; }
+  .gq { list-style: none; margin-top: 0.5rem; }
+  .gq li { position: relative; padding: 0.3rem 0 0.3rem 1.1rem; font-size: 0.88rem; border-top: 2px solid var(--border); }
+  .gq li::before { content: ''; position: absolute; left: 0; top: 0.75rem; width: 8px; height: 8px; background: var(--char-1); }
+  .crit-card.k2 .gq li::before { background: var(--char-4); } .crit-card.k3 .gq li::before { background: var(--char-2); } .crit-card.k4 .gq li::before { background: var(--char-7); }
+  .bar-row { display: grid; grid-template-columns: 1fr 58px; gap: 0.6rem; align-items: center; }
+  .bar-track { background: var(--bg-deep); height: 26px; position: relative; }
+  .bar-fill { height: 100%; background: var(--char-1); transition: width 0.6s ease; min-width: 0; }
+  .crit-card.k2 .bar-fill { background: var(--char-4); } .crit-card.k3 .bar-fill { background: var(--char-2); } .crit-card.k4 .bar-fill { background: var(--char-7); }
+  .bar-val { font-weight: 800; font-size: 0.9rem; font-variant-numeric: tabular-nums; text-align: right; }
+  .used-flag { font-size: 0.64rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--char-4); margin-top: 0.4rem; }
+  .nc-box { border: 2px solid var(--char-5); border-left: 8px solid var(--char-5); background: rgba(122,88,40,0.09); padding: 1rem; margin-bottom: 1.25rem; }
+  .nc-big { font-size: clamp(1.6rem, 6vw, 2.4rem); font-weight: 800; line-height: 1; color: var(--char-5); font-variant-numeric: tabular-nums; }
+
+  /* ── Compare table ── */
+  .cmp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .cmp-col { background: var(--bg-card); border: 2px solid var(--border); border-top: 8px solid var(--char-5); padding: 1rem; }
+  .cmp-col.rev { border-top-color: var(--char-8); }
+  .cmp-verdict { font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; font-size: 1rem; line-height: 1.2; margin: 0.3rem 0 0.5rem; }
+  .cmp-body { font-size: 0.92rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .change-flag { display: inline-block; color: #fff; background: var(--char-8); padding: 3px 9px; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+  .change-flag.same { background: var(--char-5); }
+  .locked-box { background: var(--bg-card); border: 2px solid var(--char-5); border-left: 8px solid var(--char-5); padding: 1rem; }
+  .locked-box .lk { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--char-5); }
+  .just-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.96rem; margin-top: 0.4rem; }
+
+  /* ── Dialog ── */
+  .dialog { position: fixed; inset: 0; background: rgba(42,31,24,0.55); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+  .dialog.open { display: flex; }
+  .dialog-box { background: var(--bg-card); border: 2px solid var(--text); border-top: 8px solid var(--char-1); max-width: 560px; width: 100%; padding: 1.25rem; max-height: 90vh; overflow: auto; }
+  .dialog-box textarea { min-height: 160px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.8rem; }
+  .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  #print-area { display: none; }
+
+  @media (max-width: 820px) {
+    .exp-grid, .cmp-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    .row2 { grid-template-columns: 1fr; }
+    .header-inner { grid-template-columns: 8px 1fr; gap: 0.6rem; }
+    .panel { padding: 1rem 0.85rem; }
+    .btn { flex: 1 1 auto; text-align: center; }
+    .ev-row { grid-template-columns: 1fr; gap: 0.1rem; }
+    .bar-row { grid-template-columns: 1fr 46px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+    .btn:hover { transform: none; }
+  }
+
+  @media print {
+    @page { size: A4; margin: 14mm; }
+    body { background: #fff; color: #000; font-size: 10.5pt; }
+    .app-wrap, .dialog { display: none !important; }
+    #print-area { display: block; }
+    .pp-head { border-left: 8px solid var(--char-1); padding-left: 10px; margin-bottom: 8px; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .pp-head .eyebrow { color: var(--char-1); font-size: 8pt; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .pp-head h2 { font-size: 17pt; margin: 0; }
+    .pp-meta { font-size: 8.5pt; color: #444; margin-bottom: 8px; }
+    .pp-sec { font-size: 8pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; margin: 9px 0 3px; border-bottom: 2px solid #000; }
+    .pp-text { font-size: 9.5pt; white-space: pre-wrap; margin-bottom: 4px; overflow-wrap: anywhere; }
+    .pp-verdict { font-size: 11pt; font-weight: 800; text-transform: uppercase; margin-bottom: 3px; }
+    .pp-table { width: 100%; border-collapse: collapse; font-size: 8.5pt; margin-bottom: 4px; }
+    .pp-table th, .pp-table td { border: 1px solid #000; padding: 2px 4px; vertical-align: top; text-align: left; }
+    .pp-table th { font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.06em; }
+    .pp-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .pp-box { border: 1px solid #000; padding: 4px 6px; margin-bottom: 4px; }
+    .pp-bar { height: 8pt; background: var(--char-1); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .pp-bar-track { border: 1px solid #000; height: 8pt; }
+    .pp-note { font-size: 8.5pt; border: 1px solid #000; padding: 4px 6px; margin: 5px 0; }
+    .pp-unused { font-weight: 800; }
+  }
+</style>
+</head>
+<body>
+<div class="app-wrap">
+  <header class="page-header">
+    <div class="header-bar"></div>
+    <div class="header-tri"></div>
+    <div class="header-inner">
+      <div class="header-block"></div>
+      <div>
+        <div class="eyebrow">Week 6 &middot; Adjudicate &middot; Session A</div>
+        <h1>Criteria Forge</h1>
+        <p class="lede">Two explanations compete. You will adjudicate between them first, using whatever reasoning you already have, and then take your own reasoning apart to see what you were actually using. The tool structures your reasoning; it does not grade it, and it will not tell you your verdict is right or wrong.</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <button class="btn btn-ghost btn-small" id="btn-export">Export JSON</button>
+    <button class="btn btn-ghost btn-small" id="btn-import">Import JSON</button>
+    <button class="btn btn-ghost btn-small" id="btn-copy">Copy as text</button>
+    <button class="btn btn-danger btn-small" id="btn-reset">Reset</button>
+    <span class="save-note" id="save-note" aria-live="polite">Autosaves to this device</span>
+  </div>
+
+  <nav class="stepper" id="stepper" aria-label="Progress"></nav>
+
+  <main id="view"></main>
+</div>
+
+<div id="print-area" aria-hidden="true"></div>
+
+<div class="dialog" id="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+  <div class="dialog-box">
+    <div class="eyebrow" style="color:var(--char-1)">Transfer</div>
+    <h2 id="dialog-title">Import / export</h2>
+    <p class="help" id="dialog-help"></p>
+    <label for="dialog-text">JSON</label>
+    <textarea id="dialog-text" spellcheck="false"></textarea>
+    <div class="nav-row">
+      <button class="btn btn-ghost" id="dialog-close">Close</button>
+      <span>
+        <button class="btn btn-ghost" id="dialog-file" style="display:none">Choose file</button>
+        <button class="btn" id="dialog-ok">Import</button>
+      </span>
+    </div>
+    <input type="file" id="file-input" accept="application/json,.json" class="visually-hidden" aria-label="Import JSON file">
+  </div>
+</div>
+
+<script>
+/* The <script> element removes itself from the document as soon as it runs.
+   CONFIG then lives only in the closure below, never in the DOM. This is what
+   keeps the four formal criteria out of the document until step 5 renders
+   them: a search of the live DOM at steps 1-4 finds none of their names. */
+var FORGE_SELF = document.currentScript;
+(function() {
+  'use strict';
+
+  // =====================================================================
+  // CONFIG - all editable content lives here.
+  //
+  // EVERY piece of substantive content below is PLACEHOLDER text. Replace it
+  // with verified material before teaching. Do not leave "PLACEHOLDER:" strings
+  // in a version students will see.
+  //
+  // HOW TO FILL AN EVIDENCE CARD
+  // ---------------------------------------------------------------------
+  // Each entry in an explanation's evidenceCards array has six fields plus an
+  // id. Keep one study (or one dataset) per card. Example of a filled card:
+  //
+  //   {
+  //     id: 'A1',                                   // short unique code, shown on the panel
+  //     title: 'Short name the group can refer to', // 3-8 words
+  //     source: 'Author(s), year, publication',      // full enough to find again
+  //     design: 'What kind of study it is',          // e.g. panel survey, RCT, case study
+  //     sample: 'Who or what was studied, and how many',
+  //     finding: 'What the study actually reports.',  // may run to 150+ words
+  //     limitation: 'What the study cannot establish.'
+  //   }
+  //
+  // Long text is fine: the layout wraps and the print stylesheet reflows.
+  // ---------------------------------------------------------------------
+  var CONFIG = {
+
+    // Storage key. Change the version suffix if the state shape changes, so
+    // that stale saved work is not loaded into a newer tool.
+    storageKey: 'week6a-criteria-forge-v1',
+
+    // Minimum word counts for required free text.
+    minJustificationWords: 60,   // step 3, the committed justification
+    minRevisionWords: 60,        // step 6, the revision reasoning
+    minOtherWords: 3,            // step 4, the description required by the "Other" tag
+
+    // The claim under adjudication.
+    // type must be one of: 'supply', 'use', 'quality', 'outcome'.
+    claim: {
+      type: 'quality',
+      text: 'PLACEHOLDER: the single claim under adjudication, written as one sentence that an explanation could be offered for.'
+    },
+
+    // Exactly two competing explanations.
+    // lens must be one of: 'psychological', 'political', 'economic'.
+    // summary should be 80 words or fewer.
+    explanations: [
+      {
+        id: 'A',
+        label: 'PLACEHOLDER: short name for explanation A',
+        lens: 'psychological',
+        summary: 'PLACEHOLDER: summary of explanation A in 80 words or fewer. State the proposed mechanism: what is doing the work, on what, to produce the pattern in the claim.',
+        evidenceCards: [
+          { id: 'A1', title: 'PLACEHOLDER: title for card A1', source: 'PLACEHOLDER: source for card A1', design: 'PLACEHOLDER: design for card A1', sample: 'PLACEHOLDER: sample for card A1', finding: 'PLACEHOLDER: finding for card A1', limitation: 'PLACEHOLDER: limitation for card A1' },
+          { id: 'A2', title: 'PLACEHOLDER: title for card A2', source: 'PLACEHOLDER: source for card A2', design: 'PLACEHOLDER: design for card A2', sample: 'PLACEHOLDER: sample for card A2', finding: 'PLACEHOLDER: finding for card A2', limitation: 'PLACEHOLDER: limitation for card A2' },
+          { id: 'A3', title: 'PLACEHOLDER: title for card A3', source: 'PLACEHOLDER: source for card A3', design: 'PLACEHOLDER: design for card A3', sample: 'PLACEHOLDER: sample for card A3', finding: 'PLACEHOLDER: finding for card A3', limitation: 'PLACEHOLDER: limitation for card A3' }
+        ]
+      },
+      {
+        id: 'B',
+        label: 'PLACEHOLDER: short name for explanation B',
+        lens: 'economic',
+        summary: 'PLACEHOLDER: summary of explanation B in 80 words or fewer. State the proposed mechanism: what is doing the work, on what, to produce the pattern in the claim.',
+        evidenceCards: [
+          { id: 'B1', title: 'PLACEHOLDER: title for card B1', source: 'PLACEHOLDER: source for card B1', design: 'PLACEHOLDER: design for card B1', sample: 'PLACEHOLDER: sample for card B1', finding: 'PLACEHOLDER: finding for card B1', limitation: 'PLACEHOLDER: limitation for card B1' },
+          { id: 'B2', title: 'PLACEHOLDER: title for card B2', source: 'PLACEHOLDER: source for card B2', design: 'PLACEHOLDER: design for card B2', sample: 'PLACEHOLDER: sample for card B2', finding: 'PLACEHOLDER: finding for card B2', limitation: 'PLACEHOLDER: limitation for card B2' },
+          { id: 'B3', title: 'PLACEHOLDER: title for card B3', source: 'PLACEHOLDER: source for card B3', design: 'PLACEHOLDER: design for card B3', sample: 'PLACEHOLDER: sample for card B3', finding: 'PLACEHOLDER: finding for card B3', limitation: 'PLACEHOLDER: limitation for card B3' }
+        ]
+      }
+    ],
+
+    // Plain-language tags offered at step 4. Students see only `label`.
+    // mapsTo is used at step 5 and must be one of:
+    //   'causal' | 'scope' | 'implications' | 'quality' | 'NON_CRITERION'
+    // Set unclassified: true on a tag whose content the group supplies itself
+    // ("Other"). Unclassified tags are counted and shown separately at step 5,
+    // and are deliberately excluded from the NON_CRITERION proportion, because
+    // the tool cannot know what the group wrote there.
+    plainTags: [
+      { id: 't1', label: 'It shows cause, not just a link', mapsTo: 'causal' },
+      { id: 't2', label: 'Something else could explain the same pattern', mapsTo: 'causal' },
+      { id: 't3', label: 'It only holds for some places, times or people', mapsTo: 'scope' },
+      { id: 't4', label: 'Other things it predicts do or do not show up', mapsTo: 'implications' },
+      { id: 't5', label: 'The study is well or badly done', mapsTo: 'quality' },
+      { id: 't6', label: 'It has or has not held up when challenged', mapsTo: 'quality' },
+      { id: 't7', label: 'It fits what I already believed', mapsTo: 'NON_CRITERION' },
+      { id: 't8', label: 'It just sounds more plausible', mapsTo: 'NON_CRITERION' },
+      { id: 't9', label: 'Other', mapsTo: 'NON_CRITERION', unclassified: true, requiresText: true }
+    ],
+
+    // The four formal criteria. Not rendered anywhere before step 5.
+    // The `id` of each must match the mapsTo values used in plainTags above.
+    criteria: [
+      {
+        id: 'causal',
+        name: 'Causal identification',
+        definition: 'PLACEHOLDER: definition of the first criterion, in the words you want students to learn.',
+        guidingQuestions: [
+          'PLACEHOLDER: guiding question 1 for the first criterion',
+          'PLACEHOLDER: guiding question 2 for the first criterion',
+          'PLACEHOLDER: guiding question 3 for the first criterion'
+        ]
+      },
+      {
+        id: 'scope',
+        name: 'Scope conditions',
+        definition: 'PLACEHOLDER: definition of the second criterion, in the words you want students to learn.',
+        guidingQuestions: [
+          'PLACEHOLDER: guiding question 1 for the second criterion',
+          'PLACEHOLDER: guiding question 2 for the second criterion',
+          'PLACEHOLDER: guiding question 3 for the second criterion'
+        ]
+      },
+      {
+        id: 'implications',
+        name: 'Observable implications',
+        definition: 'PLACEHOLDER: definition of the third criterion, in the words you want students to learn.',
+        guidingQuestions: [
+          'PLACEHOLDER: guiding question 1 for the third criterion',
+          'PLACEHOLDER: guiding question 2 for the third criterion',
+          'PLACEHOLDER: guiding question 3 for the third criterion'
+        ]
+      },
+      {
+        id: 'quality',
+        name: 'Methodological quality',
+        definition: 'PLACEHOLDER: definition of the fourth criterion, in the words you want students to learn.',
+        guidingQuestions: [
+          'PLACEHOLDER: guiding question 1 for the fourth criterion',
+          'PLACEHOLDER: guiding question 2 for the fourth criterion',
+          'PLACEHOLDER: guiding question 3 for the fourth criterion'
+        ]
+      }
+    ],
+
+    // Neutral wording shown beside the NON_CRITERION proportion at step 5.
+    // Keep it non-judgemental.
+    nonCriterionNote: 'These are reasons for believing something, but not reasons that would persuade someone who disagreed with you.',
+
+    // The four verdict options at steps 3 and 6. Do not reorder without
+    // checking the print summary and the side-by-side comparison.
+    verdicts: [
+      { v: 'a', label: 'A survives' },
+      { v: 'b', label: 'B survives' },
+      { v: 'both', label: 'Both survive' },
+      { v: 'neither', label: 'Neither survives' }
+    ],
+
+    // Abbreviations protected from the sentence splitter at step 4. Add any
+    // others your students use. Matching is case-insensitive.
+    abbreviations: [
+      'e.g.', 'i.e.', 'et al.', 'etc.', 'cf.', 'vs.', 'viz.', 'ibid.', 'op. cit.',
+      'approx.', 'ca.', 'no.', 'pp.', 'fig.', 'Dr.', 'Prof.', 'Mr.', 'Mrs.', 'Ms.', 'St.'
+    ],
+
+    // Labels for the four sub-claims and the three lenses, used for display.
+    claimTypes: {
+      supply: 'Supply - fewer third places exist',
+      use: 'Use - people use them less',
+      quality: 'Quality - those that remain function less well as third places',
+      outcome: 'Outcome - social consequences have worsened'
+    },
+    lensLabels: {
+      psychological: 'Psychological lens',
+      political: 'Political lens',
+      economic: 'Economic lens'
+    }
+  };
+
+  // =====================================================================
+  // STATE
+  // =====================================================================
+  function blankState() {
+    return {
+      version: 1,
+      step: 0,                 // 0-6, matches STEPS below
+      group: { name: '', members: '' },
+      open: {},                // evidence card id -> expanded?
+      commit: { verdict: '', justification: '', locked: false, lockedAt: '' },
+      dissect: { derived: false, rows: [], splitting: -1 },
+      revise: { verdict: '', reasoning: '' }
+    };
+  }
+  // A dissect row: { text: '', tags: ['t1'], other: '' }
+  function blankRow(text) { return { text: text, tags: [], other: '' }; }
+
+  var state = blankState();
+
+  function save() {
+    try {
+      localStorage.setItem(CONFIG.storageKey, JSON.stringify(state));
+      var n = document.getElementById('save-note');
+      if (n) n.textContent = 'Saved ' + new Date().toLocaleTimeString('en-GB');
+    } catch (e) {
+      var m = document.getElementById('save-note');
+      if (m) m.textContent = 'Autosave unavailable: export JSON to keep your work';
+    }
+  }
+  function load() {
+    try {
+      var raw = localStorage.getItem(CONFIG.storageKey);
+      if (raw) state = mergeState(JSON.parse(raw));
+    } catch (e) { state = blankState(); }
+  }
+  function mergeState(obj) {
+    var s = blankState();
+    if (!obj || typeof obj !== 'object') return s;
+    for (var k in s) if (obj[k] !== undefined) s[k] = obj[k];
+    if (!s.group || typeof s.group !== 'object') s.group = { name: '', members: '' };
+    if (!s.open || typeof s.open !== 'object') s.open = {};
+    if (!s.commit || typeof s.commit !== 'object') s.commit = { verdict: '', justification: '', locked: false, lockedAt: '' };
+    if (!s.dissect || typeof s.dissect !== 'object') s.dissect = { derived: false, rows: [], splitting: -1 };
+    if (!Array.isArray(s.dissect.rows)) s.dissect.rows = [];
+    s.dissect.rows = s.dissect.rows.map(function(r) {
+      var row = blankRow(String((r && r.text) || ''));
+      if (r && Array.isArray(r.tags)) row.tags = r.tags.slice();
+      if (r && r.other) row.other = String(r.other);
+      return row;
+    });
+    if (typeof s.dissect.splitting !== 'number') s.dissect.splitting = -1;
+    if (!s.revise || typeof s.revise !== 'object') s.revise = { verdict: '', reasoning: '' };
+    s.step = Math.max(0, Math.min(STEPS.length - 1, s.step | 0));
+    return s;
+  }
+
+  // =====================================================================
+  // UTILITIES
+  // =====================================================================
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function wordCount(s) {
+    var t = String(s || '').trim();
+    return t ? t.split(/\s+/).length : 0;
+  }
+  function escRe(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function tagById(id) {
+    for (var i = 0; i < CONFIG.plainTags.length; i++) if (CONFIG.plainTags[i].id === id) return CONFIG.plainTags[i];
+    return null;
+  }
+  function expById(id) {
+    for (var i = 0; i < CONFIG.explanations.length; i++) if (CONFIG.explanations[i].id === id) return CONFIG.explanations[i];
+    return null;
+  }
+  function verdictLabel(v) {
+    for (var i = 0; i < CONFIG.verdicts.length; i++) if (CONFIG.verdicts[i].v === v) return CONFIG.verdicts[i].label;
+    return 'No verdict recorded';
+  }
+  function fmtDate(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return String(iso);
+    return d.toLocaleDateString('en-GB') + ' ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  }
+  function memberLine() {
+    return String(state.group.members || '').split(/[\n,]+/).map(function(s) { return s.trim(); }).filter(Boolean).join(', ');
+  }
+  function wcHtml(text, min) {
+    var n = wordCount(text);
+    var cls = n >= min ? 'ok' : (n > 0 ? 'low' : '');
+    return '<div class="wc ' + cls + '" data-wc-min="' + min + '" aria-live="polite">' + n + ' / ' + min + ' words minimum</div>';
+  }
+  function segHtml(name, opts, value, big) {
+    var h = '<div class="seg' + (big ? ' big' : '') + '" role="group" aria-label="' + esc(name) + '">';
+    for (var i = 0; i < opts.length; i++) {
+      var on = value === opts[i].v;
+      h += '<button type="button" data-seg="' + esc(name) + '" data-v="' + esc(opts[i].v) + '" class="' + (on ? 'on' : '') + '" aria-pressed="' + on + '">' + esc(opts[i].label) + '</button>';
+    }
+    return h + '</div>';
+  }
+  function deco(color, kind, style) {
+    return '<div class="panel-deco" style="background:' + color + ';' + (kind === 'circle' ? 'border-radius:50%;' : '') + style + '"></div>';
+  }
+  function errorsHtml(errs) {
+    if (!errs.length) return '';
+    var h = '<div class="notice bad" role="alert"><strong>Before you continue:</strong><ul>';
+    for (var i = 0; i < errs.length; i++) h += '<li>' + esc(errs[i]) + '</li>';
+    return h + '</ul></div>';
+  }
+
+  // =====================================================================
+  // SENTENCE SPLITTING (step 4)
+  //
+  // Abbreviations, decimal numbers and single-letter initials have their full
+  // stops swapped for a private-use marker before splitting, then swapped back,
+  // so "e.g." and "et al." do not end a sentence. Anything the splitter still
+  // gets wrong is fixed by the group with the merge and split controls.
+  // =====================================================================
+  var DOT = '\u0001';
+
+  function splitSentences(text) {
+    var t = String(text || '').replace(/\s+/g, ' ').trim();
+    if (!t) return [];
+    for (var i = 0; i < CONFIG.abbreviations.length; i++) {
+      var re = new RegExp(escRe(CONFIG.abbreviations[i]), 'gi');
+      t = t.replace(re, function(m) { return m.split('.').join(DOT); });
+    }
+    t = t.replace(/(\d)\.(\d)/g, '$1' + DOT + '$2');          // decimals: 3.5
+    t = t.replace(/(^|[\s(])([A-Z])\./g, '$1$2' + DOT);        // initials: J. Smith
+    var out = [], m2, rx = /[^.?!]+[.?!]+['"\u2019\u201d)\]]*|[^.?!]+$/g;
+    while ((m2 = rx.exec(t)) !== null) {
+      var s = m2[0].trim();
+      if (s) out.push(s.split(DOT).join('.'));
+    }
+    return out;
+  }
+
+  function deriveRows(force) {
+    if (state.dissect.derived && !force) return;
+    var sentences = splitSentences(state.commit.justification);
+    state.dissect.rows = sentences.map(function(s) { return blankRow(s); });
+    state.dissect.derived = true;
+    state.dissect.splitting = -1;
+  }
+
+  // =====================================================================
+  // TALLY (step 5)
+  // =====================================================================
+  function tally() {
+    var rows = state.dissect.rows, out = { perCriterion: {}, total: rows.length, nonCriterion: 0, unclassified: 0, untagged: 0 };
+    for (var c = 0; c < CONFIG.criteria.length; c++) out.perCriterion[CONFIG.criteria[c].id] = 0;
+    for (var i = 0; i < rows.length; i++) {
+      var hit = {}, nc = false, un = false;
+      if (!rows[i].tags.length) out.untagged++;
+      for (var j = 0; j < rows[i].tags.length; j++) {
+        var tg = tagById(rows[i].tags[j]);
+        if (!tg) continue;
+        if (tg.unclassified) { un = true; continue; }
+        if (tg.mapsTo === 'NON_CRITERION') { nc = true; continue; }
+        hit[tg.mapsTo] = true;
+      }
+      for (var k in hit) if (out.perCriterion[k] !== undefined) out.perCriterion[k]++;
+      if (nc) out.nonCriterion++;
+      if (un) out.unclassified++;
+    }
+    out.maxCount = 0;
+    for (var kk in out.perCriterion) if (out.perCriterion[kk] > out.maxCount) out.maxCount = out.perCriterion[kk];
+    out.unused = CONFIG.criteria.filter(function(cr) { return out.perCriterion[cr.id] === 0; });
+    out.used = CONFIG.criteria.filter(function(cr) { return out.perCriterion[cr.id] > 0; });
+    return out;
+  }
+
+  // =====================================================================
+  // STEPS
+  // =====================================================================
+  var STEPS = [
+    { key: 'setup',   title: 'Setup',   short: 'Setup',   colour: 'c1', validate: vSetup },
+    { key: 'brief',   title: 'Brief',   short: 'Brief',   colour: 'c4', validate: function() { return []; } },
+    { key: 'commit',  title: 'Commit',  short: 'Commit',  colour: 'c2', validate: vCommit },
+    { key: 'dissect', title: 'Dissect', short: 'Dissect', colour: 'c6', validate: vDissect },
+    { key: 'reveal',  title: 'Reveal',  short: 'Reveal',  colour: 'c8', validate: function() { return []; } },
+    { key: 'revise',  title: 'Revise',  short: 'Revise',  colour: 'c3', validate: vRevise },
+    { key: 'output',  title: 'Output',  short: 'Output',  colour: 'c5', validate: function() { return []; } }
+  ];
+
+  function vSetup() {
+    var e = [];
+    if (!String(state.group.name || '').trim()) e.push('Enter a group name.');
+    if (!memberLine()) e.push('Enter at least one member name.');
+    return e;
+  }
+  function vCommit() {
+    var e = [];
+    if (!state.commit.locked) e.push('Record and lock your verdict before continuing.');
+    return e;
+  }
+  function vDissect() {
+    var e = [];
+    if (!state.dissect.rows.length) e.push('There are no sentences to work with. Reset and write a longer justification.');
+    var untagged = 0, missingOther = 0;
+    for (var i = 0; i < state.dissect.rows.length; i++) {
+      var r = state.dissect.rows[i];
+      if (!r.tags.length) untagged++;
+      for (var j = 0; j < r.tags.length; j++) {
+        var tg = tagById(r.tags[j]);
+        if (tg && tg.requiresText && wordCount(r.other) < CONFIG.minOtherWords) { missingOther++; break; }
+      }
+    }
+    if (untagged) e.push(untagged + ' sentence' + (untagged === 1 ? '' : 's') + ' still ' + (untagged === 1 ? 'has' : 'have') + ' no tag. Every sentence needs at least one.');
+    if (missingOther) e.push(missingOther + ' sentence' + (missingOther === 1 ? '' : 's') + ' tagged "Other" ' + (missingOther === 1 ? 'needs' : 'need') + ' a description of at least ' + CONFIG.minOtherWords + ' words.');
+    return e;
+  }
+  function vRevise() {
+    var e = [];
+    if (!state.revise.verdict) e.push('Record a revised verdict (it may be the same as the original).');
+    if (wordCount(state.revise.reasoning) < CONFIG.minRevisionWords) e.push('The revision reasoning needs at least ' + CONFIG.minRevisionWords + ' words.');
+    return e;
+  }
+  // Step n is reachable only when every earlier step validates.
+  function reachable(n) {
+    for (var i = 0; i < n; i++) if (STEPS[i].validate().length) return false;
+    return true;
+  }
+
+  // =====================================================================
+  // RENDER
+  // =====================================================================
+  var view = document.getElementById('view');
+  var stepper = document.getElementById('stepper');
+
+  function renderStepper() {
+    var h = '';
+    for (var i = 0; i < STEPS.length; i++) {
+      var done = STEPS[i].validate().length === 0 && i < state.step;
+      var open = reachable(i);
+      var cls = 'step-pip' + (i === state.step ? ' current' : '') + (done ? ' done' : '') + (open ? '' : ' locked');
+      h += '<button type="button" class="' + cls + '" data-goto="' + i + '"' + (open ? '' : ' aria-disabled="true"') +
+        ' aria-current="' + (i === state.step ? 'step' : 'false') + '">' +
+        '<span class="sq" aria-hidden="true"></span><span class="num">' + (i + 1) + '</span> ' + esc(STEPS[i].short) +
+        (open ? '' : ' <span aria-hidden="true">&#9679;</span>') + '</button>';
+    }
+    stepper.innerHTML = h;
+  }
+
+  function render() {
+    if (!reachable(state.step)) {
+      while (state.step > 0 && !reachable(state.step)) state.step--;
+    }
+    renderStepper();
+    var fn = { setup: rSetup, brief: rBrief, commit: rCommit, dissect: rDissect, reveal: rReveal, revise: rRevise, output: rOutput }[STEPS[state.step].key];
+    view.innerHTML = fn();
+    if (STEPS[state.step].key === 'reveal') animateBars();
+  }
+
+  function navHtml(showNext, nextLabel) {
+    var h = '<div class="nav-row">';
+    h += state.step > 0
+      ? '<button type="button" class="btn btn-ghost" data-action="prev">Back</button>'
+      : '<span></span>';
+    h += showNext === false ? '<span></span>'
+      : '<button type="button" class="btn btn-next" data-action="next">' + esc(nextLabel || 'Continue') + '</button>';
+    return h + '</div>';
+  }
+
+  function claimBannerHtml(colour) {
+    return '<div class="banner ' + (colour || 'c8') + '">' +
+      '<div class="eyebrow">Claim under adjudication &middot; ' + esc(CONFIG.claimTypes[CONFIG.claim.type] || CONFIG.claim.type) + '</div>' +
+      '<h2>' + esc(CONFIG.claim.type) + ' claim</h2>' +
+      '<p>' + esc(CONFIG.claim.text) + '</p></div>';
+  }
+
+  // ── Step 1: Setup ──────────────────────────────────────────────────
+  function rSetup() {
+    var h = '<div class="banner"><div class="eyebrow">Step 1 of ' + STEPS.length + '</div><h2>Who is in the group?</h2>' +
+      '<p>Record this once. It appears on everything you print or export.</p></div>';
+    h += '<div class="panel c1">' + deco('var(--char-4)', 'square', 'width:120px;height:120px;right:-30px;bottom:-40px;transform:rotate(18deg);') +
+      '<div class="eyebrow">Group</div><h3>Identify yourselves</h3>' +
+      '<label for="g-name">Group name <span class="req">*</span></label>' +
+      '<input type="text" id="g-name" data-bind="group.name" value="' + esc(state.group.name) + '" autocomplete="off">' +
+      '<label for="g-members">Member names <span class="req">*</span> <span style="text-transform:none;letter-spacing:0;font-weight:400">(one per line, or separated by commas)</span></label>' +
+      '<textarea id="g-members" class="short" data-bind="group.members">' + esc(state.group.members) + '</textarea>' +
+      '</div>';
+    h += '<div class="notice info"><strong>How this session works.</strong> You will read two competing explanations, commit to a verdict, and then examine the reasoning you used to get there. The second half of the session depends on your first verdict being written before you see anything else, so take the first three steps in order and do not skip ahead.</div>';
+    h += navHtml(true, 'Continue to the brief');
+    return h;
+  }
+
+  // ── Step 2: Brief ──────────────────────────────────────────────────
+  function evCardHtml(card, colour) {
+    var isOpen = !!state.open[card.id];
+    var h = '<div class="coll' + (isOpen ? ' open' : '') + '">' +
+      '<button type="button" class="coll-head" data-open="' + esc(card.id) + '" aria-expanded="' + isOpen + '" aria-controls="ev-' + esc(card.id) + '">' +
+      '<span>' + esc(card.id) + ' &middot; ' + esc(card.title) + '</span>' +
+      '<span class="ind" aria-hidden="true">' + (isOpen ? '&minus;' : '+') + '</span></button>' +
+      '<div class="coll-body" id="ev-' + esc(card.id) + '">';
+    var rows = [
+      ['Source', card.source, ''], ['Design', card.design, ''], ['Sample', card.sample, ''],
+      ['Finding', card.finding, ''], ['Limitation', card.limitation, 'limit']
+    ];
+    for (var i = 0; i < rows.length; i++) {
+      h += '<div class="ev-row ' + rows[i][2] + '"><div class="evl">' + esc(rows[i][0]) + '</div><div class="evv">' + esc(rows[i][1]) + '</div></div>';
+    }
+    return h + '</div></div>';
+  }
+
+  function rBrief() {
+    var h = claimBannerHtml('c8');
+    h += '<div class="panel c4">' + deco('var(--char-2)', 'circle', 'width:150px;height:150px;right:-50px;top:-50px;') +
+      '<div class="eyebrow">Step 2 of ' + STEPS.length + ' &middot; Brief</div><h3>Two explanations for the same claim</h3>' +
+      '<p class="help">Read both, and open the evidence panels under each. You are being asked which explanation survives, not which you prefer. There is no answer key in this tool.</p></div>';
+    h += '<div class="exp-grid">';
+    for (var i = 0; i < CONFIG.explanations.length; i++) {
+      var ex = CONFIG.explanations[i];
+      h += '<section class="exp-col' + (i === 1 ? ' b' : '') + '" aria-labelledby="exp-h-' + esc(ex.id) + '">' +
+        '<div class="exp-head"><div class="exp-key" aria-hidden="true">' + esc(ex.id) + '</div>' +
+        '<div><div class="eyebrow lens-tag">' + esc(CONFIG.lensLabels[ex.lens] || ex.lens) + '</div>' +
+        '<div class="exp-label" id="exp-h-' + esc(ex.id) + '">' + esc(ex.label) + '</div></div></div>' +
+        '<p class="exp-summary">' + esc(ex.summary) + '</p>' +
+        '<div class="eyebrow" style="color:var(--text-muted);margin-bottom:0.4rem">Evidence (' + ex.evidenceCards.length + ')</div>';
+      for (var j = 0; j < ex.evidenceCards.length; j++) h += evCardHtml(ex.evidenceCards[j]);
+      h += '</section>';
+    }
+    h += '</div>';
+    h += '<div class="section-break c2"></div>';
+    h += navHtml(true, 'Continue to your verdict');
+    return h;
+  }
+
+  // ── Step 3: Commit ─────────────────────────────────────────────────
+  function rCommit() {
+    var h = '';
+    if (state.commit.locked) {
+      h += '<div class="banner c5"><div class="eyebrow">Step 3 of ' + STEPS.length + ' &middot; Committed</div><h2>Your verdict is locked</h2>' +
+        '<p>Locked at ' + esc(fmtDate(state.commit.lockedAt)) + '. It cannot be edited from here. The rest of the session works on exactly what you wrote, so it stays as it is unless the whole tool is reset.</p></div>';
+      h += '<div class="locked-box"><div class="lk">Verdict</div><div class="cmp-verdict">' + esc(verdictLabel(state.commit.verdict)) + '</div>' +
+        '<div class="lk">Justification &middot; ' + wordCount(state.commit.justification) + ' words</div>' +
+        '<div class="just-text">' + esc(state.commit.justification) + '</div></div>';
+      h += '<div class="notice info">To change any of this you would have to reset the tool with the Reset button at the top, which deletes everything on this device.</div>';
+      h += navHtml(true, 'Continue');
+      return h;
+    }
+    h += '<div class="banner c2"><div class="eyebrow">Step 3 of ' + STEPS.length + ' &middot; Commit</div><h2>Which explanation survives?</h2>' +
+      '<p>Decide together, then write why. Write it the way you would say it out loud to another group. When you submit, the verdict and the justification are timestamped and locked, and you will not be able to edit them.</p></div>';
+    h += claimBannerHtml('c8');
+    h += '<div class="panel c2">' + deco('var(--char-4)', 'square', 'width:110px;height:110px;right:-24px;bottom:-36px;transform:rotate(-14deg);') +
+      '<div class="eyebrow">Verdict</div><h3>Your verdict <span class="req">*</span></h3>' +
+      segHtml('verdict', CONFIG.verdicts, state.commit.verdict, true);
+    var names = CONFIG.explanations.map(function(e) { return e.id + ' = ' + e.label; }).join('  |  ');
+    h += '<p class="help" style="margin-top:0.5rem">' + esc(names) + '</p>';
+    h += '<label for="just">Why? <span class="req">*</span></label>' +
+      '<textarea id="just" data-bind="commit.justification" style="min-height:200px">' + esc(state.commit.justification) + '</textarea>' +
+      wcHtml(state.commit.justification, CONFIG.minJustificationWords);
+    h += '<div class="notice">Write in full sentences. Step 4 works sentence by sentence through what you have written, so short notes and bullet fragments will be harder to work with than prose.</div>';
+    h += '<button type="button" class="btn" data-action="lock">Submit and lock verdict</button>';
+    h += '</div>';
+    h += navHtml(false);
+    return h;
+  }
+
+  // ── Step 4: Dissect ────────────────────────────────────────────────
+  function rDissect() {
+    deriveRows(false);
+    var h = '<div class="banner c6"><div class="eyebrow">Step 4 of ' + STEPS.length + ' &middot; Dissect</div><h2>What were you actually using?</h2>' +
+      '<p>Your justification has been split into sentences. For each sentence, tag the kind of reason it gives. A sentence can carry more than one tag. If the split is wrong, merge two sentences or split one at the right word.</p></div>';
+    h += '<div class="locked-box" style="margin-bottom:1.25rem"><div class="lk">Locked verdict</div><div class="cmp-verdict">' + esc(verdictLabel(state.commit.verdict)) + '</div>' +
+      '<div class="lk">' + esc(fmtDate(state.commit.lockedAt)) + '</div></div>';
+
+    var rows = state.dissect.rows;
+    h += '<div class="meta-line">' + rows.length + ' sentence' + (rows.length === 1 ? '' : 's') + ' &middot; ' +
+      rows.filter(function(r) { return r.tags.length; }).length + ' tagged</div>';
+
+    for (var i = 0; i < rows.length; i++) h += sentRowHtml(rows[i], i, rows.length);
+
+    h += '<div class="section-break"></div>';
+    h += '<button type="button" class="btn btn-ghost btn-small" data-action="resplit">Start the split again</button>';
+    h += navHtml(true, 'Continue');
+    return h;
+  }
+
+  function sentRowHtml(row, i, total) {
+    var needsOther = false;
+    for (var t = 0; t < row.tags.length; t++) { var tg = tagById(row.tags[t]); if (tg && tg.requiresText) needsOther = true; }
+    var h = '<div class="sent-row' + (row.tags.length ? '' : ' untagged') + '">' +
+      '<div class="sent-head"><span class="sent-num">S' + (i + 1) + '</span><span class="sent-text">' + esc(row.text) + '</span></div>';
+    h += '<div class="lbl" id="tl-' + i + '">Tags for S' + (i + 1) + ' <span class="req">*</span></div>';
+    h += '<div class="chip-grid" role="group" aria-labelledby="tl-' + i + '">';
+    for (var j = 0; j < CONFIG.plainTags.length; j++) {
+      var tag = CONFIG.plainTags[j], on = row.tags.indexOf(tag.id) !== -1;
+      h += '<label class="' + (on ? 'on' : '') + '"><input type="checkbox" data-tag="' + i + ':' + esc(tag.id) + '"' + (on ? ' checked' : '') + '><span>' + esc(tag.label) + '</span></label>';
+    }
+    h += '</div>';
+    if (needsOther) {
+      h += '<div class="other-wrap"><label for="other-' + i + '">Describe the other reason <span class="req">*</span></label>' +
+        '<input type="text" id="other-' + i + '" data-other="' + i + '" value="' + esc(row.other) + '" autocomplete="off">' +
+        wcHtml(row.other, CONFIG.minOtherWords) + '</div>';
+    }
+    h += '<div class="sent-tools">';
+    if (i < total - 1) h += '<button type="button" class="btn btn-ghost btn-tiny" data-merge="' + i + '">Merge with S' + (i + 2) + '</button>';
+    if (row.text.split(/\s+/).length > 1) h += '<button type="button" class="btn btn-ghost btn-tiny" data-split="' + i + '">' + (state.dissect.splitting === i ? 'Cancel split' : 'Split this sentence') + '</button>';
+    h += '</div>';
+    if (state.dissect.splitting === i) h += splitWrapHtml(row, i);
+    return h + '</div>';
+  }
+
+  function splitWrapHtml(row, i) {
+    var words = row.text.split(/\s+/);
+    var h = '<div class="split-wrap"><span class="wc" style="width:100%;margin:0 0 0.3rem">Click a marker to split after that word</span>';
+    for (var w = 0; w < words.length; w++) {
+      h += '<span class="w">' + esc(words[w]) + '</span>';
+      if (w < words.length - 1) h += '<button type="button" class="brk" data-brk="' + i + ':' + w + '" aria-label="Split after the word ' + esc(words[w]) + '"></button>';
+    }
+    return h + '</div>';
+  }
+
+  // ── Step 5: Reveal ─────────────────────────────────────────────────
+  function rReveal() {
+    var t = tally();
+    var h = '<div class="banner c8"><div class="eyebrow">Step 5 of ' + STEPS.length + ' &middot; Reveal</div><h2>The four criteria</h2>' +
+      '<p>These are the four criteria this course uses to adjudicate between competing explanations. You have already been using some of them. The bars show how many of your own sentences you tagged with reasons that belong to each one.</p></div>';
+
+    h += '<div class="panel c8"><div class="eyebrow">Your reasoning</div><h3>' + t.total + ' sentence' + (t.total === 1 ? '' : 's') + ' tagged</h3>' +
+      '<p class="help">A sentence is counted once under a criterion, however many tags of that kind it carries. A sentence can count under more than one criterion.</p></div>';
+
+    for (var i = 0; i < CONFIG.criteria.length; i++) {
+      var cr = CONFIG.criteria[i], n = t.perCriterion[cr.id], unused = n === 0;
+      var pct = t.maxCount ? Math.round((n / t.maxCount) * 100) : 0;
+      h += '<div class="crit-card k' + (i + 1) + (unused ? ' unused' : '') + '">' +
+        '<div class="crit-name">' + esc(cr.name) + '</div>' +
+        '<div class="crit-def">' + esc(cr.definition) + '</div>' +
+        '<div class="bar-row"><div class="bar-track" role="img" aria-label="' + n + ' of ' + t.total + ' sentences">' +
+        '<div class="bar-fill" data-bar style="width:0" data-w="' + pct + '"></div></div>' +
+        '<div class="bar-val">' + n + '/' + t.total + '</div></div>';
+      if (unused) h += '<div class="used-flag">Not used in your justification</div>';
+      h += '<ul class="gq">';
+      for (var q = 0; q < cr.guidingQuestions.length; q++) h += '<li>' + esc(cr.guidingQuestions[q]) + '</li>';
+      h += '</ul></div>';
+    }
+
+    if (t.unused.length) {
+      h += '<div class="notice"><strong>' + t.unused.length + ' of ' + CONFIG.criteria.length + ' criteria did not appear in your justification:</strong> ' +
+        esc(t.unused.map(function(c) { return c.name; }).join('; ')) + '. Step 6 asks you to apply them.</div>';
+    } else {
+      h += '<div class="notice good">All four criteria appeared somewhere in your justification. Step 6 asks you to apply each of them more deliberately.</div>';
+    }
+
+    h += '<div class="section-break c6"></div>';
+    var ncPct = t.total ? Math.round((t.nonCriterion / t.total) * 100) : 0;
+    h += '<div class="nc-box"><div class="eyebrow" style="color:var(--char-5)">Reasons outside the four criteria</div>' +
+      '<div class="nc-big">' + ncPct + '%</div>' +
+      '<p style="font-size:0.94rem">' + t.nonCriterion + ' of ' + t.total + ' sentence' + (t.total === 1 ? '' : 's') + '. ' + esc(CONFIG.nonCriterionNote) + '</p></div>';
+
+    if (t.unclassified) {
+      h += '<div class="notice info"><strong>' + t.unclassified + ' sentence' + (t.unclassified === 1 ? '' : 's') +
+        ' tagged "Other".</strong> The tool has not classified ' + (t.unclassified === 1 ? 'it' : 'them') + ' either way, and ' +
+        (t.unclassified === 1 ? 'it is' : 'they are') + ' not counted in the figure above. Read back what you wrote there and decide as a group whether it belongs to one of the four criteria.</div>';
+      h += '<div class="panel c5"><div class="eyebrow">What you wrote under "Other"</div><ul class="gq">';
+      for (var r = 0; r < state.dissect.rows.length; r++) {
+        var row = state.dissect.rows[r], isO = false;
+        for (var tt = 0; tt < row.tags.length; tt++) { var tg = tagById(row.tags[tt]); if (tg && tg.unclassified) isO = true; }
+        if (isO) h += '<li><strong>S' + (r + 1) + ':</strong> ' + esc(row.other) + '</li>';
+      }
+      h += '</ul></div>';
+    }
+
+    h += navHtml(true, 'Continue to revision');
+    return h;
+  }
+
+  function animateBars() {
+    var bars = view.querySelectorAll('[data-bar]');
+    for (var i = 0; i < bars.length; i++) {
+      (function(b, ix) {
+        setTimeout(function() { b.style.width = b.getAttribute('data-w') + '%'; }, 60 * ix + 40);
+      })(bars[i], i);
+    }
+  }
+
+  // ── Step 6: Revise ─────────────────────────────────────────────────
+  function rRevise() {
+    var t = tally();
+    var h = '<div class="banner c3"><div class="eyebrow">Step 6 of ' + STEPS.length + ' &middot; Revise</div><h2>Apply the criteria you did not use</h2>' +
+      '<p>Does your verdict change? It is a legitimate outcome for it not to. What matters is that the reasoning you give now runs through the criteria your first justification left out.</p></div>';
+
+    if (t.unused.length) {
+      h += '<div class="panel c4"><div class="eyebrow">Criteria to apply</div><h3>Left out of your justification</h3><ul class="gq">';
+      for (var i = 0; i < t.unused.length; i++) {
+        h += '<li><strong>' + esc(t.unused[i].name) + '.</strong> ' + esc(t.unused[i].definition) + '</li>';
+      }
+      h += '</ul></div>';
+    } else {
+      h += '<div class="notice info">Your justification touched all four criteria. Apply each of them more deliberately to the evidence, one at a time.</div>';
+    }
+
+    h += '<div class="panel c3">' + deco('var(--char-8)', 'circle', 'width:140px;height:140px;right:-45px;bottom:-55px;') +
+      '<div class="eyebrow">Revised verdict</div><h3>Your verdict now <span class="req">*</span></h3>' +
+      segHtml('rverdict', CONFIG.verdicts, state.revise.verdict, true) +
+      '<label for="rreason">Reasoning <span class="req">*</span></label>' +
+      '<textarea id="rreason" data-bind="revise.reasoning" style="min-height:180px">' + esc(state.revise.reasoning) + '</textarea>' +
+      wcHtml(state.revise.reasoning, CONFIG.minRevisionWords) + '</div>';
+
+    h += compareHtml();
+    h += navHtml(true, 'Continue to outputs');
+    return h;
+  }
+
+  function compareHtml(withBreak) {
+    var changed = state.revise.verdict && state.revise.verdict !== state.commit.verdict;
+    var h = (withBreak === false ? '' : '<div class="section-break c6"></div>') + '<div class="cmp-grid">';
+    h += '<div class="cmp-col"><div class="eyebrow" style="color:var(--char-5)">Original &middot; ' + esc(fmtDate(state.commit.lockedAt)) + '</div>' +
+      '<div class="cmp-verdict">' + esc(verdictLabel(state.commit.verdict)) + '</div>' +
+      '<div class="cmp-body">' + esc(state.commit.justification) + '</div></div>';
+    h += '<div class="cmp-col rev"><div class="eyebrow" style="color:var(--char-8)">After applying the criteria</div>' +
+      '<div class="cmp-verdict">' + esc(state.revise.verdict ? verdictLabel(state.revise.verdict) : 'No revised verdict yet') + '</div>' +
+      (state.revise.verdict ? '<div><span class="change-flag' + (changed ? '' : ' same') + '">' + (changed ? 'Verdict changed' : 'Verdict unchanged') + '</span></div>' : '') +
+      '<div class="cmp-body" style="margin-top:0.5rem">' + esc(state.revise.reasoning) + '</div></div>';
+    return h + '</div>';
+  }
+
+  // ── Step 7: Output ─────────────────────────────────────────────────
+  function rOutput() {
+    var t = tally();
+    var h = '<div class="banner c5"><div class="eyebrow">Step 7 of ' + STEPS.length + ' &middot; Output</div><h2>Take it away</h2>' +
+      '<p>Print the summary for your file, or copy it as text into whatever you are writing in. Export the JSON if the group needs to carry this work to another device.</p></div>';
+    h += '<div class="panel c5"><div class="eyebrow">Summary</div><h3>' + esc(state.group.name || 'Unnamed group') + '</h3>' +
+      '<div class="meta-line">' + esc(memberLine()) + '</div>' +
+      '<div class="toolbar" style="margin:0.5rem 0 0">' +
+      '<button type="button" class="btn" data-action="print">Print A4 summary</button>' +
+      '<button type="button" class="btn btn-ghost" data-action="copy">Copy as text</button>' +
+      '<button type="button" class="btn btn-ghost" data-action="export">Export JSON</button></div></div>';
+    h += '<div class="panel c8"><div class="eyebrow">On the sheet</div><h3>What the summary contains</h3><ul class="gq">' +
+      '<li>The claim and the two explanations you adjudicated between</li>' +
+      '<li>Your original verdict and justification, with its timestamp</li>' +
+      '<li>The tag breakdown across the four criteria, and which you did not use</li>' +
+      '<li>Your revised verdict and reasoning, beside the original</li></ul></div>';
+    h += compareHtml();
+    h += '<div class="notice info">' + t.unused.length + ' of ' + CONFIG.criteria.length + ' criteria were absent from your original justification. That count appears on the printed sheet.</div>';
+    h += navHtml(false);
+    return h;
+  }
+
+  // =====================================================================
+  // PRINT
+  // =====================================================================
+  var printArea = document.getElementById('print-area');
+
+  function printHtml() {
+    var t = tally(), h = '';
+    h += '<div class="pp-head"><div class="eyebrow">Week 6 &middot; Adjudicate &middot; Criteria Forge</div><h2>' + esc(state.group.name || 'Unnamed group') + '</h2></div>';
+    h += '<div class="pp-meta">' + esc(memberLine()) + ' &middot; printed ' + esc(new Date().toLocaleDateString('en-GB')) + '</div>';
+
+    h += '<div class="pp-sec">Claim under adjudication (' + esc(CONFIG.claim.type) + ')</div>';
+    h += '<div class="pp-text">' + esc(CONFIG.claim.text) + '</div>';
+
+    h += '<div class="pp-sec">The two explanations</div><div class="pp-2col">';
+    for (var i = 0; i < CONFIG.explanations.length; i++) {
+      var ex = CONFIG.explanations[i];
+      h += '<div class="pp-box"><strong>' + esc(ex.id) + ' &middot; ' + esc(ex.label) + '</strong><br>' +
+        '<em>' + esc(CONFIG.lensLabels[ex.lens] || ex.lens) + '</em><div class="pp-text">' + esc(ex.summary) + '</div></div>';
+    }
+    h += '</div>';
+
+    h += '<div class="pp-sec">Original verdict, locked ' + esc(fmtDate(state.commit.lockedAt)) + '</div>';
+    h += '<div class="pp-verdict">' + esc(verdictLabel(state.commit.verdict)) + '</div>';
+    h += '<div class="pp-text">' + esc(state.commit.justification) + '</div>';
+
+    h += '<div class="pp-sec">What the justification was made of (' + t.total + ' sentences)</div>';
+    h += '<table class="pp-table"><thead><tr><th>Criterion</th><th>Sentences</th><th>Share of bar</th></tr></thead><tbody>';
+    for (var c = 0; c < CONFIG.criteria.length; c++) {
+      var cr = CONFIG.criteria[c], n = t.perCriterion[cr.id];
+      var pct = t.maxCount ? Math.round((n / t.maxCount) * 100) : 0;
+      h += '<tr><td>' + esc(cr.name) + (n === 0 ? ' <span class="pp-unused">(not used)</span>' : '') + '</td><td>' + n + ' / ' + t.total + '</td>' +
+        '<td><div class="pp-bar-track"><div class="pp-bar" style="width:' + pct + '%"></div></div></td></tr>';
+    }
+    h += '</tbody></table>';
+    h += '<div class="pp-note">Reasons outside the four criteria: ' + t.nonCriterion + ' of ' + t.total +
+      ' sentences (' + (t.total ? Math.round((t.nonCriterion / t.total) * 100) : 0) + '%). ' + esc(CONFIG.nonCriterionNote) + '</div>';
+    if (t.unclassified) {
+      h += '<div class="pp-note">' + t.unclassified + ' sentence(s) tagged "Other" and described by the group. Not classified either way, and not counted above.</div>';
+    }
+    h += '<div class="pp-sec">Criteria absent from the original justification</div>';
+    h += '<div class="pp-text">' + (t.unused.length ? esc(t.unused.map(function(x) { return x.name; }).join('; ')) : 'None - all four appeared.') + '</div>';
+
+    h += '<div class="pp-sec">Revised verdict</div>';
+    h += '<div class="pp-verdict">' + esc(state.revise.verdict ? verdictLabel(state.revise.verdict) : 'No revised verdict recorded') + '</div>';
+    h += '<div class="pp-text">' + esc(state.revise.reasoning) + '</div>';
+    h += '<div class="pp-note">' + (state.revise.verdict
+      ? (state.revise.verdict === state.commit.verdict ? 'The verdict did not change.' : 'The verdict changed after the criteria were applied.')
+      : 'No revised verdict recorded.') + '</div>';
+
+    h += '<div class="pp-sec">Sentence-by-sentence tags</div>';
+    h += '<table class="pp-table"><thead><tr><th>#</th><th>Sentence</th><th>Tags</th></tr></thead><tbody>';
+    for (var r = 0; r < state.dissect.rows.length; r++) {
+      var row = state.dissect.rows[r];
+      var labels = row.tags.map(function(id) { var g = tagById(id); return g ? g.label : id; });
+      h += '<tr><td>S' + (r + 1) + '</td><td>' + esc(row.text) + '</td><td>' + esc(labels.join('; ')) +
+        (row.other ? ' &mdash; ' + esc(row.other) : '') + '</td></tr>';
+    }
+    h += '</tbody></table>';
+    return h;
+  }
+
+  function doPrint() {
+    printArea.innerHTML = printHtml();
+    window.print();
+  }
+
+  // =====================================================================
+  // COPY AS TEXT
+  // =====================================================================
+  function asText() {
+    var t = tally(), L = [];
+    L.push('CRITERIA FORGE - WEEK 6, ADJUDICATE');
+    L.push('Group: ' + (state.group.name || '') + ' | Members: ' + memberLine());
+    L.push('');
+    L.push('CLAIM (' + CONFIG.claim.type + '): ' + CONFIG.claim.text);
+    L.push('');
+    for (var i = 0; i < CONFIG.explanations.length; i++) {
+      var ex = CONFIG.explanations[i];
+      L.push('EXPLANATION ' + ex.id + ' [' + ex.lens + '] ' + ex.label);
+      L.push('  ' + ex.summary);
+    }
+    L.push('');
+    L.push('ORIGINAL VERDICT (locked ' + fmtDate(state.commit.lockedAt) + '): ' + verdictLabel(state.commit.verdict));
+    L.push('JUSTIFICATION: ' + state.commit.justification);
+    L.push('');
+    L.push('SENTENCE TAGS (' + t.total + ' sentences)');
+    for (var r = 0; r < state.dissect.rows.length; r++) {
+      var row = state.dissect.rows[r];
+      var labels = row.tags.map(function(id) { var g = tagById(id); return g ? g.label : id; });
+      L.push('  S' + (r + 1) + ': ' + row.text);
+      L.push('      tags: ' + labels.join('; ') + (row.other ? ' | other: ' + row.other : ''));
+    }
+    L.push('');
+    L.push('TALLY');
+    for (var c = 0; c < CONFIG.criteria.length; c++) {
+      var cr = CONFIG.criteria[c];
+      L.push('  ' + cr.name + ': ' + t.perCriterion[cr.id] + ' / ' + t.total + (t.perCriterion[cr.id] === 0 ? '  (not used)' : ''));
+    }
+    L.push('  Outside the four criteria: ' + t.nonCriterion + ' / ' + t.total + ' (' + (t.total ? Math.round((t.nonCriterion / t.total) * 100) : 0) + '%)');
+    L.push('  ' + CONFIG.nonCriterionNote);
+    if (t.unclassified) L.push('  Tagged "Other" and not classified: ' + t.unclassified + ' / ' + t.total);
+    L.push('  Criteria absent from the original justification: ' + (t.unused.length ? t.unused.map(function(x) { return x.name; }).join('; ') : 'none'));
+    L.push('');
+    L.push('REVISED VERDICT: ' + (state.revise.verdict ? verdictLabel(state.revise.verdict) : 'none recorded'));
+    L.push('REASONING: ' + state.revise.reasoning);
+    if (state.revise.verdict) L.push(state.revise.verdict === state.commit.verdict ? 'The verdict did not change.' : 'The verdict changed after the criteria were applied.');
+    return L.join('\n');
+  }
+  function copyText() {
+    var txt = asText();
+    function fallback() { openDialog('Copy the text below.', txt, false); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(function() {
+        document.getElementById('save-note').textContent = 'Copied as text';
+      }, fallback);
+    } else fallback();
+  }
+
+  // =====================================================================
+  // IMPORT / EXPORT / RESET
+  // =====================================================================
+  var dialog = document.getElementById('dialog'), dialogText = document.getElementById('dialog-text'), dialogOk = document.getElementById('dialog-ok');
+  function openDialog(help, text, importing) {
+    document.getElementById('dialog-help').textContent = help;
+    dialogText.value = text;
+    dialogText.readOnly = !importing;
+    dialogOk.style.display = importing ? '' : 'none';
+    document.getElementById('dialog-file').style.display = importing ? '' : 'none';
+    dialog.classList.add('open');
+    dialogText.focus();
+  }
+  function closeDialog() { dialog.classList.remove('open'); }
+  function exportJson() {
+    var json = JSON.stringify(state, null, 2);
+    var name = 'criteria-forge-' + (state.group.name || 'group').replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '.json';
+    try {
+      var blob = new Blob([json], { type: 'application/json' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = name;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function() { URL.revokeObjectURL(a.href); }, 2000);
+    } catch (e) {}
+    openDialog('A file download has started. If it did not, copy this JSON and save it as a .json file, or paste it into Import on the other device.', json, false);
+  }
+  function importJson(text) {
+    try {
+      var obj = JSON.parse(text);
+      if (!obj || typeof obj !== 'object' || !obj.commit || !obj.dissect) throw new Error('bad');
+      state = mergeState(obj);
+      closeDialog();
+      save();
+      render();
+    } catch (e) { alert('That does not look like a Criteria Forge export.'); }
+  }
+  function resetAll() {
+    if (!confirm('Reset everything? This deletes the group details, the locked verdict, the sentence tags and the revision on this device. Export JSON first if you want to keep them.')) return;
+    state = blankState();
+    try { localStorage.removeItem(CONFIG.storageKey); } catch (e) {}
+    render();
+  }
+
+  // =====================================================================
+  // EVENTS
+  // =====================================================================
+  function setPath(path, value) {
+    var parts = path.split('.'), o = state;
+    for (var i = 0; i < parts.length - 1; i++) o = o[parts[i]];
+    o[parts[parts.length - 1]] = value;
+  }
+  function refreshWc(el) {
+    var wrap = el.parentNode, wc = el.nextElementSibling;
+    if (!wc || !wc.classList || !wc.classList.contains('wc')) wc = wrap ? wrap.querySelector('.wc[data-wc-min]') : null;
+    if (!wc || !wc.getAttribute('data-wc-min')) return;
+    var min = +wc.getAttribute('data-wc-min'), n = wordCount(el.value);
+    wc.textContent = n + ' / ' + min + ' words minimum';
+    wc.className = 'wc ' + (n >= min ? 'ok' : (n ? 'low' : '')) + '';
+    wc.setAttribute('data-wc-min', min);
+  }
+
+  view.addEventListener('input', function(e) {
+    var t = e.target, a;
+    if ((a = t.getAttribute('data-bind'))) setPath(a, t.value);
+    else if ((a = t.getAttribute('data-other')) !== null) {
+      var orow = state.dissect.rows[+a];
+      if (!orow) return;
+      orow.other = t.value;
+    }
+    else return;
+    refreshWc(t);
+    save();
+  });
+
+  view.addEventListener('change', function(e) {
+    var t = e.target, a = t.getAttribute('data-tag');
+    if (!a) return;
+    var p = a.split(':'), row = state.dissect.rows[+p[0]], ix = row.tags.indexOf(p[1]);
+    if (t.checked && ix === -1) row.tags.push(p[1]);
+    if (!t.checked && ix !== -1) row.tags.splice(ix, 1);
+    save();
+    render();
+  });
+
+  view.addEventListener('click', function(e) {
+    var b = e.target.closest('button'), a;
+    if (!b) return;
+
+    if ((a = b.getAttribute('data-seg'))) { onSeg(a, b.getAttribute('data-v')); return; }
+    if ((a = b.getAttribute('data-open'))) { state.open[a] = !state.open[a]; save(); render(); return; }
+    if ((a = b.getAttribute('data-merge')) !== null) {
+      var i = +a, rows = state.dissect.rows;
+      if (i < rows.length - 1) {
+        rows[i].text = (rows[i].text + ' ' + rows[i + 1].text).replace(/\s+/g, ' ').trim();
+        for (var k = 0; k < rows[i + 1].tags.length; k++) if (rows[i].tags.indexOf(rows[i + 1].tags[k]) === -1) rows[i].tags.push(rows[i + 1].tags[k]);
+        rows[i].other = [rows[i].other, rows[i + 1].other].filter(Boolean).join(' / ');
+        rows.splice(i + 1, 1);
+        state.dissect.splitting = -1;
+        save(); render();
+      }
+      return;
+    }
+    if ((a = b.getAttribute('data-split')) !== null) {
+      state.dissect.splitting = state.dissect.splitting === +a ? -1 : +a;
+      render();
+      return;
+    }
+    if ((a = b.getAttribute('data-brk'))) {
+      var pb = a.split(':'), ri = +pb[0], wi = +pb[1], r2 = state.dissect.rows[ri];
+      var words = r2.text.split(/\s+/);
+      var left = words.slice(0, wi + 1).join(' '), right = words.slice(wi + 1).join(' ');
+      if (left && right) {
+        var newRow = blankRow(right);
+        newRow.tags = r2.tags.slice();
+        newRow.other = r2.other;
+        r2.text = left;
+        state.dissect.rows.splice(ri + 1, 0, newRow);
+        state.dissect.splitting = -1;
+        save(); render();
+      }
+      return;
+    }
+    if ((a = b.getAttribute('data-goto')) !== null) {
+      var n = +a;
+      if (!reachable(n)) { alert('Finish the earlier steps first. This step is not available yet.'); return; }
+      state.step = n; window.scrollTo(0, 0); save(); render();
+      return;
+    }
+    if (!(a = b.getAttribute('data-action'))) return;
+
+    if (a === 'next') {
+      var errs = STEPS[state.step].validate();
+      if (errs.length) {
+        render();
+        var nav = view.querySelector('.nav-row');
+        if (nav) {
+          nav.insertAdjacentHTML('beforebegin', errorsHtml(errs));
+          var al = view.querySelector('.notice.bad');
+          if (al && al.scrollIntoView) al.scrollIntoView({ block: 'center' });
+        }
+        return;
+      }
+      state.step = Math.min(STEPS.length - 1, state.step + 1);
+      if (STEPS[state.step].key === 'dissect') deriveRows(false);
+      window.scrollTo(0, 0); save(); render();
+    }
+    else if (a === 'prev') { state.step = Math.max(0, state.step - 1); window.scrollTo(0, 0); save(); render(); }
+    else if (a === 'lock') {
+      var le = [];
+      if (!state.commit.verdict) le.push('Choose a verdict.');
+      if (wordCount(state.commit.justification) < CONFIG.minJustificationWords) le.push('The justification needs at least ' + CONFIG.minJustificationWords + ' words.');
+      if (le.length) {
+        render();
+        var nav2 = view.querySelector('.nav-row');
+        if (nav2) nav2.insertAdjacentHTML('beforebegin', errorsHtml(le));
+        return;
+      }
+      if (!confirm('Lock this verdict and justification? You will not be able to edit either afterwards, except by resetting the whole tool.')) return;
+      state.commit.locked = true;
+      state.commit.lockedAt = new Date().toISOString();
+      state.dissect.derived = false;
+      deriveRows(true);
+      window.scrollTo(0, 0); save(); render();
+    }
+    else if (a === 'resplit') {
+      if (!confirm('Split the justification into sentences again? Every tag you have added will be cleared.')) return;
+      deriveRows(true);
+      save(); render();
+    }
+    else if (a === 'print') doPrint();
+    else if (a === 'copy') copyText();
+    else if (a === 'export') exportJson();
+  });
+
+  function onSeg(name, v) {
+    if (name === 'verdict') {
+      if (state.commit.locked) return;
+      state.commit.verdict = v;
+    } else if (name === 'rverdict') {
+      state.revise.verdict = v;
+    } else return;
+    var segs = view.querySelectorAll('[data-seg="' + name + '"]');
+    for (var i = 0; i < segs.length; i++) {
+      var on = segs[i].getAttribute('data-v') === v;
+      segs[i].classList.toggle('on', on);
+      segs[i].setAttribute('aria-pressed', on);
+    }
+    save();
+    if (name === 'rverdict') {
+      var grid = view.querySelector('.cmp-grid');
+      if (grid) grid.outerHTML = compareHtml(false);
+    }
+  }
+
+  document.getElementById('btn-export').addEventListener('click', exportJson);
+  document.getElementById('btn-import').addEventListener('click', function() { openDialog('Paste the JSON exported from another device, or choose the file.', '', true); });
+  document.getElementById('btn-copy').addEventListener('click', copyText);
+  document.getElementById('btn-reset').addEventListener('click', resetAll);
+  document.getElementById('dialog-close').addEventListener('click', closeDialog);
+  dialogOk.addEventListener('click', function() { importJson(dialogText.value); });
+  document.getElementById('dialog-file').addEventListener('click', function() { document.getElementById('file-input').click(); });
+  document.getElementById('file-input').addEventListener('change', function(e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var r = new FileReader();
+    r.onload = function() { importJson(String(r.result)); };
+    r.readAsText(file);
+    e.target.value = '';
+  });
+  dialog.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeDialog(); });
+  window.addEventListener('afterprint', function() { printArea.innerHTML = ''; });
+
+  // Expose the sentence splitter for the test suite only.
+  window.CriteriaForge = { splitSentences: splitSentences };
+
+  load();
+  render();
+
+  // Remove this script element from the document (see note at the top).
+  if (FORGE_SELF && FORGE_SELF.parentNode) FORGE_SELF.parentNode.removeChild(FORGE_SELF);
+})();
+</script>
+</body>
+</html>
