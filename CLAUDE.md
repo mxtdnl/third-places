@@ -14,9 +14,10 @@ Interactive teaching tools for Ray Oldenburg's third-place theory. Static HTML f
 - `theory-of-change.html` — Interactive slide deck on Theory of Change methodology (Activity 7)
 - `week5-field-trip-planner.html` — Week 5 field trip planner (Activity 8): plan a London site visit, record observations in the field, debrief predictions against observations and print claim wall cards
 - `week6a-criteria-forge.html` — Week 6a criteria forge (Activity 9): adjudicate between two competing explanations before any criteria are taught, then dissect the committed justification sentence by sentence to reveal which of the four formal criteria were implicitly used
+- `week6b-adjudication-bench.html` — Adjudication Bench (Activity 10, week 6b): groups adjudicate between two competing explanations for a decline claim using four criteria, with predictions locked before evidence. Export JSON schema is documented in the file header for the week 7 tool
 - `third-place-content.md` — Source content and curriculum notes
 - `spec.md` — Mechanics, tuning values and design assumptions for the builder
-- `test.html` — Test suite (81 tests) covering data integrity, pure functions, HTML generators, and encoding
+- `test.html` — Test suite (95 tests) covering data integrity, pure functions, HTML generators, and encoding
 
 When adding a new activity HTML file, also add a card for it in `index.html` (inside the `.activity-grid` div) and list it in this Files section.
 

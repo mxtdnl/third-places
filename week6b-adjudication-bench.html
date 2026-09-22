@@ -1,0 +1,2058 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adjudication Bench</title>
+<!--
+  WEEK 6B - ADJUDICATION BENCH
+  Social Phenomena Challenge, ADJUDICATE phase (weeks 6-7).
+
+  Groups adjudicate between two competing explanations for one decline claim
+  using four explicit criteria. Predictions are committed BEFORE evidence is
+  shown; every rating must cite specific evidence cards.
+
+  This tool never asks what should be done about the decline.
+
+  ============================================================================
+  EXPORT JSON SCHEMA  (schema id: "week6b-adjudication-bench", schemaVersion 1)
+  ============================================================================
+  The week 7 Transfer Test imports this file. Fields marked REQUIRED are
+  guaranteed present on export; the Transfer Test may rely on them.
+
+  {
+    "schema":        "week6b-adjudication-bench",       REQUIRED, constant
+    "schemaVersion": 1,                                 REQUIRED, integer
+    "toolVersion":   "1",                               string
+    "exportedAt":    "2026-01-01T10:00:00.000Z",        ISO 8601 timestamp
+    "group": {
+      "name":    "string",                              REQUIRED
+      "members": ["string", ...]                        REQUIRED (may be empty)
+    },
+    "case": {
+      "id":        "string",                            REQUIRED, matches CONFIG.cases[].id
+      "claimType": "supply|use|quality|outcome",         REQUIRED
+      "claimText": "string"
+    },
+    "explanations": [                                   REQUIRED, exactly 2 entries
+      {
+        "id":          "string",                        REQUIRED, from CONFIG
+        "label":       "string",                        REQUIRED
+        "lens":        "psychological|political|economic", REQUIRED
+        "claimType":   "supply|use|quality|outcome",     REQUIRED (same as case.claimType)
+        "verdict":     "survives|scope-limited|fails|undecidable|null", REQUIRED (null if not yet given)
+        "scopeLimits": "string|null",                   REQUIRED (text only when verdict is scope-limited)
+        "wouldChange": "string|null",                   the single piece of evidence that would change the verdict
+        "ratings": {                                    REQUIRED, one key per criterion
+          "causal":       "strong|moderate|weak|none|null",
+          "scope":        "strong|moderate|weak|none|null",
+          "implications": "strong|moderate|weak|none|null",
+          "method":       "strong|moderate|weak|none|null"
+        },
+        "predictionsBorneOut": 0,                       integer, count of this explanation's predictions marked borne out
+        "predictionsTotal":    2                        integer
+      }
+    ],
+    "predictions": {
+      "lockedAt": "ISO timestamp|null",
+      "items": [
+        { "explanationId": "string", "index": 0, "text": "string",
+          "outcome": "borne-out|not-borne-out|silent|null", "citedCard": "cardId|null" }
+      ]
+    },
+    "evidence": [
+      { "cardId": "string", "explanationId": "string",
+        "relation":   "supports-a|supports-b|supports-both|undermines-a|undermines-b|neither|null",
+        "designType": "experiment|longitudinal|cross-sectional|qualitative|administrative|review|commentary|null" }
+    ],
+    "grid": [
+      { "explanationId": "string", "criterionId": "causal|scope|implications|method",
+        "rating": "strong|moderate|weak|none|null", "warrant": "string", "cited": ["cardId", ...],
+        "saved": true|false }
+    ],
+    "dissent": { "name": "string", "reasoning": "string" } | null,
+    "state": { ...the full internal autosave state; used verbatim on re-import... }
+  }
+
+  Re-import accepts any file whose "schema" is "week6b-adjudication-bench" and
+  whose "state" object is present. Import replaces the current group's work
+  after a confirm step.
+  ============================================================================
+-->
+<style>
+  :root {
+    --bg: #F2DFBE;
+    --bg-card: #FFFAF2;
+    --bg-deep: #E8D2A8;
+    --text: #2A1F18;
+    --text-muted: #6A5A48;
+    --border: #D8C8A8;
+
+    --char-1: #5C3A96;
+    --char-2: #B52838;
+    --char-3: #C85218;
+    --char-4: #D4A020;
+    --char-5: #7A5828;
+    --char-6: #B83068;
+    --char-7: #CC6830;
+    --char-8: #7E58A8;
+
+    --correct: #2A7A42;
+    --correct-bg: #E6F4EA;
+    --incorrect: #B82828;
+    --incorrect-bg: #FDEEEE;
+    --ambiguous: #B98A10;
+    --ambiguous-bg: #FFF3D6;
+
+    --lens-psychological: #5C3A96;
+    --lens-economic: #D4A020;
+    --lens-political: #B52838;
+
+    --rating-strong: #2A7A42;
+    --rating-moderate: #B98A10;
+    --rating-weak: #C85218;
+    --rating-none: #6A5A48;
+
+    --exp-a: #5C3A96;
+    --exp-b: #C85218;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--char-4);
+    outline-offset: 2px;
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  .app-wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  h1 {
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.15;
+    margin-bottom: 0.5rem;
+  }
+  h2 {
+    font-size: clamp(1.5rem, 3vw, 2.1rem);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+  }
+  h3 {
+    font-size: 1.05rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    line-height: 1.25;
+    margin-bottom: 0.5rem;
+  }
+  p { margin-bottom: 0.75rem; }
+  .lede {
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: var(--text-muted);
+    max-width: 720px;
+    margin-bottom: 1.5rem;
+  }
+  .eyebrow {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .quiet { color: var(--text-muted); font-size: 0.88rem; }
+  .alert { color: var(--incorrect); font-weight: 700; font-size: 0.88rem; }
+
+  /* ── Page header with decorative geometry ── */
+  .page-header {
+    position: relative;
+    overflow: hidden;
+    padding: 2rem 2rem 1.5rem 0;
+    margin-bottom: 1.5rem;
+    border-bottom: 6px solid var(--char-1);
+  }
+  .page-header > * { position: relative; z-index: 1; }
+  .page-header::before {
+    content: ''; position: absolute; width: 220px; height: 220px;
+    background: var(--char-1); border-radius: 50%; opacity: 0.08;
+    top: -60px; right: -40px; z-index: 0;
+  }
+  .page-header::after {
+    content: ''; position: absolute; width: 70px; height: 70px;
+    background: var(--char-4); opacity: 0.12;
+    bottom: 12px; right: 140px; transform: rotate(25deg); z-index: 0;
+  }
+  .page-header .deco-bar {
+    position: absolute; z-index: 0; pointer-events: none;
+    width: 160px; height: 10px; background: var(--char-2);
+    top: 28px; right: 260px; transform: rotate(-8deg); opacity: 0.9;
+  }
+  .page-header .deco-ring {
+    position: absolute; z-index: 0; pointer-events: none;
+    width: 90px; height: 90px; border: 6px solid var(--char-3); border-radius: 50%;
+    bottom: -30px; right: 40px; opacity: 0.35;
+  }
+  .header-meta {
+    display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; align-items: center;
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .header-meta .pip { display: inline-block; width: 10px; height: 10px; margin-right: 6px; vertical-align: middle; }
+
+  /* ── Step navigation ── */
+  .step-nav {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 4px;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border);
+  }
+  .step-btn {
+    font-family: inherit;
+    background: none;
+    border: none;
+    border-bottom: 4px solid transparent;
+    margin-bottom: -2px;
+    padding: 0.6rem 0.4rem;
+    min-height: 44px;
+    cursor: pointer;
+    text-align: left;
+    color: var(--text-muted);
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .step-btn .step-num { display: block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; }
+  .step-btn .step-name { display: block; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.2; }
+  .step-btn .step-state { display: block; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; }
+  .step-btn:hover { color: var(--text); }
+  .step-btn.current { color: var(--text); border-bottom-color: var(--step-color, var(--char-1)); }
+  .step-btn.current .step-num { color: var(--step-color, var(--char-1)); }
+  .step-btn.done .step-state { color: var(--correct); }
+  .step-btn.locked .step-state { color: var(--incorrect); }
+
+  /* ── Screen ── */
+  .screen {
+    position: relative;
+    overflow: hidden;
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    border-left: 8px solid var(--screen-color, var(--char-1));
+    padding: 1.75rem 1.75rem 2rem;
+    margin-bottom: 1.5rem;
+  }
+  .screen > * { position: relative; z-index: 1; }
+  .screen::before {
+    content: ''; position: absolute; width: 180px; height: 180px;
+    background: var(--screen-color, var(--char-1)); opacity: 0.06;
+    top: -60px; right: -50px; transform: rotate(18deg); z-index: 0;
+  }
+  .screen::after {
+    content: ''; position: absolute; width: 90px; height: 90px;
+    border: 6px solid var(--screen-alt, var(--char-4)); border-radius: 50%; opacity: 0.12;
+    bottom: -30px; left: 40%; z-index: 0;
+  }
+  .screen-eyebrow { color: var(--screen-color, var(--char-1)); margin-bottom: 0.25rem; }
+
+  .section-break { position: relative; height: 32px; overflow: hidden; margin: 1.5rem 0; }
+  .section-break::before {
+    content: ''; position: absolute; width: 120%; height: 5px;
+    background: var(--break-color, var(--char-4)); top: 50%; left: -10%; transform: rotate(-1.5deg);
+  }
+
+  /* ── Forms ── */
+  label, .field-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.35rem;
+  }
+  input[type="text"], textarea, select {
+    width: 100%;
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--text);
+    background: #fff;
+    border: 2px solid var(--border);
+    padding: 0.6rem 0.75rem;
+    min-height: 44px;
+    border-radius: 0;
+  }
+  textarea { min-height: 110px; resize: vertical; }
+  input:focus, textarea:focus, select:focus { border-color: var(--char-1); outline: 3px solid var(--char-4); outline-offset: 1px; }
+  textarea[readonly] { background: var(--bg); color: var(--text); }
+  .field { margin-bottom: 1rem; }
+  .field-hint { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem; display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .wc { font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; font-size: 0.72rem; }
+  .wc.ok { color: var(--correct); }
+  .wc.short { color: var(--incorrect); }
+  .wc.over { color: var(--incorrect); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  .choice-group { display: flex; flex-wrap: wrap; gap: 6px; }
+  .choice-group label {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    min-height: 44px; padding: 0.4rem 0.9rem;
+    border: 2px solid var(--border); background: #fff;
+    font-size: 0.74rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer; margin: 0;
+    transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  }
+  .choice-group label:hover { border-color: var(--text); }
+  .choice-group input { width: 18px; height: 18px; margin: 0; accent-color: var(--char-1); }
+  .choice-group label.checked { background: var(--choice-color, var(--char-1)); border-color: var(--choice-color, var(--char-1)); color: #fff; }
+  .choice-group label.checked input { accent-color: #fff; }
+  .choice-group.stack { flex-direction: column; }
+  .choice-group.stack label { width: 100%; }
+
+  /* ── Buttons ── */
+  .toolbar { display: flex; gap: 0.75rem; margin: 1rem 0; flex-wrap: wrap; align-items: center; }
+  .btn {
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    padding: 0.65rem 1.5rem;
+    min-height: 44px;
+    border-radius: 0;
+    transition: background 0.15s ease, transform 0.15s ease, color 0.15s ease;
+  }
+  .btn:active { transform: translateY(0); }
+  .btn-primary { background: var(--char-1); color: #fff; }
+  .btn-primary:hover { background: var(--char-2); transform: translateY(-2px); }
+  .btn-next { background: var(--char-3); color: #fff; }
+  .btn-next:hover { background: var(--char-2); transform: translateY(-2px); }
+  .btn-ghost { background: transparent; color: var(--text); border: 2px solid var(--text); }
+  .btn-ghost:hover { background: var(--text); color: var(--bg); transform: translateY(-2px); }
+  .btn-danger { background: transparent; color: var(--incorrect); border: 2px solid var(--incorrect); }
+  .btn-danger:hover { background: var(--incorrect); color: #fff; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-small { padding: 0.4rem 0.9rem; font-size: 0.7rem; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    border-left: 6px solid var(--card-color, var(--char-1));
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .card .eyebrow { color: var(--card-color, var(--char-1)); }
+  .card-title { font-size: 1.05rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.2; margin-bottom: 0.4rem; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  .exp-panel { border-left-width: 8px; }
+  .exp-a { --card-color: var(--exp-a); }
+  .exp-b { --card-color: var(--exp-b); }
+  .lens-tag {
+    display: inline-block; padding: 2px 8px; font-size: 0.68rem; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: #fff; margin-left: 0.5rem; vertical-align: middle;
+  }
+  .claim-banner {
+    background: var(--claim-color, var(--char-6));
+    color: #fff;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .claim-banner .eyebrow { color: rgba(255,255,255,0.8); }
+  .claim-banner .claim-text { font-size: 1.1rem; font-weight: 700; line-height: 1.4; }
+
+  .status-chip {
+    display: inline-block; font-size: 0.68rem; font-weight: 700; padding: 2px 7px;
+    border: 1.5px solid; letter-spacing: 0.08em; text-transform: uppercase; vertical-align: middle;
+  }
+  .status-chip.saved { color: var(--correct); border-color: var(--correct); background: var(--correct-bg); }
+  .status-chip.pending { color: var(--ambiguous); border-color: var(--ambiguous); background: var(--ambiguous-bg); border-style: dashed; }
+  .status-chip.locked { color: #fff; border-color: var(--char-1); background: var(--char-1); }
+
+  .notice {
+    border-left: 5px solid var(--ambiguous);
+    background: var(--ambiguous-bg);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    font-size: 0.92rem;
+  }
+  .notice.error { border-left-color: var(--incorrect); background: var(--incorrect-bg); }
+  .notice.good { border-left-color: var(--correct); background: var(--correct-bg); }
+  .notice ul { margin-left: 1.2rem; }
+
+  .locked-box {
+    border: 2px dashed var(--char-2);
+    padding: 1.5rem;
+    text-align: center;
+    background: rgba(181,40,56,0.06);
+  }
+
+  /* ── Evidence cards ── */
+  .ev-card { --card-color: var(--char-5); }
+  .ev-card .ev-id {
+    display: inline-block; background: var(--char-5); color: #fff; font-weight: 800;
+    font-size: 0.72rem; letter-spacing: 0.1em; padding: 2px 8px; margin-right: 0.5rem;
+  }
+  .ev-card .ev-summary { font-size: 0.92rem; margin: 0.5rem 0 0.75rem; }
+  .ev-card .ev-source { font-size: 0.78rem; color: var(--text-muted); font-style: italic; margin-bottom: 0.75rem; }
+  .ev-card fieldset { border: none; margin-bottom: 0.75rem; }
+  .ev-card legend { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.35rem; }
+
+  /* ── Criteria grid ── */
+  .crit-grid {
+    display: grid;
+    grid-template-columns: 200px repeat(4, 1fr);
+    border: 2px solid var(--border);
+    margin-bottom: 1.5rem;
+  }
+  .crit-grid > * { border-right: 2px solid var(--border); border-bottom: 2px solid var(--border); }
+  .crit-grid > *:nth-child(5n) { border-right: none; }
+  .crit-grid > *:nth-last-child(-n+5) { border-bottom: none; }
+  .crit-corner { background: var(--bg-deep); padding: 0.75rem; }
+  .crit-head { background: var(--bg-deep); padding: 0.75rem; }
+  .crit-head .crit-name { font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; line-height: 1.2; }
+  .crit-head .crit-swatch { width: 28px; height: 5px; margin-bottom: 0.4rem; }
+  .crit-row-head { background: var(--bg-card); border-left: 6px solid var(--card-color); padding: 0.75rem; }
+  .crit-row-head .exp-label { font-weight: 800; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.04em; line-height: 1.2; }
+  .cell-btn {
+    font-family: inherit; width: 100%; height: 100%; min-height: 88px; border: none; cursor: pointer;
+    background: var(--bg-card); text-align: left; padding: 0.75rem;
+    display: flex; flex-direction: column; justify-content: space-between; gap: 0.4rem;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .cell-btn:hover { background: var(--bg); }
+  .cell-btn.open { box-shadow: inset 0 0 0 3px var(--card-color); }
+  .cell-btn .cell-rating {
+    display: inline-block; align-self: flex-start;
+    font-size: 0.7rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 3px 8px; color: #fff; background: var(--text-muted);
+  }
+  .cell-btn .cell-rating[data-rating="strong"] { background: var(--rating-strong); }
+  .cell-btn .cell-rating[data-rating="moderate"] { background: var(--rating-moderate); }
+  .cell-btn .cell-rating[data-rating="weak"] { background: var(--rating-weak); }
+  .cell-btn .cell-rating[data-rating="none"] { background: var(--rating-none); }
+  .cell-btn .cell-rating[data-rating="unrated"] { background: transparent; color: var(--text-muted); border: 2px dashed var(--border); }
+  .cell-btn .cell-meta { font-size: 0.72rem; color: var(--text-muted); }
+  .cell-panel {
+    border: 2px solid var(--card-color);
+    border-left-width: 8px;
+    background: rgba(92,58,150,0.06);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .cell-panel.exp-b { background: rgba(200,82,24,0.06); }
+  .guiding { margin: 0.5rem 0 1rem 1.2rem; font-size: 0.92rem; }
+  .guiding li { margin-bottom: 0.25rem; }
+  .cite-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 6px; }
+  .cite-list label { display: flex; align-items: flex-start; gap: 0.5rem; min-height: 44px; padding: 0.5rem 0.7rem; border: 2px solid var(--border); background: #fff; text-transform: none; letter-spacing: 0; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
+  .cite-list label.checked { border-color: var(--char-5); background: rgba(122,88,40,0.10); }
+  .cite-list input { width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0; accent-color: var(--char-5); }
+  .rating-scale .choice-group label[data-val="strong"].checked { --choice-color: var(--rating-strong); }
+  .rating-scale .choice-group label[data-val="moderate"].checked { --choice-color: var(--rating-moderate); }
+  .rating-scale .choice-group label[data-val="weak"].checked { --choice-color: var(--rating-weak); }
+  .rating-scale .choice-group label[data-val="none"].checked { --choice-color: var(--rating-none); }
+
+  /* ── Prediction check ── */
+  .pred-quote { border-left: 5px solid var(--card-color); padding: 0.6rem 1rem; background: var(--bg); font-size: 0.95rem; margin-bottom: 0.75rem; white-space: pre-wrap; }
+  .count-block { display: inline-block; background: var(--card-color); color: #fff; padding: 0.6rem 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.85rem; margin-top: 0.5rem; }
+
+  /* ── Verdict ── */
+  .verdict-group .choice-group label[data-val="survives"].checked { --choice-color: var(--correct); }
+  .verdict-group .choice-group label[data-val="scope-limited"].checked { --choice-color: var(--ambiguous); }
+  .verdict-group .choice-group label[data-val="fails"].checked { --choice-color: var(--incorrect); }
+  .verdict-group .choice-group label[data-val="undecidable"].checked { --choice-color: var(--char-8); }
+
+  /* ── Output checklist ── */
+  .checklist { list-style: none; margin-bottom: 1rem; }
+  .checklist li { display: flex; gap: 0.6rem; align-items: baseline; padding: 0.3rem 0; font-size: 0.92rem; }
+  .checklist .mark { display: inline-block; width: 12px; height: 12px; flex-shrink: 0; position: relative; top: 1px; }
+  .checklist .mark.done { background: var(--correct); }
+  .checklist .mark.todo { background: transparent; border: 2px solid var(--incorrect); }
+
+  /* ── Print structures (rendered from state) ── */
+  #print-record, #print-cards { display: none; }
+
+  .rec { font-size: 10pt; line-height: 1.35; color: #000; }
+  .rec h1 { font-size: 16pt; margin-bottom: 2mm; }
+  .rec h2 { font-size: 11.5pt; margin: 4mm 0 1.5mm; padding-left: 3mm; border-left: 4px solid #000; }
+  .rec h3 { font-size: 10pt; margin: 2mm 0 1mm; }
+  .rec p { margin-bottom: 1mm; }
+  .rec .meta { font-size: 9pt; margin-bottom: 2mm; }
+  .rec table { width: 100%; border-collapse: collapse; margin-bottom: 2mm; font-size: 9pt; }
+  .rec th, .rec td { border: 1px solid #000; padding: 1.2mm 1.6mm; vertical-align: top; text-align: left; }
+  .rec th { font-size: 8pt; text-transform: uppercase; letter-spacing: 0.06em; }
+  .rec .tag { display: inline-block; font-weight: 800; text-transform: uppercase; font-size: 8pt; letter-spacing: 0.06em; padding: 0.3mm 1.5mm; color: #fff; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .rec .tag[data-rating="strong"], .rec .tag[data-verdict="survives"] { background: var(--rating-strong); }
+  .rec .tag[data-rating="moderate"], .rec .tag[data-verdict="scope-limited"] { background: var(--rating-moderate); }
+  .rec .tag[data-rating="weak"], .rec .tag[data-verdict="fails"] { background: var(--rating-weak); }
+  .rec .tag[data-rating="none"], .rec .tag[data-verdict="undecidable"], .rec .tag[data-rating="unrated"], .rec .tag[data-verdict="unset"] { background: var(--rating-none); }
+  .rec .band { border-left: 5px solid; padding-left: 2mm; margin-bottom: 1.5mm; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .rec .band.a { border-color: var(--exp-a); }
+  .rec .band.b { border-color: var(--exp-b); }
+  .rec .two { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+  .rec .keep { break-inside: avoid; }
+
+  .cards-sheet {
+    display: grid;
+    grid-template-columns: 105mm 105mm;
+    grid-auto-rows: 148mm;
+    width: 210mm;
+    margin: 0 auto;
+  }
+  .a6 {
+    border: 1px dashed #777;
+    padding: 8mm 7mm;
+    display: flex; flex-direction: column;
+    color: #000; font-size: 10pt; line-height: 1.35;
+    position: relative;
+    break-inside: avoid;
+  }
+  .a6 .a6-eyebrow { font-size: 7.5pt; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 2mm; }
+  .a6 .a6-label { font-size: 14pt; font-weight: 800; text-transform: uppercase; line-height: 1.15; margin-bottom: 3mm; padding-left: 3mm; border-left: 5px solid; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .a6 .a6-verdict { color: #fff; padding: 2.5mm 3mm; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; font-size: 11pt; margin-bottom: 3mm; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .a6 .a6-verdict[data-verdict="survives"] { background: var(--rating-strong); }
+  .a6 .a6-verdict[data-verdict="scope-limited"] { background: var(--rating-moderate); }
+  .a6 .a6-verdict[data-verdict="fails"] { background: var(--rating-weak); }
+  .a6 .a6-verdict[data-verdict="undecidable"], .a6 .a6-verdict[data-verdict="unset"] { background: var(--rating-none); }
+  .a6 .a6-section { margin-bottom: 2.5mm; }
+  .a6 .a6-section .k { font-size: 7.5pt; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; display: block; }
+  .a6 .a6-foot { margin-top: auto; font-size: 8pt; border-top: 1px solid #000; padding-top: 2mm; display: flex; justify-content: space-between; gap: 2mm; }
+  .a6 .a6-corner { position: absolute; width: 10mm; height: 10mm; right: 0; top: 0; opacity: 0.85; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+
+  /* ── Screen preview of print ── */
+  .preview-wrap { background: #fff; border: 2px solid var(--border); padding: 1.5rem; overflow: auto; }
+
+  /* ── Print ── */
+  @page { size: A4; margin: 12mm; }
+  @media print {
+    body { background: #fff; color: #000; }
+    .app-wrap { display: none !important; }
+    body.print-mode-cards #print-cards { display: block; }
+    body.print-mode-record #print-record { display: block; }
+    body:not(.print-mode-cards):not(.print-mode-record) #print-record { display: block; }
+    .cards-sheet { width: auto; grid-template-columns: 1fr 1fr; grid-auto-rows: 132mm; }
+    .a6 { padding: 6mm 6mm; }
+    .rec .tag, .rec .band, .a6-verdict, .a6-label, .a6-corner { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .step-nav { grid-template-columns: repeat(4, 1fr); }
+    .crit-grid { display: block; border: none; }
+    .crit-grid > * { border: none; }
+    .crit-corner, .crit-head { display: none; }
+    .crit-row-head { border: 2px solid var(--border); border-left: 6px solid var(--card-color); margin-top: 1rem; }
+    .cell-btn { border: 2px solid var(--border); border-top: none; height: auto; min-height: 60px; flex-direction: row; align-items: center; gap: 0.75rem; }
+    .cell-btn::before { content: attr(data-crit); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; flex: 1; }
+    .cell-btn .cell-rating { white-space: nowrap; }
+    .cell-btn .cell-meta { text-align: right; min-width: 0; flex-shrink: 1; overflow-wrap: anywhere; }
+  }
+  @media (max-width: 600px) {
+    .app-wrap { padding: 1rem; }
+    .screen { padding: 1.25rem 1rem 1.5rem; }
+    .two-col, .form-row { grid-template-columns: 1fr; }
+    .step-nav { grid-template-columns: repeat(2, 1fr); }
+    .page-header { padding-right: 0; }
+    .page-header .deco-bar { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+    .btn:hover { transform: none; }
+  }
+</style>
+
+<div class="app-wrap" id="bench-app">
+  <header class="page-header">
+    <div class="deco-bar" aria-hidden="true"></div>
+    <div class="deco-ring" aria-hidden="true"></div>
+    <p class="eyebrow" style="color: var(--char-2)">Week 6b · Adjudicate</p>
+    <h1>Adjudication Bench</h1>
+    <p class="lede">Two explanations compete to account for one decline claim. Commit to what each explanation predicts before you see any evidence, then rate each explanation on four criteria, citing the specific evidence card behind every rating. Nothing here asks what should be done. The task is to judge which explanation survives.</p>
+    <div class="header-meta" id="header-meta"></div>
+  </header>
+
+  <nav class="step-nav" id="step-nav" aria-label="Steps"></nav>
+
+  <main>
+    <section class="screen" id="screen" aria-live="polite"></section>
+  </main>
+
+  <div class="toolbar" id="global-toolbar">
+    <button class="btn btn-ghost" id="btn-export">Export JSON</button>
+    <label class="btn btn-ghost" for="import-file" style="display:inline-flex;align-items:center;margin:0;">Import JSON</label>
+    <input type="file" id="import-file" accept="application/json,.json" class="sr-only">
+    <button class="btn btn-ghost" id="btn-copy">Copy as text</button>
+    <button class="btn btn-danger" id="btn-reset">Reset</button>
+    <span class="quiet" id="save-status" role="status"></span>
+  </div>
+</div>
+
+<div id="print-record" class="rec"></div>
+<div id="print-cards"></div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ==========================================================================
+  // CONFIG — everything editable by a non-developer lives here.
+  // Any text prefixed "PLACEHOLDER:" must be replaced before classroom use.
+  // Do not invent study findings, authors, years or statistics.
+  // ==========================================================================
+  var CONFIG = {
+    // Storage key is namespaced per tool and version. Bump `version` to
+    // invalidate old autosaves after a breaking content change.
+    toolId: 'week6b-adjudication-bench',
+    version: '1',
+
+    // Set to a case id (e.g. 'case-use') to force one case and hide the
+    // picker. Leave null to let each group choose.
+    activeCase: null,
+
+    // Minimum word counts for required free-text fields.
+    minWords: {
+      prediction: 15,     // each "If this is true, we would expect..." statement
+      warrant: 25,        // criterion-cell warrant
+      scopeLimits: 25,    // "Under what conditions does it hold?"
+      wouldChange: 12,    // "What single piece of evidence would change this verdict?"
+      dissent: 25         // dissent reasoning, only enforced if any dissent text is entered
+    },
+    // The verdict card prints the "would change our mind" statement; keep it short.
+    maxWordsWouldChange: 30,
+
+    // Fixed prefix the prediction statement must begin with.
+    predictionPrefix: 'If this is true, we would expect',
+
+    // The four decline claim types (analytical spine).
+    claimTypes: {
+      supply:  { label: 'Supply',  desc: 'Fewer third places exist',                                     color: 'var(--char-3)' },
+      use:     { label: 'Use',     desc: 'People use them less',                                          color: 'var(--char-5)' },
+      quality: { label: 'Quality', desc: 'Those that remain function less well as third places',         color: 'var(--char-6)' },
+      outcome: { label: 'Outcome', desc: 'Social consequences such as belonging and trust have worsened', color: 'var(--char-8)' }
+    },
+
+    // The three disciplinary lenses.
+    lenses: {
+      psychological: { label: 'Psychological', color: 'var(--lens-psychological)' },
+      economic:      { label: 'Economic',      color: 'var(--lens-economic)' },
+      political:     { label: 'Political',     color: 'var(--lens-political)' }
+    },
+
+    // ------------------------------------------------------------------
+    // CASES. Support 1–3. Each case has one claim and exactly two
+    // explanations. Each explanation carries its own evidence cards.
+    // Explanation shape: { id, label, lens, mechanism, evidenceCards }
+    // Evidence card shape: { id, title, summary, sourceNote }
+    // Card ids must be unique within a case.
+    // ------------------------------------------------------------------
+    cases: [
+      {
+        id: 'case-use',
+        claim: {
+          type: 'use',
+          text: 'PLACEHOLDER: A USE claim about third places, stated as a testable proposition. Replace with the claim the class settled on in the Describe phase.'
+        },
+        explanations: [
+          {
+            id: 'use-econ',
+            label: 'PLACEHOLDER: Economic explanation label',
+            lens: 'economic',
+            mechanism: 'PLACEHOLDER: One paragraph stating the economic mechanism by which this explanation accounts for the claim. State the cause, the pathway and the outcome. No evidence here; evidence arrives on the cards.',
+            evidenceCards: [
+              { id: 'E1', title: 'PLACEHOLDER: Evidence card E1 title', summary: 'PLACEHOLDER: Neutral summary of what this piece of evidence examined and how. Do not state findings until real evidence is inserted.', sourceNote: 'PLACEHOLDER: Source reference' },
+              { id: 'E2', title: 'PLACEHOLDER: Evidence card E2 title', summary: 'PLACEHOLDER: Neutral summary of what this piece of evidence examined and how.', sourceNote: 'PLACEHOLDER: Source reference' },
+              { id: 'E3', title: 'PLACEHOLDER: Evidence card E3 title', summary: 'PLACEHOLDER: Neutral summary of what this piece of evidence examined and how.', sourceNote: 'PLACEHOLDER: Source reference' }
+            ]
+          },
+          {
+            id: 'use-psych',
+            label: 'PLACEHOLDER: Psychological explanation label',
+            lens: 'psychological',
+            mechanism: 'PLACEHOLDER: One paragraph stating the psychological mechanism by which this explanation accounts for the claim. State the cause, the pathway and the outcome.',
+            evidenceCards: [
+              { id: 'E4', title: 'PLACEHOLDER: Evidence card E4 title', summary: 'PLACEHOLDER: Neutral summary of what this piece of evidence examined and how.', sourceNote: 'PLACEHOLDER: Source reference' },
+              { id: 'E5', title: 'PLACEHOLDER: Evidence card E5 title', summary: 'PLACEHOLDER: Neutral summary of what this piece of evidence examined and how.', sourceNote: 'PLACEHOLDER: Source reference' },
+              { id: 'E6', title: 'PLACEHOLDER: Evidence card E6 title', summary: 'PLACEHOLDER: Neutral summary of what this piece of evidence examined and how.', sourceNote: 'PLACEHOLDER: Source reference' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'case-quality',
+        claim: {
+          type: 'quality',
+          text: 'PLACEHOLDER: A QUALITY claim about third places, stated as a testable proposition.'
+        },
+        explanations: [
+          {
+            id: 'quality-polit',
+            label: 'PLACEHOLDER: Political explanation label',
+            lens: 'political',
+            mechanism: 'PLACEHOLDER: One paragraph stating the political mechanism by which this explanation accounts for the claim.',
+            evidenceCards: [
+              { id: 'E1', title: 'PLACEHOLDER: Evidence card E1 title', summary: 'PLACEHOLDER: Neutral summary of what this piece of evidence examined and how.', sourceNote: 'PLACEHOLDER: Source reference' },
+              { id: 'E2', title: 'PLACEHOLDER: Evidence card E2 title', summary: 'PLACEHOLDER: Neutral summary of what this piece of evidence examined and how.', sourceNote: 'PLACEHOLDER: Source reference' },
+              { id: 'E3', title: 'PLACEHOLDER: Evidence card E3 title', summary: 'PLACEHOLDER: Neutral summary of what this piece of evidence examined and how.', sourceNote: 'PLACEHOLDER: Source reference' }
+            ]
+          },
+          {
+            id: 'quality-econ',
+            label: 'PLACEHOLDER: Economic explanation label',
+            lens: 'economic',
+            mechanism: 'PLACEHOLDER: One paragraph stating the economic mechanism by which this explanation accounts for the claim.',
+            evidenceCards: [
+              { id: 'E4', title: 'PLACEHOLDER: Evidence card E4 title', summary: 'PLACEHOLDER: Neutral summary of what this piece of evidence examined and how.', sourceNote: 'PLACEHOLDER: Source reference' },
+              { id: 'E5', title: 'PLACEHOLDER: Evidence card E5 title', summary: 'PLACEHOLDER: Neutral summary of what this piece of evidence examined and how.', sourceNote: 'PLACEHOLDER: Source reference' },
+              { id: 'E6', title: 'PLACEHOLDER: Evidence card E6 title', summary: 'PLACEHOLDER: Neutral summary of what this piece of evidence examined and how.', sourceNote: 'PLACEHOLDER: Source reference' }
+            ]
+          }
+        ]
+      }
+    ],
+
+    // The four adjudication criteria. Order is the grid column order.
+    criteria: [
+      {
+        id: 'causal',
+        label: 'Causal identification',
+        definition: 'Whether the evidence shows that the proposed cause produces the outcome, rather than merely accompanying it.',
+        questions: [
+          'Does this show cause or only association?',
+          'What else would produce the same pattern?',
+          'Could the causal arrow run the other way?'
+        ],
+        color: 'var(--char-1)'
+      },
+      {
+        id: 'scope',
+        label: 'Scope conditions',
+        definition: 'The range of places, periods and populations in which the mechanism has been shown to operate.',
+        questions: [
+          'Where, when and for whom was this shown?',
+          'What must be true of a context for the mechanism to operate?'
+        ],
+        color: 'var(--char-4)'
+      },
+      {
+        id: 'implications',
+        label: 'Observable implications',
+        definition: 'What else must be true if the explanation is correct, and whether those things are observed.',
+        questions: [
+          'If this were true, what else should we see?',
+          'Do we see it?'
+        ],
+        color: 'var(--char-2)'
+      },
+      {
+        id: 'method',
+        label: 'Methodological quality',
+        definition: 'Whether the design and measurement are adequate to support the claim being made.',
+        questions: [
+          'Is the key concept measured validly?',
+          'Is the design fit for the claim?',
+          'Has it been replicated or survived challenge?'
+        ],
+        color: 'var(--char-7)'
+      }
+    ],
+
+    // Rating scale for each criterion cell.
+    ratingScale: [
+      { id: 'strong',   label: 'Strong' },
+      { id: 'moderate', label: 'Moderate' },
+      { id: 'weak',     label: 'Weak' },
+      { id: 'none',     label: 'No evidence' }
+    ],
+
+    // Verdict options per explanation.
+    verdicts: [
+      { id: 'survives',      label: 'Survives' },
+      { id: 'scope-limited', label: 'Survives with stated scope limits' },
+      { id: 'fails',         label: 'Does not survive' },
+      { id: 'undecidable',   label: 'Cannot be adjudicated on this evidence' }
+    ],
+
+    // Relation of an evidence card to the two explanations (A = first, B = second).
+    relations: [
+      { id: 'supports-a',    label: 'Supports A' },
+      { id: 'supports-b',    label: 'Supports B' },
+      { id: 'supports-both', label: 'Supports both' },
+      { id: 'undermines-a',  label: 'Undermines A' },
+      { id: 'undermines-b',  label: 'Undermines B' },
+      { id: 'neither',       label: 'Bears on neither' }
+    ],
+
+    // Fixed list of research design types.
+    designTypes: [
+      { id: 'experiment',      label: 'Experiment or natural experiment' },
+      { id: 'longitudinal',    label: 'Longitudinal' },
+      { id: 'cross-sectional', label: 'Cross-sectional survey' },
+      { id: 'qualitative',     label: 'Qualitative or ethnographic' },
+      { id: 'administrative',  label: 'Administrative or archival data' },
+      { id: 'review',          label: 'Review or meta-analysis' },
+      { id: 'commentary',      label: 'Commentary' }
+    ],
+
+    // Outcomes for the prediction check.
+    predictionOutcomes: [
+      { id: 'borne-out',     label: 'Borne out' },
+      { id: 'not-borne-out', label: 'Not borne out' },
+      { id: 'silent',        label: 'Evidence is silent' }
+    ],
+
+    // Step names shown in the navigation.
+    steps: [
+      { id: 'setup',      name: 'Setup',            color: 'var(--char-1)', alt: 'var(--char-4)' },
+      { id: 'predict',    name: 'Predictions',      color: 'var(--char-4)', alt: 'var(--char-2)' },
+      { id: 'evidence',   name: 'Evidence',         color: 'var(--char-5)', alt: 'var(--char-1)' },
+      { id: 'grid',       name: 'Criteria grid',    color: 'var(--char-2)', alt: 'var(--char-4)' },
+      { id: 'check',      name: 'Prediction check', color: 'var(--char-3)', alt: 'var(--char-8)' },
+      { id: 'verdict',    name: 'Verdicts',         color: 'var(--char-6)', alt: 'var(--char-4)' },
+      { id: 'dissent',    name: 'Dissent',          color: 'var(--char-8)', alt: 'var(--char-3)' },
+      { id: 'output',     name: 'Output',           color: 'var(--char-7)', alt: 'var(--char-1)' }
+    ]
+  };
+
+  // ==========================================================================
+  // STATE
+  // ==========================================================================
+  var STORAGE_KEY = CONFIG.toolId + ':v' + CONFIG.version;
+
+  function blankState() {
+    return {
+      schemaVersion: 1,
+      group: { name: '', members: ['', '', '', '', ''] },
+      caseId: CONFIG.activeCase || null,
+      step: 0,
+      predictions: {},          // explanationId -> [{text, saved}, {text, saved}]
+      predictionsLockedAt: null,
+      evidence: {},             // cardId -> {relation, design}
+      grid: {},                 // explanationId + ':' + criterionId -> {rating, warrant, cited:[], saved}
+      openCell: null,
+      predictionCheck: {},      // explanationId -> [{outcome, cardId}, {outcome, cardId}]
+      verdicts: {},             // explanationId -> {verdict, scopeLimits, wouldChange}
+      dissent: { name: '', reasoning: '' },
+      updatedAt: null
+    };
+  }
+
+  var state = blankState();
+
+  function saveState() {
+    state.updatedAt = new Date().toISOString();
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      setSaveStatus('Autosaved ' + fmtTime(state.updatedAt));
+    } catch (e) {
+      setSaveStatus('Autosave unavailable in this browser. Export JSON to keep your work.');
+    }
+  }
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      var parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') state = mergeState(parsed);
+    } catch (e) {}
+  }
+
+  function mergeState(obj) {
+    var s = blankState();
+    var keys = Object.keys(s);
+    for (var i = 0; i < keys.length; i++) {
+      if (obj[keys[i]] !== undefined) s[keys[i]] = obj[keys[i]];
+    }
+    if (CONFIG.activeCase) s.caseId = CONFIG.activeCase;
+    if (!s.group || typeof s.group !== 'object') s.group = { name: '', members: [] };
+    if (!Array.isArray(s.group.members)) s.group.members = [];
+    while (s.group.members.length < 5) s.group.members.push('');
+    if (!s.dissent) s.dissent = { name: '', reasoning: '' };
+    return s;
+  }
+
+  function setSaveStatus(msg) {
+    var el = document.getElementById('save-status');
+    if (el) el.textContent = msg;
+  }
+
+  // ==========================================================================
+  // HELPERS
+  // ==========================================================================
+  function esc(str) {
+    return String(str == null ? '' : str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function wordCount(str) {
+    var t = String(str || '').trim();
+    if (!t) return 0;
+    return t.split(/\s+/).length;
+  }
+  function fmtTime(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    var p = function(n) { return (n < 10 ? '0' : '') + n; };
+    return p(d.getDate()) + '/' + p(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+  function fmtDate(iso) {
+    var d = iso ? new Date(iso) : new Date();
+    var p = function(n) { return (n < 10 ? '0' : '') + n; };
+    return p(d.getDate()) + '/' + p(d.getMonth() + 1) + '/' + d.getFullYear();
+  }
+  function findById(list, id) {
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    return null;
+  }
+  function labelOf(list, id, fallback) {
+    var item = findById(list, id);
+    return item ? item.label : (fallback || '');
+  }
+  function getCase() {
+    return findById(CONFIG.cases, state.caseId);
+  }
+  function explanationsOf(c) { return c ? c.explanations : []; }
+  function letterOf(index) { return index === 0 ? 'A' : 'B'; }
+  function allCards(c) {
+    var out = [];
+    var exps = explanationsOf(c);
+    for (var i = 0; i < exps.length; i++) {
+      for (var j = 0; j < exps[i].evidenceCards.length; j++) {
+        out.push({ card: exps[i].evidenceCards[j], explanation: exps[i], letter: letterOf(i) });
+      }
+    }
+    return out;
+  }
+  function cardById(c, id) {
+    var cards = allCards(c);
+    for (var i = 0; i < cards.length; i++) if (cards[i].card.id === id) return cards[i];
+    return null;
+  }
+  function predictionsFor(expId) {
+    if (!state.predictions[expId]) state.predictions[expId] = [{ text: '', saved: false }, { text: '', saved: false }];
+    return state.predictions[expId];
+  }
+  function cellFor(expId, critId) {
+    var key = expId + ':' + critId;
+    if (!state.grid[key]) state.grid[key] = { rating: null, warrant: '', cited: [], saved: false };
+    return state.grid[key];
+  }
+  function checkFor(expId) {
+    if (!state.predictionCheck[expId]) state.predictionCheck[expId] = [{ outcome: null, cardId: null }, { outcome: null, cardId: null }];
+    return state.predictionCheck[expId];
+  }
+  function verdictFor(expId) {
+    if (!state.verdicts[expId]) state.verdicts[expId] = { verdict: null, scopeLimits: '', wouldChange: '' };
+    return state.verdicts[expId];
+  }
+  function predictionsLocked() { return !!state.predictionsLockedAt; }
+
+  function relationLabel(id, c) {
+    var item = findById(CONFIG.relations, id);
+    if (!item) return '';
+    return item.label;
+  }
+
+  // ==========================================================================
+  // VALIDATION (pure)
+  // ==========================================================================
+  function validatePrediction(text) {
+    var errors = [];
+    var t = String(text || '').trim();
+    var prefix = CONFIG.predictionPrefix.toLowerCase();
+    if (t.toLowerCase().indexOf(prefix) !== 0) errors.push('Must begin with "' + CONFIG.predictionPrefix + '".');
+    if (wordCount(t) < CONFIG.minWords.prediction) errors.push('Needs at least ' + CONFIG.minWords.prediction + ' words.');
+    return errors;
+  }
+  function allPredictionsSaved(c) {
+    var exps = explanationsOf(c);
+    if (!exps.length) return false;
+    for (var i = 0; i < exps.length; i++) {
+      var preds = predictionsFor(exps[i].id);
+      for (var j = 0; j < 2; j++) {
+        if (!preds[j] || !preds[j].saved) return false;
+        if (validatePrediction(preds[j].text).length) return false;
+      }
+    }
+    return true;
+  }
+  function validateCell(cell) {
+    var errors = [];
+    if (!cell.rating) errors.push('Choose a rating.');
+    if (wordCount(cell.warrant) < CONFIG.minWords.warrant) errors.push('The warrant needs at least ' + CONFIG.minWords.warrant + ' words.');
+    if (cell.rating !== 'none' && (!cell.cited || cell.cited.length === 0)) errors.push('Cite at least one evidence card, or choose the rating "No evidence".');
+    return errors;
+  }
+  function validateVerdict(v) {
+    var errors = [];
+    if (!v.verdict) errors.push('Choose a verdict.');
+    if (v.verdict === 'scope-limited' && wordCount(v.scopeLimits) < CONFIG.minWords.scopeLimits) errors.push('"Under what conditions does it hold?" needs at least ' + CONFIG.minWords.scopeLimits + ' words.');
+    var wc = wordCount(v.wouldChange);
+    if (wc < CONFIG.minWords.wouldChange) errors.push('"What single piece of evidence would change this verdict?" needs at least ' + CONFIG.minWords.wouldChange + ' words.');
+    if (wc > CONFIG.maxWordsWouldChange) errors.push('"What single piece of evidence would change this verdict?" must not exceed ' + CONFIG.maxWordsWouldChange + ' words.');
+    return errors;
+  }
+  function evidenceComplete(c) {
+    var cards = allCards(c);
+    if (!cards.length) return false;
+    for (var i = 0; i < cards.length; i++) {
+      var e = state.evidence[cards[i].card.id];
+      if (!e || !e.relation || !e.design) return false;
+    }
+    return true;
+  }
+  function gridComplete(c) {
+    var exps = explanationsOf(c);
+    if (!exps.length) return false;
+    for (var i = 0; i < exps.length; i++) {
+      for (var j = 0; j < CONFIG.criteria.length; j++) {
+        var cell = cellFor(exps[i].id, CONFIG.criteria[j].id);
+        if (!cell.saved || validateCell(cell).length) return false;
+      }
+    }
+    return true;
+  }
+  function checkComplete(c) {
+    var exps = explanationsOf(c);
+    if (!exps.length) return false;
+    for (var i = 0; i < exps.length; i++) {
+      var ch = checkFor(exps[i].id);
+      for (var j = 0; j < 2; j++) {
+        if (!ch[j].outcome) return false;
+        if (ch[j].outcome !== 'silent' && !ch[j].cardId) return false;
+      }
+    }
+    return true;
+  }
+  function verdictsComplete(c) {
+    var exps = explanationsOf(c);
+    if (!exps.length) return false;
+    for (var i = 0; i < exps.length; i++) {
+      if (validateVerdict(verdictFor(exps[i].id)).length) return false;
+    }
+    return true;
+  }
+  function borneOutCount(expId) {
+    var ch = checkFor(expId);
+    var n = 0;
+    for (var i = 0; i < ch.length; i++) if (ch[i].outcome === 'borne-out') n++;
+    return n;
+  }
+  function setupComplete() {
+    return !!(state.caseId && getCase() && String(state.group.name).trim());
+  }
+  function dissentValid() {
+    var d = state.dissent;
+    var any = String(d.name).trim() || String(d.reasoning).trim();
+    if (!any) return true;
+    return wordCount(d.reasoning) >= CONFIG.minWords.dissent;
+  }
+
+  function stepStatus(index) {
+    var c = getCase();
+    var locked = !predictionsLocked();
+    switch (index) {
+      case 0: return setupComplete() ? 'done' : 'todo';
+      case 1: return predictionsLocked() ? 'done' : 'todo';
+      case 2: return locked ? 'locked' : (evidenceComplete(c) ? 'done' : 'todo');
+      case 3: return locked ? 'locked' : (gridComplete(c) ? 'done' : 'todo');
+      case 4: return locked ? 'locked' : (checkComplete(c) ? 'done' : 'todo');
+      case 5: return locked ? 'locked' : (verdictsComplete(c) ? 'done' : 'todo');
+      case 6: return locked ? 'locked' : (dissentValid() ? 'done' : 'todo');
+      case 7: return locked ? 'locked' : 'todo';
+    }
+    return 'todo';
+  }
+
+  // ==========================================================================
+  // EXPORT / IMPORT
+  // ==========================================================================
+  function buildExport() {
+    var c = getCase();
+    var exps = explanationsOf(c);
+    var out = {
+      schema: 'week6b-adjudication-bench',
+      schemaVersion: 1,
+      toolVersion: CONFIG.version,
+      exportedAt: new Date().toISOString(),
+      group: {
+        name: String(state.group.name || ''),
+        members: state.group.members.filter(function(m) { return String(m).trim(); }).map(function(m) { return String(m).trim(); })
+      },
+      'case': c ? { id: c.id, claimType: c.claim.type, claimText: c.claim.text } : null,
+      explanations: [],
+      predictions: { lockedAt: state.predictionsLockedAt, items: [] },
+      evidence: [],
+      grid: [],
+      dissent: (String(state.dissent.name).trim() || String(state.dissent.reasoning).trim())
+        ? { name: state.dissent.name, reasoning: state.dissent.reasoning } : null,
+      state: JSON.parse(JSON.stringify(state))
+    };
+    for (var i = 0; i < exps.length; i++) {
+      var e = exps[i];
+      var v = verdictFor(e.id);
+      var ratings = {};
+      for (var j = 0; j < CONFIG.criteria.length; j++) {
+        var cell = cellFor(e.id, CONFIG.criteria[j].id);
+        ratings[CONFIG.criteria[j].id] = cell.saved ? cell.rating : null;
+        out.grid.push({
+          explanationId: e.id, criterionId: CONFIG.criteria[j].id,
+          rating: cell.rating, warrant: cell.warrant, cited: cell.cited.slice(), saved: !!cell.saved
+        });
+      }
+      out.explanations.push({
+        id: e.id,
+        label: e.label,
+        lens: e.lens,
+        claimType: c.claim.type,
+        verdict: v.verdict || null,
+        scopeLimits: v.verdict === 'scope-limited' ? (v.scopeLimits || '') : null,
+        wouldChange: v.wouldChange ? v.wouldChange : null,
+        ratings: ratings,
+        predictionsBorneOut: borneOutCount(e.id),
+        predictionsTotal: 2
+      });
+      var preds = predictionsFor(e.id);
+      var ch = checkFor(e.id);
+      for (var k = 0; k < 2; k++) {
+        out.predictions.items.push({
+          explanationId: e.id, index: k, text: preds[k].text,
+          outcome: ch[k].outcome || null, citedCard: ch[k].cardId || null
+        });
+      }
+      for (var m = 0; m < e.evidenceCards.length; m++) {
+        var ev = state.evidence[e.evidenceCards[m].id] || {};
+        out.evidence.push({
+          cardId: e.evidenceCards[m].id, explanationId: e.id,
+          relation: ev.relation || null, designType: ev.design || null
+        });
+      }
+    }
+    return out;
+  }
+
+  // Returns a list of problems; empty list means the object matches the schema.
+  function validateExport(obj) {
+    var problems = [];
+    if (!obj || typeof obj !== 'object') return ['Not a JSON object.'];
+    if (obj.schema !== 'week6b-adjudication-bench') problems.push('schema must be "week6b-adjudication-bench".');
+    if (obj.schemaVersion !== 1) problems.push('schemaVersion must be 1.');
+    if (!obj.group || typeof obj.group.name !== 'string' || !Array.isArray(obj.group.members)) problems.push('group.name and group.members are required.');
+    if (!obj.state || typeof obj.state !== 'object') problems.push('state object is required.');
+    if (!Array.isArray(obj.explanations)) {
+      problems.push('explanations array is required.');
+    } else {
+      var validVerdicts = CONFIG.verdicts.map(function(v) { return v.id; }).concat([null]);
+      var validRatings = CONFIG.ratingScale.map(function(r) { return r.id; }).concat([null]);
+      for (var i = 0; i < obj.explanations.length; i++) {
+        var e = obj.explanations[i];
+        var tag = 'explanations[' + i + ']';
+        if (!e || typeof e.id !== 'string') problems.push(tag + '.id missing.');
+        if (!e || typeof e.label !== 'string') problems.push(tag + '.label missing.');
+        if (!e || !CONFIG.lenses[e.lens]) problems.push(tag + '.lens invalid.');
+        if (!e || !CONFIG.claimTypes[e.claimType]) problems.push(tag + '.claimType invalid.');
+        if (!e || validVerdicts.indexOf(e.verdict) === -1) problems.push(tag + '.verdict invalid.');
+        if (!e || !(e.scopeLimits === null || typeof e.scopeLimits === 'string')) problems.push(tag + '.scopeLimits must be string or null.');
+        if (!e || !e.ratings || typeof e.ratings !== 'object') {
+          problems.push(tag + '.ratings missing.');
+        } else {
+          for (var j = 0; j < CONFIG.criteria.length; j++) {
+            var cid = CONFIG.criteria[j].id;
+            if (!(cid in e.ratings) || validRatings.indexOf(e.ratings[cid]) === -1) problems.push(tag + '.ratings.' + cid + ' invalid.');
+          }
+        }
+      }
+    }
+    return problems;
+  }
+
+  function downloadJson() {
+    var data = buildExport();
+    var text = JSON.stringify(data, null, 2);
+    var name = (String(state.group.name).trim() || 'group').replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+    var filename = 'adjudication-' + name + '-' + fmtDate().replace(/\//g, '-') + '.json';
+    try {
+      var blob = new Blob([text], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+      setSaveStatus('Exported ' + filename);
+    } catch (e) {
+      window.prompt('Copy this JSON:', text);
+    }
+  }
+
+  function importJson(text) {
+    var obj;
+    try { obj = JSON.parse(text); } catch (e) { alert('That file is not valid JSON.'); return; }
+    var problems = validateExport(obj);
+    if (problems.length) { alert('Import refused. Problems:\n- ' + problems.join('\n- ')); return; }
+    if (!confirm('Replace the current work on this device with the imported file?')) return;
+    state = mergeState(obj.state);
+    saveState();
+    render();
+    setSaveStatus('Imported file for group "' + (state.group.name || 'unnamed') + '"');
+  }
+
+  // ==========================================================================
+  // RENDERING
+  // ==========================================================================
+  var $screen, $nav, $meta;
+
+  function render() {
+    renderHeaderMeta();
+    renderNav();
+    renderScreen();
+  }
+
+  function renderHeaderMeta() {
+    var c = getCase();
+    var html = '';
+    if (state.group.name) html += '<span><span class="pip" style="background:var(--char-1)"></span>' + esc(state.group.name) + '</span>';
+    if (c) {
+      var ct = CONFIG.claimTypes[c.claim.type];
+      html += '<span><span class="pip" style="background:' + ct.color + '"></span>Claim: ' + esc(ct.label) + '</span>';
+    }
+    html += '<span><span class="pip" style="background:' + (predictionsLocked() ? 'var(--correct)' : 'var(--char-2)') + '"></span>Predictions ' + (predictionsLocked() ? 'locked' : 'open') + '</span>';
+    $meta.innerHTML = html;
+  }
+
+  function renderNav() {
+    var html = '';
+    for (var i = 0; i < CONFIG.steps.length; i++) {
+      var s = CONFIG.steps[i];
+      var status = stepStatus(i);
+      var cls = 'step-btn' + (state.step === i ? ' current' : '') + (status === 'done' ? ' done' : '') + (status === 'locked' ? ' locked' : '');
+      var stateText = status === 'done' ? 'Complete' : status === 'locked' ? 'Locked' : 'Open';
+      html += '<button class="' + cls + '" data-step="' + i + '" style="--step-color:' + s.color + '"' + (state.step === i ? ' aria-current="step"' : '') + '>'
+        + '<span class="step-num">Step ' + (i + 1) + '</span>'
+        + '<span class="step-name">' + esc(s.name) + '</span>'
+        + '<span class="step-state">' + stateText + '</span>'
+        + '</button>';
+    }
+    $nav.innerHTML = html;
+  }
+
+  function renderScreen() {
+    var s = CONFIG.steps[state.step];
+    $screen.style.setProperty('--screen-color', s.color);
+    $screen.style.setProperty('--screen-alt', s.alt);
+    var html = '<p class="eyebrow screen-eyebrow">Step ' + (state.step + 1) + ' of ' + CONFIG.steps.length + '</p>';
+    var c = getCase();
+    if (state.step > 0 && !c) {
+      html += '<h2>' + esc(s.name) + '</h2><div class="notice error">Choose a case in Step 1 before continuing.</div>' + navButtons(false);
+      $screen.innerHTML = html;
+      return;
+    }
+    if (state.step >= 2 && !predictionsLocked()) {
+      html += '<h2>' + esc(s.name) + '</h2>'
+        + '<div class="locked-box"><p class="eyebrow" style="color:var(--char-2)">Locked</p>'
+        + '<p>This step opens once all four predictions are saved and locked in Step 2. Evidence is withheld until the group has committed to what each explanation predicts.</p>'
+        + '<button class="btn btn-primary" data-action="goto" data-step="1">Go to predictions</button></div>';
+      $screen.innerHTML = html;
+      return;
+    }
+    switch (state.step) {
+      case 0: html += renderSetup(); break;
+      case 1: html += renderPredictions(c); break;
+      case 2: html += renderEvidence(c); break;
+      case 3: html += renderGrid(c); break;
+      case 4: html += renderCheck(c); break;
+      case 5: html += renderVerdicts(c); break;
+      case 6: html += renderDissent(); break;
+      case 7: html += renderOutput(c); break;
+    }
+    $screen.innerHTML = html;
+    afterRender();
+  }
+
+  function navButtons(showNext) {
+    var html = '<div class="toolbar" style="margin-top:1.5rem">';
+    if (state.step > 0) html += '<button class="btn btn-ghost" data-action="goto" data-step="' + (state.step - 1) + '">Back</button>';
+    if (showNext !== false && state.step < CONFIG.steps.length - 1) html += '<button class="btn btn-next" data-action="goto" data-step="' + (state.step + 1) + '">Next step</button>';
+    html += '</div>';
+    return html;
+  }
+
+  function claimBanner(c) {
+    var ct = CONFIG.claimTypes[c.claim.type];
+    return '<div class="claim-banner" style="--claim-color:' + ct.color + '">'
+      + '<p class="eyebrow">The claim under adjudication · ' + esc(ct.label) + ' claim</p>'
+      + '<p class="claim-text">' + esc(c.claim.text) + '</p></div>';
+  }
+
+  function lensTag(lens) {
+    var l = CONFIG.lenses[lens] || { label: lens, color: 'var(--text-muted)' };
+    return '<span class="lens-tag" style="background:' + l.color + '">' + esc(l.label) + ' lens</span>';
+  }
+
+  function explanationHeader(e, index) {
+    return '<p class="eyebrow">Explanation ' + letterOf(index) + '</p>'
+      + '<div class="card-title">' + esc(e.label) + lensTag(e.lens) + '</div>';
+  }
+
+  function wcHint(id, text, min, max) {
+    var n = wordCount(text);
+    var cls = n < min ? 'short' : (max && n > max ? 'over' : 'ok');
+    var label = n + ' word' + (n === 1 ? '' : 's') + ' · minimum ' + min + (max ? ' · maximum ' + max : '');
+    return '<span class="wc ' + cls + '" id="wc-' + id + '">' + label + '</span>';
+  }
+
+  function choiceGroup(name, options, selected, opts) {
+    opts = opts || {};
+    var html = '<div class="choice-group' + (opts.stack ? ' stack' : '') + '" role="radiogroup" aria-label="' + esc(opts.ariaLabel || name) + '">';
+    for (var i = 0; i < options.length; i++) {
+      var o = options[i];
+      var checked = selected === o.id;
+      html += '<label class="' + (checked ? 'checked' : '') + '" data-val="' + esc(o.id) + '">'
+        + '<input type="radio" name="' + esc(name) + '" value="' + esc(o.id) + '"' + (checked ? ' checked' : '') + (opts.disabled ? ' disabled' : '') + '>'
+        + '<span>' + esc(o.label) + '</span></label>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  // ---- Step 1: Setup ----
+  function renderSetup() {
+    var html = '<h2>Setup</h2>'
+      + '<p class="lede">Record the group once. Then choose the case the group will adjudicate. All work autosaves on this device; use Export JSON to move it elsewhere.</p>';
+    html += '<div class="field"><label for="group-name">Group name</label><input type="text" id="group-name" data-bind="group.name" value="' + esc(state.group.name) + '" autocomplete="off"></div>';
+    html += '<div class="field"><span class="field-label">Members (3 to 5)</span><div class="form-row">';
+    for (var i = 0; i < 5; i++) {
+      html += '<div><label for="member-' + i + '" class="sr-only">Member ' + (i + 1) + '</label><input type="text" id="member-' + i + '" data-bind="member" data-index="' + i + '" placeholder="Member ' + (i + 1) + '" value="' + esc(state.group.members[i] || '') + '" autocomplete="off"></div>';
+    }
+    html += '</div></div>';
+
+    html += '<div class="section-break" style="--break-color:var(--char-4)"></div>';
+    html += '<h3>Case</h3>';
+    if (CONFIG.activeCase) {
+      var fixed = getCase();
+      html += fixed ? '<p class="quiet">The instructor has set the case for this session.</p>' + claimBanner(fixed)
+        : '<div class="notice error">CONFIG.activeCase names a case id that does not exist.</div>';
+    } else {
+      if (predictionsLocked()) {
+        html += '<div class="notice">Predictions are locked, so the case can no longer be changed. Use Reset to start a different case.</div>';
+      }
+      for (var k = 0; k < CONFIG.cases.length; k++) {
+        var c = CONFIG.cases[k];
+        var ct = CONFIG.claimTypes[c.claim.type];
+        var selected = state.caseId === c.id;
+        html += '<div class="card" style="--card-color:' + ct.color + '">'
+          + '<p class="eyebrow">' + esc(ct.label) + ' claim · ' + esc(ct.desc) + '</p>'
+          + '<p style="font-weight:700">' + esc(c.claim.text) + '</p>'
+          + '<p class="quiet">' + esc(c.explanations[0].label) + ' (' + esc(CONFIG.lenses[c.explanations[0].lens].label) + ') versus ' + esc(c.explanations[1].label) + ' (' + esc(CONFIG.lenses[c.explanations[1].lens].label) + ')</p>'
+          + '<button class="btn ' + (selected ? 'btn-primary' : 'btn-ghost') + '" data-action="select-case" data-case="' + esc(c.id) + '"' + (predictionsLocked() ? ' disabled' : '') + (selected ? ' aria-pressed="true"' : ' aria-pressed="false"') + '>' + (selected ? 'Selected' : 'Choose this case') + '</button>'
+          + '</div>';
+      }
+    }
+    if (!setupComplete()) html += '<div class="notice">Enter a group name and choose a case to continue.</div>';
+    return html + navButtons(setupComplete());
+  }
+
+  // ---- Step 2: Predictions ----
+  function renderPredictions(c) {
+    var exps = explanationsOf(c);
+    var locked = predictionsLocked();
+    var html = '<h2>Predictions first</h2>'
+      + '<p class="lede">Each explanation is shown without its evidence. For each, write two observable implications: things that would have to be true in the world if the explanation is correct. Evidence stays withheld until all four are saved and locked.</p>'
+      + claimBanner(c);
+    if (locked) {
+      html += '<div class="notice good"><strong>Predictions locked</strong> at ' + esc(fmtTime(state.predictionsLockedAt)) + '. They are now read-only and will be checked against the evidence in Step 5.</div>';
+    }
+    for (var i = 0; i < exps.length; i++) {
+      var e = exps[i];
+      var preds = predictionsFor(e.id);
+      html += '<div class="card exp-panel exp-' + letterOf(i).toLowerCase() + '">' + explanationHeader(e, i)
+        + '<p>' + esc(e.mechanism) + '</p>';
+      for (var j = 0; j < 2; j++) {
+        var id = e.id + '-' + j;
+        var p = preds[j];
+        var errs = validatePrediction(p.text);
+        html += '<div class="field" style="margin-top:1rem">'
+          + '<label for="pred-' + esc(id) + '">Prediction ' + (j + 1) + ' '
+          + (locked ? '<span class="status-chip locked">Locked</span>' : (p.saved ? '<span class="status-chip saved">Saved</span>' : '<span class="status-chip pending">Unsaved</span>'))
+          + '</label>';
+        if (locked) {
+          html += '<textarea id="pred-' + esc(id) + '" readonly aria-readonly="true">' + esc(p.text) + '</textarea>';
+        } else {
+          html += '<textarea id="pred-' + esc(id) + '" data-bind="prediction" data-exp="' + esc(e.id) + '" data-index="' + j + '" placeholder="' + esc(CONFIG.predictionPrefix) + ' ...">' + esc(p.text) + '</textarea>'
+            + '<div class="field-hint">' + wcHint('pred-' + id, p.text, CONFIG.minWords.prediction) + '<span>Begin with "' + esc(CONFIG.predictionPrefix) + '"</span></div>'
+            + '<div class="toolbar" style="margin:0.5rem 0 0"><button class="btn btn-primary btn-small" data-action="save-prediction" data-exp="' + esc(e.id) + '" data-index="' + j + '">' + (p.saved ? 'Update' : 'Save') + ' prediction</button>'
+            + (errs.length && p.text.trim() ? '<span class="alert">' + esc(errs.join(' ')) + '</span>' : '') + '</div>';
+        }
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+    if (!locked) {
+      var ready = allPredictionsSaved(c);
+      html += '<div class="section-break" style="--break-color:var(--char-2)"></div>';
+      html += '<div class="notice' + (ready ? ' good' : '') + '">' + (ready
+        ? 'All four predictions are saved. Locking timestamps them, makes them read-only and unlocks the evidence.'
+        : 'Save all four predictions (each at least ' + CONFIG.minWords.prediction + ' words, beginning with the fixed phrase) to enable locking.') + '</div>';
+      html += '<div class="toolbar"><button class="btn btn-primary" data-action="lock-predictions"' + (ready ? '' : ' disabled') + '>Lock predictions and unlock evidence</button></div>';
+    }
+    return html + navButtons(locked);
+  }
+
+  // ---- Step 3: Evidence ----
+  function renderEvidence(c) {
+    var exps = explanationsOf(c);
+    var cards = allCards(c);
+    var done = 0;
+    for (var i = 0; i < cards.length; i++) {
+      var ev = state.evidence[cards[i].card.id];
+      if (ev && ev.relation && ev.design) done++;
+    }
+    var html = '<h2>Evidence review</h2>'
+      + '<p class="lede">For every card, record which explanation it bears on and what kind of design produced it. A is <strong>' + esc(exps[0].label) + '</strong>; B is <strong>' + esc(exps[1].label) + '</strong>.</p>'
+      + '<p class="quiet"><strong>' + done + ' of ' + cards.length + '</strong> cards tagged.</p>';
+    for (var k = 0; k < cards.length; k++) {
+      var item = cards[k];
+      var card = item.card;
+      var e = state.evidence[card.id] || { relation: null, design: null };
+      html += '<div class="card ev-card" id="card-' + esc(card.id) + '">'
+        + '<p class="eyebrow"><span class="ev-id">' + esc(card.id) + '</span>Supplied with explanation ' + item.letter + ' · ' + esc(item.explanation.label) + '</p>'
+        + '<div class="card-title">' + esc(card.title) + '</div>'
+        + '<p class="ev-summary">' + esc(card.summary) + '</p>'
+        + '<p class="ev-source">' + esc(card.sourceNote) + '</p>'
+        + '<fieldset><legend>Relation to the explanations</legend>' + choiceGroup('rel-' + card.id, CONFIG.relations, e.relation, { ariaLabel: 'Relation of card ' + card.id }) + '</fieldset>'
+        + '<fieldset><legend>Design type</legend>' + choiceGroup('des-' + card.id, CONFIG.designTypes, e.design, { ariaLabel: 'Design type of card ' + card.id }) + '</fieldset>'
+        + '</div>';
+    }
+    return html + navButtons(true);
+  }
+
+  // ---- Step 4: Criteria grid ----
+  function renderGrid(c) {
+    var exps = explanationsOf(c);
+    var html = '<h2>Criteria grid</h2>'
+      + '<p class="lede">Rate each explanation on each criterion. Every rating needs a warrant of at least ' + CONFIG.minWords.warrant + ' words and must cite at least one evidence card, unless the rating is "No evidence". Select a cell to open it.</p>';
+    html += '<div class="crit-grid" role="table" aria-label="Criteria grid">';
+    html += '<div class="crit-corner" role="cell"><span class="eyebrow">Explanation &#8595; Criterion &#8594;</span></div>';
+    for (var j = 0; j < CONFIG.criteria.length; j++) {
+      var cr = CONFIG.criteria[j];
+      html += '<div class="crit-head" role="columnheader"><div class="crit-swatch" style="background:' + cr.color + '"></div><div class="crit-name">' + esc(cr.label) + '</div></div>';
+    }
+    for (var i = 0; i < exps.length; i++) {
+      var e = exps[i];
+      html += '<div class="crit-row-head exp-' + letterOf(i).toLowerCase() + '" role="rowheader"><p class="eyebrow">Explanation ' + letterOf(i) + '</p><div class="exp-label">' + esc(e.label) + '</div><p class="quiet" style="font-size:0.75rem">' + esc(CONFIG.lenses[e.lens].label) + ' lens</p></div>';
+      for (var k = 0; k < CONFIG.criteria.length; k++) {
+        var crit = CONFIG.criteria[k];
+        var key = e.id + ':' + crit.id;
+        var cell = cellFor(e.id, crit.id);
+        var rating = cell.saved && cell.rating ? cell.rating : 'unrated';
+        var ratingLabel = rating === 'unrated' ? 'Not yet rated' : labelOf(CONFIG.ratingScale, cell.rating);
+        var isOpen = state.openCell === key;
+        html += '<button class="cell-btn exp-' + letterOf(i).toLowerCase() + (isOpen ? ' open' : '') + '" role="cell" data-action="open-cell" data-key="' + esc(key) + '" data-crit="' + esc(crit.label) + '" aria-expanded="' + (isOpen ? 'true' : 'false') + '">'
+          + '<span class="cell-rating" data-rating="' + rating + '">' + esc(ratingLabel) + '</span>'
+          + '<span class="cell-meta">' + (cell.saved ? (cell.cited.length ? 'Cites ' + esc(cell.cited.join(', ')) : 'No cards cited') : 'Open to rate') + '</span>'
+          + '</button>';
+      }
+    }
+    html += '</div>';
+
+    if (state.openCell) {
+      var parts = state.openCell.split(':');
+      var oe = findById(exps, parts[0]);
+      var oc = findById(CONFIG.criteria, parts[1]);
+      if (oe && oc) html += renderCellPanel(c, oe, oc, exps.indexOf(oe));
+    }
+    var complete = gridComplete(c);
+    html += '<div class="notice' + (complete ? ' good' : '') + '">' + (complete ? 'All eight cells are saved.' : 'Save all eight cells to complete this step. You can move on and return.') + '</div>';
+    return html + navButtons(true);
+  }
+
+  function renderCellPanel(c, e, crit, index) {
+    var cell = cellFor(e.id, crit.id);
+    var cards = allCards(c);
+    var html = '<div class="cell-panel exp-' + letterOf(index).toLowerCase() + '" id="cell-panel" tabindex="-1">'
+      + '<p class="eyebrow">Explanation ' + letterOf(index) + ' · ' + esc(crit.label) + '</p>'
+      + '<h3>' + esc(e.label) + '</h3>'
+      + '<p class="quiet">' + esc(crit.definition) + '</p>'
+      + '<p class="field-label" style="margin-top:0.75rem">Guiding questions</p><ul class="guiding">';
+    for (var q = 0; q < crit.questions.length; q++) html += '<li>' + esc(crit.questions[q]) + '</li>';
+    html += '</ul>';
+    html += '<div class="field rating-scale"><span class="field-label">Rating</span>' + choiceGroup('rating', CONFIG.ratingScale, cell.rating, { ariaLabel: 'Rating' }) + '</div>';
+    html += '<div class="field"><label for="warrant">Warrant: why this rating?</label>'
+      + '<textarea id="warrant" data-bind="warrant">' + esc(cell.warrant) + '</textarea>'
+      + '<div class="field-hint">' + wcHint('warrant', cell.warrant, CONFIG.minWords.warrant) + '</div></div>';
+    html += '<div class="field"><span class="field-label">Evidence cards cited (required unless rating is "No evidence")</span><div class="cite-list">';
+    for (var i = 0; i < cards.length; i++) {
+      var cd = cards[i].card;
+      var checked = cell.cited.indexOf(cd.id) !== -1;
+      html += '<label class="' + (checked ? 'checked' : '') + '"><input type="checkbox" name="cite" value="' + esc(cd.id) + '"' + (checked ? ' checked' : '') + '><span><strong>' + esc(cd.id) + '</strong> ' + esc(cd.title) + '</span></label>';
+    }
+    html += '</div></div>';
+    var errs = validateCell(cell);
+    html += '<div id="cell-errors">' + (cell.saved ? '<p class="status-chip saved">Saved</p>' : '') + '</div>';
+    html += '<div class="toolbar"><button class="btn btn-primary" data-action="save-cell">Save cell</button><button class="btn btn-ghost" data-action="close-cell">Close</button></div>';
+    html += '</div>';
+    return html;
+  }
+
+  // ---- Step 5: Prediction check ----
+  function renderCheck(c) {
+    var exps = explanationsOf(c);
+    var cards = allCards(c);
+    var html = '<h2>Prediction check</h2>'
+      + '<p class="lede">Your locked predictions return. For each one, decide whether the evidence bore it out, contradicted it, or said nothing. Cite the card that decides it.</p>';
+    for (var i = 0; i < exps.length; i++) {
+      var e = exps[i];
+      var preds = predictionsFor(e.id);
+      var ch = checkFor(e.id);
+      html += '<div class="card exp-panel exp-' + letterOf(i).toLowerCase() + '">' + explanationHeader(e, i);
+      for (var j = 0; j < 2; j++) {
+        var id = e.id + '-' + j;
+        html += '<div class="field" style="margin-top:0.75rem"><span class="field-label">Prediction ' + (j + 1) + ' · locked ' + esc(fmtTime(state.predictionsLockedAt)) + '</span>'
+          + '<div class="pred-quote">' + esc(preds[j].text) + '</div>'
+          + choiceGroup('outcome-' + id, CONFIG.predictionOutcomes, ch[j].outcome, { ariaLabel: 'Outcome of prediction ' + (j + 1) })
+          + '<div style="margin-top:0.6rem"><label for="check-card-' + esc(id) + '">Deciding card' + (ch[j].outcome === 'silent' ? ' (optional)' : '') + '</label>'
+          + '<select id="check-card-' + esc(id) + '" data-bind="check-card" data-exp="' + esc(e.id) + '" data-index="' + j + '"><option value="">Choose a card</option>';
+        for (var k = 0; k < cards.length; k++) {
+          html += '<option value="' + esc(cards[k].card.id) + '"' + (ch[j].cardId === cards[k].card.id ? ' selected' : '') + '>' + esc(cards[k].card.id + ' · ' + cards[k].card.title) + '</option>';
+        }
+        html += '</select></div></div>';
+      }
+      html += '<div class="count-block">' + borneOutCount(e.id) + ' of 2 predictions borne out</div>';
+      html += '</div>';
+    }
+    return html + navButtons(true);
+  }
+
+  // ---- Step 6: Verdicts ----
+  function renderVerdicts(c) {
+    var exps = explanationsOf(c);
+    var html = '<h2>Verdicts</h2>'
+      + '<p class="lede">Give each explanation a verdict from the fixed list. State the single piece of evidence that would change your mind; it prints on the verdict card, so keep it to ' + CONFIG.maxWordsWouldChange + ' words.</p>';
+    for (var i = 0; i < exps.length; i++) {
+      var e = exps[i];
+      var v = verdictFor(e.id);
+      var ratings = [];
+      for (var k = 0; k < CONFIG.criteria.length; k++) {
+        var cell = cellFor(e.id, CONFIG.criteria[k].id);
+        ratings.push(esc(CONFIG.criteria[k].label) + ': <strong>' + esc(cell.saved ? labelOf(CONFIG.ratingScale, cell.rating) : 'unrated') + '</strong>');
+      }
+      html += '<div class="card exp-panel verdict-group exp-' + letterOf(i).toLowerCase() + '">' + explanationHeader(e, i)
+        + '<p class="quiet">' + ratings.join(' · ') + ' · Predictions borne out: <strong>' + borneOutCount(e.id) + ' of 2</strong></p>'
+        + '<div class="field"><span class="field-label">Verdict</span>' + choiceGroup('verdict-' + e.id, CONFIG.verdicts, v.verdict, { ariaLabel: 'Verdict for explanation ' + letterOf(i), stack: true }) + '</div>';
+      if (v.verdict === 'scope-limited') {
+        html += '<div class="field"><label for="scope-' + esc(e.id) + '">Under what conditions does it hold?</label>'
+          + '<textarea id="scope-' + esc(e.id) + '" data-bind="scopeLimits" data-exp="' + esc(e.id) + '">' + esc(v.scopeLimits) + '</textarea>'
+          + '<div class="field-hint">' + wcHint('scope-' + e.id, v.scopeLimits, CONFIG.minWords.scopeLimits) + '</div></div>';
+      }
+      html += '<div class="field"><label for="change-' + esc(e.id) + '">What single piece of evidence would change this verdict?</label>'
+        + '<textarea id="change-' + esc(e.id) + '" data-bind="wouldChange" data-exp="' + esc(e.id) + '">' + esc(v.wouldChange) + '</textarea>'
+        + '<div class="field-hint">' + wcHint('change-' + e.id, v.wouldChange, CONFIG.minWords.wouldChange, CONFIG.maxWordsWouldChange) + '</div></div>';
+      var errs = validateVerdict(v);
+      html += errs.length ? '<div class="notice"><ul>' + errs.map(function(x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>' : '<p><span class="status-chip saved">Verdict complete</span></p>';
+      html += '</div>';
+    }
+    return html + navButtons(true);
+  }
+
+  // ---- Step 7: Dissent ----
+  function renderDissent() {
+    var d = state.dissent;
+    var html = '<h2>Dissent</h2>'
+      + '<p class="lede">Optional. If any member disagrees with a verdict, record the minority position here with the member\'s name and reasoning. A recorded dissent is printed with the record.</p>'
+      + '<div class="field"><label for="dissent-name">Dissenting member</label><input type="text" id="dissent-name" data-bind="dissent.name" value="' + esc(d.name) + '" autocomplete="off"></div>'
+      + '<div class="field"><label for="dissent-reasoning">Minority position and reasoning</label>'
+      + '<textarea id="dissent-reasoning" data-bind="dissent.reasoning">' + esc(d.reasoning) + '</textarea>'
+      + '<div class="field-hint">' + wcHint('dissent-reasoning', d.reasoning, CONFIG.minWords.dissent) + '<span>Only enforced if a dissent is entered</span></div></div>';
+    if (!dissentValid()) html += '<div class="notice">A dissent, once started, needs at least ' + CONFIG.minWords.dissent + ' words of reasoning.</div>';
+    return html + navButtons(true);
+  }
+
+  // ---- Step 8: Output ----
+  function renderOutput(c) {
+    var items = [
+      ['Setup', setupComplete()],
+      ['Predictions locked', predictionsLocked()],
+      ['Evidence tagged', evidenceComplete(c)],
+      ['Criteria grid saved', gridComplete(c)],
+      ['Prediction check', checkComplete(c)],
+      ['Verdicts', verdictsComplete(c)],
+      ['Dissent (optional, valid if present)', dissentValid()]
+    ];
+    var html = '<h2>Output</h2>'
+      + '<p class="lede">Print the A4 Adjudication Record, print A6 verdict cards for the claim wall, copy the record as text, or export JSON for the week 7 Transfer Test.</p>'
+      + '<ul class="checklist">';
+    for (var i = 0; i < items.length; i++) {
+      html += '<li><span class="mark ' + (items[i][1] ? 'done' : 'todo') + '"></span><span>' + esc(items[i][0]) + ': <strong>' + (items[i][1] ? 'complete' : 'incomplete') + '</strong></span></li>';
+    }
+    html += '</ul>';
+    html += '<div class="toolbar">'
+      + '<button class="btn btn-primary" data-action="print-record">Print A4 record</button>'
+      + '<button class="btn btn-primary" data-action="print-cards">Print A6 verdict cards</button>'
+      + '<button class="btn btn-ghost" data-action="copy-text">Copy as text</button>'
+      + '<button class="btn btn-ghost" data-action="export">Export JSON</button>'
+      + '</div>';
+    html += '<div class="section-break" style="--break-color:var(--char-1)"></div>';
+    html += '<h3>Record preview</h3><div class="preview-wrap rec">' + buildRecordHtml() + '</div>';
+    return html + navButtons(false);
+  }
+
+  // ==========================================================================
+  // PRINT OUTPUT
+  // ==========================================================================
+  function buildRecordHtml() {
+    var c = getCase();
+    if (!c) return '<p>No case selected.</p>';
+    var exps = explanationsOf(c);
+    var ct = CONFIG.claimTypes[c.claim.type];
+    var members = state.group.members.filter(function(m) { return String(m).trim(); });
+    var html = '<h1>Adjudication Record</h1>'
+      + '<p class="meta"><strong>Group:</strong> ' + esc(state.group.name || 'unnamed') + (members.length ? ' · <strong>Members:</strong> ' + esc(members.join(', ')) : '') + ' · <strong>Date:</strong> ' + esc(fmtDate()) + '</p>'
+      + '<p class="meta"><strong>' + esc(ct.label) + ' claim:</strong> ' + esc(c.claim.text) + '</p>';
+
+    html += '<h2>1. Explanations and predictions' + (state.predictionsLockedAt ? ' (locked ' + esc(fmtTime(state.predictionsLockedAt)) + ')' : ' (not locked)') + '</h2><div class="two">';
+    for (var i = 0; i < exps.length; i++) {
+      var e = exps[i];
+      var preds = predictionsFor(e.id);
+      html += '<div class="band ' + letterOf(i).toLowerCase() + ' keep"><h3>' + letterOf(i) + '. ' + esc(e.label) + ' (' + esc(CONFIG.lenses[e.lens].label) + ')</h3>';
+      for (var j = 0; j < 2; j++) html += '<p><strong>P' + (j + 1) + ':</strong> ' + esc(preds[j].text || '(none)') + '</p>';
+      html += '</div>';
+    }
+    html += '</div>';
+
+    html += '<h2>2. Evidence tagging</h2><table><thead><tr><th>Card</th><th>Title</th><th>Relation</th><th>Design</th></tr></thead><tbody>';
+    var cards = allCards(c);
+    for (var k = 0; k < cards.length; k++) {
+      var ev = state.evidence[cards[k].card.id] || {};
+      html += '<tr><td><strong>' + esc(cards[k].card.id) + '</strong></td><td>' + esc(cards[k].card.title) + '</td><td>' + esc(ev.relation ? relationLabel(ev.relation) : 'untagged') + '</td><td>' + esc(ev.design ? labelOf(CONFIG.designTypes, ev.design) : 'untagged') + '</td></tr>';
+    }
+    html += '</tbody></table>';
+
+    html += '<h2>3. Criteria grid</h2><table><thead><tr><th>Criterion</th>';
+    for (var a = 0; a < exps.length; a++) html += '<th>' + letterOf(a) + '. ' + esc(exps[a].label) + '</th>';
+    html += '</tr></thead><tbody>';
+    for (var q = 0; q < CONFIG.criteria.length; q++) {
+      var cr = CONFIG.criteria[q];
+      html += '<tr><td><strong>' + esc(cr.label) + '</strong></td>';
+      for (var b = 0; b < exps.length; b++) {
+        var cell = cellFor(exps[b].id, cr.id);
+        var r = cell.saved && cell.rating ? cell.rating : 'unrated';
+        html += '<td><span class="tag" data-rating="' + r + '">' + esc(r === 'unrated' ? 'Unrated' : labelOf(CONFIG.ratingScale, cell.rating)) + '</span>'
+          + (cell.cited.length ? ' <em>cites ' + esc(cell.cited.join(', ')) + '</em>' : '')
+          + (cell.warrant ? '<br>' + esc(cell.warrant) : '') + '</td>';
+      }
+      html += '</tr>';
+    }
+    html += '</tbody></table>';
+
+    html += '<h2>4. Prediction check</h2><table><thead><tr><th>Explanation</th><th>Prediction</th><th>Outcome</th><th>Card</th></tr></thead><tbody>';
+    for (var m = 0; m < exps.length; m++) {
+      var ch = checkFor(exps[m].id);
+      var pr = predictionsFor(exps[m].id);
+      for (var n = 0; n < 2; n++) {
+        html += '<tr><td>' + letterOf(m) + '</td><td>' + esc(pr[n].text) + '</td><td>' + esc(ch[n].outcome ? labelOf(CONFIG.predictionOutcomes, ch[n].outcome) : 'unmarked') + '</td><td>' + esc(ch[n].cardId || '') + '</td></tr>';
+      }
+      html += '<tr><td colspan="4"><strong>' + letterOf(m) + ': ' + borneOutCount(exps[m].id) + ' of 2 predictions borne out</strong></td></tr>';
+    }
+    html += '</tbody></table>';
+
+    html += '<h2>5. Verdicts</h2><div class="two">';
+    for (var x = 0; x < exps.length; x++) {
+      var v = verdictFor(exps[x].id);
+      html += '<div class="band ' + letterOf(x).toLowerCase() + ' keep"><h3>' + letterOf(x) + '. ' + esc(exps[x].label) + '</h3>'
+        + '<p><span class="tag" data-verdict="' + (v.verdict || 'unset') + '">' + esc(v.verdict ? labelOf(CONFIG.verdicts, v.verdict) : 'No verdict') + '</span></p>'
+        + (v.verdict === 'scope-limited' ? '<p><strong>Holds when:</strong> ' + esc(v.scopeLimits) + '</p>' : '')
+        + '<p><strong>Would change this verdict:</strong> ' + esc(v.wouldChange || '(not stated)') + '</p></div>';
+    }
+    html += '</div>';
+
+    html += '<h2>6. Dissent</h2>';
+    if (String(state.dissent.name).trim() || String(state.dissent.reasoning).trim()) {
+      html += '<p><strong>' + esc(state.dissent.name || 'Unnamed member') + ':</strong> ' + esc(state.dissent.reasoning) + '</p>';
+    } else {
+      html += '<p>No dissent recorded.</p>';
+    }
+    return html;
+  }
+
+  function buildCardsHtml() {
+    var c = getCase();
+    if (!c) return '<p>No case selected.</p>';
+    var exps = explanationsOf(c);
+    var ct = CONFIG.claimTypes[c.claim.type];
+    var slots = [];
+    // Two copies per explanation: one for the claim wall, one for the group. Four per A4.
+    for (var copy = 0; copy < 2; copy++) {
+      for (var i = 0; i < exps.length; i++) {
+        var e = exps[i];
+        var v = verdictFor(e.id);
+        var lens = CONFIG.lenses[e.lens];
+        var exColor = i === 0 ? 'var(--exp-a)' : 'var(--exp-b)';
+        slots.push('<div class="a6">'
+          + '<div class="a6-corner" style="background:' + lens.color + '"></div>'
+          + '<div class="a6-eyebrow">' + esc(ct.label) + ' claim · ' + esc(lens.label) + ' lens · Explanation ' + letterOf(i) + '</div>'
+          + '<div class="a6-label" style="border-color:' + exColor + '">' + esc(e.label) + '</div>'
+          + '<div class="a6-verdict" data-verdict="' + (v.verdict || 'unset') + '">Verdict: ' + esc(v.verdict ? labelOf(CONFIG.verdicts, v.verdict) : 'not given') + '</div>'
+          + (v.verdict === 'scope-limited' ? '<div class="a6-section"><span class="k">Scope limits</span>' + esc(v.scopeLimits) + '</div>' : '')
+          + '<div class="a6-section"><span class="k">Would change our mind</span>' + esc(v.wouldChange || '(not stated)') + '</div>'
+          + '<div class="a6-foot"><span>' + esc(state.group.name || 'Group') + '</span><span>' + esc(fmtDate()) + '</span></div>'
+          + '</div>');
+      }
+    }
+    return '<div class="cards-sheet">' + slots.join('') + '</div>';
+  }
+
+  function buildRecordText() {
+    var c = getCase();
+    if (!c) return 'No case selected.';
+    var exps = explanationsOf(c);
+    var L = [];
+    L.push('ADJUDICATION RECORD');
+    L.push('Group: ' + (state.group.name || 'unnamed'));
+    var members = state.group.members.filter(function(m) { return String(m).trim(); });
+    if (members.length) L.push('Members: ' + members.join(', '));
+    L.push('Date: ' + fmtDate());
+    L.push(CONFIG.claimTypes[c.claim.type].label.toUpperCase() + ' CLAIM: ' + c.claim.text);
+    L.push('');
+    L.push('1. EXPLANATIONS AND PREDICTIONS' + (state.predictionsLockedAt ? ' (locked ' + fmtTime(state.predictionsLockedAt) + ')' : ''));
+    for (var i = 0; i < exps.length; i++) {
+      var preds = predictionsFor(exps[i].id);
+      L.push(letterOf(i) + '. ' + exps[i].label + ' (' + CONFIG.lenses[exps[i].lens].label + ')');
+      for (var j = 0; j < 2; j++) L.push('   P' + (j + 1) + ': ' + (preds[j].text || '(none)'));
+    }
+    L.push('');
+    L.push('2. EVIDENCE TAGGING');
+    var cards = allCards(c);
+    for (var k = 0; k < cards.length; k++) {
+      var ev = state.evidence[cards[k].card.id] || {};
+      L.push('   ' + cards[k].card.id + ' ' + cards[k].card.title + ' | ' + (ev.relation ? relationLabel(ev.relation) : 'untagged') + ' | ' + (ev.design ? labelOf(CONFIG.designTypes, ev.design) : 'untagged'));
+    }
+    L.push('');
+    L.push('3. CRITERIA GRID');
+    for (var a = 0; a < exps.length; a++) {
+      L.push(letterOf(a) + '. ' + exps[a].label);
+      for (var q = 0; q < CONFIG.criteria.length; q++) {
+        var cell = cellFor(exps[a].id, CONFIG.criteria[q].id);
+        L.push('   ' + CONFIG.criteria[q].label + ': ' + (cell.saved ? labelOf(CONFIG.ratingScale, cell.rating) : 'unrated') + (cell.cited.length ? ' [cites ' + cell.cited.join(', ') + ']' : ''));
+        if (cell.warrant) L.push('      ' + cell.warrant);
+      }
+    }
+    L.push('');
+    L.push('4. PREDICTION CHECK');
+    for (var m = 0; m < exps.length; m++) {
+      var ch = checkFor(exps[m].id);
+      for (var n = 0; n < 2; n++) L.push('   ' + letterOf(m) + ' P' + (n + 1) + ': ' + (ch[n].outcome ? labelOf(CONFIG.predictionOutcomes, ch[n].outcome) : 'unmarked') + (ch[n].cardId ? ' [' + ch[n].cardId + ']' : ''));
+      L.push('   ' + letterOf(m) + ': ' + borneOutCount(exps[m].id) + ' of 2 predictions borne out');
+    }
+    L.push('');
+    L.push('5. VERDICTS');
+    for (var x = 0; x < exps.length; x++) {
+      var v = verdictFor(exps[x].id);
+      L.push(letterOf(x) + '. ' + exps[x].label + ': ' + (v.verdict ? labelOf(CONFIG.verdicts, v.verdict) : 'no verdict'));
+      if (v.verdict === 'scope-limited') L.push('   Holds when: ' + v.scopeLimits);
+      L.push('   Would change this verdict: ' + (v.wouldChange || '(not stated)'));
+    }
+    L.push('');
+    L.push('6. DISSENT');
+    if (String(state.dissent.name).trim() || String(state.dissent.reasoning).trim()) L.push('   ' + (state.dissent.name || 'Unnamed member') + ': ' + state.dissent.reasoning);
+    else L.push('   No dissent recorded.');
+    return L.join('\n');
+  }
+
+  function printRecord() {
+    document.getElementById('print-record').innerHTML = buildRecordHtml();
+    document.body.classList.remove('print-mode-cards');
+    document.body.classList.add('print-mode-record');
+    window.print();
+  }
+  function printCards() {
+    document.getElementById('print-cards').innerHTML = buildCardsHtml();
+    document.body.classList.remove('print-mode-record');
+    document.body.classList.add('print-mode-cards');
+    window.print();
+  }
+  function copyText() {
+    var text = buildRecordText();
+    var done = function() { setSaveStatus('Record copied to clipboard'); };
+    var fail = function() { window.prompt('Copy this text:', text); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fail);
+    else fail();
+  }
+
+  // ==========================================================================
+  // EVENTS
+  // ==========================================================================
+  function afterRender() {
+    if (state.step === 3 && state.openCell) {
+      var panel = document.getElementById('cell-panel');
+      if (panel && panel.getAttribute('data-focused') !== '1') {
+        panel.setAttribute('data-focused', '1');
+        var first = panel.querySelector('input[type="radio"]');
+        if (first && focusPanelOnNextRender) first.focus();
+        focusPanelOnNextRender = false;
+      }
+    }
+  }
+  var focusPanelOnNextRender = false;
+
+  function updateWc(id, text, min, max) {
+    var el = document.getElementById('wc-' + id);
+    if (!el) return;
+    var n = wordCount(text);
+    el.className = 'wc ' + (n < min ? 'short' : (max && n > max ? 'over' : 'ok'));
+    el.textContent = n + ' word' + (n === 1 ? '' : 's') + ' · minimum ' + min + (max ? ' · maximum ' + max : '');
+  }
+
+  function onInput(ev) {
+    var t = ev.target;
+    var bind = t.getAttribute('data-bind');
+    if (!bind) return;
+    var c = getCase();
+    switch (bind) {
+      case 'group.name': state.group.name = t.value; renderHeaderMeta(); break;
+      case 'member': state.group.members[+t.getAttribute('data-index')] = t.value; break;
+      case 'prediction': {
+        if (predictionsLocked()) return;
+        var p = predictionsFor(t.getAttribute('data-exp'))[+t.getAttribute('data-index')];
+        p.text = t.value; p.saved = false;
+        updateWc('pred-' + t.getAttribute('data-exp') + '-' + t.getAttribute('data-index'), t.value, CONFIG.minWords.prediction);
+        break;
+      }
+      case 'warrant': {
+        if (!state.openCell) return;
+        var parts = state.openCell.split(':');
+        var cell = cellFor(parts[0], parts[1]);
+        cell.warrant = t.value; cell.saved = false;
+        updateWc('warrant', t.value, CONFIG.minWords.warrant);
+        break;
+      }
+      case 'scopeLimits': verdictFor(t.getAttribute('data-exp')).scopeLimits = t.value; updateWc('scope-' + t.getAttribute('data-exp'), t.value, CONFIG.minWords.scopeLimits); break;
+      case 'wouldChange': verdictFor(t.getAttribute('data-exp')).wouldChange = t.value; updateWc('change-' + t.getAttribute('data-exp'), t.value, CONFIG.minWords.wouldChange, CONFIG.maxWordsWouldChange); break;
+      case 'dissent.name': state.dissent.name = t.value; break;
+      case 'dissent.reasoning': state.dissent.reasoning = t.value; updateWc('dissent-reasoning', t.value, CONFIG.minWords.dissent); break;
+      case 'check-card': checkFor(t.getAttribute('data-exp'))[+t.getAttribute('data-index')].cardId = t.value || null; break;
+    }
+    saveState();
+    if (state.step !== 3 && state.step !== 1) renderNav();
+  }
+
+  function onChange(ev) {
+    var t = ev.target;
+    if (t.type === 'radio' || t.type === 'checkbox') {
+      var name = t.name;
+      if (name.indexOf('rel-') === 0 || name.indexOf('des-') === 0) {
+        var cardId = name.slice(4);
+        if (!state.evidence[cardId]) state.evidence[cardId] = { relation: null, design: null };
+        if (name.indexOf('rel-') === 0) state.evidence[cardId].relation = t.value; else state.evidence[cardId].design = t.value;
+        syncChoiceClasses(t);
+        saveState();
+        renderNav();
+        var scroll = window.scrollY;
+        var focusId = t.id || null;
+        // Re-render only the count line to avoid losing scroll position.
+        var quiet = $screen.querySelector('p.quiet strong');
+        if (quiet) {
+          var cards = allCards(getCase()); var done = 0;
+          for (var i = 0; i < cards.length; i++) { var e = state.evidence[cards[i].card.id]; if (e && e.relation && e.design) done++; }
+          quiet.textContent = done + ' of ' + cards.length;
+        }
+        return;
+      }
+      if (name === 'rating') {
+        var parts = state.openCell.split(':');
+        var cell = cellFor(parts[0], parts[1]);
+        cell.rating = t.value; cell.saved = false;
+        syncChoiceClasses(t);
+        saveState();
+        return;
+      }
+      if (name === 'cite') {
+        var p2 = state.openCell.split(':');
+        var cell2 = cellFor(p2[0], p2[1]);
+        var idx = cell2.cited.indexOf(t.value);
+        if (t.checked && idx === -1) cell2.cited.push(t.value);
+        if (!t.checked && idx !== -1) cell2.cited.splice(idx, 1);
+        cell2.saved = false;
+        t.closest('label').classList.toggle('checked', t.checked);
+        saveState();
+        return;
+      }
+      if (name.indexOf('outcome-') === 0) {
+        var rest = name.slice(8);
+        var dash = rest.lastIndexOf('-');
+        var expId = rest.slice(0, dash), index = +rest.slice(dash + 1);
+        checkFor(expId)[index].outcome = t.value;
+        saveState();
+        render();
+        return;
+      }
+      if (name.indexOf('verdict-') === 0) {
+        var vid = name.slice(8);
+        verdictFor(vid).verdict = t.value;
+        saveState();
+        render();
+        return;
+      }
+    }
+    if (t.tagName === 'SELECT') { onInput(ev); return; }
+  }
+
+  function syncChoiceClasses(input) {
+    var group = input.closest('.choice-group');
+    if (!group) return;
+    var labels = group.querySelectorAll('label');
+    for (var i = 0; i < labels.length; i++) {
+      var inp = labels[i].querySelector('input');
+      labels[i].classList.toggle('checked', !!(inp && inp.checked));
+    }
+  }
+
+  function onClick(ev) {
+    var btn = ev.target.closest('[data-action], .step-btn');
+    if (!btn) return;
+    if (btn.classList.contains('step-btn')) { goTo(+btn.getAttribute('data-step')); return; }
+    var action = btn.getAttribute('data-action');
+    var c = getCase();
+    switch (action) {
+      case 'goto': goTo(+btn.getAttribute('data-step')); break;
+      case 'select-case':
+        if (predictionsLocked()) return;
+        state.caseId = btn.getAttribute('data-case');
+        saveState(); render(); break;
+      case 'save-prediction': {
+        var p = predictionsFor(btn.getAttribute('data-exp'))[+btn.getAttribute('data-index')];
+        var errs = validatePrediction(p.text);
+        if (errs.length) { alert('Cannot save this prediction:\n- ' + errs.join('\n- ')); p.saved = false; }
+        else p.saved = true;
+        saveState(); render(); break;
+      }
+      case 'lock-predictions':
+        if (!allPredictionsSaved(c)) return;
+        if (!confirm('Lock all four predictions? They become read-only and cannot be edited afterwards.')) return;
+        state.predictionsLockedAt = new Date().toISOString();
+        saveState(); render(); break;
+      case 'open-cell': {
+        var key = btn.getAttribute('data-key');
+        state.openCell = state.openCell === key ? null : key;
+        focusPanelOnNextRender = !!state.openCell;
+        saveState(); render();
+        var panel = document.getElementById('cell-panel');
+        if (panel) panel.scrollIntoView({ block: 'nearest' });
+        break;
+      }
+      case 'close-cell': state.openCell = null; saveState(); render(); break;
+      case 'save-cell': {
+        if (!state.openCell) return;
+        var parts = state.openCell.split(':');
+        var cell = cellFor(parts[0], parts[1]);
+        var cerrs = validateCell(cell);
+        var box = document.getElementById('cell-errors');
+        if (cerrs.length) {
+          cell.saved = false;
+          if (box) box.innerHTML = '<div class="notice error" role="alert"><ul>' + cerrs.map(function(x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>';
+          saveState(); renderNav();
+        } else {
+          cell.saved = true;
+          saveState(); render();
+        }
+        break;
+      }
+      case 'print-record': printRecord(); break;
+      case 'print-cards': printCards(); break;
+      case 'copy-text': copyText(); break;
+      case 'export': downloadJson(); break;
+    }
+  }
+
+  function goTo(step) {
+    if (step < 0 || step >= CONFIG.steps.length) return;
+    state.step = step;
+    saveState();
+    render();
+    window.scrollTo({ top: $nav.offsetTop - 8, behavior: 'auto' });
+  }
+
+  function resetAll() {
+    if (!confirm('Reset this tool? All work for this group on this device will be deleted. Export JSON first if you want to keep it.')) return;
+    if (!confirm('Are you sure? This cannot be undone.')) return;
+    state = blankState();
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+    saveState();
+    render();
+  }
+
+  function init() {
+    $screen = document.getElementById('screen');
+    $nav = document.getElementById('step-nav');
+    $meta = document.getElementById('header-meta');
+    loadState();
+    if (CONFIG.activeCase) state.caseId = CONFIG.activeCase;
+
+    document.getElementById('bench-app').addEventListener('input', onInput);
+    document.getElementById('bench-app').addEventListener('change', onChange);
+    document.getElementById('bench-app').addEventListener('click', onClick);
+    document.getElementById('btn-export').addEventListener('click', downloadJson);
+    document.getElementById('btn-copy').addEventListener('click', copyText);
+    document.getElementById('btn-reset').addEventListener('click', resetAll);
+    document.getElementById('import-file').addEventListener('change', function(ev) {
+      var file = ev.target.files && ev.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function() { importJson(String(reader.result)); ev.target.value = ''; };
+      reader.readAsText(file);
+    });
+    window.addEventListener('afterprint', function() {
+      document.body.classList.remove('print-mode-record', 'print-mode-cards');
+    });
+    window.addEventListener('beforeprint', function() {
+      if (!document.body.classList.contains('print-mode-cards')) {
+        document.getElementById('print-record').innerHTML = buildRecordHtml();
+      }
+    });
+    render();
+  }
+
+  // Test hook: pure functions and CONFIG exposed for test.html.
+  window.W6B = {
+    CONFIG: CONFIG,
+    wordCount: wordCount,
+    validatePrediction: validatePrediction,
+    validateCell: validateCell,
+    validateVerdict: validateVerdict,
+    validateExport: validateExport,
+    buildExport: buildExport,
+    buildRecordHtml: buildRecordHtml,
+    buildCardsHtml: buildCardsHtml,
+    buildRecordText: buildRecordText,
+    renderEvidenceHtml: function() { return renderEvidence(getCase()); },
+    renderScreenHtml: function() { renderScreen(); return $screen ? $screen.innerHTML : ''; },
+    esc: esc,
+    getState: function() { return state; },
+    setState: function(s) { state = mergeState(s); },
+    blankState: blankState,
+    mergeState: mergeState
+  };
+
+  if (document.getElementById('bench-app')) init();
+})();
+</script>
