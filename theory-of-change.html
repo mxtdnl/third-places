@@ -1,6 +1,19 @@
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Theory of Change</title>
 <style>
+/* ============================================================
+   THEORY OF CHANGE - PROJECTION DECK
+   Sized as a 16:9 stage that always fits the viewport.
+   The root font-size IS the slide unit: 1rem = 1% of stage width.
+   Every dimension below is expressed in those units, so the whole
+   deck scales as one composition on any projector or laptop.
+   ============================================================ */
+
+html {
+  font-size: min(1vw, 1.7778vh);
+}
+
 :root {
   --bg: #F2DFBE;
   --bg-card: #FFFAF2;
@@ -21,1012 +34,1239 @@
   --incorrect: #B82828;
   --incorrect-bg: #FDEEEE;
   --slide-accent: var(--char-1);
+
+  /* Ink tones. Gold and orange fail WCAG AA as text on cream, so text set in
+     those two characteristics uses a darkened variant. Fills, rules, borders
+     and decorative shapes keep the exact palette values above. */
+  --char-4-ink: #7A5410;
+  --char-7-ink: #9E4718;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: var(--bg);
+  background: var(--text);
   color: var(--text);
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.6;
-  min-height: 100vh;
+  font-size: 1.85rem;
+  line-height: 1.5;
+  overflow: hidden;
 }
 
-#app {
-  max-width: 780px;
-  margin: 0 auto;
-  padding: 1.5rem 16px 5.5rem;
+.deck {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
+.stage {
+  position: relative;
+  width: 100rem;
+  height: 56.25rem;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* ---------- Deck chrome ---------- */
 
 .progress-track {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 6px;
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 0.7rem;
   background: var(--bg-deep);
-  z-index: 100;
+  z-index: 60;
 }
-
 .progress-fill {
   height: 100%;
   background: var(--slide-accent);
   transition: width 0.4s ease, background-color 0.3s ease;
 }
 
-.slide-counter {
-  font-size: 0.72rem;
+.deck-chrome {
+  position: absolute;
+  bottom: 1.5rem;
+  right: 2.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--bg);
+  border: 0.2rem solid var(--border);
+  z-index: 60;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+/* Idle-hides during presentation so it never competes with the slide */
+.deck-chrome.idle { opacity: 0; pointer-events: none; }
+.nav-btn {
+  background: var(--char-1);
+  color: #fff;
+  border: none;
+  min-width: 4.4rem;
+  height: 2.6rem;
+  padding: 0 1.4rem;
   font-weight: 700;
-  letter-spacing: 0.15em;
+  font-size: 1.1rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.nav-btn:hover:not(:disabled) { background: var(--char-2); transform: translateY(-0.2rem); }
+.nav-btn:active { transform: translateY(0); }
+.nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.nav-btn.ghost {
+  background: transparent;
+  color: var(--text);
+  border: 0.2rem solid var(--text);
+}
+.nav-btn.ghost:hover { background: var(--text); color: var(--bg); }
+.nav-info {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-muted);
-  margin-bottom: 1.25rem;
+  padding: 0 0.6rem;
 }
+
+*:focus-visible {
+  outline: 0.3rem solid var(--char-1);
+  outline-offset: 0.2rem;
+}
+
+/* ---------- Slide frame ---------- */
 
 .slide {
+  position: absolute;
+  inset: 0;
   display: none;
-  animation: slideIn 0.3s ease;
 }
-.slide.active { display: block; }
+.slide.active { display: block; animation: slideIn 0.32s ease; }
 
 @keyframes slideIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(1rem); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.slide h1 {
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  line-height: 1.08;
-  margin-bottom: 1rem;
+/* The accent rail: a full-height Bauhaus bar carrying section identity */
+.rail {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 1.9rem;
+  background: var(--slide-accent);
+  z-index: 4;
 }
 
-.slide h2 {
-  font-size: clamp(1.4rem, 3vw, 2rem);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  line-height: 1.15;
-  margin-bottom: 1rem;
+.slide-inner {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  padding: 3.8rem 5.5rem 4.6rem 7rem;
+  display: flex;
+  flex-direction: column;
 }
 
-.slide h3 {
-  font-size: 1rem;
+.slide-no {
+  position: absolute;
+  top: 3.8rem;
+  right: 5.5rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  z-index: 5;
+}
+
+.s-head { flex-shrink: 0; margin-bottom: 2rem; }
+.s-head::before {
+  content: '';
+  display: block;
+  width: 13rem;
+  height: 0.9rem;
+  background: var(--slide-accent);
+  margin-bottom: 1.2rem;
+}
+.slide[data-accent="var(--char-4)"] .eyebrow { color: var(--char-4-ink); }
+.slide[data-accent="var(--char-7)"] .eyebrow { color: var(--char-7-ink); }
+
+.eyebrow {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 0.7rem;
+  color: var(--slide-accent);
+}
+h1 {
+  font-size: 7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 0.94;
+}
+h2 {
+  font-size: 3.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.015em;
+  line-height: 1.02;
+}
+h3 {
+  font-size: 2rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  margin-bottom: 0.6rem;
 }
 
-.eyebrow {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  margin-bottom: 0.4rem;
-}
+.s-body { flex: 1; min-height: 0; }
+p { font-size: 1.85rem; }
+.small { font-size: 1.55rem; }
+.micro { font-size: 1.25rem; }
+.muted { color: var(--text-muted); }
+.lede { font-size: 2.1rem; line-height: 1.4; color: var(--text-muted); }
 
-.slide p { max-width: 640px; margin-bottom: 1rem; font-size: 1.02rem; }
+/* ---------- Layout helpers ---------- */
 
-.lede {
-  font-size: 1.12rem;
-  color: var(--text-muted);
-  max-width: 600px;
-  margin-bottom: 1.5rem;
-}
+.grid { display: grid; gap: 2.6rem; }
+.g-2 { grid-template-columns: 1fr 1fr; }
+.g-3 { grid-template-columns: repeat(3, 1fr); }
+.g-7-5 { grid-template-columns: 7fr 5fr; }
+.g-6-6 { grid-template-columns: 1fr 1fr; }
+.g-5-7 { grid-template-columns: 5fr 7fr; }
+.stack > * + * { margin-top: 1.2rem; }
+.fill { height: 100%; }
+.center-y { align-content: center; }
 
-.accent-bar {
-  height: 6px;
-  margin-bottom: 1.5rem;
-  max-width: 200px;
-}
+/* ---------- Decorative geometry ---------- */
 
-.accent-banner {
-  padding: 1.5rem 2rem;
-  color: #fff;
-  margin-bottom: 1.5rem;
-}
-.accent-banner h2, .accent-banner p { color: #fff; }
+.deco { position: absolute; z-index: 1; pointer-events: none; }
+.circle { border-radius: 50%; }
 
-.quote-block {
-  border-left: 6px solid var(--char-4);
-  padding: 1.25rem 1.5rem;
-  background: var(--bg-card);
-  margin-bottom: 1.5rem;
-  max-width: 640px;
-}
-.quote-block p { font-style: italic; margin-bottom: 0.4rem; }
-.quote-block .attribution {
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  font-style: normal;
-  font-weight: 600;
-}
+/* ---------- Slide 1: title poster ---------- */
 
-.verb-sequence {
-  display: flex;
-  gap: 0;
-  margin-bottom: 1.5rem;
-  max-width: 640px;
+.hero { align-items: center; }
+.hero h1 { margin-bottom: 2.4rem; }
+.hero-mark { position: relative; height: 42rem; }
+.hero-mark > div { position: absolute; }
+.hm-circle { width: 27rem; height: 27rem; border-radius: 50%; background: var(--char-1); top: 3rem; left: 6rem; }
+.hm-ring { width: 21rem; height: 21rem; border-radius: 50%; border: 1.6rem solid var(--char-6); top: 17rem; left: 0; }
+.hm-square { width: 13rem; height: 13rem; background: var(--char-4); top: 1rem; left: 25rem; transform: rotate(22deg); }
+.hm-tri {
+  width: 0; height: 0;
+  border-left: 7.5rem solid transparent;
+  border-right: 7.5rem solid transparent;
+  border-bottom: 13rem solid var(--char-2);
+  top: 26rem; left: 22rem;
 }
+.hm-bar { width: 34rem; height: 1.4rem; background: var(--char-3); top: 40rem; left: 2rem; transform: rotate(-4deg); }
+
+/* ---------- Verb sequence ---------- */
+
+.verb-band { display: flex; gap: 0.5rem; align-items: flex-end; }
 .verb-block {
   flex: 1;
-  padding: 1rem 0.5rem;
-  text-align: center;
-  font-weight: 800;
-  font-size: 0.78rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #fff;
-  transition: transform 0.2s ease;
-}
-.verb-block.current {
-  transform: scaleY(1.15);
-  box-shadow: 0 4px 12px rgba(42,31,24,0.18);
-}
-
-.pathway {
-  display: flex;
-  flex-direction: column;
-  max-width: 600px;
-  margin-bottom: 1.5rem;
-}
-.pathway-step { display: flex; align-items: stretch; }
-.pathway-marker {
-  width: 40px;
+  height: 6.6rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex-shrink: 0;
-}
-.pathway-dot { width: 14px; height: 14px; flex-shrink: 0; }
-.pathway-line { width: 3px; flex: 1; background: var(--border); }
-.pathway-content { padding: 0.25rem 0 1.25rem 0.75rem; flex: 1; }
-.pathway-content .step-label {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.15em;
+  justify-content: center;
+  gap: 0.5rem;
+  color: #fff;
+  font-weight: 800;
+  font-size: 2.1rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  margin-bottom: 0.2rem;
 }
-.pathway-content .step-text { font-size: 0.92rem; }
-.pathway-assumption {
-  font-size: 0.78rem;
+.verb-block.current {
+  height: 8.4rem;
+  box-shadow: 0 0.4rem 1.2rem rgba(42,31,24,0.18);
+}
+.verb-block .here {
+  font-size: 1.05rem;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  opacity: 0.85;
+}
+.verb-weeks {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+.verb-weeks span {
+  flex: 1;
+  text-align: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: var(--text-muted);
-  font-style: italic;
-  padding: 0.4rem 0 0.4rem 0.75rem;
-  margin-left: 40px;
-  border-left: 2px dashed var(--border);
 }
 
-.three-cols {
+/* ---------- Quote ---------- */
+
+.quote-block {
+  border-left: 1rem solid var(--char-4);
+  background: var(--bg-card);
+  padding: 2rem 2.4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.quote-block p {
+  font-size: 2.05rem;
+  font-style: italic;
+  line-height: 1.35;
+  margin-bottom: 1.4rem;
+}
+.quote-block .attribution {
+  font-size: 1.4rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ---------- Cards ---------- */
+
+.card {
+  background: var(--bg-card);
+  border: 0.25rem solid var(--border);
+  padding: 2.2rem 2.4rem;
+}
+.card.accent-left { border-left: 0.9rem solid var(--slide-accent); }
+.card h3 { margin-bottom: 0.8rem; }
+
+.banner {
+  background: var(--slide-accent);
+  color: #fff;
+  padding: 2rem 2.4rem;
+}
+.banner p, .banner h2, .banner h3 { color: #fff; }
+
+/* ---------- Slide 5: causal pathway ---------- */
+
+.toc-direction, .toc-delivery {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+}
+.toc-direction { background: var(--bg-deep); padding: 0.7rem 1.6rem; margin-bottom: 1.3rem; }
+.toc-direction .dir-label {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--char-1);
+}
+.toc-direction .dir-rule { flex: 1; height: 0.4rem; background: var(--char-1); }
+
+.chain { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.6rem; }
+.chain-node {
+  background: var(--bg-card);
+  border: 0.25rem solid var(--border);
+  border-top: 0.9rem solid var(--node-color);
+  padding: 1.3rem 1.5rem;
+}
+.chain-node .node-label {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--node-ink, var(--node-color));
+  margin-bottom: 0.6rem;
+}
+.chain-node .node-text { font-size: 1.35rem; line-height: 1.38; }
+
+/* Assumption chips sit in the seams between nodes */
+.chain-links {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
+  gap: 1.6rem;
+  margin: 0 calc(12.5% + 0.2rem);
+  padding-top: 1rem;
 }
-.col-card {
-  background: var(--bg-card);
-  border: 2px solid var(--border);
-  padding: 1.1rem;
+.chain-link { position: relative; text-align: center; }
+.chain-link::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 0.9rem solid transparent;
+  border-right: 0.9rem solid transparent;
+  border-bottom: 1.1rem solid var(--char-2);
 }
-.col-card h3 { font-size: 0.88rem; margin-bottom: 0.4rem; }
-.col-card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0; }
-
-.sector-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 0.6rem;
-  max-width: 640px;
-  margin-bottom: 1.5rem;
-}
-.sector-card {
-  background: var(--bg-card);
-  border: 2px solid var(--border);
-  padding: 0.9rem 1rem;
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-}
-.sector-pip {
-  width: 10px;
-  height: 10px;
-  flex-shrink: 0;
-  margin-top: 0.35rem;
-}
-.sector-card .sector-name {
+.chain-link .link-tag {
+  display: block;
+  font-size: 1rem;
   font-weight: 800;
-  font-size: 0.82rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 0.15rem;
+  color: var(--char-2);
+  margin: 1.1rem 0 0.35rem;
 }
-.sector-card .sector-desc {
-  font-size: 0.85rem;
+.chain-link .link-text {
+  font-size: 1.2rem;
+  font-style: italic;
   color: var(--text-muted);
+  line-height: 1.35;
+  border: 0.2rem dashed var(--char-2);
+  padding: 0.6rem 0.9rem;
 }
 
-.quiz-options { display: grid; gap: 0.6rem; max-width: 640px; margin-bottom: 0.75rem; }
+.toc-delivery { margin-top: 1.3rem; }
+.toc-delivery .dir-label {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--char-5);
+}
+.toc-delivery .dir-rule { flex: 1; height: 0.4rem; background: var(--char-5); }
+
+/* ---------- Quizzes ---------- */
+
+.question { font-size: 2.4rem; font-weight: 700; line-height: 1.3; margin-bottom: 1.8rem; }
+
+.quiz-options { display: grid; gap: 1.1rem; }
+.quiz-options.two-up { grid-template-columns: 1fr 1fr; }
+.quiz-options.three-up { grid-template-columns: repeat(3, 1fr); gap: 1.1rem; }
+.quiz-options.three-up { gap: 1rem; }
+.quiz-options.three-up .quiz-option { font-size: 1.4rem; padding: 1.15rem 1.4rem; }
 
 .quiz-option {
   background: var(--bg-card);
-  border: 2px solid var(--border);
-  padding: 0.9rem 1.1rem;
+  border: 0.25rem solid var(--border);
+  padding: 1.5rem 1.8rem;
   cursor: pointer;
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: 1.6rem;
+  line-height: 1.35;
   text-align: left;
   color: var(--text);
-  transition: border-color 0.15s ease, transform 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.2s ease, transform 0.15s ease;
   display: flex;
   align-items: flex-start;
-  gap: 0.6rem;
+  gap: 1.1rem;
+  min-height: 2.5rem;
 }
-.quiz-option:hover:not(.disabled) { border-color: var(--text); transform: translateY(-1px); }
+.quiz-option:hover:not(.disabled) { border-color: var(--slide-accent); transform: translateY(-0.2rem); }
 .quiz-option .opt-letter {
   font-weight: 800;
-  font-size: 0.82rem;
-  min-width: 1.2rem;
+  font-size: 1.6rem;
+  min-width: 2rem;
+  color: var(--slide-accent);
   text-transform: uppercase;
 }
-.quiz-option.selected { border-color: var(--char-1); border-width: 3px; padding: calc(0.9rem - 1px) calc(1.1rem - 1px); }
+.quiz-option.selected { border-color: var(--char-1); background: rgba(92,58,150,0.10); }
 .quiz-option.correct { border-color: var(--correct); background: var(--correct-bg); }
-.quiz-option.incorrect { border-color: var(--incorrect); background: var(--incorrect-bg); opacity: 0.65; }
+.quiz-option.correct .opt-letter { color: var(--correct); }
+.quiz-option.incorrect { border-color: var(--incorrect); background: var(--incorrect-bg); opacity: 0.7; }
 .quiz-option.disabled { cursor: default; pointer-events: none; }
 
 .check-btn {
   background: var(--char-3);
   color: #fff;
   border: none;
-  padding: 0.6rem 1.8rem;
+  padding: 0 2.6rem;
+  height: 3.4rem;
   font-weight: 700;
-  font-size: 0.78rem;
-  letter-spacing: 0.12em;
+  font-size: 1.3rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   cursor: pointer;
   font-family: inherit;
   transition: background 0.15s ease, transform 0.15s ease;
 }
-.check-btn:hover { background: var(--char-2); transform: translateY(-2px); }
+.check-btn:hover { background: var(--char-2); transform: translateY(-0.2rem); }
 .check-btn:active { transform: translateY(0); }
 
 .feedback {
   display: none;
-  border-left: 5px solid var(--correct);
+  border-left: 0.8rem solid var(--correct);
   background: var(--correct-bg);
-  padding: 0.9rem 1.1rem;
-  margin-top: 0.75rem;
-  max-width: 640px;
+  padding: 1.3rem 1.8rem;
   animation: feedbackIn 0.3s ease;
 }
 .feedback.wrong { border-left-color: var(--incorrect); background: var(--incorrect-bg); }
 .feedback.visible { display: block; }
-.feedback p { font-size: 0.9rem; margin-bottom: 0; }
+.feedback p { font-size: 1.4rem; line-height: 1.4; }
 
 @keyframes feedbackIn {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(0.8rem); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.case-card {
-  background: var(--bg-card);
-  border: 2px solid var(--border);
-  padding: 1.1rem;
-  margin-bottom: 0.6rem;
-  max-width: 640px;
-  cursor: pointer;
-  transition: border-color 0.15s ease;
+.multi-note {
+  font-size: 1.3rem;
+  color: var(--text-muted);
+  font-style: italic;
 }
-.case-card:hover { border-color: var(--text); }
-.case-card .case-header {
+
+.statement-banner {
+  background: var(--char-2);
+  color: #fff;
+  padding: 1.4rem 2rem;
+  font-size: 1.6rem;
+  font-style: italic;
+  line-height: 1.35;
+}
+
+.exercise-bar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 0;
+  justify-content: space-between;
+  gap: 2rem;
+  margin: 1rem 0 0.9rem;
 }
-.case-card .case-name {
+
+/* ---------- Slide 8: three tests ---------- */
+
+.test-card {
+  background: var(--bg-card);
+  border: 0.25rem solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+.test-card .test-head {
+  background: var(--test-color);
+  color: var(--test-fg, #fff);
+  padding: 1.4rem 1.8rem;
+  display: flex;
+  align-items: baseline;
+  gap: 1.2rem;
+}
+.test-card .test-num { font-size: 2.2rem; font-weight: 800; opacity: 0.55; }
+.test-card .test-name {
+  font-size: 2.3rem;
   font-weight: 800;
-  font-size: 0.92rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
-.case-card .case-arrow { transition: transform 0.2s ease; }
-.case-card.open .case-arrow { transform: rotate(90deg); }
-.case-card .case-brief {
-  font-size: 0.88rem;
-  color: var(--text-muted);
-  margin-top: 0.35rem;
-}
-.case-reveal {
-  display: none;
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 2px solid var(--border);
-  animation: feedbackIn 0.25s ease;
-}
-.case-reveal.visible { display: block; }
-.case-reveal p { font-size: 0.88rem; margin-bottom: 0.5rem; }
-.case-reveal p:last-child { margin-bottom: 0; }
-.case-reveal .lesson-label {
-  font-weight: 800;
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 0.2rem;
-}
+.test-card .test-body { padding: 1.7rem; font-size: 1.5rem; line-height: 1.42; flex: 1; }
 
-.reveal-trigger {
+/* ---------- Slide 9: sectors ---------- */
+
+.sector-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.1rem; }
+.sector-card {
   background: var(--bg-card);
-  border: 2px solid var(--border);
-  border-left: 6px solid var(--slide-accent);
-  padding: 0.9rem 1.1rem;
-  cursor: pointer;
+  border: 0.25rem solid var(--border);
+  border-left: 0.9rem solid var(--sector-color);
+  padding: 1.25rem 1.5rem;
+}
+.sector-card .sector-name {
+  font-weight: 800;
+  font-size: 1.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sector-ink, var(--sector-color));
   margin-bottom: 0.5rem;
-  max-width: 640px;
+}
+.sector-card .sector-desc { font-size: 1.3rem; line-height: 1.38; color: var(--text-muted); }
+
+/* ---------- Slide 10: disciplines ---------- */
+
+.disc-col {
+  background: var(--bg-card);
+  border: 0.25rem solid var(--border);
+  border-top: 0.9rem solid var(--disc-color);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.2s ease, transform 0.15s ease;
+}
+.disc-col:hover { transform: translateY(-0.3rem); }
+.disc-col .disc-head {
+  padding: 1.4rem 1.6rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: border-color 0.15s ease;
 }
-.reveal-trigger:hover { border-color: var(--text); }
-.reveal-trigger .reveal-label {
-  font-weight: 700;
-  font-size: 0.88rem;
+.disc-col .disc-name {
+  font-size: 2.1rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
+  color: var(--disc-ink, var(--disc-color));
 }
-.reveal-trigger .arrow { transition: transform 0.2s ease; }
-.reveal-trigger.open .arrow { transform: rotate(90deg); }
-.reveal-body {
+.disc-col .arrow { color: var(--disc-ink, var(--disc-color)); font-size: 1.5rem; transition: transform 0.2s ease; }
+.disc-col.open .arrow { transform: rotate(90deg); }
+.disc-body {
   display: none;
-  padding: 0.9rem 1.1rem 0.9rem 1.5rem;
-  max-width: 640px;
-  margin-bottom: 0.5rem;
-  border-left: 6px solid var(--bg-deep);
-  animation: feedbackIn 0.25s ease;
+  padding: 0 1.6rem 1.6rem;
+  font-size: 1.4rem;
+  line-height: 1.4;
 }
-.reveal-body.visible { display: block; }
-.reveal-body p { font-size: 0.92rem; margin-bottom: 0.5rem; }
-.reveal-body p:last-child { margin-bottom: 0; }
+.disc-body.visible { display: block; animation: feedbackIn 0.25s ease; }
+.disc-hint {
+  padding: 0 1.6rem 1.6rem;
+  font-size: 1.2rem;
+  font-style: italic;
+  color: var(--text-muted);
+}
+.disc-col.open .disc-hint { display: none; }
 
-.takeaway-list { list-style: none; max-width: 640px; }
-.takeaway-list li {
-  padding: 0.7rem 0 0.7rem 0;
-  font-size: 0.95rem;
-  border-bottom: 1px solid var(--border);
+/* ---------- Slide 11: cases ---------- */
+
+.case-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4rem; }
+.case-card {
+  background: var(--bg-card);
+  border: 0.25rem solid var(--border);
+  border-left: 0.9rem solid var(--case-color);
+  padding: 1.2rem 1.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+.case-card:hover { transform: translateY(-0.3rem); }
+.case-card.active { background: var(--case-tint); border-color: var(--case-color); }
+.case-card .case-name {
+  font-weight: 800;
+  font-size: 1.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--case-ink, var(--case-color));
+  margin-bottom: 0.5rem;
+}
+.case-card .case-brief { font-size: 1.3rem; line-height: 1.36; color: var(--text-muted); }
+
+.case-detail {
+  margin-top: 1.6rem;
+  border-top: 0.5rem solid var(--detail-color, var(--char-3));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: var(--bg-card);
+  border-left: 0.25rem solid var(--border);
+  border-right: 0.25rem solid var(--border);
+  border-bottom: 0.25rem solid var(--border);
+  padding: 1.4rem 1.8rem;
+  min-height: 10.5rem;
+}
+.case-detail .detail-placeholder {
+  font-size: 1.6rem;
+  font-style: italic;
+  color: var(--text-muted);
+}
+.case-detail-grid { display: grid; grid-template-columns: 7fr 5fr; gap: 2.4rem; }
+.case-detail p { font-size: 1.3rem; line-height: 1.4; }
+.case-detail .lesson-label {
+  font-weight: 800;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--detail-ink, var(--detail-color));
+  margin-bottom: 0.5rem;
+}
+
+/* ---------- Slide 12: verb ladder ---------- */
+
+.verb-ladder { display: flex; flex-direction: column; gap: 0.8rem; }
+.verb-rung {
+  background: var(--bg-card);
+  border: 0.25rem solid var(--border);
+  border-left: 0.9rem solid var(--rung-color);
+  padding: 1.05rem 1.4rem;
+  font-size: 1.35rem;
+  line-height: 1.38;
+}
+.verb-rung strong { color: var(--rung-ink, var(--rung-color)); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ---------- Slide 13: takeaways ---------- */
+
+.takeaway-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem 2.6rem; }
+.takeaway {
   display: flex;
   align-items: flex-start;
-  gap: 0.6rem;
+  gap: 1.3rem;
+  border-top: 0.4rem solid var(--tk-color);
+  padding-top: 1.3rem;
 }
-.takeaway-pip {
-  width: 10px;
-  height: 10px;
+.takeaway .tk-num {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--tk-ink, var(--tk-color));
+  line-height: 1;
   flex-shrink: 0;
-  margin-top: 0.4rem;
+  min-width: 3.4rem;
+}
+.takeaway .tk-text { font-size: 1.7rem; line-height: 1.4; }
+
+/* ---------- Motion preference ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
 }
 
-.multi-select-note {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  font-style: italic;
-  margin-bottom: 0.5rem;
+/* ---------- Narrow / portrait fallback: flow document ---------- */
+
+@media (max-width: 860px), (max-aspect-ratio: 1/1) {
+  html { font-size: max(3.1vw, 9px); }
+  body { overflow: auto; background: var(--bg); }
+  .deck { position: static; display: block; }
+  .stage { width: 100%; height: auto; min-height: 100vh; padding-bottom: 8rem; }
+  .slide { position: static; }
+  .slide-inner { height: auto; padding: 5rem 2.5rem 3rem 4rem; }
+  .slide-no { top: 2rem; right: 2.5rem; }
+  .progress-track { position: fixed; }
+  .deck-chrome {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg-card);
+    border-top: 0.4rem solid var(--char-1);
+    padding: 1rem 2rem;
+    justify-content: space-between;
+  }
+  .nav-btn { height: 4rem; min-width: 4.4rem; font-size: 1.3rem; }
+  .nav-info { font-size: 1.3rem; }
+  .quiz-option, .quiz-options.three-up .quiz-option { min-height: 4rem; font-size: 1.6rem; }
+  .case-card, .disc-col { min-height: 4rem; }
+  h1 { font-size: 5.2rem; }
+  h2 { font-size: 3.4rem; }
+  .lede { font-size: 2.1rem; }
+  .hero-mark { display: none; }
+  .g-2, .g-3, .g-7-5, .g-6-6, .g-5-7,
+  .quiz-options.two-up, .sector-grid, .case-row,
+  .case-detail-grid { grid-template-columns: 1fr; }
+  .chain { grid-template-columns: 1fr; }
+  .chain-links { grid-template-columns: 1fr; margin: 0; padding-top: 1.6rem; }
+  .chain-link { padding: 0 0 0.6rem; }
+  .toc-direction, .toc-delivery { flex-wrap: wrap; }
+  .takeaway-grid { grid-template-columns: 1fr; }
+  .verb-band { flex-wrap: wrap; }
+  .verb-block { flex: 1 0 45%; }
+  .verb-weeks { display: none; }
+  .hm-bar { display: none; }
 }
 
-.nav-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--bg-card);
-  border-top: 4px solid var(--char-1);
-  padding: 0.6rem 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 100;
-}
-.nav-btn {
-  background: var(--char-1);
-  color: #fff;
-  border: none;
-  padding: 0.55rem 1.4rem;
-  font-weight: 700;
-  font-size: 0.78rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  cursor: pointer;
-  font-family: inherit;
-  transition: background 0.15s ease, transform 0.15s ease;
-}
-.nav-btn:hover { background: var(--char-2); transform: translateY(-2px); }
-.nav-btn:active { transform: translateY(0); }
-.nav-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-.nav-btn:disabled:hover { background: var(--char-1); transform: none; }
-.nav-info {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-/* Decorative geometry */
-.slide { position: relative; overflow: hidden; }
-.slide > * { position: relative; z-index: 1; }
-.deco { position: absolute !important; z-index: 0 !important; pointer-events: none; }
-
-.slide-title .accent-bar { max-width: 320px; height: 8px; }
-.slide-title::before {
-  content: ''; position: absolute;
-  width: 260px; height: 260px;
-  background: var(--char-1); border-radius: 50%;
-  opacity: 0.08; top: -70px; right: -50px; z-index: 0;
-}
-.slide-title::after {
-  content: ''; position: absolute;
-  width: 60px; height: 60px;
-  background: var(--char-4); opacity: 0.14;
-  bottom: 30px; left: -8px;
-  transform: rotate(35deg); z-index: 0;
-}
-
-.slide-why::before {
-  content: ''; position: absolute;
-  width: 140px; height: 140px;
-  border: 6px solid var(--char-3); border-radius: 50%;
-  opacity: 0.09; top: -20px; right: -10px; z-index: 0;
-}
-.slide-why::after {
-  content: ''; position: absolute;
-  width: 40px; height: 40px;
-  background: var(--char-5); opacity: 0.12;
-  bottom: 40px; right: 60px;
-  transform: rotate(20deg); z-index: 0;
-}
-
-.slide-def::before {
-  content: ''; position: absolute;
-  width: 200px; height: 50px;
-  background: var(--char-4); opacity: 0.07;
-  bottom: 30px; right: -40px;
-  transform: rotate(-4deg); z-index: 0;
-}
-.slide-def::after {
-  content: ''; position: absolute;
-  width: 90px; height: 90px;
-  border: 5px solid var(--char-8); border-radius: 50%;
-  opacity: 0.08; top: 20px; right: 40px; z-index: 0;
-}
-
-.slide-quiz1::before {
-  content: ''; position: absolute;
-  width: 100px; height: 100px;
-  background: var(--char-2); border-radius: 50%;
-  opacity: 0.06; bottom: -20px; right: -10px; z-index: 0;
-}
-
-.slide-pathway::before {
-  content: ''; position: absolute;
-  width: 220px; height: 220px;
-  background: var(--char-6); border-radius: 50%;
-  opacity: 0.06; top: 80px; right: -80px; z-index: 0;
-}
-.slide-pathway::after {
-  content: ''; position: absolute;
-  width: 45px; height: 45px;
-  background: var(--char-4); opacity: 0.10;
-  top: 30px; right: 30px;
-  transform: rotate(15deg); z-index: 0;
-}
-
-.slide-assumptions::before {
-  content: ''; position: absolute;
-  width: 160px; height: 6px;
-  background: var(--char-8); opacity: 0.15;
-  top: 60px; right: -20px;
-  transform: rotate(-3deg); z-index: 0;
-}
-.slide-assumptions::after {
-  content: ''; position: absolute;
-  width: 70px; height: 70px;
-  border: 5px solid var(--char-4);
-  opacity: 0.07; bottom: 40px; left: -20px;
-  transform: rotate(25deg); z-index: 0;
-}
-
-.slide-quiz2::before {
-  content: ''; position: absolute;
-  width: 80px; height: 80px;
-  background: var(--char-2); opacity: 0.07;
-  top: -15px; right: 20px;
-  transform: rotate(30deg); z-index: 0;
-}
-
-.slide-tests::before {
-  content: ''; position: absolute;
-  width: 180px; height: 180px;
-  border: 6px solid var(--char-6);
-  opacity: 0.07; bottom: -40px; left: -50px;
-  transform: rotate(15deg); z-index: 0;
-}
-.slide-tests::after {
-  content: ''; position: absolute;
-  width: 60px; height: 60px;
-  background: var(--char-3); border-radius: 50%;
-  opacity: 0.09; top: 10px; right: 0; z-index: 0;
-}
-
-.slide-sectors::before {
-  content: ''; position: absolute;
-  width: 320px; height: 8px;
-  background: var(--char-5); opacity: 0.12;
-  top: 70px; right: -80px;
-  transform: rotate(-3deg); z-index: 0;
-}
-.slide-sectors::after {
-  content: ''; position: absolute;
-  width: 100px; height: 100px;
-  background: var(--char-1); border-radius: 50%;
-  opacity: 0.05; bottom: -30px; left: -30px; z-index: 0;
-}
-
-.slide-career::before {
-  content: ''; position: absolute;
-  width: 120px; height: 120px;
-  background: var(--char-7); border-radius: 50%;
-  opacity: 0.08; top: -30px; right: 30px; z-index: 0;
-}
-.slide-career::after {
-  content: ''; position: absolute;
-  width: 45px; height: 45px;
-  background: var(--char-2); opacity: 0.12;
-  bottom: 60px; right: 0;
-  transform: rotate(20deg); z-index: 0;
-}
-
-.slide-cases::before {
-  content: ''; position: absolute;
-  width: 160px; height: 160px;
-  border: 5px solid var(--char-3); border-radius: 50%;
-  opacity: 0.07; bottom: -40px; right: -30px; z-index: 0;
-}
-.slide-cases::after {
-  content: ''; position: absolute;
-  width: 50px; height: 50px;
-  background: var(--char-8); opacity: 0.10;
-  top: 20px; right: 10px;
-  transform: rotate(40deg); z-index: 0;
-}
-
-.slide-describe::before {
-  content: ''; position: absolute;
-  width: 240px; height: 240px;
-  background: var(--char-1); border-radius: 50%;
-  opacity: 0.06; bottom: -80px; left: -80px; z-index: 0;
-}
-.slide-describe::after {
-  content: ''; position: absolute;
-  width: 70px; height: 70px;
-  background: var(--char-4); opacity: 0.10;
-  top: 10px; right: 20px;
-  transform: rotate(30deg); z-index: 0;
-}
-
-.slide-takeaway::before {
-  content: ''; position: absolute;
-  width: 90px; height: 90px;
-  background: var(--char-4); opacity: 0.10;
-  top: 20px; right: 0;
-  transform: rotate(25deg); z-index: 0;
-}
-.slide-takeaway::after {
-  content: ''; position: absolute;
-  width: 180px; height: 6px;
-  background: var(--char-2); opacity: 0.14;
-  bottom: 60px; left: -30px;
-  transform: rotate(-3deg); z-index: 0;
-}
-
-@media (max-width: 600px) {
-  .three-cols { grid-template-columns: 1fr; }
-  .sector-grid { grid-template-columns: 1fr; }
-  .verb-sequence { flex-wrap: wrap; }
-  .verb-block { flex: none; width: 50%; }
-  .slide h1 { font-size: clamp(1.6rem, 5vw, 2.5rem); }
-}
+/* ---------- Print: clean A4, one slide per page ---------- */
 
 @media print {
-  body { background: white; }
-  .nav-bar, .progress-track { display: none; }
-  .slide { display: block !important; page-break-after: always; animation: none; }
-  .accent-banner, .verb-block, .pathway-dot, .col-card,
-  .sector-pip, .takeaway-pip, .accent-bar {
+  html { font-size: 8.6pt; }
+  body { background: #fff; overflow: visible; }
+  .deck { position: static; display: block; }
+  .stage { width: auto; height: auto; background: #fff; overflow: visible; }
+  .slide {
+    position: static;
+    display: block !important;
+    page-break-after: always;
+    animation: none;
+  }
+  .slide-inner { height: auto; padding: 3rem 3rem 3rem 5rem; }
+  .progress-track, .deck-chrome { display: none !important; }
+  .deco, .hero-mark { display: none !important; }
+  .disc-body, .disc-hint { display: block !important; }
+  .case-detail { display: none !important; }
+  /* The four-column chain is too narrow on A4 - pair it up */
+  .chain { grid-template-columns: repeat(2, 1fr); gap: 1.4rem; }
+  .chain-links { margin: 0; gap: 1.4rem; padding-top: 1.2rem; }
+  .chain-link::before { display: none; }
+  .disc-col .disc-head { padding: 1.2rem 1.4rem; }
+  .rail, .banner, .verb-block, .statement-banner, .test-head,
+  .chain-node, .sector-card, .case-card, .takeaway, .verb-rung,
+  .s-head::before, .quote-block, .disc-col, .toc-direction {
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
   }
-  .slide::before, .slide::after, .deco { display: none !important; }
 }
 </style>
 
-<div class="progress-track"><div class="progress-fill" id="progress"></div></div>
+<div class="deck">
+<div class="stage" id="stage">
 
-<div id="app">
-  <div class="slide-counter" id="counter"></div>
+  <div class="progress-track"><div class="progress-fill" id="progress"></div></div>
 
-  <!-- SLIDE 1: TITLE -->
-  <div class="slide slide-title" data-accent="var(--char-1)">
-    <div class="accent-bar" style="background: var(--char-1)"></div>
-    <h1>Theory of Change</h1>
-    <p class="lede">A methodology used across governments, international development, and the social sector to plan interventions that actually work. Today: what it is, who uses it, and why understanding it now changes how you approach the rest of this course.</p>
-    <div class="deco" style="width: 0; height: 0; border-left: 30px solid transparent; border-right: 30px solid transparent; border-bottom: 55px solid var(--char-2); opacity: 0.10; bottom: 50px; right: 50px"></div>
-  </div>
-
-  <!-- SLIDE 2: WHY NOW? -->
-  <div class="slide slide-why" data-accent="var(--char-3)">
-    <div class="accent-bar" style="background: var(--char-3)"></div>
-    <div class="eyebrow" style="color: var(--char-3)">Week 3</div>
-    <h2>Why Are We Talking About This Now?</h2>
-    <p>You are in the <strong>Describe</strong> phase. The intervention phase does not begin until week 9. So why introduce Theory of Change now?</p>
-    <div class="verb-sequence">
-      <div class="verb-block current" style="background: var(--char-5)">Describe</div>
-      <div class="verb-block" style="background: var(--char-3)">Explain</div>
-      <div class="verb-block" style="background: var(--char-4)">Adjudicate</div>
-      <div class="verb-block" style="background: var(--char-2)">Intervene</div>
-    </div>
-    <p>Because knowing where you are headed changes how you work right now. Theory of Change demands something very specific before you can begin: a <strong>deep understanding of the phenomenon you want to change</strong>. That is exactly what the Describe phase builds.</p>
-    <p>By the end of today you will understand why every session between now and week 9 is not preamble - it is the foundation your intervention will stand or fall on.</p>
-  </div>
-
-  <!-- SLIDE 3: WHAT IS TOC -->
-  <div class="slide slide-def" data-accent="var(--char-4)">
-    <div class="accent-bar" style="background: var(--char-4)"></div>
-    <div class="eyebrow" style="color: var(--char-4)">Definition</div>
-    <h2>What Is Theory of Change?</h2>
-    <div class="quote-block">
-      <p>"A rigorous yet participatory process whereby groups and stakeholders in a planning process articulate their long-term goals and identify the conditions they believe have to unfold for those goals to be met."</p>
-      <div class="attribution">Taplin &amp; Clark, 2012</div>
-    </div>
-    <p>The core move: <strong>start with where you want to end up</strong>, then map backwards to figure out how to get there. Every step in the chain must be justified - not hoped for, not assumed, but argued with evidence.</p>
-    <p>This separates ToC from a wish list. You are not listing activities and hoping they work. You are building a testable causal argument for <em>why</em> your intervention will produce the change you intend.</p>
-  </div>
-
-  <!-- SLIDE 4: QUIZ -->
-  <div class="slide slide-quiz1" data-accent="var(--char-2)">
-    <div class="accent-bar" style="background: var(--char-2)"></div>
-    <div class="eyebrow" style="color: var(--char-2)">Check Your Understanding</div>
-    <h2>Quick Check</h2>
-    <p>Which best describes the Theory of Change approach?</p>
-    <div class="quiz-options" id="quiz1">
-      <button class="quiz-option" data-val="a">
-        <span class="opt-letter">A</span>
-        <span>Start with available resources and plan what you can do with them</span>
-      </button>
-      <button class="quiz-option" data-val="b">
-        <span class="opt-letter">B</span>
-        <span>Start with your desired long-term outcome and work backwards to identify what must happen</span>
-      </button>
-      <button class="quiz-option" data-val="c">
-        <span class="opt-letter">C</span>
-        <span>Start with a list of activities and predict their likely effects</span>
-      </button>
-      <button class="quiz-option" data-val="d">
-        <span class="opt-letter">D</span>
-        <span>Start with stakeholder preferences and build consensus on priorities</span>
-      </button>
-    </div>
-    <div class="feedback" id="quiz1-fb">
-      <p><strong>Correct.</strong> ToC works backwards from impact. Options A and C describe forward planning - the conventional approach ToC explicitly rejects. Option D describes one <em>activity</em> within a ToC process, not the approach itself.</p>
-    </div>
-    <div class="feedback wrong" id="quiz1-fb-wrong">
-      <p><strong>Not quite.</strong> Theory of Change is defined by backward mapping: you begin with the long-term outcome you want, then work backwards through the conditions that must be met. Try again.</p>
-    </div>
-  </div>
-
-  <!-- SLIDE 5: THE CAUSAL PATHWAY -->
-  <div class="slide slide-pathway" data-accent="var(--char-6)">
-    <div class="accent-bar" style="background: var(--char-6)"></div>
-    <div class="eyebrow" style="color: var(--char-6)">Core Structure</div>
-    <h2>The Causal Pathway</h2>
-    <p>A ToC maps a chain of outcomes from your ultimate goal down to the things you can directly do. Each link carries an <strong>assumption</strong> about how change happens - and that assumption needs evidence.</p>
-    <div class="pathway">
-      <div class="pathway-step">
-        <div class="pathway-marker">
-          <div class="pathway-dot" style="background: var(--char-1)"></div>
-          <div class="pathway-line"></div>
-        </div>
-        <div class="pathway-content">
-          <div class="step-label" style="color: var(--char-1)">Long-Term Outcome</div>
-          <div class="step-text">The ultimate change you seek. Requires deep understanding of the problem to define well.</div>
-        </div>
-      </div>
-      <div class="pathway-assumption">Assumption: intermediate outcomes are sufficient to produce this</div>
-      <div class="pathway-step">
-        <div class="pathway-marker">
-          <div class="pathway-dot" style="background: var(--char-6)"></div>
-          <div class="pathway-line"></div>
-        </div>
-        <div class="pathway-content">
-          <div class="step-label" style="color: var(--char-6)">Intermediate Outcomes</div>
-          <div class="step-text">The conditions that must exist for the long-term outcome to be reached.</div>
-        </div>
-      </div>
-      <div class="pathway-assumption">Assumption: early outcomes will produce these conditions</div>
-      <div class="pathway-step">
-        <div class="pathway-marker">
-          <div class="pathway-dot" style="background: var(--char-4)"></div>
-          <div class="pathway-line"></div>
-        </div>
-        <div class="pathway-content">
-          <div class="step-label" style="color: var(--char-4)">Early Outcomes</div>
-          <div class="step-text">The first observable changes your interventions should produce.</div>
-        </div>
-      </div>
-      <div class="pathway-assumption">Assumption: these interventions will trigger these early changes</div>
-      <div class="pathway-step">
-        <div class="pathway-marker">
-          <div class="pathway-dot" style="background: var(--char-3)"></div>
-        </div>
-        <div class="pathway-content">
-          <div class="step-label" style="color: var(--char-3)">Interventions</div>
-          <div class="step-text">What you actually do. The activities, programmes, and resources you deploy.</div>
-        </div>
-      </div>
-    </div>
-    <p style="font-size: 0.9rem; color: var(--text-muted)">Read upward: each level is a precondition for the one above it. The assumptions between levels are where your evidence goes.</p>
-  </div>
-
-  <!-- SLIDE 6: ASSUMPTIONS -->
-  <div class="slide slide-assumptions" data-accent="var(--char-8)">
-    <div class="accent-bar" style="background: var(--char-8)"></div>
-    <div class="eyebrow" style="color: var(--char-8)">Critical Element</div>
-    <h2>Assumptions</h2>
-    <p>Every link in a causal chain rests on an <strong>assumption</strong> - a belief about how change works. Making assumptions explicit is what separates a Theory of Change from wishful thinking.</p>
-    <div style="background: var(--bg-card); border: 2px solid var(--border); border-left: 6px solid var(--char-8); padding: 1.1rem; max-width: 640px; margin-bottom: 1rem">
-      <div class="eyebrow" style="color: var(--char-8)">Example</div>
-      <p style="margin-bottom: 0.5rem"><strong>Causal link:</strong> "If we build more public libraries in underserved areas, literacy rates will improve."</p>
-      <p style="margin-bottom: 0.5rem"><strong>Hidden assumptions:</strong> Literacy is limited by access to books (not by teaching quality, time, or motivation). People in these areas will use the libraries. The books will be in languages people read. Library staff will be trained to support new readers.</p>
-      <p style="margin-bottom: 0; font-size: 0.88rem; color: var(--text-muted)">Each of these assumptions needs evidence. Without it, the link is hope, not logic.</p>
-    </div>
-    <p>For every assumption, you need a <strong>rationale</strong>: the evidence or reasoning that justifies it. This is where disciplinary knowledge matters - psychology, economics, and politics each illuminate different assumptions.</p>
-  </div>
-
-  <!-- SLIDE 7: SPOT THE ASSUMPTION -->
-  <div class="slide slide-quiz2" data-accent="var(--char-2)">
-    <div class="accent-bar" style="background: var(--char-2)"></div>
-    <div class="eyebrow" style="color: var(--char-2)">Interactive Exercise</div>
-    <h2>Spot the Assumption</h2>
-    <p>Here is a causal link from a Theory of Change:</p>
-    <div style="background: var(--bg-card); border: 2px solid var(--border); border-left: 6px solid var(--char-2); padding: 1rem; max-width: 640px; margin-bottom: 1rem">
-      <p style="font-style: italic; margin-bottom: 0">"If we create a free, welcoming community space near a football stadium, local residents will use it regularly and form new social connections."</p>
-    </div>
-    <p class="multi-select-note">Select all statements that are hidden assumptions in this link, then check.</p>
-    <div class="quiz-options" id="quiz2">
-      <button class="quiz-option" data-val="a" data-correct="true" onclick="toggleMulti(this)">
-        <span class="opt-letter">A</span>
-        <span>Local residents want a new community space (an unmet need exists)</span>
-      </button>
-      <button class="quiz-option" data-val="b" onclick="toggleMulti(this)">
-        <span class="opt-letter">B</span>
-        <span>Football is popular in the area</span>
-      </button>
-      <button class="quiz-option" data-val="c" data-correct="true" onclick="toggleMulti(this)">
-        <span class="opt-letter">C</span>
-        <span>Physical proximity to a stadium will not deter non-football visitors</span>
-      </button>
-      <button class="quiz-option" data-val="d" data-correct="true" onclick="toggleMulti(this)">
-        <span class="opt-letter">D</span>
-        <span>Sharing a space leads to social connection, not just co-presence</span>
-      </button>
-      <button class="quiz-option" data-val="e" onclick="toggleMulti(this)">
-        <span class="opt-letter">E</span>
-        <span>The construction budget is sufficient</span>
-      </button>
-    </div>
-    <button class="check-btn" onclick="checkMulti()">Check Answers</button>
-    <div class="feedback" id="quiz2-fb">
-      <p><strong>A, C, and D are assumptions embedded in this causal link.</strong> A assumes demand exists. C assumes the stadium association is neutral, not exclusionary. D assumes a mechanism - that co-presence becomes connection. B is contextual but not a causal assumption within this link. E is a resource question, not a causal logic question.</p>
-    </div>
-  </div>
-
-  <!-- SLIDE 8: THREE TESTS -->
-  <div class="slide slide-tests" data-accent="var(--char-6)">
-    <div class="accent-bar" style="background: var(--char-6)"></div>
-    <div class="eyebrow" style="color: var(--char-6)">Quality Assurance</div>
-    <h2>Three Tests for a ToC</h2>
-    <p>Any Theory of Change must pass three quality tests. When you build yours in weeks 9-14, these are the standards you will be held to.</p>
-    <div class="three-cols">
-      <div class="col-card" style="border-top: 6px solid var(--char-1)">
-        <h3 style="color: var(--char-1)">Plausible</h3>
-        <p>Does the causal logic hold? Is there evidence that each outcome leads to the next? Would a sceptic accept the chain?</p>
-      </div>
-      <div class="col-card" style="border-top: 6px solid var(--char-3)">
-        <h3 style="color: var(--char-3)">Feasible</h3>
-        <p>Can you actually do this? Do you have the resources, access, partnerships, and time? Is the scope realistic?</p>
-      </div>
-      <div class="col-card" style="border-top: 6px solid var(--char-4)">
-        <h3 style="color: var(--char-4)">Testable</h3>
-        <p>Can you measure it? Are your indicators specific enough to tell you if the ToC is working - or failing?</p>
-      </div>
-    </div>
-    <p>A ToC that fails any one of these tests needs rework. Plausibility without feasibility is academic. Feasibility without testability is faith. Notice: <strong>plausibility requires evidence about the problem</strong> - which is what description produces.</p>
-  </div>
-
-  <!-- SLIDE 9: WHO USES TOC -->
-  <div class="slide slide-sectors" data-accent="var(--char-5)">
-    <div class="accent-bar" style="background: var(--char-5)"></div>
-    <div class="eyebrow" style="color: var(--char-5)">Real-World Use</div>
-    <h2>Who Uses Theory of Change?</h2>
-    <p>ToC is not an academic exercise. It is standard professional practice across the sectors where PEP graduates work.</p>
-    <div class="sector-grid">
-      <div class="sector-card" style="border-left: 6px solid var(--char-1)">
-        <div class="sector-pip" style="background: var(--char-1)"></div>
+  <!-- ============ SLIDE 1: TITLE ============ -->
+  <section class="slide" data-accent="var(--char-1)">
+    <div class="rail"></div>
+    <div class="slide-no" id="no-1"></div>
+    <div class="slide-inner">
+      <div class="s-body grid g-7-5 hero">
         <div>
-          <div class="sector-name">UK Government</div>
-          <div class="sector-desc">Required by the Analysis Function for policy programme design. The toolkit we draw on in this course is published by HM Treasury.</div>
+          <span class="eyebrow">Week 3 &middot; Methodology</span>
+          <h1>Theory<br>of Change</h1>
+          <p class="lede">A methodology used across governments, international development, and the social sector to plan interventions that actually work. Today: what it is, who uses it, and why understanding it now changes how you approach the rest of this course.</p>
         </div>
-      </div>
-      <div class="sector-card" style="border-left: 6px solid var(--char-3)">
-        <div class="sector-pip" style="background: var(--char-3)"></div>
-        <div>
-          <div class="sector-name">International Development</div>
-          <div class="sector-desc">DFID, USAID, and the World Bank require ToC for funded programmes. You cannot get development funding without one.</div>
-        </div>
-      </div>
-      <div class="sector-card" style="border-left: 6px solid var(--char-4)">
-        <div class="sector-pip" style="background: var(--char-4)"></div>
-        <div>
-          <div class="sector-name">Foundations</div>
-          <div class="sector-desc">The Gates Foundation, Ford Foundation, and major philanthropic funders mandate ToC in grant applications.</div>
-        </div>
-      </div>
-      <div class="sector-card" style="border-left: 6px solid var(--char-6)">
-        <div class="sector-pip" style="background: var(--char-6)"></div>
-        <div>
-          <div class="sector-name">Public Health</div>
-          <div class="sector-desc">WHO and national health agencies use ToC to design and evaluate disease prevention and health system interventions.</div>
-        </div>
-      </div>
-      <div class="sector-card" style="border-left: 6px solid var(--char-7)">
-        <div class="sector-pip" style="background: var(--char-7)"></div>
-        <div>
-          <div class="sector-name">Impact Investing</div>
-          <div class="sector-desc">Social enterprises and impact funds use ToC to demonstrate that claimed social returns are causally linked to investment.</div>
-        </div>
-      </div>
-      <div class="sector-card" style="border-left: 6px solid var(--char-8)">
-        <div class="sector-pip" style="background: var(--char-8)"></div>
-        <div>
-          <div class="sector-name">Management Consulting</div>
-          <div class="sector-desc">Strategy firms use the same causal-logic framework under different names (logic models, results chains) for public sector clients.</div>
+        <div class="hero-mark">
+          <div class="hm-circle"></div>
+          <div class="hm-square"></div>
+          <div class="hm-ring"></div>
+          <div class="hm-tri"></div>
+          <div class="hm-bar"></div>
         </div>
       </div>
     </div>
+    <div class="deco circle" style="width: 34rem; height: 34rem; background: var(--char-8); opacity: 0.07; bottom: -14rem; left: -8rem"></div>
+    <div class="deco" style="width: 70rem; height: 1rem; background: var(--char-4); opacity: 0.12; bottom: 9rem; left: 6rem; transform: rotate(-2deg)"></div>
+  </section>
+
+  <!-- ============ SLIDE 2: WHY NOW ============ -->
+  <section class="slide" data-accent="var(--char-3)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <header class="s-head">
+        <span class="eyebrow">Week 3</span>
+        <h2>Why Are We Talking About This Now?</h2>
+      </header>
+      <div class="s-body">
+        <p class="small" style="max-width: 84rem; margin-bottom: 2.2rem">You are in the <strong>Describe</strong> phase. The intervention phase does not begin until week 9. So why introduce Theory of Change now?</p>
+        <div class="verb-band">
+          <div class="verb-block current" style="background: var(--char-5)"><span class="here">You Are Here</span>Describe</div>
+          <div class="verb-block" style="background: var(--char-3)">Explain</div>
+          <div class="verb-block" style="background: var(--char-4); color: var(--text)">Adjudicate</div>
+          <div class="verb-block" style="background: var(--char-2)">Intervene</div>
+        </div>
+        <div class="verb-weeks">
+          <span>Now</span><span>Weeks 4&ndash;5</span><span>Weeks 6&ndash;7</span><span>Weeks 9&ndash;14</span>
+        </div>
+        <div class="grid g-2" style="margin-top: 2rem">
+          <p class="small">Because knowing where you are headed changes how you work right now. Theory of Change demands something very specific before you can begin: a <strong>deep understanding of the phenomenon you want to change</strong>. That is exactly what the Describe phase builds.</p>
+          <p class="small">By the end of today you will understand why every session between now and week 9 is not preamble &ndash; it is the foundation your intervention will stand or fall on.</p>
+        </div>
+      </div>
+    </div>
+    <div class="deco circle" style="width: 26rem; height: 26rem; border: 1.2rem solid var(--char-3); opacity: 0.09; top: -7rem; right: -5rem"></div>
+    <div class="deco" style="width: 9rem; height: 9rem; background: var(--char-5); opacity: 0.11; bottom: 6rem; right: 12rem; transform: rotate(20deg)"></div>
+  </section>
+
+  <!-- ============ SLIDE 3: WHAT IS TOC ============ -->
+  <section class="slide" data-accent="var(--char-4)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <header class="s-head">
+        <span class="eyebrow">Definition</span>
+        <h2>What Is Theory of Change?</h2>
+      </header>
+      <div class="s-body grid g-6-6 center-y">
+        <div class="quote-block">
+          <p>"A rigorous yet participatory process whereby groups and stakeholders in a planning process articulate their long-term goals and identify the conditions they believe have to unfold for those goals to be met."</p>
+          <div class="attribution">Taplin &amp; Clark, 2012</div>
+        </div>
+        <div class="stack">
+          <p>The core move: <strong>start with where you want to end up</strong>, then map backwards to figure out how to get there. Every step in the chain must be justified &ndash; not hoped for, not assumed, but argued with evidence.</p>
+          <p>This separates ToC from a wish list. You are not listing activities and hoping they work. You are building a testable causal argument for <em>why</em> your intervention will produce the change you intend.</p>
+          <div class="banner" style="--slide-accent: var(--char-4); background: var(--char-4); padding: 1.5rem 2.2rem">
+            <p style="font-size: 1.5rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; margin: 0; color: var(--text)">Outcome first &middot; Method second</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="deco circle" style="width: 19rem; height: 19rem; border: 1rem solid var(--char-8); opacity: 0.09; top: 6rem; right: 6rem"></div>
+    <div class="deco" style="width: 40rem; height: 8rem; background: var(--char-4); opacity: 0.07; bottom: 3rem; right: -8rem; transform: rotate(-4deg)"></div>
+  </section>
+
+  <!-- ============ SLIDE 4: QUIZ 1 ============ -->
+  <section class="slide" data-accent="var(--char-2)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <header class="s-head">
+        <span class="eyebrow">Check Your Understanding</span>
+        <h2>Quick Check</h2>
+      </header>
+      <div class="s-body">
+        <p class="question">Which best describes the Theory of Change approach?</p>
+        <div class="quiz-options two-up" id="quiz1">
+          <button class="quiz-option" data-val="a">
+            <span class="opt-letter">A</span>
+            <span>Start with available resources and plan what you can do with them</span>
+          </button>
+          <button class="quiz-option" data-val="b">
+            <span class="opt-letter">B</span>
+            <span>Start with your desired long-term outcome and work backwards to identify what must happen</span>
+          </button>
+          <button class="quiz-option" data-val="c">
+            <span class="opt-letter">C</span>
+            <span>Start with a list of activities and predict their likely effects</span>
+          </button>
+          <button class="quiz-option" data-val="d">
+            <span class="opt-letter">D</span>
+            <span>Start with stakeholder preferences and build consensus on priorities</span>
+          </button>
+        </div>
+        <div class="feedback" id="quiz1-fb" style="margin-top: 1.6rem">
+          <p><strong>Correct.</strong> ToC works backwards from impact. Options A and C describe forward planning &ndash; the conventional approach ToC explicitly rejects. Option D describes one <em>activity</em> within a ToC process, not the approach itself.</p>
+        </div>
+        <div class="feedback wrong" id="quiz1-fb-wrong" style="margin-top: 1.6rem">
+          <p><strong>Not quite.</strong> Theory of Change is defined by backward mapping: you begin with the long-term outcome you want, then work backwards through the conditions that must be met. Try again.</p>
+        </div>
+      </div>
+    </div>
+    <div class="deco circle" style="width: 24rem; height: 24rem; background: var(--char-2); opacity: 0.06; bottom: -9rem; right: -6rem"></div>
+    <div class="deco" style="width: 11rem; height: 11rem; background: var(--char-4); opacity: 0.10; top: 4rem; right: 9rem; transform: rotate(28deg)"></div>
+  </section>
+
+  <!-- ============ SLIDE 5: CAUSAL PATHWAY ============ -->
+  <section class="slide" data-accent="var(--char-6)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <header class="s-head" style="margin-bottom: 1.8rem">
+        <span class="eyebrow">Core Structure</span>
+        <h2>The Causal Pathway</h2>
+      </header>
+      <div class="s-body">
+        <p style="max-width: 84rem; margin-bottom: 1.6rem; font-size: 1.6rem">A ToC maps a chain of outcomes from your ultimate goal down to the things you can directly do. Each link carries an <strong>assumption</strong> about how change happens &ndash; and that assumption needs evidence.</p>
+
+        <div class="toc-direction">
+          <span class="dir-label">&#9664; You design in this direction: map backwards from the outcome</span>
+          <span class="dir-rule"></span>
+        </div>
+
+        <div class="chain">
+          <div class="chain-node" style="--node-color: var(--char-3)">
+            <div class="node-label">Interventions</div>
+            <div class="node-text">What you actually do. The activities, programmes, and resources you deploy.</div>
+          </div>
+          <div class="chain-node" style="--node-color: var(--char-4); --node-ink: var(--char-4-ink)">
+            <div class="node-label">Early Outcomes</div>
+            <div class="node-text">The first observable changes your interventions should produce.</div>
+          </div>
+          <div class="chain-node" style="--node-color: var(--char-6)">
+            <div class="node-label">Intermediate Outcomes</div>
+            <div class="node-text">The conditions that must exist for the long-term outcome to be reached.</div>
+          </div>
+          <div class="chain-node" style="--node-color: var(--char-1)">
+            <div class="node-label">Long-Term Outcome</div>
+            <div class="node-text">The ultimate change you seek. Requires deep understanding of the problem to define well.</div>
+          </div>
+        </div>
+
+        <div class="chain-links">
+          <div class="chain-link">
+            <span class="link-tag">Assumption</span>
+            <div class="link-text">these interventions will trigger these early changes</div>
+          </div>
+          <div class="chain-link">
+            <span class="link-tag">Assumption</span>
+            <div class="link-text">early outcomes will produce these conditions</div>
+          </div>
+          <div class="chain-link">
+            <span class="link-tag">Assumption</span>
+            <div class="link-text">intermediate outcomes are sufficient to produce this</div>
+          </div>
+        </div>
+
+        <div class="toc-delivery">
+          <span class="dir-rule"></span>
+          <span class="dir-label">Change flows this way: each level is a precondition for the next &#9654;</span>
+        </div>
+      </div>
+    </div>
+    <div class="deco circle" style="width: 30rem; height: 30rem; background: var(--char-6); opacity: 0.06; top: 12rem; right: -12rem"></div>
+    <div class="deco" style="width: 8rem; height: 8rem; background: var(--char-4); opacity: 0.11; top: 3rem; right: 8rem; transform: rotate(16deg)"></div>
+  </section>
+
+  <!-- ============ SLIDE 6: ASSUMPTIONS ============ -->
+  <section class="slide" data-accent="var(--char-8)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <header class="s-head">
+        <span class="eyebrow">Critical Element</span>
+        <h2>Assumptions</h2>
+      </header>
+      <div class="s-body grid g-5-7 center-y">
+        <div class="stack">
+          <p>Every link in a causal chain rests on an <strong>assumption</strong> &ndash; a belief about how change works. Making assumptions explicit is what separates a Theory of Change from wishful thinking.</p>
+          <p>For every assumption, you need a <strong>rationale</strong>: the evidence or reasoning that justifies it. This is where disciplinary knowledge matters &ndash; psychology, economics, and politics each illuminate different assumptions.</p>
+        </div>
+        <div class="card accent-left" style="--slide-accent: var(--char-8)">
+          <span class="eyebrow">Example</span>
+          <p class="small" style="margin-bottom: 1.2rem"><strong>Causal link:</strong> "If we build more public libraries in underserved areas, literacy rates will improve."</p>
+          <p class="small" style="margin-bottom: 1.2rem"><strong>Hidden assumptions:</strong> Literacy is limited by access to books (not by teaching quality, time, or motivation). People in these areas will use the libraries. The books will be in languages people read. Library staff will be trained to support new readers.</p>
+          <p class="micro muted" style="border-top: 0.25rem solid var(--border); padding-top: 1rem">Each of these assumptions needs evidence. Without it, the link is hope, not logic.</p>
+        </div>
+      </div>
+    </div>
+    <div class="deco" style="width: 44rem; height: 1rem; background: var(--char-8); opacity: 0.12; top: 13rem; right: -6rem; transform: rotate(-3deg)"></div>
+    <div class="deco" style="width: 14rem; height: 14rem; border: 1rem solid var(--char-4); opacity: 0.09; bottom: 4rem; left: 2rem; transform: rotate(25deg)"></div>
+  </section>
+
+  <!-- ============ SLIDE 7: SPOT THE ASSUMPTION ============ -->
+  <section class="slide" data-accent="var(--char-2)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <header class="s-head" style="margin-bottom: 1.4rem">
+        <span class="eyebrow">Interactive Exercise</span>
+        <h2>Spot the Assumption</h2>
+      </header>
+      <div class="s-body">
+        <div class="statement-banner">"If we create a free, welcoming community space near a football stadium, local residents will use it regularly and form new social connections."</div>
+        <div class="exercise-bar">
+          <p class="multi-note">Select all statements that are hidden assumptions in this link, then check.</p>
+          <button class="check-btn" id="quiz2-btn" onclick="checkMulti()">Check Answers</button>
+        </div>
+        <div class="quiz-options three-up" id="quiz2">
+          <button class="quiz-option" data-val="a" data-correct="true" onclick="toggleMulti(this)">
+            <span class="opt-letter">A</span>
+            <span>Local residents want a new community space (an unmet need exists)</span>
+          </button>
+          <button class="quiz-option" data-val="b" onclick="toggleMulti(this)">
+            <span class="opt-letter">B</span>
+            <span>Football is popular in the area</span>
+          </button>
+          <button class="quiz-option" data-val="c" data-correct="true" onclick="toggleMulti(this)">
+            <span class="opt-letter">C</span>
+            <span>Physical proximity to a stadium will not deter non-football visitors</span>
+          </button>
+          <button class="quiz-option" data-val="d" data-correct="true" onclick="toggleMulti(this)">
+            <span class="opt-letter">D</span>
+            <span>Sharing a space leads to social connection, not just co-presence</span>
+          </button>
+          <button class="quiz-option" data-val="e" onclick="toggleMulti(this)">
+            <span class="opt-letter">E</span>
+            <span>The construction budget is sufficient</span>
+          </button>
+        </div>
+        <div class="feedback" id="quiz2-fb" style="margin-top: 1.1rem">
+          <p><strong>A, C, and D are assumptions embedded in this causal link.</strong> A assumes demand exists. C assumes the stadium association is neutral, not exclusionary. D assumes a mechanism &ndash; that co-presence becomes connection. B is contextual but not a causal assumption within this link. E is a resource question, not a causal logic question.</p>
+        </div>
+      </div>
+    </div>
+    <div class="deco" style="width: 13rem; height: 13rem; background: var(--char-2); opacity: 0.08; top: 2rem; right: 5rem; transform: rotate(30deg)"></div>
+    <div class="deco circle" style="width: 22rem; height: 22rem; border: 1rem solid var(--char-4); opacity: 0.08; bottom: -8rem; right: 14rem"></div>
+  </section>
+
+  <!-- ============ SLIDE 8: THREE TESTS ============ -->
+  <section class="slide" data-accent="var(--char-6)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <header class="s-head">
+        <span class="eyebrow">Quality Assurance</span>
+        <h2>Three Tests for a ToC</h2>
+      </header>
+      <div class="s-body">
+        <p class="small" style="max-width: 84rem; margin-bottom: 2rem">Any Theory of Change must pass three quality tests. When you build yours in weeks 9&ndash;14, these are the standards you will be held to.</p>
+        <div class="grid g-3" style="gap: 1.8rem">
+          <div class="test-card" style="--test-color: var(--char-1)">
+            <div class="test-head"><span class="test-num">01</span><span class="test-name">Plausible</span></div>
+            <div class="test-body">Does the causal logic hold? Is there evidence that each outcome leads to the next? Would a sceptic accept the chain?</div>
+          </div>
+          <div class="test-card" style="--test-color: var(--char-3)">
+            <div class="test-head"><span class="test-num">02</span><span class="test-name">Feasible</span></div>
+            <div class="test-body">Can you actually do this? Do you have the resources, access, partnerships, and time? Is the scope realistic?</div>
+          </div>
+          <div class="test-card" style="--test-color: var(--char-4); --test-fg: var(--text)">
+            <div class="test-head"><span class="test-num">03</span><span class="test-name">Testable</span></div>
+            <div class="test-body">Can you measure it? Are your indicators specific enough to tell you if the ToC is working &ndash; or failing?</div>
+          </div>
+        </div>
+        <p class="small" style="margin-top: 2.2rem; border-left: 0.6rem solid var(--char-6); padding-left: 1.6rem">A ToC that fails any one of these tests needs rework. Plausibility without feasibility is academic. Feasibility without testability is faith. Notice: <strong>plausibility requires evidence about the problem</strong> &ndash; which is what description produces.</p>
+      </div>
+    </div>
+    <div class="deco circle" style="width: 28rem; height: 28rem; border: 1.2rem solid var(--char-6); opacity: 0.07; bottom: -11rem; left: -8rem"></div>
+    <div class="deco circle" style="width: 10rem; height: 10rem; background: var(--char-3); opacity: 0.10; top: 3rem; right: 6rem"></div>
+  </section>
+
+  <!-- ============ SLIDE 9: WHO USES TOC ============ -->
+  <section class="slide" data-accent="var(--char-5)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <header class="s-head" style="margin-bottom: 1.8rem">
+        <span class="eyebrow">Real-World Use</span>
+        <h2>Who Uses Theory of Change?</h2>
+      </header>
+      <div class="s-body">
+        <p class="small" style="max-width: 84rem; margin-bottom: 1.5rem">ToC is not an academic exercise. It is standard professional practice across the sectors where PEP graduates work.</p>
+        <div class="sector-grid">
+          <div class="sector-card" style="--sector-color: var(--char-1)">
+            <div class="sector-name">UK Government</div>
+            <div class="sector-desc">Required by the Analysis Function for policy programme design. The toolkit we draw on in this course is published by HM Treasury.</div>
+          </div>
+          <div class="sector-card" style="--sector-color: var(--char-4); --sector-ink: var(--char-4-ink)">
+            <div class="sector-name">International Development</div>
+            <div class="sector-desc">DFID, USAID, and the World Bank require ToC for funded programmes. You cannot get development funding without one.</div>
+          </div>
+          <div class="sector-card" style="--sector-color: var(--char-2)">
+            <div class="sector-name">Foundations</div>
+            <div class="sector-desc">The Gates Foundation, Ford Foundation, and major philanthropic funders mandate ToC in grant applications.</div>
+          </div>
+          <div class="sector-card" style="--sector-color: var(--char-6)">
+            <div class="sector-name">Public Health</div>
+            <div class="sector-desc">WHO and national health agencies use ToC to design and evaluate disease prevention and health system interventions.</div>
+          </div>
+          <div class="sector-card" style="--sector-color: var(--char-7); --sector-ink: var(--char-7-ink)">
+            <div class="sector-name">Impact Investing</div>
+            <div class="sector-desc">Social enterprises and impact funds use ToC to demonstrate that claimed social returns are causally linked to investment.</div>
+          </div>
+          <div class="sector-card" style="--sector-color: var(--char-8)">
+            <div class="sector-name">Management Consulting</div>
+            <div class="sector-desc">Strategy firms use the same causal-logic framework under different names (logic models, results chains) for public sector clients.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="deco" style="width: 52rem; height: 1.2rem; background: var(--char-5); opacity: 0.12; top: 12rem; right: -10rem; transform: rotate(-3deg)"></div>
+    <div class="deco circle" style="width: 20rem; height: 20rem; background: var(--char-1); opacity: 0.05; bottom: -7rem; left: -5rem"></div>
+  </section>
+
+  <!-- ============ SLIDE 10: YOUR CAREER ============ -->
+  <section class="slide" data-accent="var(--char-7)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <header class="s-head">
+        <span class="eyebrow">Why This Matters for You</span>
+        <h2>A Career Skill</h2>
+      </header>
+      <div class="s-body">
+        <p class="small" style="max-width: 84rem; margin-bottom: 1.8rem">You are studying Psychology, Economics, and Politics. Each discipline feeds directly into Theory of Change practice.</p>
+        <div class="grid g-3" style="gap: 1.8rem">
+          <div class="disc-col" style="--disc-color: var(--char-1)" onclick="toggleDisc(this)">
+            <div class="disc-head"><span class="disc-name">Psychology</span><span class="arrow">&#9654;</span></div>
+            <div class="disc-hint">Click to reveal</div>
+            <div class="disc-body">Behaviour change programme design. Understanding what motivates people to act differently &ndash; and what assumptions about human behaviour your intervention rests on. Roles: programme evaluator, behavioural insights advisor, NGO programme manager.</div>
+          </div>
+          <div class="disc-col" style="--disc-color: var(--char-4); --disc-ink: var(--char-4-ink)" onclick="toggleDisc(this)">
+            <div class="disc-head"><span class="disc-name">Economics</span><span class="arrow">&#9654;</span></div>
+            <div class="disc-hint">Click to reveal</div>
+            <div class="disc-body">Cost-benefit analysis of interventions. Evaluating whether outcomes justify inputs. Understanding incentive structures and unintended consequences. Roles: policy economist, impact analyst, development economist.</div>
+          </div>
+          <div class="disc-col" style="--disc-color: var(--char-2)" onclick="toggleDisc(this)">
+            <div class="disc-head"><span class="disc-name">Politics</span><span class="arrow">&#9654;</span></div>
+            <div class="disc-hint">Click to reveal</div>
+            <div class="disc-body">Stakeholder analysis and institutional design. Understanding power dynamics, governance structures, and why technically sound interventions fail politically. Roles: policy advisor, civil service analyst, advocacy strategist.</div>
+          </div>
+        </div>
+        <p style="font-size: 1.45rem; margin-top: 1.8rem; border-left: 0.6rem solid var(--char-7); padding-left: 1.6rem">Learning to build a Theory of Change is not just a course requirement. It is a transferable skill that employers in these fields expect you to have.</p>
+      </div>
+    </div>
+    <div class="deco circle" style="width: 22rem; height: 22rem; background: var(--char-7); opacity: 0.08; top: -8rem; right: 8rem"></div>
+    <div class="deco" style="width: 9rem; height: 9rem; background: var(--char-2); opacity: 0.11; bottom: 8rem; right: 2rem; transform: rotate(20deg)"></div>
+  </section>
+
+  <!-- ============ SLIDE 11: CAUTIONARY TALES ============ -->
+  <section class="slide" data-accent="var(--char-3)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <header class="s-head" style="margin-bottom: 1.6rem">
+        <span class="eyebrow">Cautionary Tales</span>
+        <h2 style="font-size: 3.4rem">What Happens When You Skip Description</h2>
+      </header>
+      <div class="s-body">
+        <p class="small" style="max-width: 88rem; margin-bottom: 1.4rem">The most common failure mode in applied work is <strong>premature intervention</strong>: jumping to solutions before the problem is understood. These are real examples. Click each to see what went wrong.</p>
+        <div class="case-row">
+          <div class="case-card" style="--case-color: var(--char-2); --case-tint: rgba(181,40,56,0.09)" data-case="0" onclick="showCase(this)">
+            <div class="case-name">PlayPumps<br><span style="font-weight: 700; font-size: 1.3rem; letter-spacing: 0.1em">Sub-Saharan Africa</span></div>
+            <div class="case-brief">Roundabout-powered water pumps installed across Africa. Children play, water flows. $60M invested.</div>
+          </div>
+          <div class="case-card" style="--case-color: var(--char-4); --case-ink: var(--char-4-ink); --case-tint: rgba(212,160,32,0.12)" data-case="1" onclick="showCase(this)">
+            <div class="case-name">Scared Straight<br><span style="font-weight: 700; font-size: 1.3rem; letter-spacing: 0.1em">United States</span></div>
+            <div class="case-brief">Programmes taking at-risk youth into prisons to deter criminal behaviour. Intuitively compelling.</div>
+          </div>
+          <div class="case-card" style="--case-color: var(--char-8); --case-tint: rgba(126,88,168,0.10)" data-case="2" onclick="showCase(this)">
+            <div class="case-name">One Laptop Per Child<br><span style="font-weight: 700; font-size: 1.3rem; letter-spacing: 0.1em">Global</span></div>
+            <div class="case-brief">Distributed low-cost laptops to children in developing countries to improve educational outcomes.</div>
+          </div>
+        </div>
+        <div class="case-detail" id="case-detail" style="margin-top: 1.4rem">
+          <div class="detail-placeholder">Select a case above to see what went wrong &ndash; and what description would have caught.</div>
+        </div>
+      </div>
+    </div>
+    <div class="deco circle" style="width: 26rem; height: 26rem; border: 1rem solid var(--char-3); opacity: 0.07; bottom: -10rem; right: -7rem"></div>
+    <div class="deco" style="width: 10rem; height: 10rem; background: var(--char-8); opacity: 0.10; top: 3rem; right: 7rem; transform: rotate(40deg)"></div>
+  </section>
+
+  <!-- ============ SLIDE 12: WHY DESCRIBE FIRST ============ -->
+  <section class="slide" data-accent="var(--char-1)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <header class="s-head" style="margin-bottom: 1.8rem">
+        <span class="eyebrow">The Connection</span>
+        <h2>Why We Describe First</h2>
+      </header>
+      <div class="s-body grid g-6-6">
+        <div class="stack">
+          <p class="small">Theory of Change begins with a clearly defined long-term outcome. But you cannot define a good outcome without understanding the phenomenon you want to change.</p>
+          <div class="banner">
+            <p style="font-size: 1.7rem; font-weight: 700; line-height: 1.35">If you do not understand the third place &ndash; what it is, how it works, why it declines &ndash; you cannot define what a successful intervention looks like. And if you cannot define success, you cannot map backwards from it.</p>
+          </div>
+          <p class="small">The verb sequence is not arbitrary. It is the structure that prevents you from becoming the next PlayPumps.</p>
+        </div>
+        <div>
+          <h3 style="color: var(--char-1); margin-bottom: 1.2rem">Every Session Builds This</h3>
+          <div class="verb-ladder">
+            <div class="verb-rung" style="--rung-color: var(--char-5)"><strong>Description</strong> tells you what the phenomenon looks like empirically &ndash; its observable features and patterns.</div>
+            <div class="verb-rung" style="--rung-color: var(--char-3)"><strong>Explanation</strong> tells you <em>why</em> it works the way it does &ndash; the causal mechanisms across psychology, economics, and politics.</div>
+            <div class="verb-rung" style="--rung-color: var(--char-4); --rung-ink: var(--char-4-ink)"><strong>Adjudication</strong> tells you which explanations hold up under scrutiny &ndash; so your ToC rests on the strongest evidence.</div>
+            <div class="verb-rung" style="--rung-color: var(--char-2)"><strong>Intervention</strong> applies all of this to build a ToC that is plausible, feasible, and testable &ndash; because you earned the understanding to make it so.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="deco circle" style="width: 32rem; height: 32rem; background: var(--char-1); opacity: 0.06; bottom: -13rem; left: -11rem"></div>
+    <div class="deco" style="width: 11rem; height: 11rem; background: var(--char-4); opacity: 0.11; top: 2rem; right: 5rem; transform: rotate(30deg)"></div>
+  </section>
+
+  <!-- ============ SLIDE 13: LOOKING AHEAD ============ -->
+  <section class="slide" data-accent="var(--char-4)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <header class="s-head" style="margin-bottom: 1.6rem">
+        <span class="eyebrow">Looking Ahead &middot; What to Take Away</span>
+        <h2>Your ToC Journey</h2>
+      </header>
+      <div class="s-body">
+        <p class="small" style="max-width: 88rem; margin-bottom: 2rem">You will build a real Theory of Change for the Bod&oslash; stadium project in weeks 9&ndash;14. Today is about understanding the tool so you know what you are building towards.</p>
+        <div class="takeaway-grid">
+          <div class="takeaway" style="--tk-color: var(--char-1)">
+            <span class="tk-num">01</span>
+            <span class="tk-text">ToC works <strong>backwards</strong> from a desired outcome, not forwards from available resources</span>
+          </div>
+          <div class="takeaway" style="--tk-color: var(--char-3)">
+            <span class="tk-num">02</span>
+            <span class="tk-text">Every causal link carries <strong>assumptions</strong> that need evidence &ndash; making them explicit is the discipline</span>
+          </div>
+          <div class="takeaway" style="--tk-color: var(--char-6)">
+            <span class="tk-num">03</span>
+            <span class="tk-text">A good ToC is <strong>plausible</strong>, <strong>feasible</strong>, and <strong>testable</strong></span>
+          </div>
+          <div class="takeaway" style="--tk-color: var(--char-5)">
+            <span class="tk-num">04</span>
+            <span class="tk-text">ToC is <strong>standard professional practice</strong> in government, development, public health, and the social sector</span>
+          </div>
+          <div class="takeaway" style="--tk-color: var(--char-2)">
+            <span class="tk-num">05</span>
+            <span class="tk-text">Premature intervention &ndash; acting without understanding &ndash; is <strong>the failure mode ToC exists to prevent</strong></span>
+          </div>
+          <div class="takeaway" style="--tk-color: var(--char-4); --tk-ink: var(--char-4-ink)">
+            <span class="tk-num">06</span>
+            <span class="tk-text">The Describe phase is not preamble. It is <strong>the foundation your intervention depends on</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="deco" style="width: 13rem; height: 13rem; background: var(--char-4); opacity: 0.11; top: 3rem; right: 4rem; transform: rotate(25deg)"></div>
+    <div class="deco" style="width: 46rem; height: 1.2rem; background: var(--char-2); opacity: 0.12; bottom: 7rem; left: -6rem; transform: rotate(-3deg)"></div>
+    <div class="deco circle" style="width: 18rem; height: 18rem; border: 0.9rem solid var(--char-1); opacity: 0.07; bottom: -6rem; right: 12rem"></div>
+  </section>
+
+  <div class="deck-chrome">
+    <button class="nav-btn ghost" id="fs-btn" onclick="toggleFullscreen()" title="Toggle full screen (F)">Full Screen</button>
+    <button class="nav-btn" id="prev-btn" onclick="go(-1)" aria-label="Previous slide">&#9664;</button>
+    <span class="nav-info" id="nav-info"></span>
+    <button class="nav-btn" id="next-btn" onclick="go(1)" aria-label="Next slide">&#9654;</button>
   </div>
 
-  <!-- SLIDE 10: YOUR CAREER -->
-  <div class="slide slide-career" data-accent="var(--char-7)">
-    <div class="accent-bar" style="background: var(--char-7)"></div>
-    <div class="eyebrow" style="color: var(--char-7)">Why This Matters for You</div>
-    <h2>A Career Skill</h2>
-    <p>You are studying Psychology, Economics, and Politics. Each discipline feeds directly into Theory of Change practice.</p>
-    <div class="reveal-trigger" onclick="toggleReveal(this)" style="border-left-color: var(--char-1)">
-      <span class="reveal-label">Psychology</span>
-      <span class="arrow">&#9654;</span>
-    </div>
-    <div class="reveal-body">
-      <p>Behaviour change programme design. Understanding what motivates people to act differently - and what assumptions about human behaviour your intervention rests on. Roles: programme evaluator, behavioural insights advisor, NGO programme manager.</p>
-    </div>
-    <div class="reveal-trigger" onclick="toggleReveal(this)" style="border-left-color: var(--char-4)">
-      <span class="reveal-label">Economics</span>
-      <span class="arrow">&#9654;</span>
-    </div>
-    <div class="reveal-body">
-      <p>Cost-benefit analysis of interventions. Evaluating whether outcomes justify inputs. Understanding incentive structures and unintended consequences. Roles: policy economist, impact analyst, development economist.</p>
-    </div>
-    <div class="reveal-trigger" onclick="toggleReveal(this)" style="border-left-color: var(--char-2)">
-      <span class="reveal-label">Politics</span>
-      <span class="arrow">&#9654;</span>
-    </div>
-    <div class="reveal-body">
-      <p>Stakeholder analysis and institutional design. Understanding power dynamics, governance structures, and why technically sound interventions fail politically. Roles: policy advisor, civil service analyst, advocacy strategist.</p>
-    </div>
-    <p style="margin-top: 1rem">Learning to build a Theory of Change is not just a course requirement. It is a transferable skill that employers in these fields expect you to have.</p>
-  </div>
-
-  <!-- SLIDE 11: WHAT HAPPENS WITHOUT DESCRIPTION -->
-  <div class="slide slide-cases" data-accent="var(--char-3)">
-    <div class="accent-bar" style="background: var(--char-3)"></div>
-    <div class="eyebrow" style="color: var(--char-3)">Cautionary Tales</div>
-    <h2>What Happens When You Skip Description</h2>
-    <p>The most common failure mode in applied work is <strong>premature intervention</strong>: jumping to solutions before the problem is understood. These are real examples. Click each to see what went wrong.</p>
-
-    <div class="case-card" style="border-left: 6px solid var(--char-2)" onclick="toggleCase(this)">
-      <div class="case-header">
-        <span class="case-name">PlayPumps (Sub-Saharan Africa)</span>
-        <span class="case-arrow">&#9654;</span>
-      </div>
-      <div class="case-brief">Roundabout-powered water pumps installed across Africa. Children play, water flows. $60M invested.</div>
-      <div class="case-reveal">
-        <p>The intervention assumed children would play on the roundabouts enough to pump water. In practice, children did not play enough. Adults found the pumps exhausting to operate - far harder than the hand pumps they replaced. Maintenance was impossible locally. Many communities already had functioning water sources.</p>
-        <div class="lesson-label" style="color: var(--char-2)">What Was Missing</div>
-        <p>Description of how communities actually accessed and used water. The intervention was designed around an appealing image, not an observed problem.</p>
-      </div>
-    </div>
-
-    <div class="case-card" style="border-left: 6px solid var(--char-4)" onclick="toggleCase(this)">
-      <div class="case-header">
-        <span class="case-name">Scared Straight (United States)</span>
-        <span class="case-arrow">&#9654;</span>
-      </div>
-      <div class="case-brief">Programmes taking at-risk youth into prisons to deter criminal behaviour. Intuitively compelling.</div>
-      <div class="case-reveal">
-        <p>Multiple randomised controlled trials showed that Scared Straight programmes <em>increased</em> offending among participants compared to control groups. The assumption - that fear of prison deters crime - was never tested against what actually drives youth offending (peer influence, socioeconomic conditions, trauma).</p>
-        <div class="lesson-label" style="color: var(--char-4)">What Was Missing</div>
-        <p>Description of the causal mechanisms behind youth offending. The intervention targeted a plausible-sounding but empirically wrong lever.</p>
-      </div>
-    </div>
-
-    <div class="case-card" style="border-left: 6px solid var(--char-8)" onclick="toggleCase(this)">
-      <div class="case-header">
-        <span class="case-name">One Laptop Per Child (Global)</span>
-        <span class="case-arrow">&#9654;</span>
-      </div>
-      <div class="case-brief">Distributed low-cost laptops to children in developing countries to improve educational outcomes.</div>
-      <div class="case-reveal">
-        <p>Studies across multiple countries found minimal impact on learning outcomes. The programme assumed that access to technology was the binding constraint on education. In practice, the barriers were pedagogy, teacher training, curriculum design, and the educational content available - not the hardware.</p>
-        <div class="lesson-label" style="color: var(--char-8)">What Was Missing</div>
-        <p>Description of what actually constrains learning in these contexts. The intervention treated the symptom (no laptops) without understanding the system.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- SLIDE 12: WHY DESCRIBE FIRST -->
-  <div class="slide slide-describe" data-accent="var(--char-1)">
-    <div class="accent-bar" style="background: var(--char-1)"></div>
-    <div class="eyebrow" style="color: var(--char-1)">The Connection</div>
-    <h2>Why We Describe First</h2>
-    <p>Theory of Change begins with a clearly defined long-term outcome. But you cannot define a good outcome without understanding the phenomenon you want to change.</p>
-    <div class="accent-banner" style="background: var(--char-1)">
-      <p style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0">If you do not understand the third place - what it is, how it works, why it declines - you cannot define what a successful intervention looks like. And if you cannot define success, you cannot map backwards from it.</p>
-    </div>
-    <p>Every session in the Describe phase builds your capacity to do this:</p>
-    <div style="background: var(--bg-card); border: 2px solid var(--border); border-left: 6px solid var(--char-1); padding: 1.1rem; max-width: 640px; margin-bottom: 1rem">
-      <p style="margin-bottom: 0.4rem"><strong>Description</strong> tells you what the phenomenon looks like empirically - its observable features and patterns.</p>
-      <p style="margin-bottom: 0.4rem"><strong>Explanation</strong> tells you <em>why</em> it works the way it does - the causal mechanisms across psychology, economics, and politics.</p>
-      <p style="margin-bottom: 0.4rem"><strong>Adjudication</strong> tells you which explanations hold up under scrutiny - so your ToC rests on the strongest evidence.</p>
-      <p style="margin-bottom: 0"><strong>Intervention</strong> applies all of this to build a ToC that is plausible, feasible, and testable - because you earned the understanding to make it so.</p>
-    </div>
-    <p>The verb sequence is not arbitrary. It is the structure that prevents you from becoming the next PlayPumps.</p>
-  </div>
-
-  <!-- SLIDE 13: LOOKING AHEAD -->
-  <div class="slide slide-takeaway" data-accent="var(--char-4)">
-    <div class="accent-bar" style="background: var(--char-4)"></div>
-    <div class="eyebrow" style="color: var(--char-4)">Looking Ahead</div>
-    <h2>Your ToC Journey</h2>
-    <p>You will build a real Theory of Change for the Bodo stadium project in weeks 9-14. Today is about understanding the tool so you know what you are building towards.</p>
-    <div style="border-top: 4px solid var(--char-1); padding-top: 1.25rem; margin-top: 0.5rem">
-      <h3 style="color: var(--char-1)">What to Take Away</h3>
-      <ul class="takeaway-list">
-        <li><div class="takeaway-pip" style="background: var(--char-1)"></div><span>ToC works <strong>backwards</strong> from a desired outcome, not forwards from available resources</span></li>
-        <li><div class="takeaway-pip" style="background: var(--char-3)"></div><span>Every causal link carries <strong>assumptions</strong> that need evidence - making them explicit is the discipline</span></li>
-        <li><div class="takeaway-pip" style="background: var(--char-6)"></div><span>A good ToC is <strong>plausible</strong>, <strong>feasible</strong>, and <strong>testable</strong></span></li>
-        <li><div class="takeaway-pip" style="background: var(--char-5)"></div><span>ToC is <strong>standard professional practice</strong> in government, development, public health, and the social sector</span></li>
-        <li><div class="takeaway-pip" style="background: var(--char-2)"></div><span>Premature intervention - acting without understanding - is <strong>the failure mode ToC exists to prevent</strong></span></li>
-        <li><div class="takeaway-pip" style="background: var(--char-4)"></div><span>The Describe phase is not preamble. It is <strong>the foundation your intervention depends on</strong></span></li>
-      </ul>
-    </div>
-  </div>
 </div>
-
-<div class="nav-bar">
-  <button class="nav-btn" id="prev-btn" onclick="go(-1)">&#9664; Prev</button>
-  <span class="nav-info" id="nav-info"></span>
-  <button class="nav-btn" id="next-btn" onclick="go(1)">Next &#9654;</button>
 </div>
 
 <script>
@@ -1043,7 +1283,6 @@ function showSlide(n) {
   document.documentElement.style.setProperty('--slide-accent', accent);
   document.getElementById('progress').style.width = ((n + 1) / totalSlides * 100) + '%';
   document.getElementById('progress').style.background = accent;
-  document.getElementById('counter').textContent = 'Slide ' + (n + 1) + ' of ' + totalSlides;
   document.getElementById('nav-info').textContent = (n + 1) + ' / ' + totalSlides;
   document.getElementById('prev-btn').disabled = n === 0;
   document.getElementById('next-btn').disabled = n === totalSlides - 1;
@@ -1055,12 +1294,29 @@ function go(dir) {
   if (next >= 0 && next < totalSlides) showSlide(next);
 }
 
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+  } else if (document.exitFullscreen) {
+    document.exitFullscreen();
+  }
+}
+
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); go(1); }
-  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); go(-1); }
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); go(1); }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); go(-1); }
+  if (e.key === 'Home') { e.preventDefault(); showSlide(0); }
+  if (e.key === 'End') { e.preventDefault(); showSlide(totalSlides - 1); }
+  if (e.key === 'f' || e.key === 'F') { e.preventDefault(); toggleFullscreen(); }
 });
 
-// Single-select quiz
+// Number every slide
+slides.forEach(function(s, i) {
+  var el = s.querySelector('.slide-no');
+  if (el) el.textContent = String(i + 1).padStart(2, '0') + ' / ' + String(totalSlides).padStart(2, '0');
+});
+
+// ---- Single-select quiz (slide 4) ----
 (function() {
   var opts = document.querySelectorAll('#quiz1 .quiz-option');
   opts.forEach(function(opt) {
@@ -1090,7 +1346,7 @@ document.addEventListener('keydown', function(e) {
   });
 })();
 
-// Multi-select quiz
+// ---- Multi-select quiz (slide 7) ----
 function toggleMulti(el) {
   if (el.classList.contains('disabled')) return;
   el.classList.toggle('selected');
@@ -1110,22 +1366,67 @@ function checkMulti() {
     }
   });
   document.getElementById('quiz2-fb').classList.add('visible');
-  document.querySelector('#quiz2 + .check-btn').style.display = 'none';
+  document.getElementById('quiz2-btn').style.display = 'none';
 }
 
-// Case card toggles
-function toggleCase(card) {
-  var reveal = card.querySelector('.case-reveal');
-  card.classList.toggle('open');
-  reveal.classList.toggle('visible');
+// ---- Case detail panel (slide 11) ----
+var CASES = [
+  {
+    color: 'var(--char-2)',
+    body: 'The intervention assumed children would play on the roundabouts enough to pump water. In practice, children did not play enough. Adults found the pumps exhausting to operate - far harder than the hand pumps they replaced. Maintenance was impossible locally. Many communities already had functioning water sources.',
+    lesson: 'Description of how communities actually accessed and used water. The intervention was designed around an appealing image, not an observed problem.'
+  },
+  {
+    color: 'var(--char-4)',
+    ink: 'var(--char-4-ink)',
+    body: 'Multiple randomised controlled trials showed that Scared Straight programmes <em>increased</em> offending among participants compared to control groups. The assumption - that fear of prison deters crime - was never tested against what actually drives youth offending (peer influence, socioeconomic conditions, trauma).',
+    lesson: 'Description of the causal mechanisms behind youth offending. The intervention targeted a plausible-sounding but empirically wrong lever.'
+  },
+  {
+    color: 'var(--char-8)',
+    body: 'Studies across multiple countries found minimal impact on learning outcomes. The programme assumed that access to technology was the binding constraint on education. In practice, the barriers were pedagogy, teacher training, curriculum design, and the educational content available - not the hardware.',
+    lesson: 'Description of what actually constrains learning in these contexts. The intervention treated the symptom (no laptops) without understanding the system.'
+  }
+];
+
+function showCase(card) {
+  var idx = parseInt(card.getAttribute('data-case'), 10);
+  var data = CASES[idx];
+  document.querySelectorAll('.case-card').forEach(function(c) { c.classList.remove('active'); });
+  card.classList.add('active');
+  var panel = document.getElementById('case-detail');
+  panel.style.setProperty('--detail-color', data.color);
+  panel.style.setProperty('--detail-ink', data.ink || data.color);
+  panel.innerHTML =
+    '<div class="case-detail-grid">' +
+      '<div><p>' + data.body + '</p></div>' +
+      '<div>' +
+        '<div class="lesson-label">What Was Missing</div>' +
+        '<p>' + data.lesson + '</p>' +
+      '</div>' +
+    '</div>';
 }
 
-// Reveal toggles
-function toggleReveal(trigger) {
-  var body = trigger.nextElementSibling;
-  trigger.classList.toggle('open');
-  body.classList.toggle('visible');
+// ---- Discipline reveals (slide 10) ----
+function toggleDisc(col) {
+  col.classList.toggle('open');
+  col.querySelector('.disc-body').classList.toggle('visible');
 }
+
+// ---- Presenter chrome auto-hides when idle ----
+(function() {
+  var chrome = document.querySelector('.deck-chrome');
+  var timer;
+  function wake() {
+    chrome.classList.remove('idle');
+    clearTimeout(timer);
+    timer = setTimeout(function() { chrome.classList.add('idle'); }, 2500);
+  }
+  ['mousemove', 'keydown', 'touchstart', 'click'].forEach(function(evt) {
+    document.addEventListener(evt, wake);
+  });
+  wake();
+})();
 
 showSlide(0);
 </script>
