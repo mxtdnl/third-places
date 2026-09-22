@@ -15,6 +15,7 @@ Interactive teaching tools for Ray Oldenburg's third-place theory. Static HTML f
 - `week5-field-trip-planner.html` — Week 5 field trip planner (Activity 8): plan a London site visit, record observations in the field, debrief predictions against observations and print claim wall cards
 - `week6a-criteria-forge.html` — Week 6a criteria forge (Activity 9): adjudicate between two competing explanations before any criteria are taught, then dissect the committed justification sentence by sentence to reveal which of the four formal criteria were implicitly used
 - `week6b-adjudication-bench.html` — Adjudication Bench (Activity 10, week 6b): groups adjudicate between two competing explanations for a decline claim using four criteria, with predictions locked before evidence. Export JSON schema is documented in the file header for the week 7 tool
+- `SLIDES.md` — Blueprint for building a projection deck: the 16:9 stage model, type scale, slide archetypes, interaction patterns, contrast rules and the verification harnesses. Read before building or editing a deck; `theory-of-change.html` is the reference implementation
 - `third-place-content.md` — Source content and curriculum notes
 - `spec.md` — Mechanics, tuning values and design assumptions for the builder
 - `test.html` — Test suite (95 tests) covering data integrity, pure functions, HTML generators, and encoding
