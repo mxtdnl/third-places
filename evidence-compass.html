@@ -52,8 +52,10 @@
     font-weight: 800;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    line-height: 1.15;
-    margin-bottom: 0.5rem;
+    line-height: 1.1;
+    margin-bottom: 0.6rem;
+    position: relative;
+    z-index: 1;
   }
 
   h2 {
@@ -70,7 +72,9 @@
     line-height: 1.65;
     color: var(--text-muted);
     max-width: 720px;
-    margin-bottom: 2rem;
+    margin-bottom: 0;
+    position: relative;
+    z-index: 1;
   }
 
   .eyebrow {
@@ -81,12 +85,98 @@
     color: var(--text-muted);
   }
 
+  /* ── Page header ── */
+  .page-header {
+    position: relative;
+    overflow: hidden;
+    padding: 2.5rem 0 2rem;
+    margin-bottom: 0;
+  }
+
+  .page-header::before {
+    content: '';
+    position: absolute;
+    width: 260px;
+    height: 260px;
+    background: var(--char-1);
+    border-radius: 50%;
+    opacity: 0.07;
+    top: -60px;
+    right: -40px;
+    z-index: 0;
+  }
+
+  .page-header::after {
+    content: '';
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    background: var(--char-4);
+    opacity: 0.12;
+    bottom: 20px;
+    right: 140px;
+    transform: rotate(22deg);
+    z-index: 0;
+  }
+
+  .page-header .deco-ring {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border: 6px solid var(--char-2);
+    border-radius: 50%;
+    opacity: 0.08;
+    top: 10px;
+    right: 60px;
+    z-index: 0;
+  }
+
+  .page-header .deco-bar {
+    position: absolute;
+    width: 140%;
+    height: 5px;
+    background: var(--char-3);
+    bottom: 0;
+    left: -20%;
+    transform: rotate(-1.2deg);
+    opacity: 0.18;
+    z-index: 0;
+  }
+
+  .page-header .eyebrow {
+    color: var(--char-3);
+    display: block;
+    margin-bottom: 0.6rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Header rule ── */
+  .header-rule {
+    margin: 1.75rem 0 0;
+    height: 4px;
+    background: var(--char-1);
+    border: none;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header-rule::after {
+    content: '';
+    display: block;
+    height: 4px;
+    background: var(--char-3);
+    width: 30%;
+    margin-top: 4px;
+  }
+
   /* ── View toggle ── */
   .view-tabs {
     display: flex;
     gap: 4px;
     border-bottom: 2px solid var(--border);
     margin-bottom: 2rem;
+    margin-top: 2rem;
   }
   .view-tab {
     background: none;
@@ -105,8 +195,8 @@
   }
   .view-tab:hover { color: var(--text); }
   .view-tab.active {
-    color: var(--text);
-    border-bottom-color: var(--text);
+    color: var(--char-1);
+    border-bottom-color: var(--char-1);
   }
   .view-tab .tab-badge {
     display: inline-block;
@@ -123,6 +213,47 @@
   .view-panel { display: none; }
   .view-panel.active { display: block; }
 
+  /* ── Progress section ── */
+  .progress-section {
+    margin-bottom: 1.75rem;
+    border-left: 5px solid var(--char-1);
+    background: var(--bg-card);
+    border-top: 2px solid var(--border);
+    border-right: 2px solid var(--border);
+    border-bottom: 2px solid var(--border);
+    padding: 0.9rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .progress-track {
+    flex: 1;
+    height: 8px;
+    background: var(--bg-deep);
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--char-1);
+    transition: width 0.6s ease;
+  }
+  .progress-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .progress-count {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--char-1);
+    white-space: nowrap;
+  }
+
+  /* ── Compass grid ── */
   .compass-grid {
     display: grid;
     grid-template-columns: 180px repeat(3, 1fr);
@@ -136,47 +267,66 @@
     border-bottom: 2px solid var(--border);
     padding: 1rem;
     display: flex;
+    flex-direction: column;
     align-items: flex-end;
     justify-content: flex-end;
+    position: relative;
+    overflow: hidden;
+  }
+  .grid-corner::before {
+    content: '';
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    border: 4px solid var(--border);
+    border-radius: 50%;
+    top: 8px;
+    left: 8px;
+    opacity: 0.5;
   }
   .grid-corner .corner-label {
-    font-size: 0.68rem;
+    font-size: 0.65rem;
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--text-muted);
     text-align: right;
-    line-height: 1.3;
+    line-height: 1.4;
+    position: relative;
+    z-index: 1;
   }
 
   .col-header {
-    background: var(--bg-deep);
+    background: var(--bg-card);
     border-bottom: 2px solid var(--border);
-    padding: 1rem 0.75rem;
+    padding: 1rem 0.75rem 0.85rem;
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.35rem;
+    gap: 0.3rem;
+    border-top: 5px solid var(--border);
   }
   .col-header:not(:last-child) {
     border-right: 2px solid var(--border);
   }
-  .col-header .lens-swatch {
-    width: 28px;
-    height: 4px;
-  }
+
+  .col-lens-psych { border-top-color: var(--lens-psych); background: rgba(92,58,150,0.04); }
+  .col-lens-econ  { border-top-color: var(--lens-econ);  background: rgba(212,160,32,0.04); }
+  .col-lens-polit { border-top-color: var(--lens-polit); background: rgba(181,40,56,0.04); }
+
   .col-header .lens-name {
-    font-size: 0.85rem;
+    font-size: 0.88rem;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.1em;
+    line-height: 1.2;
   }
   .col-header .lens-question {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     color: var(--text-muted);
     line-height: 1.4;
-    font-style: italic;
+    letter-spacing: 0.03em;
   }
 
   .row-header {
@@ -188,7 +338,7 @@
     flex-direction: column;
     justify-content: center;
     gap: 0.3rem;
-    border-left: 6px solid var(--border);
+    border-left: 6px solid var(--char-1);
   }
   .row-header .claim-num {
     font-size: 0.68rem;
@@ -234,54 +384,32 @@
   }
   .grid-cell textarea::placeholder {
     color: var(--text-muted);
-    opacity: 0.5;
+    opacity: 0.45;
     font-style: italic;
   }
   .grid-cell textarea:focus {
-    background: rgba(92, 58, 150, 0.04);
+    background: rgba(92, 58, 150, 0.05);
   }
   .grid-cell .cell-status {
     position: absolute;
     bottom: 6px;
     right: 8px;
     font-size: 0.65rem;
-    font-weight: 600;
-    color: var(--text-muted);
+    font-weight: 700;
+    color: var(--correct);
     opacity: 0;
-    transition: opacity 0.15s ease;
+    transition: opacity 0.2s ease;
   }
   .grid-cell.filled .cell-status {
-    opacity: 0.5;
+    opacity: 0.6;
+  }
+  .grid-cell.filled {
+    background: rgba(42,122,66,0.03);
   }
 
   /* Last row cells — no bottom border (grid border handles it) */
   .compass-grid > :nth-last-child(-n+4) {
     border-bottom: none;
-  }
-
-  /* ── Progress bar ── */
-  .progress-section {
-    margin-top: 1.5rem;
-    margin-bottom: 2rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-  .progress-track {
-    flex: 1;
-    height: 6px;
-    background: var(--bg-deep);
-  }
-  .progress-fill {
-    height: 100%;
-    background: var(--char-1);
-    transition: width 0.6s ease;
-  }
-  .progress-label {
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: var(--text-muted);
-    white-space: nowrap;
   }
 
   /* ── Summary view ── */
@@ -293,7 +421,7 @@
 
   .summary-grid {
     display: grid;
-    gap: 1.5rem;
+    gap: 1.75rem;
   }
 
   .summary-claim {
@@ -301,23 +429,26 @@
     background: var(--bg-card);
     border-left-width: 6px;
   }
+
   .summary-claim-header {
-    padding: 1rem 1.25rem 0.5rem;
+    padding: 0.9rem 1.25rem;
     display: flex;
     align-items: baseline;
     gap: 0.75rem;
+    color: #fff;
   }
   .summary-claim-header .claim-num {
     font-size: 0.68rem;
     font-weight: 700;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
+    opacity: 0.85;
   }
   .summary-claim-header .claim-label {
     font-size: 1rem;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
   }
 
   .summary-lenses {
@@ -327,8 +458,8 @@
     padding: 0 1.25rem 1.25rem;
   }
   .summary-lens {
-    padding: 0.75rem 0;
-    border-top: 1px solid var(--border);
+    padding: 0.85rem 0;
+    border-top: 2px solid var(--border);
   }
   .summary-lens:not(:last-child) {
     padding-right: 1.25rem;
@@ -338,15 +469,16 @@
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.4rem;
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.5rem;
   }
   .summary-lens-name .lens-pip {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
     display: inline-block;
+    flex-shrink: 0;
   }
   .summary-lens-text {
     font-size: 0.88rem;
@@ -404,22 +536,53 @@
     transform: none;
   }
 
+  /* ── Section break ── */
+  .section-break {
+    position: relative;
+    height: 6px;
+    margin: 1.5rem 0;
+    overflow: hidden;
+  }
+  .section-break::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 4px;
+    background: var(--char-1);
+    top: 0;
+  }
+  .section-break::after {
+    content: '';
+    position: absolute;
+    width: 35%;
+    height: 4px;
+    background: var(--char-4);
+    bottom: 0;
+    right: 0;
+  }
+
   /* ── Print ── */
   @media print {
     body { background: #fff; }
-    .view-tabs, .toolbar, .progress-section { display: none; }
+    .view-tabs, .toolbar, .progress-section, .page-header .deco-ring,
+    .page-header .deco-bar { display: none; }
+    .page-header::before, .page-header::after { display: none; }
     .compass-grid { break-inside: avoid; }
     .grid-cell textarea {
       border: 1px solid #ccc;
       print-color-adjust: exact;
       -webkit-print-color-adjust: exact;
     }
-    .row-header, .col-header {
+    .row-header, .col-header, .summary-claim-header {
       print-color-adjust: exact;
       -webkit-print-color-adjust: exact;
     }
     .summary-claim {
       break-inside: avoid;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+    .col-lens-psych, .col-lens-econ, .col-lens-polit {
       print-color-adjust: exact;
       -webkit-print-color-adjust: exact;
     }
@@ -473,14 +636,27 @@
       grid-template-columns: 1fr;
     }
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    .progress-fill { transition: none; }
+    .btn { transition: none; }
+    .grid-cell textarea { transition: none; }
+    .grid-cell .cell-status { transition: none; }
+  }
 </style>
 
 <div class="app-wrap">
 
-  <h1>Evidence Compass</h1>
-  <p class="lede">
-    The claim that third places are declining can be decomposed into four distinct sub-claims, each requiring different kinds of evidence. For each claim, consider what would count as evidence through three disciplinary lenses. What data, observations, or measures would a psychologist, economist, or political scientist look for?
-  </p>
+  <div class="page-header">
+    <div class="deco-ring"></div>
+    <div class="deco-bar"></div>
+    <span class="eyebrow">Activity 6 — Evidence Compass</span>
+    <h1>Evidence Compass</h1>
+    <p class="lede">
+      The claim that third places are declining can be decomposed into four distinct sub-claims, each requiring different kinds of evidence. For each claim, consider what would count as evidence through three disciplinary lenses. What data, observations, or measures would a psychologist, economist, or political scientist look for?
+    </p>
+    <hr class="header-rule">
+  </div>
 
   <div class="view-tabs">
     <button class="view-tab active" data-view="grid">Grid</button>
@@ -495,7 +671,7 @@
       <div class="progress-track">
         <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
       </div>
-      <span class="progress-label" id="progress-text">0 / 12</span>
+      <span class="progress-count" id="progress-text">0 / 12</span>
     </div>
 
     <div class="compass-grid" id="compass-grid">
@@ -527,28 +703,32 @@
       num: 'Claim 1',
       label: 'Supply Is Shrinking',
       desc: 'Fewer third places exist than before',
-      color: 'var(--claim-1)'
+      color: 'var(--claim-1)',
+      hex: '#C85218'
     },
     {
       id: 'use',
       num: 'Claim 2',
       label: 'Use Is Falling',
       desc: 'People visit third places less often or for shorter periods',
-      color: 'var(--claim-2)'
+      color: 'var(--claim-2)',
+      hex: '#7A5828'
     },
     {
       id: 'quality',
       num: 'Claim 3',
       label: 'Quality Is Degrading',
       desc: 'Surviving spaces exhibit fewer third-place characteristics',
-      color: 'var(--claim-3)'
+      color: 'var(--claim-3)',
+      hex: '#B83068'
     },
     {
       id: 'outcomes',
       num: 'Claim 4',
       label: 'Outcomes Are Weakening',
       desc: 'Social capital, wellbeing, or civic gains are diminishing',
-      color: 'var(--claim-4)'
+      color: 'var(--claim-4)',
+      hex: '#7E58A8'
     }
   ];
 
@@ -557,19 +737,25 @@
       id: 'psych',
       name: 'Psychological',
       question: 'Behaviour, cognition, wellbeing',
-      color: 'var(--lens-psych)'
+      color: 'var(--lens-psych)',
+      hex: '#5C3A96',
+      cls: 'col-lens-psych'
     },
     {
       id: 'econ',
       name: 'Economic',
       question: 'Markets, costs, incentives',
-      color: 'var(--lens-econ)'
+      color: 'var(--lens-econ)',
+      hex: '#D4A020',
+      cls: 'col-lens-econ'
     },
     {
       id: 'polit',
       name: 'Political',
       question: 'Policy, power, institutions',
-      color: 'var(--lens-polit)'
+      color: 'var(--lens-polit)',
+      hex: '#B52838',
+      cls: 'col-lens-polit'
     }
   ];
 
@@ -583,9 +769,8 @@
 
     for (var l = 0; l < LENSES.length; l++) {
       var lens = LENSES[l];
-      html += '<div class="col-header">';
-      html += '<div class="lens-swatch" style="background: ' + lens.color + '"></div>';
-      html += '<div class="lens-name">' + lens.name + '</div>';
+      html += '<div class="col-header ' + lens.cls + '">';
+      html += '<div class="lens-name" style="color: ' + lens.color + '">' + lens.name + '</div>';
       html += '<div class="lens-question">' + lens.question + '</div>';
       html += '</div>';
     }
@@ -711,8 +896,8 @@
       if (!hasAny) continue;
 
       html += '<div class="summary-claim" style="border-left-color: ' + claim.color + '">';
-      html += '<div class="summary-claim-header">';
-      html += '<span class="claim-num" style="color: ' + claim.color + '">' + claim.num + '</span>';
+      html += '<div class="summary-claim-header" style="background: ' + claim.color + '">';
+      html += '<span class="claim-num">' + claim.num + '</span>';
       html += '<span class="claim-label">' + claim.label + '</span>';
       html += '</div>';
       html += '<div class="summary-lenses">';
@@ -722,7 +907,7 @@
         var val = textareas[lkey].value.trim();
 
         html += '<div class="summary-lens">';
-        html += '<div class="summary-lens-name">';
+        html += '<div class="summary-lens-name" style="color: ' + LENSES[ll].color + '">';
         html += '<span class="lens-pip" style="background: ' + LENSES[ll].color + '"></span>';
         html += LENSES[ll].name;
         html += '</div>';
