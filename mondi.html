@@ -1,0 +1,2848 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quattro Mondi</title>
+<style>
+/* ===========================================================================
+   Quattro Mondi - illustrative Bauhaus. Five colours, thick black rules,
+   flat blocks, no gradients, no shadows, no rounded corners.
+   =========================================================================== */
+:root {
+  --paper: #FFFFFF;
+  --ink: #000000;
+  --concrete: #D9D8D4;
+  --red: #D7261E;
+  --yellow: #F4C20D;
+  --blue: #1D4D9C;
+  --rule: 5px;
+  --k-red: var(--red);
+  --k-blue: var(--blue);
+  --k-ink: var(--ink);
+  --shade: rgba(0,0,0,0.06);
+}
+[data-theme="dark"] {
+  --paper: #000000;
+  --ink: #FFFFFF;
+  --concrete: #262626;
+  /* Red and blue do not reach 4.5:1 as text on black, so coloured type
+     falls back to the ink colour in dark mode. The primaries stay as fills. */
+  --k-red: #FFFFFF;
+  --k-blue: #FFFFFF;
+  --k-ink: #FFFFFF;
+  --shade: rgba(255,255,255,0.10);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Futura, "Century Gothic", "Avenir Next", Avenir, "Trebuchet MS", sans-serif;
+  font-size: 17px;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+}
+h1, h2, h3, h4 { text-transform: lowercase; font-weight: 700; line-height: 1.02; margin: 0; }
+h1 { font-size: clamp(2.6rem, 9vw, 5.5rem); letter-spacing: -0.02em; }
+h2 { font-size: clamp(1.7rem, 4.5vw, 2.8rem); letter-spacing: -0.01em; }
+h3 { font-size: clamp(1.15rem, 2.6vw, 1.5rem); }
+h4 { font-size: 1rem; }
+p { margin: 0 0 0.8em; max-width: 62ch; }
+a { color: var(--k-blue); }
+.shell { max-width: 1120px; margin: 0 auto; padding: 0 16px 64px; }
+.rule { height: var(--rule); background: var(--ink); border: 0; margin: 0; }
+.rule-thin { height: 3px; background: var(--ink); border: 0; margin: 0; }
+.stack > * + * { margin-top: 16px; }
+.muted { opacity: 0.72; }
+.small { font-size: 0.86rem; }
+.mono-ish { font-variant-numeric: tabular-nums; }
+.k-red { color: var(--k-red); }
+.k-blue { color: var(--k-blue); }
+.fill-red { background: var(--red); color: #FFFFFF; }
+.fill-blue { background: var(--blue); color: #FFFFFF; }
+.fill-yellow { background: var(--yellow); color: #000000; }
+.fill-ink { background: var(--ink); color: var(--paper); }
+.fill-concrete { background: var(--concrete); color: var(--ink); }
+
+/* ---- masthead ---------------------------------------------------------- */
+.masthead { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 16px; padding: 22px 0 14px; }
+.masthead .sub { font-size: 1rem; max-width: 46ch; margin: 6px 0 0; }
+.meta { text-align: right; font-size: 0.82rem; line-height: 1.35; }
+.meta b { display: block; font-size: 1.05rem; }
+
+/* ---- buttons ----------------------------------------------------------- */
+button, .btn {
+  font: inherit; text-transform: lowercase; font-weight: 700;
+  background: var(--paper); color: var(--ink);
+  border: 3px solid var(--ink); border-radius: 0;
+  padding: 10px 18px; min-height: 44px; cursor: pointer;
+}
+button:hover:not(:disabled) { background: var(--ink); color: var(--paper); }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+button.primary { background: var(--blue); border-color: var(--blue); color: #FFFFFF; }
+button.primary:hover:not(:disabled) { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+button.danger { background: var(--red); border-color: var(--red); color: #FFFFFF; }
+button.danger:hover:not(:disabled) { background: var(--ink); border-color: var(--ink); }
+button.ghost { padding: 6px 12px; min-height: 44px; font-size: 0.86rem; border-width: 2px; }
+:focus-visible { outline: 4px solid var(--blue); outline-offset: 2px; }
+[data-theme="dark"] :focus-visible { outline-color: var(--yellow); }
+
+/* ---- generic blocks ---------------------------------------------------- */
+.block { border: 4px solid var(--ink); padding: 18px; }
+.band { padding: 14px 18px; }
+.grid2 { display: grid; grid-template-columns: 1.05fr 1fr; gap: 22px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.tag { display: inline-block; padding: 3px 9px; font-size: 0.78rem; font-weight: 700; border: 2px solid var(--ink); }
+.big-num { font-size: clamp(1.5rem, 4vw, 2.2rem); font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+.neg { color: var(--k-red); }
+[data-theme="dark"] .neg { text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---- comparison strip -------------------------------------------------- */
+.strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0; }
+.strip-cell { border: 3px solid var(--ink); padding: 10px 12px; }
+.strip-cell .bar { height: 12px; margin: -10px -12px 8px; }
+.strip-cell .nm { font-size: 0.8rem; font-weight: 700; text-transform: lowercase; }
+.strip-cell .v { font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.strip-cell .b { font-size: 0.74rem; }
+
+/* ---- tabs -------------------------------------------------------------- */
+.tabs { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+.tab {
+  display: flex; align-items: center; gap: 10px; flex: 1 1 200px;
+  border: 4px solid var(--ink); padding: 10px 12px; background: var(--paper); color: var(--ink);
+  text-align: left; min-height: 62px;
+}
+.tab .glyph { width: 30px; height: 30px; flex: none; }
+.tab .t-name { font-weight: 700; font-size: 0.98rem; display: block; }
+.tab .t-sub { font-size: 0.74rem; display: block; opacity: 0.75; }
+.tab[aria-selected="true"].t-quadrato { background: var(--red); color: #FFFFFF; border-color: var(--red); }
+.tab[aria-selected="true"].t-cerchio { background: var(--yellow); color: #000000; border-color: var(--yellow); }
+.tab[aria-selected="true"].t-triangolo { background: var(--blue); color: #FFFFFF; border-color: var(--blue); }
+.tab[aria-selected="true"].t-uno { background: var(--ink); color: var(--paper); }
+.tab[aria-selected="true"] .t-sub { opacity: 0.9; }
+.tab:hover { background: var(--concrete); color: var(--ink); }
+.tab[aria-selected="true"]:hover { filter: none; }
+.tab .done { margin-left: auto; font-size: 0.72rem; font-weight: 700; border: 2px solid currentColor; padding: 2px 6px; }
+
+/* ---- universe panel ---------------------------------------------------- */
+.panel { border: 4px solid var(--ink); border-top: 0; padding: 20px; }
+.scene { width: 100%; height: 230px; display: block; background: var(--concrete); }
+.news { border-left: 8px solid var(--ink); padding: 8px 0 8px 12px; font-size: 0.92rem; }
+.ctrl { margin-top: 14px; }
+.ctrl label { display: block; font-weight: 700; font-size: 0.92rem; margin-bottom: 6px; }
+.ctrl .hint { font-weight: 400; font-size: 0.82rem; opacity: 0.78; display: block; }
+input[type="range"] { width: 100%; height: 44px; accent-color: var(--blue); }
+input[type="number"], input[type="text"] {
+  font: inherit; font-variant-numeric: tabular-nums; padding: 9px 10px; min-height: 44px;
+  border: 3px solid var(--ink); background: var(--paper); color: var(--ink); width: 130px; border-radius: 0;
+}
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.readout { border: 4px solid var(--ink); padding: 12px 14px; margin-top: 16px; }
+.readout .lab { font-size: 0.8rem; font-weight: 700; }
+.chart-wrap { margin-top: 16px; border: 4px solid var(--ink); padding: 10px; }
+.chart-wrap canvas { display: block; width: 100%; height: 300px; }
+.lastline { font-size: 0.9rem; border-top: 3px solid var(--ink); padding-top: 10px; margin-top: 12px; }
+
+/* ---- month end --------------------------------------------------------- */
+.reveal { border: 4px solid var(--ink); padding: 16px; }
+.reveal + .reveal { margin-top: 14px; }
+.reveal .head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+@media (prefers-reduced-motion: no-preference) {
+  .anim { animation: rise 0.45s ease both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+}
+
+/* ---- diagnosis --------------------------------------------------------- */
+.q { border: 4px solid var(--ink); padding: 16px; margin-bottom: 14px; }
+.q .opts { display: grid; gap: 8px; margin-top: 10px; }
+.opt { display: flex; gap: 10px; align-items: flex-start; border: 3px solid var(--ink); padding: 10px; cursor: pointer; }
+.opt:hover { background: var(--concrete); }
+.opt input { margin-top: 4px; min-width: 20px; min-height: 20px; }
+.opt.right { background: var(--blue); color: #FFFFFF; border-color: var(--blue); }
+.opt.wrong { background: var(--red); color: #FFFFFF; border-color: var(--red); }
+.explain { margin-top: 10px; border-left: 8px solid var(--ink); padding-left: 12px; font-size: 0.9rem; }
+
+/* ---- results ----------------------------------------------------------- */
+.ladder { display: grid; gap: 8px; }
+.rung { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center; border: 3px solid var(--ink); padding: 8px 12px; }
+.rung.you { background: var(--yellow); color: #000000; border-color: #000000; }
+details.data summary { cursor: pointer; font-weight: 700; padding: 8px 0; }
+pre.data-lines { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.74rem; overflow-x: auto; background: var(--concrete); padding: 12px; margin: 0; }
+.verify { border: 5px solid var(--ink); padding: 14px 18px; font-size: 1.15rem; font-weight: 700; letter-spacing: 0.04em; }
+
+/* ---- layout breakpoints ------------------------------------------------ */
+@media (max-width: 860px) {
+  .grid2 { grid-template-columns: 1fr; }
+  .grid4 { grid-template-columns: repeat(2, 1fr); }
+  .strip { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  body { font-size: 16px; }
+  .masthead { grid-template-columns: 1fr; }
+  .meta { text-align: left; }
+  .tabs { gap: 6px; }
+  .tab { flex: 1 1 64px; padding: 8px; justify-content: center; }
+  .tab .t-name, .tab .t-sub, .tab .done { display: none; }
+  .tab .glyph { width: 34px; height: 34px; }
+  .panel { padding: 14px; }
+  .grid4 { grid-template-columns: 1fr; }
+}
+
+/* ---- print ------------------------------------------------------------- */
+@media print {
+  @page { size: A4; margin: 14mm; }
+  body { background: #FFFFFF; color: #000000; font-size: 11pt; }
+  .no-print, button, .tabs, input[type="range"] { display: none !important; }
+  .block, .panel, .q, .reveal, .strip-cell, .rung { border-color: #000000; break-inside: avoid; }
+  .fill-red, .fill-blue, .fill-yellow, .fill-ink, .strip-cell .bar, .rung.you {
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  canvas { max-height: 70mm; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header class="masthead">
+    <div>
+      <h1>quattro mondi</h1>
+      <p class="sub">one pizza, four universes, eight months. the oven never changes.</p>
+    </div>
+    <div class="meta">
+      <span>seed</span><b id="seed-label" class="mono-ish">-</b>
+      <button id="theme-toggle" class="ghost no-print" type="button" aria-pressed="false">dark mode</button>
+    </div>
+  </header>
+  <hr class="rule">
+
+  <main id="main"></main>
+
+  <hr class="rule-thin" style="margin-top:28px">
+  <p class="small muted" style="margin-top:10px">
+    all figures are economic profit, per month, in pounds.
+    <span id="footer-tools" class="no-print"></span>
+  </p>
+</div>
+<script id="model">
+/* ============================================================================
+   QUATTRO MONDI - MODEL
+   Pure economics. No DOM access anywhere in this script.
+   Everything the UI needs is exported on the single global object QM.
+   ========================================================================== */
+var QM = (function () {
+  'use strict';
+
+  /* ==========================================================================
+     CONFIG - every piece of editable content and every tuning number.
+     A non-developer can edit the text freely. Changing a number under
+     CONFIG.model changes the economics and invalidates the calibration
+     recorded in mondi.md, so change those only on purpose.
+     ======================================================================== */
+  var CONFIG = {
+
+    /* ---- session shape ---------------------------------------------- */
+    rounds: 8,
+    currency: '£',
+
+    /* ---- the shared cost function, identical in all four universes --- */
+    model: {
+      cost: { F: 500, c: 4, d: 0.05 },
+
+      quadrato: {
+        demandIntercept: 12000,   // Q_D = intercept - slope * P
+        demandSlope: 400,
+        firms0: 40,               // AI firms at the start
+        entryDivisor: 60,         // dN = round(profit of a typical firm / this)
+        firmsMin: 5,
+        qMax: 250
+      },
+
+      cerchio: {
+        b: 12,                    // own-price slope of firm demand
+        a0: 340,                  // demand intercept in round 1
+        beta: 3,                  // brand effect: q gains beta * sqrt(spend)
+        brandMax: 400,
+        brandStep: 5,
+        kappa: 0.04,              // copycat entry: a falls by kappa * optimal profit
+        priceMax: 45
+      },
+
+      triangolo: {
+        alpha: 134,               // q = alpha - beta*p + gamma*(rival price - p)
+        beta: 2,
+        gamma: 10,
+        p0: 22,                   // prevailing price at the start
+        cShock: 5,                // marginal cost term from round 5 in this universe
+        cShockRound: 5,
+        leadPrice: 24,            // the price Rosso announces
+        cartelPrice: 38.36,       // joint profit maximising price for three firms
+        warPrice: 13,             // price the rivals post during a price war
+        warRounds: 3,             // length of a war triggered by cheating or reporting
+        bustWarRounds: 2,         // length of the chill after the cartel is broken up
+        detectProb: 0.15,         // chance per round that the authority finds the cartel
+        lenientBase: 0.05,        // chance a given rival applies for leniency, round 1
+        lenientStep: 0.05,        // and how much that rises each further cartel round
+        fineRate: 0.10,           // fine = 10% of cumulative revenue in this universe
+        priceMax: 60
+      },
+
+      uno: {
+        A: 300, b: 6,             // demand while the patent holds
+        A2: 240, b2: 8,           // demand once the generic arrives
+        expiryRound: 6,
+        priceMax: 60
+      },
+
+      noise: 0.03,                // +/- 3% seeded shock to the demand intercept
+
+      /* Score width per universe. score = 100 * max(0, 1 - regret / width).
+         Traced from the passive and random baselines - see mondi.md. */
+      scoreWidth: {
+        quadrato: 12,
+        cerchio: 500,
+        triangolo: 400,
+        uno: 1250
+      },
+      oligopolyCap: 120,          // oligopoly score ceiling, in points
+      lensCharges: 6
+    },
+
+    /* ---- grade bands, lowest first (composite score out of 106) ------ */
+    grades: [
+      { min: 0,  label: 'stallholder' },
+      { min: 35, label: 'franchisee' },
+      { min: 55, label: 'regional manager' },
+      { min: 72, label: 'market maker' },
+      { min: 88, label: 'multiversal tycoon' }
+    ],
+
+    /* ---- universe copy ---------------------------------------------- */
+    worlds: {
+      quadrato: {
+        name: 'mondo quadrato',
+        structure: 'perfect competition',
+        colour: 'red',
+        premise: 'Hundreds of identical pizzerias, one identical pizza, and a price nobody sets. You choose how much to make and what to ask for it.',
+        lever: 'Choose a quantity, then name your asking price. The market has already decided what a pizza costs.',
+        news: [
+          'the trade board posts today\u2019s clearing price at ',
+          'another arcade of identical kitchens opens on the ring road',
+          'buyers compare every stall in seconds; nobody pays over the odds',
+          'margins thin as the count of kitchens climbs'
+        ]
+      },
+      cerchio: {
+        name: 'mondo cerchio',
+        structure: 'monopolistic competition',
+        colour: 'yellow',
+        premise: 'Your pizza is not quite like anyone else\u2019s, and that buys you a little room on price. Copycats are watching.',
+        lever: 'Set your price and your brand spend for the month. Brand spend works this month only.',
+        news: [
+          'a new stone-baked imitator opens two streets away',
+          'the food column praises your crust, briefly',
+          'three more kitchens copy your signature topping',
+          'customers say every pizzeria now looks the same'
+        ]
+      },
+      triangolo: {
+        name: 'mondo triangolo',
+        structure: 'oligopoly',
+        colour: 'blue',
+        premise: 'Three chains, one city. Rosso and Blu watch your price board the way you watch theirs.',
+        lever: 'Set your price. Rivals match a cut and ignore a rise, so think about their reply before you move.',
+        news: [
+          'rosso and blu keep their boards unchanged again',
+          'the trade press calls the three-way price freeze \u201cremarkably stable\u201d',
+          'a competition lawyer writes about pizza in the sunday paper',
+          'analysts note that nobody has moved first in months'
+        ]
+      },
+      uno: {
+        name: 'mondo uno',
+        structure: 'monopoly',
+        colour: 'black',
+        premise: 'You hold the patent on the only oven in the world that makes this pizza. There is no second pizzeria.',
+        lever: 'Set your price. There is no rival reply to worry about, only the demand curve.',
+        news: [
+          'the patent office confirms your oven claim stands',
+          'a consumer group asks why one pizza costs so much',
+          'queues form; there is nowhere else to go',
+          'a rival files a generic oven design with the patent office'
+        ]
+      }
+    },
+
+    /* ---- feedback bank. One line per month, up to three per universe
+            in the debrief. Tokens in {braces} are filled from play. ---- */
+    feedback: {
+      quadrato: {
+        askAbove: 'you asked {ask} in a market clearing at {price}. Nobody bought a single pizza and you paid the full {cost} to make them. That is what a horizontal demand curve feels like from the inside.',
+        askBelow: 'you asked {ask} when the market was paying {price}, so you left {left} on the table. A price taker can sell everything at the market price; there is no reason to discount.',
+        qLow: 'you made {q} when marginal cost reached the market price at {qStar}. Every pizza between the two would have added more revenue than cost.',
+        qHigh: 'you made {q}, past the point where marginal cost passed the price at {qStar}. The last pizzas cost more to bake than they earned.',
+        onTarget: 'you produced where price met marginal cost. In perfect competition that is the whole of the firm\u2019s problem: P = MR = MC.',
+        profitEarly: 'you made {profit} this month. Those profits are a signal, and the signal is being read: {entrants} more kitchens open next month.',
+        profitGone: 'price is down to {price} and profit is near zero. Entry has done exactly what the model says it does.'
+      },
+      cerchio: {
+        brandHigh: 'you spent {S} on brand. The last pound of it bought less than a pound of profit; the marginal return on brand spend falls as fast as the square root that drives it.',
+        brandZero: 'you spent nothing on brand. A little differentiation shifts your demand curve out, and the first pounds of it are the cheapest.',
+        pricedLikePC: 'you priced at {price}, close to marginal cost of {mc}. You are not a price taker here; your demand curve slopes down, and pricing as if it were flat throws away the margin differentiation bought you.',
+        squeeze: 'profit fell to {profit}. Copycats shifted your demand curve inwards, which is what free entry does to differentiated profit.',
+        tangency: 'you sold {q} pizzas. Minimum average cost sits at 100, so you are carrying {gap} pizzas of excess capacity: the standing cost of variety.',
+        stillAbove: 'you charged {price} against marginal cost of {mc}. Market power survives entry even when profit does not.'
+      },
+      triangolo: {
+        cutMatched: 'you cut to {price}, and Rosso and Blu matched within the month. You moved the whole market down and gained no share: demand below the kink is steep.',
+        raiseAlone: 'you raised to {price} and the rivals held at {p0}. You kept the margin and lost the customers: demand above the kink is flat.',
+        heldKink: 'you held at {p0}. With marginal revenue jumping from {mrUp} above the kink to {mrDown} below it, marginal cost of {mc} sits inside the gap, so the price does not move.',
+        costShock: 'flour costs rose this month and marginal cost went to {mc}. It is still inside the marginal revenue gap, so the profit maximising price is unchanged at {p0}. Rigid prices are not laziness; they are the kink.',
+        leadOffer: 'Rosso announced {lead}. Follow and the prevailing price rises for everyone; hold and Rosso retreats next month. Price leadership only works if somebody follows.',
+        leadFollowed: 'you followed Rosso to {lead}. It cost you {gap} this month against undercutting, and it raised the prevailing price for every month that follows.',
+        leadIgnored: 'you stayed below Rosso\u2019s announcement and took the extra customers. Rosso reverts next month, which is precisely why price leadership is fragile.',
+        cartelOffer: 'Blu proposes a joint price of {cartel}. Price fixing is a criminal offence in the UK under the Enterprise Act 2002 and is prohibited by Chapter I of the Competition Act 1998. Whatever you decide, decide it knowing that.',
+        cartelHeld: 'the cartel held at {cartel} and earned {profit}, against {legal} on the legal path. Nobody has come knocking. Yet.',
+        cartelCheated: 'you undercut your own cartel at {price} and took {profit} in a single month. Rosso and Blu answer with a price war at {war} for {warRounds} months.',
+        cartelBustAuthority: 'the competition authority opened a file. You were fined {fine}, ten per cent of everything this universe has taken so far.',
+        cartelBustRival: '{rival} applied for leniency first and walked away with immunity. You were fined {fine}.',
+        cartelReported: 'you reported the cartel first and took immunity, so the fine was zero. Rosso and Blu now price at {war}.',
+        warRound: 'the price war continues at {war}. Your best legal reply is {best}, which earns {bestProfit}: a long way below the {legal} a quiet market pays.'
+      },
+      uno: {
+        inelastic: 'you priced at {price}, where elasticity is {e}. Demand is inelastic there, so a higher price would raise revenue and cut output, and therefore cost, at the same time. No profit maximising monopolist with positive marginal cost stays in that region.',
+        nearMC: 'you priced at {price}, close to the competitive level of {pc}. Generous, and it cost you {gap} of profit this month.',
+        atOptimum: 'you priced where marginal revenue met marginal cost, with elasticity at {e}: firmly in the elastic region, as monopoly theory requires.',
+        dwl: 'at your price, {dwl} of surplus was destroyed: pizzas that buyers valued above their marginal cost and nobody baked.',
+        expiry: 'the generic oven arrives. Demand is flatter now, and the new profit maximising price is {newP}, not {oldP}.',
+        expirySlow: 'you were still pricing near the old patent price of {oldP} after the generic arrived. The new optimum is {newP}; adjusting late cost you {gap}.'
+      }
+    },
+
+    /* ---- guardrail notes shown in the debrief ------------------------ */
+    notes: [
+      'All profit figures are economic profit: revenue minus every cost, including the opportunity cost of the money and effort tied up in the firm. Zero economic profit is a normal, survivable outcome.',
+      'A profit maximising monopolist with positive marginal cost always operates on the elastic part of demand, where marginal revenue is positive. Monopoly demand is not inelastic.',
+      'In perfect competition and in monopolistic competition, free entry drives economic profit towards zero in the long run. The short run is where the profits live.',
+      'The kinked demand model explains why an oligopoly price is rigid once it exists. It does not explain how that price got there; leadership, convention and history do that.',
+      'Brand spend here works for one month only, with no brand stock carried forward. That is a simplification, made so that each month has a well defined optimum.'
+    ]
+  };
+
+  /* ==========================================================================
+     PRNG and hashing
+     ======================================================================== */
+  function mulberry32(a) {
+    a = a >>> 0;
+    return function () {
+      a = (a + 0x6D2B79F5) >>> 0;
+      var t = a;
+      t = Math.imul(t ^ (t >>> 15), 1 | t);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function fnv1a(str) {
+    var h = 0x811c9dc5;
+    for (var i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 0x01000193) >>> 0;
+    }
+    return h >>> 0;
+  }
+
+  function code4(str) {
+    var s = fnv1a(str).toString(36).toUpperCase();
+    while (s.length < 4) s = '0' + s;
+    return s.slice(-4);
+  }
+
+  function round2(x) { return Math.round(x * 100) / 100; }
+  function clamp(x, lo, hi) { return x < lo ? lo : (x > hi ? hi : x); }
+
+  /* ==========================================================================
+     Shared cost function
+     ======================================================================== */
+  var K = CONFIG.model.cost;
+
+  function tc(q, c) { c = (c === undefined) ? K.c : c; return K.F + c * q + K.d * q * q; }
+  function mc(q, c) { c = (c === undefined) ? K.c : c; return c + 2 * K.d * q; }
+  function atc(q, c) { return q <= 0 ? Infinity : tc(q, c) / q; }
+  function minAtcQ() { return Math.sqrt(K.F / K.d); }   // 100
+
+  /* ==========================================================================
+     Seeded scenario. Every random draw the game will ever need is generated
+     up front, so that the player and all four bots face identical luck.
+     ======================================================================== */
+  var WORLDS = ['quadrato', 'cerchio', 'triangolo', 'uno'];
+
+  function makeScenario(seed) {
+    var r = mulberry32(seed);
+    var n = CONFIG.rounds + 2;
+    var sc = { seed: seed, noise: {}, detect: [], lenRosso: [], lenBlu: [], news: {} };
+    var i, w, k;
+    for (k = 0; k < WORLDS.length; k++) {
+      w = WORLDS[k];
+      sc.noise[w] = [];
+      sc.news[w] = [];
+      for (i = 0; i < n; i++) {
+        sc.noise[w].push(1 + (r() * 2 - 1) * CONFIG.model.noise);
+        sc.news[w].push(Math.floor(r() * CONFIG.worlds[w].news.length));
+      }
+    }
+    sc.leadershipRound = 2 + Math.floor(r() * 3);     // 2, 3 or 4
+    sc.cartelRound = 3 + Math.floor(r() * 2);         // 3 or 4
+    for (i = 0; i < n; i++) {
+      sc.detect.push(r());
+      sc.lenRosso.push(r());
+      sc.lenBlu.push(r());
+    }
+    return sc;
+  }
+
+  /* ==========================================================================
+     A small helper: coarse-then-fine scan of a single price variable.
+     Returns the best x on a 0.01 grid without evaluating 6000 points.
+     ======================================================================== */
+  function scanPrice(f, lo, hi) {
+    var bestX = lo, bestY = -Infinity, x, y;
+    for (x = lo; x <= hi + 1e-9; x += 0.25) {
+      y = f(x);
+      if (y > bestY) { bestY = y; bestX = x; }
+    }
+    var a = Math.max(lo, bestX - 0.3), b = Math.min(hi, bestX + 0.3);
+    for (x = a; x <= b + 1e-9; x += 0.01) {
+      y = f(x);
+      if (y > bestY) { bestY = y; bestX = x; }
+    }
+    bestX = Math.round(bestX * 100) / 100;
+    return { x: bestX, y: f(bestX) };
+  }
+
+  /* ==========================================================================
+     MONDO QUADRATO - perfect competition
+     ======================================================================== */
+  var QCF = CONFIG.model.quadrato;
+
+  function quadInit() { return { world: 'quadrato', round: 1, N: QCF.firms0 }; }
+
+  function quadPrice(N, shock) {
+    return (QCF.demandIntercept * shock + K.c * 10 * N) / (QCF.demandSlope + 10 * N);
+  }
+
+  // Attach this round's realised market data to the carried state.
+  function quadPrepare(st, sc) {
+    // Round 1 is the calibrated opening state, so the shock starts in round 2.
+    var shock = st.round === 1 ? 1 : sc.noise.quadrato[st.round - 1];
+    // The clearing price is floored to whole pennies so that an asking price
+    // typed as "the market price" matches it exactly.
+    var price = Math.floor(quadPrice(st.N, shock) * 100) / 100;
+    return {
+      world: 'quadrato', round: st.round, N: st.N, shock: shock,
+      price: price,
+      demandIntercept: QCF.demandIntercept * shock,
+      marketQ: QCF.demandIntercept * shock - QCF.demandSlope * price
+    };
+  }
+
+  // Grid search over the player's whole decision space.
+  function quadOptimum(rs) {
+    var best = { q: 0, profit: -Infinity };
+    for (var q = 0; q <= QCF.qMax; q++) {
+      var p = q * rs.price - tc(q);
+      if (p > best.profit) { best.q = q; best.profit = p; }
+    }
+    return { decision: { q: best.q, ask: round2(rs.price) }, profit: best.profit };
+  }
+
+  function quadPassive(rs) { return { q: 100, ask: round2(rs.price) }; }
+
+  function quadRandom(rs, r) {
+    return { q: Math.round(r() * QCF.qMax), ask: round2(rs.price - 5 + r() * 10) };
+  }
+
+  function quadStep(rs, dec) {
+    var q = clamp(Math.round(dec.q), 0, QCF.qMax);
+    var ask = dec.ask;
+    var sold = (ask <= rs.price + 1e-9) ? q : 0;
+    var cost = tc(q);
+    var revenue = sold * ask;
+    var profit = revenue - cost;
+    var repQ = 10 * (rs.price - K.c);
+    var repProfit = rs.price * repQ - tc(repQ);
+    var entrants = Math.round(repProfit / QCF.entryDivisor);
+    var nextN = Math.max(QCF.firmsMin, rs.N + entrants);
+    return {
+      outcome: {
+        q: q, sold: sold, ask: ask, price: rs.price, revenue: revenue,
+        cost: cost, profit: profit, mc: mc(q), atc: atc(q),
+        entrants: entrants, repProfit: repProfit,
+        priceEqualsMC: Math.abs(mc(q) - rs.price) < 0.5
+      },
+      nextState: { world: 'quadrato', round: rs.round + 1, N: nextN }
+    };
+  }
+
+  /* ==========================================================================
+     MONDO CERCHIO - monopolistic competition
+     ======================================================================== */
+  var CCF = CONFIG.model.cerchio;
+
+  function cerInit() { return { world: 'cerchio', round: 1, a: CCF.a0 }; }
+
+  function cerPrepare(st, sc) {
+    // Round 1 is the calibrated opening state, so the shock starts in round 2.
+    var shock = st.round === 1 ? 1 : sc.noise.cerchio[st.round - 1];
+    return { world: 'cerchio', round: st.round, a: st.a, shock: shock, aEff: st.a * shock };
+  }
+
+  function cerQ(aEff, P, S) {
+    return Math.max(0, aEff + CCF.beta * Math.sqrt(S) - CCF.b * P);
+  }
+
+  function cerProfit(aEff, P, S) {
+    var q = cerQ(aEff, P, S);
+    return P * q - tc(q) - S;
+  }
+
+  // Closed form for the best price at a given demand intercept, brand held at S.
+  function cerClosedForm(A) {
+    var q = (A - CCF.b * K.c) / (2 + 2 * CCF.b * K.d);
+    if (q < 0) q = 0;
+    var P = (A - q) / CCF.b;
+    return { q: q, P: P, profit: P * q - tc(q) };
+  }
+
+  function cerOptimum(rs) {
+    var best = { P: 0, S: 0, profit: -Infinity };
+    for (var S = 0; S <= CCF.brandMax + 1e-9; S += CCF.brandStep) {
+      var A = rs.aEff + CCF.beta * Math.sqrt(S);
+      var got = scanPrice(function (P) { return cerProfit(rs.aEff, P, S); }, 0, CCF.priceMax);
+      if (got.y > best.profit) { best = { P: got.x, S: S, profit: got.y }; }
+      void A;
+    }
+    return { decision: { P: best.P, S: best.S }, profit: best.profit };
+  }
+
+  function cerPassive() { return { P: 20, S: 0 }; }
+
+  function cerRandom(rs, r) {
+    return { P: round2(r() * 40), S: Math.round(r() * CCF.brandMax / CCF.brandStep) * CCF.brandStep };
+  }
+
+  function cerStep(rs, dec) {
+    var P = dec.P, S = clamp(dec.S, 0, CCF.brandMax);
+    var q = cerQ(rs.aEff, P, S);
+    var profit = P * q - tc(q) - S;
+    var opt = cerOptimum(rs);
+    var drop = CCF.kappa * Math.max(opt.profit, 0);
+    var rise = opt.profit < 0 ? CCF.kappa * Math.min(-opt.profit, 200) : 0;
+    var nextA = rs.a - drop + rise;
+    return {
+      outcome: {
+        P: P, S: S, q: q, revenue: P * q, cost: tc(q), profit: profit,
+        mc: mc(q), atc: atc(q), a: rs.a, aEff: rs.aEff,
+        entry: drop > 0, drop: drop
+      },
+      nextState: { world: 'cerchio', round: rs.round + 1, a: nextA }
+    };
+  }
+
+  /* ==========================================================================
+     MONDO TRIANGOLO - oligopoly
+     ======================================================================== */
+  var TCF = CONFIG.model.triangolo;
+
+  function triInit() {
+    return {
+      world: 'triangolo', round: 1, P0: TCF.p0, warLeft: 0,
+      cartel: 'none',          // none | active | over
+      cartelAge: 0, cartelEver: false, fined: false, immunity: false,
+      cumRevenue: 0, ledFollowed: false, leadDone: false
+    };
+  }
+
+  function triCost(round) { return round >= TCF.cShockRound ? TCF.cShock : K.c; }
+
+  function triPrepare(st, sc) {
+    // Round 1 is the calibrated opening state, so the shock starts in round 2.
+    var shock = st.round === 1 ? 1 : sc.noise.triangolo[st.round - 1];
+    var leadActive = (!st.leadDone && st.round === sc.leadershipRound &&
+                      st.warLeft === 0 && st.cartel !== 'active');
+    var offer = (st.round === sc.cartelRound && st.warLeft === 0 &&
+                 st.cartel === 'none' && !st.cartelEver);
+    var rs = {};
+    for (var k in st) if (Object.prototype.hasOwnProperty.call(st, k)) rs[k] = st[k];
+    rs.shock = shock;
+    rs.alpha = TCF.alpha * shock;
+    rs.c = triCost(st.round);
+    rs.leadActive = leadActive;
+    rs.offer = offer;
+    rs.cartelPrice = TCF.cartelPrice;
+    return rs;
+  }
+
+  // What the rivals post, given the state and the player's price.
+  function triRivals(rs, p) {
+    if (rs.warLeft > 0) return { pr: TCF.warPrice, mode: 'war' };
+    if (rs.cartel === 'active') return { pr: TCF.cartelPrice, mode: 'cartel' };
+    if (rs.leadActive) return { pr: TCF.leadPrice, mode: 'lead' };
+    if (p < rs.P0 - 1e-9) return { pr: p, mode: 'matched' };
+    return { pr: rs.P0, mode: 'held' };
+  }
+
+  function triQ(rs, p) {
+    var r = triRivals(rs, p);
+    return Math.max(0, rs.alpha - TCF.beta * p + TCF.gamma * (r.pr - p));
+  }
+
+  function triProfit(rs, p) {
+    var q = triQ(rs, p);
+    return p * q - tc(q, rs.c);
+  }
+
+  // The legal benchmark: the same state with no cartel running.
+  function triLegalState(rs) {
+    var ls = {};
+    for (var k in rs) if (Object.prototype.hasOwnProperty.call(rs, k)) ls[k] = rs[k];
+    ls.cartel = 'none';
+    return ls;
+  }
+
+  function triOptimum(rs) {
+    var ls = triLegalState(rs);
+    var got = scanPrice(function (p) { return triProfit(ls, p); }, 1, TCF.priceMax);
+    return { decision: { p: got.x, cartel: 'decline', report: false }, profit: got.y };
+  }
+
+  function triPassive(rs) {
+    // Specified passive default: sit on the prevailing price and decline the offer.
+    return { p: rs.cartel === 'active' ? TCF.cartelPrice : rs.P0, cartel: 'decline', report: false };
+  }
+
+  function triRandom(rs, r) {
+    return { p: round2(10 + r() * 35), cartel: r() < 0.5 ? 'accept' : 'decline', report: r() < 0.1 };
+  }
+
+  function triStep(rs, dec, sc) {
+    var st = {};
+    for (var k in rs) if (Object.prototype.hasOwnProperty.call(rs, k)) st[k] = rs[k];
+    var notes = [];
+
+    // 1. Accepting the offer makes the cartel live in this very round.
+    if (rs.offer && dec.cartel === 'accept') {
+      st.cartel = 'active';
+      st.cartelAge = 0;
+      st.cartelEver = true;
+      notes.push('cartel-joined');
+    }
+
+    var live = st.cartel === 'active';
+    var p = clamp(dec.p, 0, TCF.priceMax);
+    var view = triRivals(st, p);
+    var q = Math.max(0, st.alpha - TCF.beta * p + TCF.gamma * (view.pr - p));
+    var revenue = p * q;
+    var cost = tc(q, rs.c);
+    var profit = revenue - cost;
+    var cheated = live && p < TCF.cartelPrice - 0.005;
+
+    st.cumRevenue = rs.cumRevenue + revenue;
+
+    var fine = 0, bustBy = null;
+
+    if (live) {
+      st.cartelAge = rs.cartelAge + 1;
+      var idx = rs.round;
+      var lenP = TCF.lenientBase + TCF.lenientStep * (st.cartelAge - 1);
+      var rosso = sc.lenRosso[idx] < lenP;
+      var blu = sc.lenBlu[idx] < lenP;
+      var caught = sc.detect[idx] < TCF.detectProb;
+
+      if (dec.report) {
+        st.immunity = true;
+        st.cartel = 'over';
+        st.warLeft = TCF.warRounds;
+        notes.push('reported');
+      } else if (rosso || blu) {
+        bustBy = rosso ? 'Rosso' : 'Blu';
+        fine = TCF.fineRate * st.cumRevenue;
+        st.fined = true;
+        st.cartel = 'over';
+        st.warLeft = TCF.bustWarRounds;
+        notes.push('rival-leniency');
+      } else if (caught) {
+        bustBy = 'authority';
+        fine = TCF.fineRate * st.cumRevenue;
+        st.fined = true;
+        st.cartel = 'over';
+        st.warLeft = TCF.bustWarRounds;
+        notes.push('authority');
+      } else if (cheated) {
+        st.cartel = 'over';
+        st.warLeft = TCF.warRounds;
+        notes.push('cheated');
+      } else {
+        notes.push('cartel-held');
+      }
+      if (cheated && st.cartel === 'over' && notes.indexOf('cheated') === -1) notes.push('cheated');
+    } else {
+      if (st.warLeft > 0) { st.warLeft = st.warLeft - 1; if (st.warLeft === 0) st.P0 = TCF.p0; }
+      if (st.leadActive) {
+        st.leadDone = true;
+        if (p >= TCF.leadPrice - 1e-9) { st.P0 = TCF.leadPrice; st.ledFollowed = true; notes.push('led-followed'); }
+        else { notes.push('led-ignored'); if (p < st.P0) st.P0 = round2(p); }
+      } else if (view.mode === 'matched') {
+        st.P0 = round2(p);
+        notes.push('matched');
+      } else if (p > st.P0 + 1e-9) {
+        notes.push('held');
+      } else {
+        notes.push('steady');
+      }
+    }
+
+    profit = profit - fine;
+    st.round = rs.round + 1;
+    delete st.shock; delete st.alpha; delete st.c;
+    delete st.leadActive; delete st.offer; delete st.cartelPrice;
+
+    return {
+      outcome: {
+        p: p, q: q, rivalPrice: view.pr, mode: view.mode, revenue: revenue,
+        cost: cost, profit: profit, fine: fine, bustBy: bustBy, cheated: cheated,
+        mc: mc(q, rs.c), atc: atc(q, rs.c), c: rs.c, notes: notes,
+        cartelLive: live, P0: rs.P0
+      },
+      nextState: st
+    };
+  }
+
+  /* ==========================================================================
+     MONDO UNO - patent monopoly
+     ======================================================================== */
+  var UCF = CONFIG.model.uno;
+
+  function unoInit() { return { world: 'uno', round: 1, patent: true }; }
+
+  function unoPrepare(st, sc) {
+    // Round 1 is the calibrated opening state, so the shock starts in round 2.
+    var shock = st.round === 1 ? 1 : sc.noise.uno[st.round - 1];
+    var patent = st.round < UCF.expiryRound;
+    return {
+      world: 'uno', round: st.round, patent: patent, shock: shock,
+      A: (patent ? UCF.A : UCF.A2) * shock,
+      b: patent ? UCF.b : UCF.b2
+    };
+  }
+
+  function unoQ(rs, P) { return Math.max(0, rs.A - rs.b * P); }
+  function unoProfit(rs, P) { var q = unoQ(rs, P); return P * q - tc(q); }
+
+  function unoOptimum(rs) {
+    var got = scanPrice(function (P) { return unoProfit(rs, P); }, 0, UCF.priceMax);
+    return { decision: { P: got.x }, profit: got.y };
+  }
+
+  function unoElasticity(rs, P) {
+    var q = unoQ(rs, P);
+    if (q <= 0) return -Infinity;
+    return -rs.b * P / q;
+  }
+
+  // Quantity at which price equals marginal cost.
+  function unoCompetitiveQ(rs) {
+    return (rs.A / rs.b - K.c) / (1 / rs.b + 2 * K.d);
+  }
+
+  function unoDWL(rs, q) {
+    var qc = unoCompetitiveQ(rs);
+    var pDemand = (rs.A - q) / rs.b;
+    var gap = Math.abs(pDemand - mc(q));
+    return 0.5 * gap * Math.abs(qc - q);
+  }
+
+  function unoPassive() { return { P: 20 }; }
+  function unoRandom(rs, r) { return { P: round2(r() * 50) }; }
+
+  function unoStep(rs, dec) {
+    var P = clamp(dec.P, 0, UCF.priceMax);
+    var q = unoQ(rs, P);
+    var profit = P * q - tc(q);
+    return {
+      outcome: {
+        P: P, q: q, revenue: P * q, cost: tc(q), profit: profit,
+        mc: mc(q), atc: atc(q), elasticity: unoElasticity(rs, P),
+        dwl: unoDWL(rs, q), competitiveQ: unoCompetitiveQ(rs),
+        competitiveP: (rs.A - unoCompetitiveQ(rs)) / rs.b,
+        patent: rs.patent
+      },
+      nextState: { world: 'uno', round: rs.round + 1, patent: rs.round + 1 < UCF.expiryRound }
+    };
+  }
+
+  /* ==========================================================================
+     The four universes behind one interface
+     ======================================================================== */
+  var worlds = {
+    quadrato: { init: quadInit, prepare: quadPrepare, optimum: quadOptimum, step: quadStep, passive: quadPassive, random: quadRandom },
+    cerchio: { init: cerInit, prepare: cerPrepare, optimum: cerOptimum, step: cerStep, passive: cerPassive, random: cerRandom },
+    triangolo: { init: triInit, prepare: triPrepare, optimum: triOptimum, step: triStep, passive: triPassive, random: triRandom },
+    uno: { init: unoInit, prepare: unoPrepare, optimum: unoOptimum, step: unoStep, passive: unoPassive, random: unoRandom }
+  };
+
+  /* ==========================================================================
+     Scoring
+     ======================================================================== */
+  function scoreRound(world, regret) {
+    var w = CONFIG.model.scoreWidth[world];
+    var s = 100 * (1 - regret / w);
+    var cap = world === 'triangolo' ? CONFIG.model.oligopolyCap : 100;
+    return clamp(s, 0, cap);
+  }
+
+  /* ==========================================================================
+     Running a whole game. policy(world, rstate, round) returns a decision.
+     Used for the player replay, for verification and for the bots.
+     ======================================================================== */
+  function runGame(seed, policy) {
+    var sc = makeScenario(seed);
+    var state = {}, totals = {}, scores = {}, log = [], w, i, k;
+    for (k = 0; k < WORLDS.length; k++) {
+      w = WORLDS[k];
+      state[w] = worlds[w].init();
+      totals[w] = 0;
+      scores[w] = [];
+    }
+    for (i = 1; i <= CONFIG.rounds; i++) {
+      for (k = 0; k < WORLDS.length; k++) {
+        w = WORLDS[k];
+        var rs = worlds[w].prepare(state[w], sc);
+        var dec = policy(w, rs, i, sc);
+        var opt = worlds[w].optimum(rs);
+        var res = worlds[w].step(rs, dec, sc);
+        var regret = opt.profit - res.outcome.profit;
+        var s = scoreRound(w, regret);
+        totals[w] += res.outcome.profit;
+        scores[w].push(s);
+        log.push({
+          r: i, w: w, d: dec, profit: res.outcome.profit, opt: opt.profit,
+          optDecision: opt.decision, score: s, outcome: res.outcome, rs: rs
+        });
+        state[w] = res.nextState;
+      }
+    }
+    var mean = {}, overall = 0;
+    for (k = 0; k < WORLDS.length; k++) {
+      w = WORLDS[k];
+      mean[w] = scores[w].reduce(function (a, b) { return a + b; }, 0) / CONFIG.rounds;
+      overall += mean[w];
+    }
+    overall = overall / WORLDS.length;
+    return { seed: seed, scenario: sc, totals: totals, scores: scores, mean: mean, decision: overall, log: log };
+  }
+
+  /* ==========================================================================
+     Archetype bots
+     ======================================================================== */
+  var bots = {
+    textbook: function () {
+      return function (w, rs) { return worlds[w].optimum(rs).decision; };
+    },
+    passive: function () {
+      return function (w, rs) { return worlds[w].passive(rs); };
+    },
+    coinflip: function (seed) {
+      var r = mulberry32((seed ^ 0x9E3779B9) >>> 0);
+      return function (w, rs) { return worlds[w].random(rs, r); };
+    },
+    // Accepts the cartel, holds for one month, then undercuts it.
+    shark: function () {
+      return function (w, rs) {
+        if (w !== 'triangolo') return worlds[w].optimum(rs).decision;
+        if (rs.offer) return { p: TCF.cartelPrice, cartel: 'accept', report: false };
+        if (rs.cartel === 'active') {
+          if (rs.cartelAge >= 1) {
+            var ls = triLegalState(rs);
+            ls.cartel = 'none'; ls.warLeft = 0; ls.leadActive = false;
+            var cheat = scanPrice(function (p) {
+              var qq = Math.max(0, rs.alpha - TCF.beta * p + TCF.gamma * (TCF.cartelPrice - p));
+              return p * qq - tc(qq, rs.c);
+            }, 1, TCF.priceMax);
+            return { p: cheat.x, cartel: 'accept', report: false };
+          }
+          return { p: TCF.cartelPrice, cartel: 'accept', report: false };
+        }
+        return worlds[w].optimum(rs).decision;
+      };
+    }
+  };
+
+  /* ==========================================================================
+     The Diagnosis - eight items written from the player's own game
+     ======================================================================== */
+  function pick(log, world, round) {
+    for (var i = 0; i < log.length; i++) if (log[i].w === world && log[i].r === round) return log[i];
+    return null;
+  }
+
+  function priceOf(e) {
+    if (e.w === 'quadrato') return e.outcome.ask;
+    if (e.w === 'cerchio') return e.outcome.P;
+    if (e.w === 'triangolo') return e.outcome.p;
+    return e.outcome.P;
+  }
+
+  var WORLD_LABEL = {
+    quadrato: 'mondo quadrato', cerchio: 'mondo cerchio',
+    triangolo: 'mondo triangolo', uno: 'mondo uno'
+  };
+
+  function money(x, dp) {
+    dp = dp === undefined ? 0 : dp;
+    var neg = x < 0;
+    var v = Math.abs(x).toFixed(dp).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return (neg ? '-' : '') + CONFIG.currency + v;
+  }
+
+  // Deterministic shuffle, so the right answer is not always in the same slot.
+  function shuffle(items, correct, rnd) {
+    var idx = items.map(function (_, i) { return i; });
+    for (var i = idx.length - 1; i > 0; i--) {
+      var j = Math.floor(rnd() * (i + 1));
+      var t = idx[i]; idx[i] = idx[j]; idx[j] = t;
+    }
+    return {
+      options: idx.map(function (i) { return items[i]; }),
+      correct: idx.indexOf(correct)
+    };
+  }
+
+  function diagnosis(game) {
+    var log = game.log, R = CONFIG.rounds;
+    var rnd = mulberry32((game.seed ^ 0x5bf03635) >>> 0);
+    var items = [];
+    var last = {};
+    WORLDS.forEach(function (w) { last[w] = pick(log, w, R); });
+
+    function add(question, options, correctText, explain) {
+      var sh = shuffle(options, options.indexOf(correctText), rnd);
+      items.push({ question: question, options: sh.options, correct: sh.correct, explain: explain });
+    }
+
+    /* 1 - where price met marginal cost */
+    var gaps = WORLDS.map(function (w) { return { w: w, g: Math.abs(priceOf(last[w]) - last[w].outcome.mc) }; });
+    gaps.sort(function (a, b) { return a.g - b.g; });
+    add('in which universe did your month ' + R + ' price sit closest to marginal cost?',
+      WORLDS.map(function (w) { return WORLD_LABEL[w]; }),
+      WORLD_LABEL[gaps[0].w],
+      'your gaps between price and marginal cost were ' + gaps.map(function (g) {
+        return WORLD_LABEL[g.w] + ' ' + money(g.g, 2);
+      }).join(', ') + '. price equals marginal cost only where the firm has no market power over its own price.');
+
+    /* 2 - the tangency */
+    var c1 = pick(log, 'cerchio', 1), c8 = last.cerchio;
+    add('your mondo cerchio profit moved from ' + money(c1.profit) + ' in month 1 to ' + money(c8.profit) +
+        ' in month ' + R + ', while your price stayed above marginal cost. why did the profit go?',
+      ['copycats entered, which pulled your demand curve inwards until price only just covered average cost',
+       'your marginal cost rose month by month',
+       'brand spending cancelled out the margin it earned',
+       'customers stopped caring about the differences between pizzerias'],
+      'copycats entered, which pulled your demand curve inwards until price only just covered average cost',
+      'free entry competes away economic profit in monopolistic competition, but it does not remove market power. ' +
+      'in the long run price equals average cost while still exceeding marginal cost, and output settles below the minimum of average cost.');
+
+    /* 3 - price rigidity through the cost shock */
+    var t5 = pick(log, 'triangolo', 5), t5K = null;
+    if (t5) {
+      var TT = CONFIG.model.triangolo;
+      var qk = Math.max(0, t5.rs.alpha - TT.beta * t5.outcome.P0);
+      t5K = {
+        up: (t5.rs.alpha + TT.gamma * t5.outcome.P0 - 2 * qk) / (TT.beta + TT.gamma),
+        down: (t5.rs.alpha - 2 * qk) / TT.beta,
+        mcBefore: mc(qk, K.c), mcAfter: mc(qk, TT.cShock)
+      };
+    }
+    add('flour costs rose in month 5 in mondo triangolo. what happened to the profit maximising price?',
+      ['it did not move, because marginal cost was still inside the gap in marginal revenue at the kink',
+       'it rose by the full increase in marginal cost',
+       'it fell, because the rivals cut first',
+       'it rose by half the increase in marginal cost'],
+      'it did not move, because marginal cost was still inside the gap in marginal revenue at the kink',
+      'marginal revenue jumps at the kink, from ' + money(t5 ? t5K.up : 14.5, 2) + ' just above it to ' +
+      money(t5 ? t5K.down : -23, 2) + ' just below. marginal cost moved from ' + money(t5 ? t5K.mcBefore : 13, 2) +
+      ' to ' + money(t5 ? t5K.mcAfter : 14, 2) + ' and stayed inside that gap, ' +
+      'so the optimal price stayed at ' + money(t5 ? t5.optDecision.p : 22, 2) +
+      '. the kink explains why the price is rigid; it does not explain how that price was chosen in the first place.');
+
+    /* 4 - ranking by price */
+    var order = WORLDS.slice().sort(function (a, b) { return priceOf(last[a]) - priceOf(last[b]); });
+    function orderText(arr) { return arr.map(function (w) { return WORLD_LABEL[w].replace('mondo ', ''); }).join(' - '); }
+    var wrong1 = [order[1], order[0], order[2], order[3]];
+    var wrong2 = order.slice().reverse();
+    var wrong3 = [order[0], order[2], order[1], order[3]];
+    add('rank the four universes by the price your customers paid in month ' + R + ', lowest first. ' +
+        'lower prices with higher output mean more consumer surplus.',
+      [orderText(order), orderText(wrong1), orderText(wrong2), orderText(wrong3)],
+      orderText(order),
+      'your month ' + R + ' prices were ' + order.map(function (w) {
+        return WORLD_LABEL[w].replace('mondo ', '') + ' ' + money(priceOf(last[w]), 2);
+      }).join(', ') + '. the further a market is from price taking, the more of the surplus the firm keeps.');
+
+    /* 5 - elasticity in the monopoly */
+    var u8 = last.uno, e = u8.outcome.elasticity;
+    var elastic = Math.abs(e) > 1;
+    add('at your month ' + R + ' price in mondo uno, demand elasticity was ' + e.toFixed(2) + '. what does that tell you?',
+      ['demand is elastic there: a price rise cuts quantity by proportionally more, which is where a profit maximiser has to be',
+       'demand is inelastic there: a price rise would have raised revenue and cut output, so you were leaving money behind',
+       'elasticity says nothing about the profit maximising price',
+       'demand is unit elastic there, which is always the profit maximising point'],
+      elastic
+        ? 'demand is elastic there: a price rise cuts quantity by proportionally more, which is where a profit maximiser has to be'
+        : 'demand is inelastic there: a price rise would have raised revenue and cut output, so you were leaving money behind',
+      'marginal revenue is positive only where demand is elastic. a monopolist with positive marginal cost sets marginal revenue equal to marginal cost, ' +
+      'so it always ends up on the elastic part of the demand curve. monopoly demand is not inelastic.');
+
+    /* 6 - entry in perfect competition */
+    var q1 = pick(log, 'quadrato', 1), q8 = last.quadrato;
+    add('your mondo quadrato profit went from ' + money(q1.profit) + ' in month 1 to ' + money(q8.profit) +
+        ' in month ' + R + ', and the market price fell from ' + money(q1.outcome.price, 2) + ' to ' + money(q8.outcome.price, 2) + '. why?',
+      ['profits attracted entry, and entry pushed the price down towards the minimum of average cost',
+       'your costs rose as you produced more',
+       'customers grew tired of pizza',
+       'the other firms agreed to cut prices together'],
+      'profits attracted entry, and entry pushed the price down towards the minimum of average cost',
+      'the number of kitchens went from ' + q1.rs.N + ' to ' + q8.rs.N + '. in perfect competition, ' +
+      'economic profit is a signal that draws in firms, and it keeps drawing them in until the price sits at the minimum of average cost, ' +
+      money(14, 2) + ' at an output of 100.');
+
+    /* 7 - excess capacity */
+    add('in month ' + R + ' you sold ' + Math.round(c8.outcome.q) + ' pizzas in mondo cerchio, where average cost is at its lowest at 100. what is that gap called?',
+      ['excess capacity: the standing cost of variety in monopolistic competition',
+       'deadweight loss',
+       'economies of scale',
+       'a supply shock'],
+      'excess capacity: the standing cost of variety in monopolistic competition',
+      'differentiated firms settle where the demand curve is tangent to average cost, which is to the left of the minimum. ' +
+      'every firm runs a little below its efficient scale; what buyers get in exchange is choice.');
+
+    /* 8 - the whole point */
+    var prices = WORLDS.map(function (w) { return { w: w, p: priceOf(last[w]) }; });
+    prices.sort(function (a, b) { return a.p - b.p; });
+    add('the oven, the staff and the cost curve were identical in all four universes. in month ' + R +
+        ' your price ranged from ' + money(prices[0].p, 2) + ' in ' + WORLD_LABEL[prices[0].w] + ' to ' +
+        money(prices[3].p, 2) + ' in ' + WORLD_LABEL[prices[3].w] + '. what explains the spread?',
+      ['market structure: how many firms there are, how substitutable their products are, and how rivals respond',
+       'differences in cost between the universes',
+       'differences in how hard you worked in each universe',
+       'random demand shocks'],
+      'market structure: how many firms there are, how substitutable their products are, and how rivals respond',
+      'this is the whole argument. costs set the floor. structure decides how far above that floor the price can sit, and who keeps the surplus.');
+
+    return items;
+  }
+
+  function gradeDiagnosis(items, answers) {
+    var correct = 0;
+    for (var i = 0; i < items.length; i++) if (answers[i] === items[i].correct) correct++;
+    return { correct: correct, total: items.length, pct: items.length ? 100 * correct / items.length : 0 };
+  }
+
+  /* ==========================================================================
+     Composite score, grade and verification
+     ======================================================================== */
+  function composite(decisionScore, diagPct, lensLeft) {
+    return 0.75 * decisionScore + 0.25 * diagPct + (lensLeft || 0);
+  }
+
+  function grade(score) {
+    var g = CONFIG.grades[0];
+    for (var i = 0; i < CONFIG.grades.length; i++) if (score >= CONFIG.grades[i].min) g = CONFIG.grades[i];
+    return g.label;
+  }
+
+  // payload = { v:1, seed, name, dec:[{r,w,d}], diag:[answer index], lens:charges left }
+  function replay(payload) {
+    var byKey = {};
+    (payload.dec || []).forEach(function (e) { byKey[e.r + ':' + e.w] = e.d; });
+    var game = runGame(payload.seed, function (w, rs, i) {
+      var d = byKey[i + ':' + w];
+      return d ? d : worlds[w].passive(rs);
+    });
+    var items = diagnosis(game);
+    var dg = gradeDiagnosis(items, payload.diag || []);
+    var comp = composite(game.decision, dg.pct, payload.lens || 0);
+    return {
+      game: game, items: items, diagnosis: dg, decision: game.decision,
+      composite: comp, grade: grade(comp), code: verificationCode(payload, comp)
+    };
+  }
+
+  function canonical(payload) {
+    return JSON.stringify([
+      payload.seed,
+      (payload.dec || []).map(function (e) { return [e.r, e.w, e.d]; }),
+      payload.diag || [], payload.lens || 0
+    ]);
+  }
+
+  function verificationCode(payload, comp) {
+    return payload.seed + '-' + Math.round(comp * 10) / 10 + '-' + code4(canonical(payload));
+  }
+
+  function dataLine(seed, e) {
+    var o = e.outcome, bits = ['DATA', 'seed=' + seed, 'world=' + e.w, 'round=' + e.r];
+    if (e.w === 'quadrato') bits.push('q=' + o.q, 'ask=' + o.ask.toFixed(2), 'mkt=' + o.price.toFixed(2), 'sold=' + o.sold);
+    if (e.w === 'cerchio') bits.push('p=' + o.P.toFixed(2), 'S=' + o.S, 'q=' + o.q.toFixed(1));
+    if (e.w === 'triangolo') bits.push('p=' + o.p.toFixed(2), 'q=' + o.q.toFixed(1), 'rival=' + o.rivalPrice.toFixed(2), 'fine=' + o.fine.toFixed(1));
+    if (e.w === 'uno') bits.push('p=' + o.P.toFixed(2), 'q=' + o.q.toFixed(1), 'e=' + o.elasticity.toFixed(2), 'dwl=' + o.dwl.toFixed(1));
+    bits.push('profit=' + e.profit.toFixed(1), 'opt=' + e.opt.toFixed(1), 'score=' + e.score.toFixed(1));
+    return bits.join('|');
+  }
+
+  /* ==========================================================================
+     Self test. The same suite runs in node (tests/run.mjs) and in the browser
+     at ?test=1, so the two can never drift apart.
+     ======================================================================== */
+  function selfTest(opts) {
+    opts = opts || {};
+    var evSeeds = opts.evSeeds || 250;
+    var baseSeeds = opts.baseSeeds || 60;
+    var out = [];
+    function t(name, fn) {
+      try { var d = fn(); out.push({ name: name, ok: true, detail: d || '' }); }
+      catch (e) { out.push({ name: name, ok: false, detail: e.message }); }
+    }
+    function near(a, b, tol, what) {
+      if (!(Math.abs(a - b) <= tol)) throw new Error((what || '') + ' expected ' + b + ' +/- ' + tol + ', got ' + a);
+      return (what ? what + '=' : '') + (Math.round(a * 1000) / 1000);
+    }
+    function ok(cond, msg) { if (!cond) throw new Error(msg); return msg; }
+
+    var flat = { noise: {}, news: {}, detect: [], lenRosso: [], lenBlu: [], leadershipRound: 99, cartelRound: 99, seed: 0 };
+    WORLDS.forEach(function (w) { flat.noise[w] = []; flat.news[w] = []; for (var i = 0; i < 12; i++) { flat.noise[w].push(1); flat.news[w].push(0); } });
+    for (var i = 0; i < 12; i++) { flat.detect.push(1); flat.lenRosso.push(1); flat.lenBlu.push(1); }
+
+    /* --- 1. cost ---------------------------------------------------- */
+    t('cost: average cost is lowest at q = 100', function () {
+      var best = 0, bv = Infinity;
+      for (var q = 1; q <= 300; q++) { if (atc(q) < bv) { bv = atc(q); best = q; } }
+      near(best, 100, 0, 'q');
+      return near(bv, 14, 1e-9, 'minATC');
+    });
+    t('cost: ATC(100) = MC(100) = 14', function () {
+      near(atc(100), 14, 1e-9); return near(mc(100), 14, 1e-9, 'MC');
+    });
+
+    /* --- 2. quadrato ------------------------------------------------ */
+    t('quadrato: round 1 price 17, q* 130, profit 345', function () {
+      var rs = worlds.quadrato.prepare(worlds.quadrato.init(), flat);
+      near(rs.price, 17, 1e-9, 'P');
+      var o = worlds.quadrato.optimum(rs);
+      near(o.decision.q, 130, 0, 'q');
+      return near(o.profit, 345, 1e-6, 'profit');
+    });
+    t('quadrato: grid optimum matches P = MC', function () {
+      var rs = worlds.quadrato.prepare({ world: 'quadrato', round: 1, N: 52 }, flat);
+      var o = worlds.quadrato.optimum(rs);
+      return near(mc(o.decision.q), rs.price, 0.06, 'MC vs P');
+    });
+    t('quadrato: asking above the market sells nothing', function () {
+      var rs = worlds.quadrato.prepare(worlds.quadrato.init(), flat);
+      var r = worlds.quadrato.step(rs, { q: 130, ask: rs.price + 0.01 });
+      ok(r.outcome.sold === 0, 'expected zero sales');
+      return near(r.outcome.profit, -tc(130), 1e-9, 'loss');
+    });
+    t('quadrato: price within 5% of 14 by round 7', function () {
+      var st = worlds.quadrato.init(), rs, p = 0;
+      for (var r = 1; r <= 7; r++) {
+        rs = worlds.quadrato.prepare(st, flat); p = rs.price;
+        st = worlds.quadrato.step(rs, worlds.quadrato.optimum(rs).decision).nextState;
+      }
+      ok(Math.abs(p - 14) / 14 <= 0.05, 'round 7 price ' + p + ' is more than 5% from 14');
+      return 'P7=' + p;
+    });
+
+    /* --- 3. cerchio ------------------------------------------------- */
+    t('cerchio: closed form at S = 0, a = 340', function () {
+      var cf = cerClosedForm(340);
+      near(cf.P, 20.73, 0.01, 'P'); near(cf.q, 91.2, 0.1, 'q');
+      return near(cf.profit, 610, 1, 'profit');
+    });
+    t('cerchio: grid search matches the closed form at S = 0', function () {
+      var g = scanPrice(function (P) { return cerProfit(340, P, 0); }, 0, 45);
+      return near(g.x, cerClosedForm(340).P, 0.01, 'P');
+    });
+    t('cerchio: zero profit near a = 244, with q < 100 and P > MC', function () {
+      var lo = 150, hi = 340, m;
+      for (var i = 0; i < 60; i++) { m = (lo + hi) / 2; if (cerClosedForm(m).profit > 0) hi = m; else lo = m; }
+      var z = cerClosedForm(hi);
+      near(hi, 244, 1, 'a');
+      ok(z.q < 100, 'expected excess capacity, q = ' + z.q);
+      ok(z.P > mc(z.q), 'expected P > MC');
+      return 'a=' + Math.round(hi * 100) / 100 + ' q=' + Math.round(z.q * 10) / 10 + ' P=' + Math.round(z.P * 100) / 100 + ' MC=' + Math.round(mc(z.q) * 100) / 100;
+    });
+    t('cerchio: optimal profit in round 8 is at most 15% of round 1', function () {
+      var st = worlds.cerchio.init(), first = 0, last = 0;
+      for (var r = 1; r <= CONFIG.rounds; r++) {
+        var rs = worlds.cerchio.prepare(st, flat);
+        var o = worlds.cerchio.optimum(rs);
+        if (r === 1) first = o.profit;
+        if (r === CONFIG.rounds) last = o.profit;
+        st = worlds.cerchio.step(rs, o.decision).nextState;
+      }
+      ok(last <= 0.15 * first, 'round 8 optimum ' + last + ' vs round 1 ' + first);
+      return Math.round(1000 * last / first) / 10 + '% of round 1';
+    });
+
+    /* --- 4. triangolo ----------------------------------------------- */
+    t('triangolo: optimum is the kink at 22 with profit 715 (c = 4)', function () {
+      var rs = worlds.triangolo.prepare(worlds.triangolo.init(), flat);
+      var o = worlds.triangolo.optimum(rs);
+      near(o.decision.p, 22, 0.005, 'p');
+      return near(o.profit, 715, 0.5, 'profit');
+    });
+    t('triangolo: after the cost shock the optimum is still 22, profit 625', function () {
+      var st = worlds.triangolo.init(); st.round = 5;
+      var rs = worlds.triangolo.prepare(st, flat);
+      var o = worlds.triangolo.optimum(rs);
+      near(o.decision.p, 22, 0.005, 'p');
+      return near(o.profit, 625, 0.5, 'profit');
+    });
+    t('triangolo: marginal cost sits inside the gap in marginal revenue', function () {
+      var mrUp = (354 - 2 * 90) / 12, mrDown = 67 - 90;
+      near(mrUp, 14.5, 1e-9, 'MR above'); near(mrDown, -23, 1e-9, 'MR below');
+      ok(mc(90) > mrDown && mc(90) < mrUp, 'MC(90) outside the gap');
+      ok(mc(90, 5) > mrDown && mc(90, 5) < mrUp, 'MC(90) at c=5 outside the gap');
+      return 'MC 13 -> 14 inside (-23, 14.5)';
+    });
+    t('triangolo: the collusive price is 38.36 with profit about 1304', function () {
+      var rs = worlds.triangolo.prepare(worlds.triangolo.init(), flat);
+      var best = scanPrice(function (p) { var q = Math.max(0, rs.alpha - TCF.beta * p); return p * q - tc(q, rs.c); }, 20, 50);
+      near(best.x, TCF.cartelPrice, 0.03, 'joint max price');
+      var q = rs.alpha - TCF.beta * TCF.cartelPrice;
+      return near(TCF.cartelPrice * q - tc(q, rs.c), 1304, 1, 'profit');
+    });
+    t('triangolo: the best cheat against the cartel is 30.90 for about 2371', function () {
+      var rs = worlds.triangolo.prepare(worlds.triangolo.init(), flat);
+      var best = scanPrice(function (p) {
+        var q = Math.max(0, rs.alpha - TCF.beta * p + TCF.gamma * (TCF.cartelPrice - p));
+        return p * q - tc(q, rs.c);
+      }, 10, 50);
+      near(best.x, 30.90, 0.02, 'p');
+      return near(best.y, 2371, 2, 'profit');
+    });
+    t('triangolo: accepting the cartel is worth 85-100% of the legal path', function () {
+      var legal = 0, cartel = 0;
+      for (var s = 1; s <= evSeeds; s++) {
+        legal += runWorld(s, 'triangolo', function (rs) { return worlds.triangolo.optimum(rs).decision; }).profit;
+        cartel += runWorld(s, 'triangolo', function (rs) {
+          if (rs.offer || rs.cartel === 'active') return { p: TCF.cartelPrice, cartel: 'accept', report: false };
+          return worlds.triangolo.optimum(rs).decision;
+        }).profit;
+      }
+      var ratio = 100 * cartel / legal;
+      ok(ratio >= 85 && ratio <= 100, 'cartel expected value is ' + ratio.toFixed(1) + '% of the legal path');
+      return ratio.toFixed(1) + '% over ' + evSeeds + ' seeds';
+    });
+
+    /* --- 5. uno ----------------------------------------------------- */
+    t('uno: optimum 32.31, profit about 1942, elasticity about -1.83', function () {
+      var rs = worlds.uno.prepare(worlds.uno.init(), flat);
+      var o = worlds.uno.optimum(rs);
+      near(o.decision.P, 32.31, 0.005, 'P');
+      near(o.profit, 1942, 1, 'profit');
+      return near(unoElasticity(rs, o.decision.P), -1.83, 0.01, 'e');
+    });
+    t('uno: deadweight loss at the optimum is about 587', function () {
+      var rs = worlds.uno.prepare(worlds.uno.init(), flat);
+      var o = worlds.uno.optimum(rs);
+      near(unoCompetitiveQ(rs), 172.5, 0.01, 'competitive q');
+      return near(unoDWL(rs, unoQ(rs, o.decision.P)), 587, 1, 'DWL');
+    });
+    t('uno: after the patent expires the optimum is 20.71 for about 466', function () {
+      var rs = worlds.uno.prepare({ world: 'uno', round: 6, patent: false }, flat);
+      var o = worlds.uno.optimum(rs);
+      near(o.decision.P, 20.71, 0.005, 'P');
+      return near(o.profit, 466, 1, 'profit');
+    });
+    t('uno: the passive price of 20 is in the inelastic region', function () {
+      var rs = worlds.uno.prepare(worlds.uno.init(), flat);
+      var e = unoElasticity(rs, 20);
+      ok(Math.abs(e) < 1, 'expected inelastic, got ' + e);
+      return near(e, -0.667, 0.01, 'e');
+    });
+    t('uno: holding the patent price after expiry destroys the business', function () {
+      var rs = worlds.uno.prepare({ world: 'uno', round: 6, patent: false }, flat);
+      var r = worlds.uno.step(rs, { P: 32.31 });
+      ok(r.outcome.q === 0, 'expected no sales at the old monopoly price');
+      return 'profit ' + Math.round(r.outcome.profit);
+    });
+
+    /* --- 6. scoring ------------------------------------------------- */
+    t('scoring: the textbook bot scores 100 in every universe', function () {
+      var res = [];
+      for (var s = 1; s <= 12; s++) {
+        var g = runGame(s, bots.textbook(s));
+        WORLDS.forEach(function (w) { if (Math.abs(g.mean[w] - 100) > 1e-6) res.push(s + '/' + w + '=' + g.mean[w]); });
+      }
+      ok(res.length === 0, 'not 100: ' + res.join(', '));
+      return '100 across 12 seeds';
+    });
+    t('scoring: the passive path averages 35-45 in each universe bar the oligopoly', function () {
+      var acc = { quadrato: 0, cerchio: 0, triangolo: 0, uno: 0 };
+      for (var s = 1; s <= baseSeeds; s++) {
+        var g = runGame(s, bots.passive(s));
+        WORLDS.forEach(function (w) { acc[w] += g.mean[w] / baseSeeds; });
+      }
+      var bad = [];
+      WORLDS.forEach(function (w) {
+        if (w === 'triangolo') return;
+        if (acc[w] < 35 || acc[w] > 45) bad.push(w + '=' + acc[w].toFixed(1));
+      });
+      ok(bad.length === 0, 'outside 35-45: ' + bad.join(', '));
+      return WORLDS.map(function (w) { return w.slice(0, 4) + ' ' + acc[w].toFixed(1); }).join(', ');
+    });
+    t('scoring: random play scores below the passive path', function () {
+      var p = 0, r = 0;
+      for (var s = 1; s <= baseSeeds; s++) {
+        p += runGame(s, bots.passive(s)).decision / baseSeeds;
+        r += runGame(s, bots.coinflip(s)).decision / baseSeeds;
+      }
+      ok(r < p, 'random ' + r.toFixed(1) + ' is not below passive ' + p.toFixed(1));
+      return 'random ' + r.toFixed(1) + ' < passive ' + p.toFixed(1);
+    });
+    t('scoring: no exploit beats the textbook path', function () {
+      var names = ['zero output in quadrato', 'maximum brand spend', 'monopoly price after expiry', 'always cheat'];
+      var pol = [
+        function (w, rs) { return w === 'quadrato' ? { q: 0, ask: rs.price } : worlds[w].optimum(rs).decision; },
+        function (w, rs) { var d = worlds[w].optimum(rs).decision; if (w === 'cerchio') d = { P: d.P, S: CCF.brandMax }; return d; },
+        function (w, rs) { return w === 'uno' ? { P: 32.31 } : worlds[w].optimum(rs).decision; },
+        function (w, rs) {
+          if (w !== 'triangolo') return worlds[w].optimum(rs).decision;
+          if (rs.offer) return { p: TCF.cartelPrice, cartel: 'accept', report: false };
+          if (rs.cartel === 'active') return { p: 30.90, cartel: 'accept', report: false };
+          return worlds[w].optimum(rs).decision;
+        }
+      ];
+      var bad = [];
+      for (var i = 0; i < pol.length; i++) {
+        var a = 0, b = 0;
+        for (var s = 1; s <= 20; s++) { a += runGame(s, pol[i]).decision / 20; b += runGame(s, bots.textbook(s)).decision / 20; }
+        if (a > b + 2.5) bad.push(names[i] + ' scores ' + a.toFixed(1) + ' vs textbook ' + b.toFixed(1));
+      }
+      ok(bad.length === 0, bad.join('; '));
+      return 'all four exploits are worse than or level with the textbook path';
+    });
+
+    /* --- 7. determinism --------------------------------------------- */
+    t('determinism: the same seed and log reproduce the score and the code', function () {
+      var g = runGame(31337, bots.coinflip(31337));
+      var payload = {
+        v: 1, seed: 31337, dec: g.log.map(function (e) { return { r: e.r, w: e.w, d: e.d }; }),
+        diag: [0, 1, 2, 3, 0, 1, 2, 3], lens: 3
+      };
+      var a = replay(payload), b = replay(JSON.parse(JSON.stringify(payload)));
+      near(a.composite, b.composite, 1e-9, 'composite');
+      ok(a.code === b.code, 'codes differ: ' + a.code + ' vs ' + b.code);
+      near(a.decision, g.decision, 1e-9, 'decision score');
+      return a.code;
+    });
+    t('determinism: the same seed builds the same scenario', function () {
+      var a = makeScenario(99), b = makeScenario(99), c = makeScenario(100);
+      ok(JSON.stringify(a) === JSON.stringify(b), 'scenarios differ for the same seed');
+      ok(JSON.stringify(a) !== JSON.stringify(c), 'scenarios match for different seeds');
+      return 'stable';
+    });
+
+    var passed = out.filter(function (x) { return x.ok; }).length;
+    return { results: out, passed: passed, failed: out.length - passed };
+  }
+
+  // Run one universe for a whole game. Used by the tests and the debrief.
+  function runWorld(seed, world, policy) {
+    var sc = makeScenario(seed);
+    var st = worlds[world].init(), profit = 0, score = 0, log = [];
+    for (var i = 1; i <= CONFIG.rounds; i++) {
+      var rs = worlds[world].prepare(st, sc);
+      var dec = policy(rs, i);
+      var opt = worlds[world].optimum(rs);
+      var res = worlds[world].step(rs, dec, sc);
+      profit += res.outcome.profit;
+      score += scoreRound(world, opt.profit - res.outcome.profit) / CONFIG.rounds;
+      log.push({ r: i, outcome: res.outcome, opt: opt.profit });
+      st = res.nextState;
+    }
+    return { profit: profit, score: score, log: log };
+  }
+
+  /* ==========================================================================
+     Exports
+     ======================================================================== */
+  return {
+    CONFIG: CONFIG, WORLDS: WORLDS,
+    mulberry32: mulberry32, fnv1a: fnv1a, code4: code4,
+    tc: tc, mc: mc, atc: atc, minAtcQ: minAtcQ,
+    makeScenario: makeScenario, worlds: worlds, scanPrice: scanPrice,
+    quadPrice: quadPrice,
+    cerQ: cerQ, cerProfit: cerProfit, cerClosedForm: cerClosedForm,
+    triQ: triQ, triProfit: triProfit, triRivals: triRivals, triLegalState: triLegalState,
+    unoQ: unoQ, unoProfit: unoProfit, unoElasticity: unoElasticity,
+    unoDWL: unoDWL, unoCompetitiveQ: unoCompetitiveQ,
+    scoreRound: scoreRound, runGame: runGame, runWorld: runWorld, bots: bots,
+    selfTest: selfTest,
+    diagnosis: diagnosis, gradeDiagnosis: gradeDiagnosis,
+    composite: composite, grade: grade, replay: replay,
+    verificationCode: verificationCode, canonical: canonical,
+    dataLine: dataLine, money: money, priceOf: priceOf, WORLD_LABEL: WORLD_LABEL,
+    round2: round2, clamp: clamp
+  };
+})();
+</script>
+<script>
+/* ============================================================================
+   QUATTRO MONDI - INTERFACE
+   All DOM work lives here. The economics live in the model script above.
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  var C = QM.CONFIG, WORLDS = QM.WORLDS, money = QM.money, LABEL = QM.WORLD_LABEL;
+  var ROUNDS = C.rounds;
+  var $ = function (id) { return document.getElementById(id); };
+  var main = $('main');
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); };
+  var num = function (x, dp) { return (Math.round(x * Math.pow(10, dp || 0)) / Math.pow(10, dp || 0)).toFixed(dp || 0); };
+  var COLOUR = { quadrato: 'red', cerchio: 'yellow', triangolo: 'blue', uno: 'ink' };
+
+  /* ---- storage, always guarded -------------------------------------- */
+  function put(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* storage off */ } }
+  function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function drop(k) { try { localStorage.removeItem(k); } catch (e) { /* storage off */ } }
+
+  /* ---- theme --------------------------------------------------------- */
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    var b = $('theme-toggle');
+    b.textContent = t === 'dark' ? 'light mode' : 'dark mode';
+    b.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false');
+    if (App.screen) redrawCharts();
+  }
+  var savedTheme = get('qm.theme');
+  var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var theme = savedTheme || (prefersDark ? 'dark' : 'light');
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function ink() { return getComputedStyle(document.documentElement).getPropertyValue('--ink').trim() || '#000'; }
+  function paper() { return getComputedStyle(document.documentElement).getPropertyValue('--paper').trim() || '#fff'; }
+  var RED = '#D7261E', YELLOW = '#F4C20D', BLUE = '#1D4D9C';
+
+  /* ---- url ----------------------------------------------------------- */
+  var params = new URLSearchParams(location.search);
+
+  /* ====================================================================
+     Application state
+     ==================================================================== */
+  var App = {
+    seed: 0, name: '', round: 1, charges: C.model.lensCharges, view: 'quadrato',
+    states: {}, dec: {}, committed: {}, lens: {}, log: [], totals: {},
+    diag: [], diagDone: false, screen: 'title', best: null
+  };
+  var SC = null;
+
+  function saveKey() { return 'qm.v1.save.' + App.seed; }
+  function bestKey() { return 'qm.v1.best.' + App.seed; }
+
+  function save() {
+    try {
+      put(saveKey(), JSON.stringify({
+        v: 1, seed: App.seed, name: App.name, round: App.round, charges: App.charges,
+        states: App.states, dec: App.dec, committed: App.committed, lens: App.lens,
+        log: App.log, totals: App.totals, diag: App.diag, diagDone: App.diagDone, screen: App.screen
+      }));
+    } catch (e) { /* storage off, the game still runs */ }
+  }
+
+  function loadSave() {
+    var raw = get(saveKey());
+    if (!raw) return false;
+    try {
+      var d = JSON.parse(raw);
+      if (!d || d.seed !== App.seed) return false;
+      ['name', 'round', 'charges', 'states', 'dec', 'committed', 'lens', 'log', 'totals', 'diag', 'diagDone', 'screen'].forEach(function (k) {
+        if (d[k] !== undefined) App[k] = d[k];
+      });
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function resetGame(keepSeed) {
+    drop(saveKey());
+    App.round = 1; App.charges = C.model.lensCharges; App.view = 'quadrato';
+    App.states = {}; App.dec = {}; App.committed = {}; App.lens = {};
+    App.log = []; App.totals = {}; App.diag = []; App.diagDone = false;
+    WORLDS.forEach(function (w) { App.states[w] = QM.worlds[w].init(); App.totals[w] = 0; });
+    if (!keepSeed) { location.search = '?seed=' + App.seed; return; }
+    App.screen = 'title';
+    save(); render();
+  }
+
+  /* ---- per round helpers -------------------------------------------- */
+  function rstate(w) { return QM.worlds[w].prepare(App.states[w], SC); }
+
+  function defaultDecision(w, rs) {
+    if (w === 'quadrato') return { q: 100, ask: rs.price };
+    if (w === 'cerchio') return { P: 20, S: 0 };
+    if (w === 'triangolo') return { p: rs.cartel === 'active' ? C.model.triangolo.cartelPrice : rs.P0, cartel: 'decline', report: false };
+    return { P: 20 };
+  }
+
+  function decisionFor(w) {
+    var rs = rstate(w);
+    if (!App.dec[w]) App.dec[w] = defaultDecision(w, rs);
+    return App.dec[w];
+  }
+
+  function allCommitted() {
+    return WORLDS.every(function (w) { return App.committed[w]; });
+  }
+
+  function lensKey(w) { return w + ':' + App.round; }
+  function lensOn(w) { return !!App.lens[lensKey(w)]; }
+
+  /* ---- projection: the true model, without revealing the optimum ---- */
+  function project(w, rs, d) {
+    if (w === 'quadrato') {
+      var q = QM.clamp(Math.round(d.q), 0, C.model.quadrato.qMax);
+      var sold = d.ask <= rs.price + 1e-9 ? q : 0;
+      var cost = QM.tc(q);
+      return { q: q, sold: sold, revenue: sold * d.ask, cost: cost, profit: sold * d.ask - cost };
+    }
+    if (w === 'cerchio') {
+      var cq = QM.cerQ(rs.aEff, d.P, d.S);
+      return { q: cq, sold: cq, revenue: d.P * cq, cost: QM.tc(cq) + d.S, profit: d.P * cq - QM.tc(cq) - d.S, brand: d.S };
+    }
+    if (w === 'triangolo') {
+      var st = {};
+      for (var k in rs) if (Object.prototype.hasOwnProperty.call(rs, k)) st[k] = rs[k];
+      if (rs.offer && d.cartel === 'accept') st.cartel = 'active';
+      var view = QM.triRivals(st, d.p);
+      var tq = Math.max(0, st.alpha - C.model.triangolo.beta * d.p + C.model.triangolo.gamma * (view.pr - d.p));
+      return { q: tq, sold: tq, revenue: d.p * tq, cost: QM.tc(tq, rs.c), profit: d.p * tq - QM.tc(tq, rs.c), rival: view.pr, mode: view.mode };
+    }
+    var uq = QM.unoQ(rs, d.P);
+    return { q: uq, sold: uq, revenue: d.P * uq, cost: QM.tc(uq), profit: d.P * uq - QM.tc(uq), e: QM.unoElasticity(rs, d.P) };
+  }
+
+  /* ====================================================================
+     Glyphs and scenes - inline SVG built from squares, circles, triangles
+     ==================================================================== */
+  function glyph(w, size) {
+    var s = size || 30;
+    var a = '<svg class="glyph" viewBox="0 0 30 30" width="' + s + '" height="' + s + '" aria-hidden="true" focusable="false">';
+    if (w === 'quadrato') {
+      for (var r = 0; r < 3; r++) for (var c = 0; c < 3; c++)
+        a += '<rect x="' + (2 + c * 9) + '" y="' + (2 + r * 9) + '" width="7" height="7" fill="currentColor"/>';
+    } else if (w === 'cerchio') {
+      a += '<circle cx="9" cy="9" r="6" fill="currentColor"/><circle cx="21" cy="13" r="4" fill="currentColor"/>' +
+           '<circle cx="12" cy="22" r="5" fill="none" stroke="currentColor" stroke-width="2.5"/>';
+    } else if (w === 'triangolo') {
+      a += '<path d="M15 3 L22 15 L8 15 Z" fill="currentColor"/>' +
+           '<path d="M7 27 L13 17 L1 17 Z" fill="currentColor"/>' +
+           '<path d="M23 27 L29 17 L17 17 Z" fill="currentColor"/>';
+    } else {
+      a += '<circle cx="15" cy="15" r="12" fill="currentColor"/>';
+    }
+    return a + '</svg>';
+  }
+
+  function rngFor(w) { return QM.mulberry32((App.seed ^ (w.length * 2654435761)) >>> 0); }
+
+  function scene(w, rs) {
+    // Shapes that stand for "black" use currentColor so they invert with the
+    // theme. Text sitting on a yellow fill stays black, for contrast.
+    var s = '<svg class="scene" viewBox="0 0 600 230" role="img" aria-label="' +
+      esc(LABEL[w]) + ' illustration" style="color:var(--ink)">';
+    var r = rngFor(w), i, x, y;
+    if (w === 'quadrato') {
+      var n = Math.min(72, rs.N);
+      for (i = 0; i < n; i++) {
+        x = 30 + (i % 12) * 45; y = 26 + Math.floor(i / 12) * 34;
+        s += '<rect x="' + x + '" y="' + y + '" width="24" height="24" fill="' + RED + '"/>';
+      }
+      s += '<rect x="30" y="192" width="24" height="24" fill="currentColor"/>' +
+           '<rect x="24" y="186" width="36" height="36" fill="none" stroke="currentColor" stroke-width="4"/>' +
+           '<text x="74" y="212" font-size="15" fill="currentColor" font-family="inherit">you, and ' + rs.N + ' kitchens exactly like you</text>';
+    } else if (w === 'cerchio') {
+      var copies = Math.min(26, 3 + Math.round((C.model.cerchio.a0 - rs.a) / 4));
+      for (i = 0; i < copies; i++) {
+        x = 40 + r() * 520; y = 30 + r() * 170;
+        var rad = 10 + r() * 22;
+        s += '<circle cx="' + num(x, 1) + '" cy="' + num(y, 1) + '" r="' + num(rad, 1) + '" fill="' +
+             (i % 3 === 0 ? YELLOW : 'none') + '" stroke="currentColor" stroke-width="3"/>';
+      }
+      s += '<circle cx="300" cy="118" r="46" fill="' + YELLOW + '" stroke="currentColor" stroke-width="6"/>' +
+           '<text x="300" y="124" font-size="16" text-anchor="middle" fill="#000000" font-family="inherit">you</text>';
+    } else if (w === 'triangolo') {
+      var war = rs.warLeft > 0, cartel = rs.cartel === 'active';
+      var lean = war ? 26 : 0;                  // in a price war the three lean in
+      var col = war ? RED : BLUE;
+      var topY = 146 + lean, sideY = 94 - lean;
+      s += '<path d="M240 38 L360 38 L300 ' + topY + ' Z" fill="' + col + '"/>' +
+           '<path d="M60 198 L180 198 L120 ' + sideY + ' Z" fill="' + col + '"/>' +
+           '<path d="M420 198 L540 198 L480 ' + sideY + ' Z" fill="' + col + '"/>' +
+           '<rect x="286" y="18" width="28" height="10" fill="currentColor"/>';
+      if (cartel) s += '<path d="M300 ' + (topY + 6) + ' L120 ' + (sideY - 6) + ' M300 ' + (topY + 6) +
+        ' L480 ' + (sideY - 6) + ' M120 ' + (sideY - 6) + ' L480 ' + (sideY - 6) +
+        '" stroke="currentColor" stroke-width="4" stroke-dasharray="10 8" fill="none"/>';
+      s += '<text x="300" y="222" font-size="15" text-anchor="middle" fill="currentColor" font-family="inherit">' +
+           (war ? 'price war' : (cartel ? 'three firms, one price' : 'you, rosso and blu')) + '</text>';
+    } else {
+      s += '<circle cx="300" cy="112" r="88" fill="currentColor"/>';
+      if (!rs.patent) {
+        s += '<path d="M300 24 L286 70 L316 100 L292 140 L308 200" stroke="var(--concrete)" stroke-width="8" fill="none"/>' +
+             '<circle cx="512" cy="176" r="34" fill="' + YELLOW + '" stroke="currentColor" stroke-width="5"/>' +
+             '<text x="512" y="182" font-size="13" text-anchor="middle" fill="#000000" font-family="inherit">generic</text>';
+      }
+      s += '<text x="300" y="220" font-size="15" text-anchor="middle" fill="currentColor" font-family="inherit">' +
+           (rs.patent ? 'one oven, one patent' : 'the patent has gone') + '</text>';
+    }
+    return s + '</svg>';
+  }
+
+  /* ====================================================================
+     Canvas charts. Flat colours, thick strokes, labels on the lines.
+     ==================================================================== */
+  var chartJobs = [];
+
+  function queueChart(canvas, fn) {
+    chartJobs.push({ canvas: canvas, fn: fn });
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        chartJobs.forEach(function (j) { if (document.body.contains(j.canvas)) j.fn(j.canvas); });
+        chartJobs = [];
+      });
+    });
+  }
+
+  function redrawCharts() {
+    var list = Array.prototype.slice.call(document.querySelectorAll('canvas[data-chart]'));
+    list.forEach(function (cv) { if (cv.__draw) cv.__draw(cv); });
+  }
+
+  function prep(cv) {
+    var dpr = window.devicePixelRatio || 1;
+    var w = cv.clientWidth || 600, h = cv.clientHeight || 300;
+    cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+    var g = cv.getContext('2d');
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, w, h);
+    g.fillStyle = paper(); g.fillRect(0, 0, w, h);
+    return { g: g, w: w, h: h };
+  }
+
+  function axes(g, w, h, xMax, yMax, xLabel, yLabel, yMin) {
+    yMin = yMin || 0;
+    var m = { l: 54, r: 96, t: 22, b: 34 };
+    var span = yMax - yMin;
+    var X = function (q) { return m.l + (q / xMax) * (w - m.l - m.r); };
+    var Y = function (v) { return h - m.b - ((v - yMin) / span) * (h - m.t - m.b); };
+    g.strokeStyle = ink(); g.fillStyle = ink();
+    g.lineWidth = 4; g.beginPath();
+    g.moveTo(m.l, m.t); g.lineTo(m.l, h - m.b);
+    g.moveTo(m.l, Y(0)); g.lineTo(w - m.r + 8, Y(0));
+    g.stroke();
+    g.font = '12px Futura, "Century Gothic", Avenir, sans-serif';
+    g.textAlign = 'right'; g.textBaseline = 'middle';
+    var stepY = span <= 30 ? 5 : (span <= 90 ? 10 : 500);
+    for (var v = Math.ceil(yMin / stepY) * stepY; v <= yMax; v += stepY) {
+      if (v === 0) continue;
+      g.fillText(String(v), m.l - 8, Y(v));
+    }
+    g.textAlign = 'center'; g.textBaseline = 'top';
+    var stepX = xMax <= 120 ? 25 : (xMax <= 260 ? 50 : 100);
+    for (var q = stepX; q <= xMax; q += stepX) { g.fillText(String(q), X(q), Y(0) + 8); }
+    g.textAlign = 'left'; g.textBaseline = 'top';
+    g.fillText(xLabel, m.l, h - 14);
+    g.fillText(yLabel, 6, 4);
+    return { X: X, Y: Y, m: m, yMin: yMin, yMax: yMax };
+  }
+
+  function line(g, ax, pts, colour, width, dash) {
+    g.save(); g.strokeStyle = colour; g.lineWidth = width || 4;
+    if (dash) g.setLineDash(dash);
+    g.beginPath();
+    pts.forEach(function (p, i) { var x = ax.X(p[0]), y = ax.Y(p[1]); if (i === 0) g.moveTo(x, y); else g.lineTo(x, y); });
+    g.stroke(); g.restore();
+  }
+
+  function tagAt(g, ax, q, v, text, colour) {
+    g.save(); g.fillStyle = colour; g.textAlign = 'left'; g.textBaseline = 'middle';
+    g.font = '700 12px Futura, "Century Gothic", Avenir, sans-serif';
+    g.fillText(text, ax.X(q) + 6, ax.Y(v) - 9);
+    g.restore();
+  }
+
+  function dot(g, ax, q, v, label) {
+    g.save();
+    g.beginPath(); g.arc(ax.X(q), ax.Y(v), 9, 0, Math.PI * 2);
+    g.fillStyle = YELLOW; g.fill(); g.lineWidth = 4; g.strokeStyle = ink(); g.stroke();
+    if (label) {
+      g.fillStyle = ink(); g.textAlign = 'center'; g.textBaseline = 'bottom';
+      g.font = '700 12px Futura, "Century Gothic", Avenir, sans-serif';
+      g.fillText(label, ax.X(q), ax.Y(v) - 14);
+    }
+    g.restore();
+  }
+
+  function seq(from, to, step, f) {
+    var out = [], q;
+    for (q = from; q <= to + 1e-9; q += step) out.push([q, f(q)]);
+    return out;
+  }
+
+  function curveChart(w, rs, d) {
+    return function (cv) {
+      var p = prep(cv), g = p.g, ax, i;
+      var K = C.model.cost;
+      if (w === 'quadrato') {
+        var xM = 260, yM = 40;
+        ax = axes(g, p.w, p.h, xM, yM, 'pizzas per month', 'pounds');
+        line(g, ax, [[0, rs.price], [xM, rs.price]], BLUE, 5);
+        tagAt(g, ax, xM, rs.price, 'demand = MR = price', BLUE);
+        line(g, ax, seq(0, xM, 5, function (q) { return QM.mc(q); }), ink(), 4);
+        tagAt(g, ax, xM, QM.mc(xM), 'marginal cost', ink());
+        line(g, ax, seq(20, xM, 5, function (q) { return Math.min(yM, QM.atc(q)); }), ink(), 3, [8, 6]);
+        tagAt(g, ax, xM, Math.min(yM - 2, QM.atc(xM)), 'average cost', ink());
+        dot(g, ax, QM.clamp(d.q, 0, xM), QM.clamp(d.ask, 0, yM), 'you');
+      } else if (w === 'cerchio') {
+        var A = rs.aEff + C.model.cerchio.beta * Math.sqrt(d.S), b = C.model.cerchio.b;
+        var xC = 200, yC = 45;
+        ax = axes(g, p.w, p.h, xC, yC, 'pizzas per month', 'pounds');
+        line(g, ax, seq(0, Math.min(xC, A), 4, function (q) { return Math.max(0, (A - q) / b); }), BLUE, 5);
+        tagAt(g, ax, Math.min(xC, A * 0.7), (A - Math.min(xC, A * 0.7)) / b, 'demand', BLUE);
+        line(g, ax, seq(0, Math.min(xC, A / 2), 4, function (q) { return Math.max(0, (A - 2 * q) / b); }), RED, 4);
+        tagAt(g, ax, Math.min(xC, A / 2) * 0.28, (A - 2 * Math.min(xC, A / 2) * 0.28) / b, 'marginal revenue', RED);
+        line(g, ax, seq(0, xC, 4, function (q) { return QM.mc(q); }), ink(), 4);
+        tagAt(g, ax, xC, QM.mc(xC), 'marginal cost', ink());
+        line(g, ax, seq(20, xC, 4, function (q) { return Math.min(yC, QM.atc(q)); }), ink(), 3, [8, 6]);
+        tagAt(g, ax, xC, Math.min(yC - 2, QM.atc(xC)), 'average cost', ink());
+        dot(g, ax, QM.clamp(QM.cerQ(rs.aEff, d.P, d.S), 0, xC), QM.clamp(d.P, 0, yC), 'you');
+      } else if (w === 'triangolo') {
+        var T = C.model.triangolo, xT = 200, yT = 45, yLow = -30;
+        ax = axes(g, p.w, p.h, xT, yT, 'pizzas per month', 'pounds', yLow);
+        var q0 = Math.max(0, rs.alpha - T.beta * rs.P0);
+        var flatTop = (rs.alpha + T.gamma * rs.P0) / (T.beta + T.gamma);
+        // above the kink the rivals hold, so demand is flat
+        line(g, ax, [[0, flatTop], [q0, rs.P0]], BLUE, 5);
+        // below the kink they match, so demand is steep
+        line(g, ax, [[q0, rs.P0], [Math.min(xT, rs.alpha), Math.max(0, (rs.alpha - Math.min(xT, rs.alpha)) / T.beta)]], BLUE, 5);
+        tagAt(g, ax, q0 * 0.3, flatTop - (flatTop - rs.P0) * 0.3, 'demand', BLUE);
+        // marginal revenue, with its jump at the kink
+        var mrHigh = (rs.alpha + T.gamma * rs.P0 - 2 * q0) / (T.beta + T.gamma);
+        var mrLow = (rs.alpha - 2 * q0) / T.beta;
+        line(g, ax, [[0, flatTop], [q0, mrHigh]], RED, 4);
+        var qEnd = Math.min(xT, (rs.alpha - T.beta * yLow) / 2);
+        line(g, ax, [[q0, Math.max(yLow, mrLow)], [qEnd, Math.max(yLow, (rs.alpha - 2 * qEnd) / T.beta)]], RED, 4);
+        line(g, ax, [[q0, mrHigh], [q0, Math.max(yLow, mrLow)]], RED, 3, [6, 6]);
+        tagAt(g, ax, q0 + 4, yLow + 4, 'marginal revenue jumps from ' +
+          money(mrHigh, 2) + ' to ' + money(mrLow, 2), RED);
+        line(g, ax, seq(0, xT, 4, function (q) { return QM.mc(q, rs.c); }), ink(), 4);
+        tagAt(g, ax, xT, QM.mc(xT, rs.c), 'marginal cost', ink());
+        dot(g, ax, QM.clamp(QM.triQ(rs, d.p), 0, xT), QM.clamp(d.p, yLow, yT), 'you');
+      } else {
+        var xU = 320, yU = 55;
+        ax = axes(g, p.w, p.h, xU, yU, 'pizzas per month', 'pounds');
+        var qc = QM.unoCompetitiveQ(rs), qp = QM.unoQ(rs, d.P);
+        // deadweight loss, drawn as a filled triangle between demand and marginal cost
+        if (Math.abs(qc - qp) > 0.5) {
+          g.save(); g.fillStyle = YELLOW; g.beginPath();
+          g.moveTo(ax.X(qp), ax.Y((rs.A - qp) / rs.b));
+          g.lineTo(ax.X(qc), ax.Y((rs.A - qc) / rs.b));
+          g.lineTo(ax.X(qp), ax.Y(QM.mc(qp)));
+          g.closePath(); g.fill();
+          g.strokeStyle = ink(); g.lineWidth = 2; g.stroke(); g.restore();
+          if (Math.abs(qc - qp) > 12) tagAt(g, ax, Math.min(qp, qc) + 2, QM.mc(qp) - 3, 'deadweight loss', ink());
+        }
+        line(g, ax, seq(0, Math.min(xU, rs.A), 5, function (q) { return Math.max(0, (rs.A - q) / rs.b); }), BLUE, 5);
+        tagAt(g, ax, Math.min(xU, rs.A) * 0.7, (rs.A - Math.min(xU, rs.A) * 0.7) / rs.b, 'demand', BLUE);
+        line(g, ax, seq(0, Math.min(xU, rs.A / 2), 5, function (q) { return Math.max(0, (rs.A - 2 * q) / rs.b); }), RED, 4);
+        tagAt(g, ax, Math.min(xU, rs.A / 2) * 0.28, (rs.A - 2 * Math.min(xU, rs.A / 2) * 0.28) / rs.b, 'marginal revenue', RED);
+        line(g, ax, seq(0, xU, 5, function (q) { return QM.mc(q); }), ink(), 4);
+        tagAt(g, ax, xU, QM.mc(xU), 'marginal cost', ink());
+        line(g, ax, seq(20, xU, 5, function (q) { return Math.min(yU, QM.atc(q)); }), ink(), 3, [8, 6]);
+        tagAt(g, ax, xU, Math.min(yU - 2, QM.atc(xU)), 'average cost', ink());
+        dot(g, ax, QM.clamp(qp, 0, xU), QM.clamp(d.P, 0, yU), 'you');
+      }
+      void i;
+    };
+  }
+
+  /* ---- the debrief centrepiece: four panels, you against the textbook - */
+  function panelChart(rows) {
+    return function (cv) {
+      var p = prep(cv), g = p.g;
+      var metrics = [
+        { key: 'price', label: 'price paid', dp: 2 },
+        { key: 'q', label: 'pizzas sold', dp: 0 },
+        { key: 'profit', label: 'profit', dp: 0 },
+        { key: 'dwl', label: 'deadweight loss', dp: 0 }
+      ];
+      var cols = p.w < 620 ? 1 : 2;
+      var rowsN = Math.ceil(4 / cols);
+      var pw = p.w / cols, ph = p.h / rowsN;
+      metrics.forEach(function (m, idx) {
+        var ox = (idx % cols) * pw, oy = Math.floor(idx / cols) * ph;
+        var maxPos = 0, maxNeg = 0;
+        rows.forEach(function (r) {
+          [r.you[m.key], r.text[m.key]].forEach(function (v) {
+            if (v > maxPos) maxPos = v;
+            if (-v > maxNeg) maxNeg = -v;
+          });
+        });
+        maxPos = maxPos * 1.2 || 1; maxNeg = maxNeg * 1.2;
+        var top = 36, bottom = ph - 44;
+        var scale = (bottom - top) / (maxPos + maxNeg);
+        var zero = top + maxPos * scale;
+        g.save(); g.translate(ox, oy);
+        g.fillStyle = ink();
+        g.font = '700 13px Futura, "Century Gothic", Avenir, sans-serif';
+        g.textAlign = 'left'; g.textBaseline = 'top';
+        g.fillText(m.label + ', month ' + ROUNDS, 12, 6);
+        g.font = '11px Futura, "Century Gothic", Avenir, sans-serif';
+        g.textAlign = 'right';
+        g.fillText('solid = you, outline = textbook', pw - 12, 8);
+        var left = 16, slot = (pw - 28) / 4;
+        g.lineWidth = 3; g.strokeStyle = ink();
+        g.beginPath(); g.moveTo(left - 4, zero); g.lineTo(pw - 12, zero); g.stroke();
+        rows.forEach(function (r, i) {
+          var x = left + i * slot, bw = slot * 0.3;
+          function bar(v, fillStyle, dx) {
+            var hgt = Math.abs(v) * scale;
+            var y = v >= 0 ? zero - hgt : zero;
+            g.fillStyle = fillStyle;
+            g.fillRect(x + dx, y, bw, hgt);
+            g.strokeRect(x + dx, y, bw, hgt);
+            return v >= 0 ? y : y + hgt;
+          }
+          var edge = bar(r.you[m.key], r.colour, 2);
+          bar(r.text[m.key], paper(), 6 + bw);
+          g.fillStyle = ink(); g.textAlign = 'center';
+          g.font = '11px Futura, "Century Gothic", Avenir, sans-serif';
+          if (r.you[m.key] >= 0) { g.textBaseline = 'bottom'; g.fillText(num(r.you[m.key], m.dp), x + 2 + bw / 2, edge - 3); }
+          else { g.textBaseline = 'top'; g.fillText(num(r.you[m.key], m.dp), x + 2 + bw / 2, edge + 3); }
+          g.textBaseline = 'top';
+          g.fillText(r.short, x + 2 + bw, bottom + 8);
+        });
+        g.restore();
+      });
+    };
+  }
+
+  function mountChart(node, drawFn, height) {
+    var cv = document.createElement('canvas');
+    cv.setAttribute('data-chart', '1');
+    cv.style.height = (height || 300) + 'px';
+    cv.__draw = drawFn;
+    node.appendChild(cv);
+    queueChart(cv, drawFn);
+    return cv;
+  }
+
+  /* ====================================================================
+     Feedback. Pattern triggered, written from the player's own numbers.
+     ==================================================================== */
+  function fill(tpl, map) {
+    return tpl.replace(/\{(\w+)\}/g, function (_, k) { return map[k] !== undefined ? map[k] : ''; });
+  }
+
+  function feedbackFor(e, prev) {
+    var F = C.feedback[e.w], o = e.outcome, out = [];
+    if (e.w === 'quadrato') {
+      var qStar = e.optDecision.q;
+      if (o.ask > o.price + 1e-9) {
+        out.push(fill(F.askAbove, { ask: money(o.ask, 2), price: money(o.price, 2), cost: money(o.cost) }));
+      } else if (o.ask < o.price - 0.005) {
+        out.push(fill(F.askBelow, { ask: money(o.ask, 2), price: money(o.price, 2), left: money((o.price - o.ask) * o.sold) }));
+      }
+      if (Math.abs(o.q - qStar) <= 4) out.push(F.onTarget);
+      else out.push(fill(o.q < qStar ? F.qLow : F.qHigh, { q: Math.round(o.q), qStar: qStar }));
+      if (o.profit > 60 && o.entrants > 0) out.push(fill(F.profitEarly, { profit: money(o.profit), entrants: o.entrants }));
+      else if (o.price < 14.6) out.push(fill(F.profitGone, { price: money(o.price, 2) }));
+    } else if (e.w === 'cerchio') {
+      var optS = e.optDecision.S;
+      if (o.S > optS + 40) out.push(fill(F.brandHigh, { S: money(o.S) }));
+      else if (o.S === 0) out.push(F.brandZero);
+      if (o.q > 5 && o.P < o.mc + 2) out.push(fill(F.pricedLikePC, { price: money(o.P, 2), mc: money(o.mc, 2) }));
+      if (prev && o.profit < prev.profit) out.push(fill(F.squeeze, { profit: money(o.profit) }));
+      if (o.q > 5 && o.q < 100) out.push(fill(F.tangency, { q: Math.round(o.q), gap: Math.round(100 - o.q) }));
+      if (o.q > 5 && o.P > o.mc + 2) out.push(fill(F.stillAbove, { price: money(o.P, 2), mc: money(o.mc, 2) }));
+      if (o.q <= 5) out.push('you priced at ' + money(o.P, 2) + ' and sold almost nothing. demand here slopes down: ' +
+        'the ' + C.model.cerchio.b + ' pizzas a month you lose for every pound you add to the price are the whole constraint.');
+    } else if (e.w === 'triangolo') {
+      var n = o.notes, T = C.model.triangolo;
+      var has = function (x) { return n.indexOf(x) >= 0; };
+      // the kink sits at the quantity the prevailing price sells, not at the
+      // quantity the player happened to sell this month
+      var qKink = Math.max(0, e.rs.alpha - T.beta * o.P0);
+      var mrUpV = (e.rs.alpha + T.gamma * o.P0 - 2 * qKink) / (T.beta + T.gamma);
+      var mrDownV = (e.rs.alpha - 2 * qKink) / T.beta;
+      var mcKink = QM.mc(qKink, o.c);
+      var quietProfit = o.P0 * qKink - QM.tc(qKink, o.c);
+      if (has('cartel-joined') || o.cartelLive) {
+        if (o.cheated) out.push(fill(F.cartelCheated, { price: money(o.p, 2), profit: money(o.profit), war: money(T.warPrice, 2), warRounds: T.warRounds }));
+        else if (has('cartel-held')) out.push(fill(F.cartelHeld, { cartel: money(T.cartelPrice, 2), profit: money(o.profit), legal: money(e.opt) }));
+        if (has('reported')) out.push(fill(F.cartelReported, { war: money(T.warPrice, 2) }));
+        if (has('rival-leniency')) out.push(fill(F.cartelBustRival, { rival: o.bustBy, fine: money(o.fine) }));
+        if (has('authority')) out.push(fill(F.cartelBustAuthority, { fine: money(o.fine) }));
+      }
+      if (o.mode === 'war') {
+        out.push(fill(F.warRound, {
+          war: money(T.warPrice, 2), best: money(e.optDecision.p, 2),
+          bestProfit: money(e.opt), legal: money(quietProfit)
+        }));
+      }
+      if (has('led-followed')) out.push(fill(F.leadFollowed, { lead: money(T.leadPrice, 2), gap: money(Math.max(0, e.opt - o.profit)) }));
+      if (has('led-ignored')) out.push(F.leadIgnored);
+      if (has('matched')) out.push(fill(F.cutMatched, { price: money(o.p, 2) }));
+      if (has('held')) out.push(fill(F.raiseAlone, { price: money(o.p, 2), p0: money(o.P0, 2) }));
+      if (has('steady')) {
+        out.push(fill(F.heldKink, {
+          p0: money(o.P0, 2), mrUp: money(mrUpV, 2), mrDown: money(mrDownV, 2), mc: money(mcKink, 2)
+        }));
+      }
+      if (e.r === C.model.triangolo.cShockRound && o.mode !== 'war' && o.mode !== 'cartel') {
+        out.push(fill(F.costShock, { mc: money(mcKink, 2), p0: money(o.P0, 2) }));
+      }
+    } else {
+      var e8 = o.elasticity;
+      if (Math.abs(e8) < 1) out.push(fill(F.inelastic, { price: money(o.P, 2), e: num(e8, 2) }));
+      else if (Math.abs(o.P - o.competitiveP) < 2) out.push(fill(F.nearMC, { price: money(o.P, 2), pc: money(o.competitiveP, 2), gap: money(Math.max(0, e.opt - o.profit)) }));
+      else if (Math.abs(o.P - e.optDecision.P) < 0.6) out.push(fill(F.atOptimum, { e: num(e8, 2) }));
+      if (e.r === C.model.uno.expiryRound) {
+        if (Math.abs(o.P - 32.31) < 2) out.push(fill(F.expirySlow, { oldP: money(32.31, 2), newP: money(e.optDecision.P, 2), gap: money(Math.max(0, e.opt - o.profit)) }));
+        else out.push(fill(F.expiry, { newP: money(e.optDecision.P, 2), oldP: money(32.31, 2) }));
+      }
+      if (o.dwl > 1) out.push(fill(F.dwl, { dwl: money(o.dwl) }));
+    }
+    return out.filter(function (x) { return !!x; });
+  }
+
+  /* ====================================================================
+     Screens
+     ==================================================================== */
+  function render() {
+    if (App.screen === 'title') return renderTitle();
+    if (App.screen === 'month') return renderMonth();
+    if (App.screen === 'diagnosis') return renderDiagnosis();
+    if (App.screen === 'results') return renderResults();
+    return renderRound();
+  }
+
+  function renderTitle() {
+    var hasSave = !!get(saveKey()) && App.log.length > 0;
+    var comp = '<svg viewBox="0 0 600 240" style="width:100%;height:auto;display:block;background:var(--concrete);color:var(--ink)" role="img" aria-label="four glyphs">' +
+      '<g>' +
+      '<rect x="36" y="40" width="26" height="26" fill="' + RED + '"/><rect x="72" y="40" width="26" height="26" fill="' + RED + '"/>' +
+      '<rect x="36" y="76" width="26" height="26" fill="' + RED + '"/><rect x="72" y="76" width="26" height="26" fill="' + RED + '"/>' +
+      '<rect x="36" y="112" width="26" height="26" fill="' + RED + '"/><rect x="72" y="112" width="26" height="26" fill="' + RED + '"/>' +
+      '<circle cx="210" cy="72" r="38" fill="' + YELLOW + '" stroke="currentColor" stroke-width="5"/>' +
+      '<circle cx="176" cy="140" r="22" fill="none" stroke="currentColor" stroke-width="5"/>' +
+      '<circle cx="250" cy="146" r="14" fill="' + YELLOW + '"/>' +
+      '<path d="M360 36 L400 112 L320 112 Z" fill="' + BLUE + '"/>' +
+      '<path d="M330 190 L364 126 L296 126 Z" fill="' + BLUE + '"/>' +
+      '<path d="M430 190 L464 126 L396 126 Z" fill="' + BLUE + '"/>' +
+      '<circle cx="536" cy="108" r="52" fill="currentColor"/>' +
+      '<rect x="0" y="212" width="600" height="8" fill="currentColor"/>' +
+      '</g></svg>';
+    main.innerHTML =
+      '<div class="stack" style="margin-top:18px">' +
+      comp +
+      '<div class="grid2">' +
+        '<div>' +
+          '<h2>one pizza, four universes</h2>' +
+          '<p>you have been appointed chief executive of quattro mondi, a pizza franchise that exists at the same time in four parallel universes. ' +
+          'in each one the oven is the same, the staff are the same and the cost curve is the same. the only thing that differs is the market you sell into. ' +
+          'you run all four for eight months.</p>' +
+          '<div class="block fill-concrete">' +
+            '<h3>how the multiverse works</h3>' +
+            '<p class="small" style="margin-bottom:0">total cost is the same everywhere: ' + money(C.model.cost.F) + ' a month before you bake anything, then ' +
+            money(C.model.cost.c, 2) + ' a pizza and a little more for each pizza after that. average cost is at its lowest, ' + money(14, 2) + ', at 100 pizzas. ' +
+            'any difference you see between the four universes comes from market structure alone.</p>' +
+          '</div>' +
+        '</div>' +
+        '<div class="stack">' +
+          '<div class="block">' +
+            '<h3>before you start</h3>' +
+            '<p class="small">your seed is <b class="mono-ish">' + App.seed + '</b>. everyone playing this seed gets the same demand shocks, the same ' +
+            'events and the same luck, so the scores can be compared. add <span class="mono-ish">?seed=' + App.seed + '</span> to the address to share it.</p>' +
+            '<label for="player-name" style="display:block;font-weight:700;font-size:0.9rem;margin-bottom:6px">your name or team, for the results sheet</label>' +
+            '<input id="player-name" type="text" style="width:100%" maxlength="40" value="' + esc(App.name) + '" placeholder="optional">' +
+            '<div class="row" style="margin-top:14px">' +
+              (hasSave ? '<button class="primary" data-action="continue">continue month ' + App.round + '</button>' +
+                         '<button data-action="restart">start again</button>'
+                       : '<button class="primary" data-action="start">start</button>') +
+              '<button data-action="newseed">new seed</button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="block fill-ink">' +
+            '<h3 style="color:var(--paper)">the economist\u2019s lens</h3>' +
+            '<p class="small" style="color:var(--paper);margin-bottom:0">you have ' + C.model.lensCharges + ' charges for the whole game. one charge draws the demand, ' +
+            'marginal revenue, marginal cost and average cost curves for one universe in one month. every charge you do not spend is worth a bonus point.</p>' +
+          '</div>' +
+        '</div>' +
+      '</div></div>';
+  }
+
+  /* ---- the persistent comparison strip ------------------------------- */
+  function stripHTML() {
+    var cells = WORLDS.map(function (w) {
+      var rs = rstate(w), lastE = null;
+      for (var i = App.log.length - 1; i >= 0; i--) if (App.log[i].w === w) { lastE = App.log[i]; break; }
+      var badge = '-', rivals = '-';
+      if (lastE) {
+        var o = lastE.outcome, price = QM.priceOf(lastE);
+        badge = Math.abs(price - o.mc) < 0.5 ? 'P = MC' : 'P > MC';
+        if (price < o.mc - 0.5) badge = 'P < MC';
+      }
+      if (w === 'quadrato') rivals = rs.N + ' kitchens';
+      if (w === 'cerchio') rivals = Math.max(0, Math.round((C.model.cerchio.a0 - rs.a) / 4)) + ' copycats';
+      if (w === 'triangolo') rivals = '2 rivals';
+      if (w === 'uno') rivals = rs.patent ? 'no rival' : '1 generic';
+      var tot = App.totals[w] || 0;
+      return '<div class="strip-cell">' +
+        '<div class="bar fill-' + COLOUR[w] + '"></div>' +
+        '<div class="nm">' + LABEL[w].replace('mondo ', '') + '</div>' +
+        '<div class="v' + (tot < 0 ? ' neg' : '') + '">' + money(tot) + '</div>' +
+        '<div class="b">' + badge + ' &middot; ' + rivals + '</div>' +
+      '</div>';
+    }).join('');
+    return '<div class="strip" aria-label="cumulative position in each universe">' + cells + '</div>';
+  }
+
+  function tabsHTML() {
+    return '<div class="tabs" role="tablist">' + WORLDS.map(function (w) {
+      var sel = App.view === w;
+      return '<button class="tab t-' + w + '" role="tab" id="tab-' + w + '" aria-selected="' + sel + '" ' +
+        'aria-controls="panel" data-action="tab" data-world="' + w + '">' + glyph(w) +
+        '<span><span class="t-name">' + LABEL[w] + '</span><span class="t-sub">' + C.worlds[w].structure + '</span></span>' +
+        (App.committed[w] ? '<span class="done">set</span>' : '') +
+      '</button>';
+    }).join('') + '</div>';
+  }
+
+  /* ---- the round screen ---------------------------------------------- */
+  function newsLine(w, rs) {
+    var bank = C.worlds[w].news;
+    var idx = SC.news[w][App.round - 1] % bank.length;
+    var t = bank[idx];
+    if (w === 'quadrato' && idx === 0) t += money(rs.price, 2);
+    return t;
+  }
+
+  function lastLine(w) {
+    for (var i = App.log.length - 1; i >= 0; i--) {
+      if (App.log[i].w === w) {
+        var e = App.log[i], o = e.outcome;
+        var bits = 'month ' + e.r + ': ';
+        if (w === 'quadrato') bits += 'you baked ' + Math.round(o.q) + ' and sold ' + Math.round(o.sold) + ' at ' + money(o.ask, 2);
+        if (w === 'cerchio') bits += 'you priced at ' + money(o.P, 2) + ', spent ' + money(o.S) + ' on brand and sold ' + Math.round(o.q);
+        if (w === 'triangolo') bits += 'you priced at ' + money(o.p, 2) + ' against rivals at ' + money(o.rivalPrice, 2) + ' and sold ' + Math.round(o.q);
+        if (w === 'uno') bits += 'you priced at ' + money(o.P, 2) + ' and sold ' + Math.round(o.q);
+        return bits + '. profit ' + money(e.profit) + ', score ' + num(e.score, 0) + '.';
+      }
+    }
+    return 'no months played yet.';
+  }
+
+  function controlsHTML(w, rs, d) {
+    var locked = !!App.committed[w];
+    var dis = locked ? ' disabled' : '';
+    var s = '';
+    if (w === 'quadrato') {
+      s += '<div class="ctrl"><label for="q-qty">pizzas to bake this month' +
+        '<span class="hint">the ' + money(C.model.cost.F) + ' oven cost is paid whether you bake or not.</span></label>' +
+        '<input id="q-qty" type="range" min="0" max="' + C.model.quadrato.qMax + '" step="1" value="' + Math.round(d.q) + '"' + dis + '>' +
+        '<div class="row"><input id="q-qty-n" type="number" min="0" max="' + C.model.quadrato.qMax + '" step="1" value="' + Math.round(d.q) + '"' + dis + ' aria-label="pizzas to bake">' +
+        '<span class="small muted">0 to ' + C.model.quadrato.qMax + '</span></div></div>' +
+        '<div class="ctrl"><label for="q-ask">your asking price' +
+        '<span class="hint">the market is clearing at ' + money(rs.price, 2) + '. ask more than that and you sell nothing at all.</span></label>' +
+        '<div class="row"><input id="q-ask" type="number" min="0" max="60" step="0.01" value="' + num(d.ask, 2) + '"' + dis + ' aria-label="your asking price">' +
+        '<button class="ghost" data-action="match"' + dis + '>match the market</button></div></div>';
+    } else if (w === 'cerchio') {
+      s += '<div class="ctrl"><label for="c-price">your price</label>' +
+        '<input id="c-price" type="range" min="0" max="40" step="0.25" value="' + num(d.P, 2) + '"' + dis + '>' +
+        '<div class="row"><input id="c-price-n" type="number" min="0" max="45" step="0.01" value="' + num(d.P, 2) + '"' + dis + ' aria-label="your price"></div></div>' +
+        '<div class="ctrl"><label for="c-brand">brand spend this month' +
+        '<span class="hint">it shifts this month\u2019s demand only. nothing carries over.</span></label>' +
+        '<input id="c-brand" type="range" min="0" max="' + C.model.cerchio.brandMax + '" step="' + C.model.cerchio.brandStep + '" value="' + d.S + '"' + dis + '>' +
+        '<div class="row"><input id="c-brand-n" type="number" min="0" max="' + C.model.cerchio.brandMax + '" step="' + C.model.cerchio.brandStep + '" value="' + d.S + '"' + dis + ' aria-label="brand spend"></div></div>';
+    } else if (w === 'triangolo') {
+      var T = C.model.triangolo;
+      if (rs.offer) {
+        s += '<div class="block fill-blue" style="margin-bottom:14px"><h3 style="color:#fff">a private message from blu</h3>' +
+          '<p class="small" style="color:#fff">' + esc(fill(C.feedback.triangolo.cartelOffer, { cartel: money(T.cartelPrice, 2) })) + '</p>' +
+          '<div class="row">' +
+          '<button data-action="cartel" data-val="decline"' + dis + '>decline</button>' +
+          '<button data-action="cartel" data-val="accept"' + dis + '>accept at ' + money(T.cartelPrice, 2) + '</button>' +
+          '<button data-action="cartel" data-val="cheat"' + dis + '>accept, then undercut</button>' +
+          '</div>' +
+          '<p class="small" style="color:#fff;margin:10px 0 0">your answer: <b>' +
+          (d.cartel === 'accept' ? (d.p < T.cartelPrice - 0.005 ? 'accept and undercut at ' + money(d.p, 2) : 'accept and hold at ' + money(T.cartelPrice, 2)) : 'decline') +
+          '</b></p></div>';
+      }
+      if (rs.cartel === 'active') {
+        s += '<div class="block" style="margin-bottom:14px"><h3>the cartel is running</h3>' +
+          '<p class="small">rosso and blu are holding ' + money(T.cartelPrice, 2) + '. month ' + (rs.cartelAge + 1) + ' of the arrangement. ' +
+          'price below that and they will know by next month.</p>' +
+          '<button class="danger" data-action="report"' + dis + '>' + (d.report ? 'reporting the cartel' : 'report the cartel (leniency)') + '</button></div>';
+      }
+      if (rs.warLeft > 0) {
+        s += '<div class="block fill-red" style="margin-bottom:14px"><h3 style="color:#fff">price war</h3>' +
+          '<p class="small" style="color:#fff;margin-bottom:0">rosso and blu are both posting ' + money(T.warPrice, 2) + ' for another ' + rs.warLeft + ' month(s). ' +
+          'they are not matching you now; they are simply undercutting everything.</p></div>';
+      }
+      if (rs.leadActive) {
+        s += '<div class="block fill-yellow" style="margin-bottom:14px"><h3>rosso announces ' + money(T.leadPrice, 2) + '</h3>' +
+          '<p class="small" style="margin-bottom:0">' + esc(fill(C.feedback.triangolo.leadOffer, { lead: money(T.leadPrice, 2) })) + '</p></div>';
+      }
+      s += '<div class="ctrl"><label for="t-price">your price' +
+        '<span class="hint">the prevailing price is ' + money(rs.P0, 2) + '. below it, both rivals match within the month. above it, they hold.</span></label>' +
+        '<input id="t-price" type="range" min="8" max="45" step="0.25" value="' + num(d.p, 2) + '"' + dis + '>' +
+        '<div class="row"><input id="t-price-n" type="number" min="0" max="60" step="0.01" value="' + num(d.p, 2) + '"' + dis + ' aria-label="your price"></div></div>';
+    } else {
+      s += '<div class="ctrl"><label for="u-price">your price' +
+        (rs.patent ? '<span class="hint">you hold the patent. there is no rival to react.</span>'
+                   : '<span class="hint">the generic is on sale. your demand curve is flatter than it was.</span>') +
+        '</label>' +
+        '<input id="u-price" type="range" min="0" max="50" step="0.25" value="' + num(d.P, 2) + '"' + dis + '>' +
+        '<div class="row"><input id="u-price-n" type="number" min="0" max="60" step="0.01" value="' + num(d.P, 2) + '"' + dis + ' aria-label="your price"></div></div>';
+    }
+    return s;
+  }
+
+  function readoutHTML(w, rs, d) {
+    var pr = project(w, rs, d);
+    var rows = [];
+    if (w === 'quadrato') {
+      rows.push(['baked', Math.round(pr.q)]);
+      rows.push(['sold', Math.round(pr.sold) + (pr.sold === 0 && pr.q > 0 ? ' - you are asking above the market' : '')]);
+    } else {
+      rows.push(['pizzas sold', num(pr.q, 1)]);
+    }
+    rows.push(['revenue', money(pr.revenue)]);
+    rows.push(['costs', money(pr.cost)]);
+    var ex = '';
+    if (w === 'uno') {
+      var e = pr.e, mag = Math.abs(e);
+      var band = mag > 1 ? 'elastic' : (mag === 1 ? 'unit elastic' : 'inelastic');
+      var pos = QM.clamp(mag / 3, 0, 1) * 100;
+      ex = '<div style="margin-top:12px"><div class="lab">elasticity of demand at this price: ' +
+        (isFinite(e) ? num(e, 2) : 'no buyers') + ' (' + band + ')</div>' +
+        '<div style="position:relative;height:22px;border:3px solid var(--ink);margin-top:6px">' +
+          '<div style="position:absolute;left:0;top:0;bottom:0;width:33.3%;background:' + RED + '"></div>' +
+          '<div style="position:absolute;left:33.3%;top:0;bottom:0;right:0;background:' + BLUE + '"></div>' +
+          '<div style="position:absolute;left:' + num(pos, 1) + '%;top:-5px;bottom:-5px;width:6px;background:var(--ink);transform:translateX(-3px)"></div>' +
+        '</div>' +
+        '<div class="small muted" style="display:flex;justify-content:space-between"><span>inelastic</span><span>|e| = 1</span><span>elastic</span></div></div>';
+    }
+    if (w === 'triangolo') rows.push(['rivals will post', money(pr.rival, 2)]);
+    return '<div class="readout"><div class="lab">if you commit this decision</div>' +
+      '<div class="big-num' + (pr.profit < 0 ? ' neg' : '') + '">' + money(pr.profit) + ' profit</div>' +
+      '<div class="small" style="margin-top:8px">' + rows.map(function (r) { return r[0] + ' ' + r[1]; }).join(' &middot; ') + '</div>' +
+      ex + '</div>';
+  }
+
+  function renderRound() {
+    var w = App.view, rs = rstate(w), d = decisionFor(w);
+    main.innerHTML =
+      '<div class="band fill-concrete" style="margin-top:14px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap">' +
+        '<b>month ' + App.round + ' of ' + ROUNDS + '</b>' +
+        '<span class="small">lens charges left: ' + App.charges + ' &middot; committed: ' +
+        WORLDS.filter(function (x) { return App.committed[x]; }).length + ' of 4</span>' +
+      '</div>' +
+      stripHTML() + tabsHTML() +
+      '<div class="panel" id="panel" role="tabpanel" aria-labelledby="tab-' + w + '">' +
+        '<div class="grid2">' +
+          '<div>' + scene(w, rs) +
+            '<div class="news" style="margin-top:14px">' + esc(newsLine(w, rs)) + '</div>' +
+            '<div class="lastline">' + esc(lastLine(w)) + '</div>' +
+          '</div>' +
+          '<div>' +
+            '<h3>' + LABEL[w] + ' &middot; ' + C.worlds[w].structure + '</h3>' +
+            '<p class="small">' + esc(C.worlds[w].lever) + '</p>' +
+            '<div id="controls">' + controlsHTML(w, rs, d) + '</div>' +
+            '<div id="readout">' + readoutHTML(w, rs, d) + '</div>' +
+            '<div class="row" style="margin-top:14px">' +
+              (App.committed[w]
+                ? '<button data-action="uncommit">change this decision</button><span class="tag fill-blue">committed</span>'
+                : '<button class="primary" data-action="commit">commit this decision</button>') +
+              (lensOn(w) ? '<span class="tag">lens spent</span>'
+                : '<button data-action="lens"' + (App.charges > 0 ? '' : ' disabled') + '>economist\u2019s lens (' + App.charges + ' left)</button>') +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div id="chart-slot">' + (lensOn(w) ? '<div class="chart-wrap" id="chart-wrap"></div>' : '') + '</div>' +
+      '</div>' +
+      '<div class="row" style="margin-top:18px;justify-content:space-between">' +
+        '<button class="primary" data-action="advance"' + (allCommitted() ? '' : ' disabled') + '>' +
+          (allCommitted() ? 'advance the month' : 'commit all four to advance') + '</button>' +
+        '<button class="ghost" data-action="reset">reset the game</button>' +
+      '</div>';
+    if (lensOn(w)) mountChart($('chart-wrap'), curveChart(w, rs, d), 360);
+    wireControls(w, rs);
+  }
+
+  function refreshLive() {
+    var w = App.view, rs = rstate(w), d = App.dec[w];
+    $('readout').innerHTML = readoutHTML(w, rs, d);
+    if (lensOn(w)) {
+      var wrap = $('chart-wrap');
+      if (wrap) { wrap.innerHTML = ''; mountChart(wrap, curveChart(w, rs, d), 360); }
+    }
+    save();
+  }
+
+  function bindPair(rangeId, numId, set) {
+    var r = $(rangeId), n = $(numId);
+    function handler(src) {
+      return function () {
+        var v = parseFloat(src.value);
+        if (isNaN(v)) return;
+        set(v);
+        if (r && src !== r) r.value = v;
+        if (n && src !== n) n.value = v;
+        refreshLive();
+      };
+    }
+    if (r) r.addEventListener('input', handler(r));
+    if (n) { n.addEventListener('input', handler(n)); n.addEventListener('change', handler(n)); }
+  }
+
+  function wireControls(w, rs) {
+    if (App.committed[w]) return;
+    var d = App.dec[w];
+    if (w === 'quadrato') {
+      bindPair('q-qty', 'q-qty-n', function (v) { d.q = QM.clamp(Math.round(v), 0, C.model.quadrato.qMax); });
+      bindPair(null, 'q-ask', function (v) { d.ask = QM.clamp(v, 0, 60); });
+    } else if (w === 'cerchio') {
+      bindPair('c-price', 'c-price-n', function (v) { d.P = QM.clamp(v, 0, 45); });
+      bindPair('c-brand', 'c-brand-n', function (v) { d.S = QM.clamp(Math.round(v / C.model.cerchio.brandStep) * C.model.cerchio.brandStep, 0, C.model.cerchio.brandMax); });
+    } else if (w === 'triangolo') {
+      bindPair('t-price', 't-price-n', function (v) { d.p = QM.clamp(v, 0, 60); });
+    } else {
+      bindPair('u-price', 'u-price-n', function (v) { d.P = QM.clamp(v, 0, 60); });
+    }
+    void rs;
+  }
+
+  /* ---- advancing the month ------------------------------------------- */
+  function advance() {
+    WORLDS.forEach(function (w) {
+      var rs = rstate(w), d = App.dec[w];
+      var opt = QM.worlds[w].optimum(rs);
+      var res = QM.worlds[w].step(rs, d, SC);
+      var regret = opt.profit - res.outcome.profit;
+      App.log.push({
+        r: App.round, w: w, d: d, profit: res.outcome.profit, opt: opt.profit,
+        optDecision: opt.decision, score: QM.scoreRound(w, regret), outcome: res.outcome, rs: rs
+      });
+      App.totals[w] = (App.totals[w] || 0) + res.outcome.profit;
+      App.states[w] = res.nextState;
+    });
+    App.lastRound = App.round;
+    App.round += 1;
+    App.dec = {}; App.committed = {};
+    App.screen = 'month';
+    save(); render();
+  }
+
+  function entryFor(w, round) {
+    for (var i = 0; i < App.log.length; i++) if (App.log[i].w === w && App.log[i].r === round) return App.log[i];
+    return null;
+  }
+
+  function prevEntry(w, round) { return entryFor(w, round - 1); }
+
+  function renderMonth() {
+    var r = App.lastRound || (App.round - 1);
+    var cards = WORLDS.map(function (w, i) {
+      var e = entryFor(w, r), o = e.outcome;
+      var lines = feedbackFor(e, prevEntry(w, r) ? prevEntry(w, r).outcome : null);
+      var extra = '';
+      if (w === 'quadrato' && o.entrants !== 0) {
+        extra = o.entrants > 0 ? o.entrants + ' more kitchens open next month.' : Math.abs(o.entrants) + ' kitchens close next month.';
+      }
+      if (w === 'uno' && r === C.model.uno.expiryRound - 1) extra = 'news: the patent expires at the start of next month. a generic oven goes on sale.';
+      if (w === 'triangolo' && o.fine > 0) extra = 'the fine is ' + money(o.fine) + ', which is ' + (C.model.triangolo.fineRate * 100) + '% of everything this universe has taken so far.';
+      return '<div class="reveal' + (reduceMotion ? '' : ' anim') + '" style="animation-delay:' + (i * 0.12) + 's">' +
+        '<div class="head"><h3><span class="tag fill-' + COLOUR[w] + '">' + LABEL[w].replace('mondo ', '') + '</span> ' +
+        '<span class="big-num' + (e.profit < 0 ? ' neg' : '') + '">' + money(e.profit) + '</span></h3>' +
+        '<span class="small">decision score ' + num(e.score, 0) + ' / 100</span></div>' +
+        '<p class="small" style="margin:10px 0 0">' + esc(lines[0] || '') + '</p>' +
+        (extra ? '<p class="small" style="margin:8px 0 0"><b>' + esc(extra) + '</b></p>' : '') +
+      '</div>';
+    }).join('');
+    var done = App.round > ROUNDS;
+    main.innerHTML =
+      '<div class="band fill-ink" style="margin-top:14px"><h2 style="color:var(--paper)">month ' + r + ' closes</h2></div>' +
+      stripHTML() + cards +
+      '<div class="row" style="margin-top:18px">' +
+        '<button class="primary" data-action="' + (done ? 'todiagnosis' : 'next') + '">' +
+        (done ? 'the diagnosis' : 'open month ' + App.round) + '</button></div>';
+  }
+
+  /* ---- the diagnosis -------------------------------------------------- */
+  function playerGame() {
+    var mean = {}, overall = 0;
+    WORLDS.forEach(function (w) {
+      var xs = App.log.filter(function (e) { return e.w === w; });
+      mean[w] = xs.reduce(function (a, e) { return a + e.score; }, 0) / Math.max(1, xs.length);
+      overall += mean[w];
+    });
+    return { seed: App.seed, log: App.log, mean: mean, decision: overall / WORLDS.length, totals: App.totals };
+  }
+
+  function diagItems() {
+    if (!App.__items) App.__items = QM.diagnosis(playerGame());
+    return App.__items;
+  }
+
+  function renderDiagnosis() {
+    var items = diagItems();
+    var qs = items.map(function (it, i) {
+      return '<div class="q"><h4>' + (i + 1) + ' of ' + items.length + '</h4>' +
+        '<p style="margin:6px 0 0">' + esc(it.question) + '</p>' +
+        '<div class="opts" role="radiogroup" aria-label="question ' + (i + 1) + '">' +
+        it.options.map(function (op, j) {
+          var cls = '';
+          if (App.diagDone) cls = j === it.correct ? ' right' : (App.diag[i] === j ? ' wrong' : '');
+          return '<label class="opt' + cls + '"><input type="radio" name="dq' + i + '" value="' + j + '"' +
+            (App.diag[i] === j ? ' checked' : '') + (App.diagDone ? ' disabled' : '') + '>' +
+            '<span>' + esc(op) + '</span></label>';
+        }).join('') + '</div>' +
+        (App.diagDone ? '<div class="explain">' + esc(it.explain) + '</div>' : '') +
+      '</div>';
+    }).join('');
+    var graded = QM.gradeDiagnosis(items, App.diag);
+    main.innerHTML =
+      '<div class="band fill-blue" style="margin-top:14px;color:#fff"><h2 style="color:#fff">the diagnosis</h2>' +
+      '<p class="small" style="color:#fff;margin:6px 0 0">eight questions, written from your own eight months. this is a quarter of your final score.</p></div>' +
+      '<div style="margin-top:16px">' + qs + '</div>' +
+      (App.diagDone
+        ? '<div class="band fill-concrete"><b>' + graded.correct + ' of ' + graded.total + ' correct.</b></div>' +
+          '<div class="row" style="margin-top:14px"><button class="primary" data-action="toresults">see the results</button></div>'
+        : '<div class="row" style="margin-top:14px"><button class="primary" data-action="submitdiag">submit all eight</button></div>');
+    Array.prototype.slice.call(document.querySelectorAll('input[type=radio]')).forEach(function (el) {
+      el.addEventListener('change', function () {
+        var i = parseInt(el.name.slice(2), 10);
+        App.diag[i] = parseInt(el.value, 10);
+        save();
+      });
+    });
+  }
+
+  /* ---- results and debrief ------------------------------------------- */
+  function dwlOf(e) {
+    var o = e.outcome, w = e.w, T = C.model.triangolo, d = C.model.cost.d;
+    if (w === 'uno') return o.dwl;
+    if (w === 'quadrato') {
+      var qc = 10 * (o.price - C.model.cost.c);
+      return 0.5 * Math.abs(o.price - o.mc) * Math.abs(qc - o.q);
+    }
+    if (w === 'cerchio') {
+      var A = e.rs.aEff + C.model.cerchio.beta * Math.sqrt(o.S), b = C.model.cerchio.b;
+      var qcc = (A / b - C.model.cost.c) / (1 / b + 2 * d);
+      return 0.5 * Math.abs((A - o.q) / b - o.mc) * Math.abs(qcc - o.q);
+    }
+    var slope = o.mode === 'matched' ? T.beta : T.beta + T.gamma;
+    var inter = o.mode === 'matched' ? e.rs.alpha : e.rs.alpha + T.gamma * o.rivalPrice;
+    var qct = (inter / slope - o.c) / (1 / slope + 2 * d);
+    return 0.5 * Math.abs(o.p - o.mc) * Math.abs(qct - o.q);
+  }
+
+  function rowFor(e) { return { price: QM.priceOf(e), q: e.outcome.q, profit: e.profit, dwl: dwlOf(e) }; }
+
+  function ghosts() {
+    if (App.__ghosts) return App.__ghosts;
+    App.__ghosts = {
+      textbook: QM.runGame(App.seed, QM.bots.textbook(App.seed)),
+      shark: QM.runGame(App.seed, QM.bots.shark(App.seed)),
+      passive: QM.runGame(App.seed, QM.bots.passive(App.seed)),
+      coinflip: QM.runGame(App.seed, QM.bots.coinflip(App.seed))
+    };
+    return App.__ghosts;
+  }
+
+  function payload() {
+    return {
+      v: 1, seed: App.seed,
+      dec: App.log.map(function (e) { return { r: e.r, w: e.w, d: e.d }; }),
+      diag: App.diag, lens: App.charges
+    };
+  }
+
+  function results() {
+    var g = playerGame(), items = diagItems();
+    var dg = QM.gradeDiagnosis(items, App.diag);
+    var comp = QM.composite(g.decision, dg.pct, App.charges);
+    return { g: g, dg: dg, comp: comp, grade: QM.grade(comp), code: QM.verificationCode(payload(), comp) };
+  }
+
+  function synthesis(g) {
+    var last = {}, prices = [];
+    WORLDS.forEach(function (w) { last[w] = entryFor(w, ROUNDS); prices.push({ w: w, p: QM.priceOf(last[w]) }); });
+    prices.sort(function (a, b) { return a.p - b.p; });
+    // a price to marginal cost gap only means market power where pizzas were sold
+    var gaps = WORLDS.filter(function (w) { return last[w].outcome.q > 0; })
+      .map(function (w) { return { w: w, g: QM.priceOf(last[w]) - last[w].outcome.mc }; });
+    gaps.sort(function (a, b) { return b.g - a.g; });
+    var total = WORLDS.reduce(function (a, w) { return a + (App.totals[w] || 0); }, 0);
+    var worst = WORLDS.slice().sort(function (a, b) { return g.mean[a] - g.mean[b]; })[0];
+    return [
+      'same oven, same staff, same cost curve. in month ' + ROUNDS + ' your price ran from ' + money(prices[0].p, 2) +
+      ' in ' + LABEL[prices[0].w] + ' to ' + money(prices[3].p, 2) + ' in ' + LABEL[prices[3].w] + ', driven entirely by market structure.',
+      (gaps.length > 1
+        ? 'among the universes where you sold anything, your widest gap between price and marginal cost was ' +
+          money(gaps[0].g, 2) + ' in ' + LABEL[gaps[0].w] + ', and your narrowest was ' +
+          money(gaps[gaps.length - 1].g, 2) + ' in ' + LABEL[gaps[gaps.length - 1].w] +
+          '. that gap is market power, measured in pounds.'
+        : 'you sold almost nothing in month ' + ROUNDS + ', so there is no price to marginal cost gap left to read.'),
+      'across eight months the four universes returned ' + money(total) + ' between them, and your weakest reading of a market was ' +
+      LABEL[worst] + ', at ' + num(g.mean[worst], 0) + ' points out of 100.'
+    ];
+  }
+
+  function insights(w) {
+    var out = [], seen = {};
+    for (var r = ROUNDS; r >= 1 && out.length < 3; r--) {
+      var e = entryFor(w, r);
+      if (!e) continue;
+      var lines = feedbackFor(e, prevEntry(w, r) ? prevEntry(w, r).outcome : null);
+      for (var i = 0; i < lines.length && out.length < 3; i++) {
+        // two months of the same feedback line differ only in their numbers
+        var key = lines[i].replace(/[\d.,\u00A3-]+/g, '#').slice(0, 60);
+        if (seen[key]) continue;
+        seen[key] = 1; out.push(lines[i]);
+      }
+    }
+    return out;
+  }
+
+  function renderResults() {
+    var R = results(), gh = ghosts();
+    var ladder = [
+      { n: 'textbook', v: gh.textbook.decision, note: 'the per round optimum, cartel declined' },
+      { n: 'shark', v: gh.shark.decision, note: 'joins the cartel and cheats; its luck moves with the seed' },
+      { n: 'passive', v: gh.passive.decision, note: 'takes every default' },
+      { n: 'coin-flip', v: gh.coinflip.decision, note: 'uniform random play' },
+      { n: (App.name ? App.name : 'you'), v: R.g.decision, you: true, note: 'your decision score' }
+    ].sort(function (a, b) { return b.v - a.v; });
+
+    var rows = WORLDS.map(function (w) {
+      return { world: w, short: LABEL[w].replace('mondo ', ''), colour: w === 'quadrato' ? RED : (w === 'cerchio' ? YELLOW : (w === 'triangolo' ? BLUE : ink())),
+        you: rowFor(entryFor(w, ROUNDS)),
+        text: rowFor(gh.textbook.log.filter(function (e) { return e.w === w && e.r === ROUNDS; })[0]) };
+    });
+
+    var dataLines = App.log.map(function (e) { return QM.dataLine(App.seed, e); }).join('\n');
+    if (window.console && console.log) console.log(dataLines);
+
+    main.innerHTML =
+      '<div class="band fill-ink" style="margin-top:14px;display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap">' +
+        '<h2 style="color:var(--paper)">' + esc(R.grade) + '</h2>' +
+        '<span class="big-num" style="color:var(--paper)">' + num(R.comp, 1) + ' / 106</span></div>' +
+      '<div class="grid4" style="margin-top:14px">' +
+        WORLDS.map(function (w) {
+          return '<div class="strip-cell"><div class="bar fill-' + COLOUR[w] + '"></div>' +
+            '<div class="nm">' + LABEL[w].replace('mondo ', '') + '</div>' +
+            '<div class="v">' + num(R.g.mean[w], 0) + '</div>' +
+            '<div class="b">' + money(App.totals[w] || 0) + ' banked</div></div>';
+        }).join('') +
+      '</div>' +
+      '<div class="block" style="margin-top:14px"><b>how it adds up.</b> ' +
+        'decisions ' + num(R.g.decision, 1) + ' out of 100, worth three quarters. ' +
+        'diagnosis ' + R.dg.correct + ' of ' + R.dg.total + ', worth a quarter. ' +
+        'lens charges unspent: ' + App.charges + ', worth a point each. ' +
+        'total ' + num(R.comp, 1) + ' out of 106.' +
+        (App.best && App.best.score ? ' your best on this seed before today was ' + num(App.best.score, 1) + '.' : '') + '</div>' +
+
+      '<h3 style="margin-top:22px">the ghost leaderboard</h3>' +
+      '<p class="small muted">four bots played your seed. the ladder compares decision scores only; the diagnosis and the lens bonus are yours alone.</p>' +
+      '<div class="ladder">' + ladder.map(function (x, i) {
+        return '<div class="rung' + (x.you ? ' you' : '') + '"><b>' + (i + 1) + '</b><span>' + esc(x.n) + ' <span class="small muted">' + esc(x.note) + '</span></span>' +
+          '<b class="mono-ish">' + num(x.v, 1) + '</b></div>';
+      }).join('') + '</div>' +
+
+      '<h3 style="margin-top:22px">month ' + ROUNDS + ', four universes, one oven</h3>' +
+      '<div class="chart-wrap" id="panels"></div>' +
+      '<div class="block" style="margin-top:14px">' + synthesis(R.g).map(function (s) { return '<p>' + esc(s) + '</p>'; }).join('') + '</div>' +
+
+      '<h3 style="margin-top:22px">what each universe taught you</h3>' +
+      WORLDS.map(function (w) {
+        return '<div class="block" style="margin-top:12px;border-left:14px solid ' +
+          (w === 'quadrato' ? RED : w === 'cerchio' ? YELLOW : w === 'triangolo' ? BLUE : 'var(--ink)') + '">' +
+          '<h4>' + LABEL[w] + ' &middot; ' + C.worlds[w].structure + '</h4>' +
+          '<ul class="small" style="margin:8px 0 0;padding-left:18px">' +
+          insights(w).map(function (l) { return '<li style="margin-bottom:6px">' + esc(l) + '</li>'; }).join('') + '</ul></div>';
+      }).join('') +
+
+      '<h3 style="margin-top:22px">five things to hold on to</h3>' +
+      '<ol class="small">' + C.notes.map(function (n) { return '<li style="margin-bottom:8px">' + esc(n) + '</li>'; }).join('') + '</ol>' +
+
+      '<h3 style="margin-top:22px">verification</h3>' +
+      '<p class="small">your tutor can re-run this game from the code and the log below and get the same score.</p>' +
+      '<div class="verify mono-ish">' + esc(R.code) + '</div>' +
+      '<div class="row no-print" style="margin-top:12px">' +
+        '<button data-action="copycode">copy the code and link</button>' +
+        '<button data-action="copytext">copy as text</button>' +
+        '<button data-action="export">export json</button>' +
+        '<button data-action="import">import json</button>' +
+        '<button data-action="print">print</button>' +
+      '</div>' +
+      '<details class="data" style="margin-top:16px"><summary>machine readable log</summary>' +
+        '<pre class="data-lines">' + esc(dataLines) + '</pre></details>' +
+      '<div class="row no-print" style="margin-top:18px">' +
+        '<button class="primary" data-action="newseed">play a new seed</button>' +
+        '<button class="danger" data-action="reset">reset this seed</button>' +
+      '</div>' +
+      '<input type="file" id="import-file" accept="application/json,.json" style="display:none">';
+
+    mountChart($('panels'), panelChart(rows), 460);
+
+    var best = null;
+    try { best = JSON.parse(get(bestKey())); } catch (e) { best = null; }
+    if (!best || R.comp > best.score) put(bestKey(), JSON.stringify({ score: R.comp, code: R.code, when: Date.now() }));
+
+    $('import-file').addEventListener('change', importFile);
+  }
+
+  /* ====================================================================
+     Copying, exporting, importing, printing
+     ==================================================================== */
+  function copyText(text, msg) {
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed'; ta.style.left = '-9999px';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch (e) { /* nothing else to try */ }
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).catch(fallback);
+    } else { fallback(); }
+    flash(msg || 'copied');
+  }
+
+  function flash(msg) {
+    var n = document.createElement('div');
+    n.textContent = msg;
+    n.setAttribute('role', 'status');
+    n.style.cssText = 'position:fixed;left:16px;bottom:16px;z-index:99;padding:10px 16px;border:4px solid var(--ink);' +
+      'background:var(--paper);color:var(--ink);font-weight:700';
+    document.body.appendChild(n);
+    setTimeout(function () { if (n.parentNode) n.parentNode.removeChild(n); }, 2200);
+  }
+
+  function verifyLink() {
+    var b64 = btoa(JSON.stringify(payload()));
+    var base = location.href.split('?')[0].split('#')[0];
+    var R = results();
+    return R.code + '\n' + base + '?verify=' + encodeURIComponent(R.code) + '&log=' + encodeURIComponent(b64);
+  }
+
+  function textReport() {
+    var R = results(), lines = [];
+    lines.push('QUATTRO MONDI - results');
+    lines.push('player: ' + (App.name || 'unnamed') + '   seed: ' + App.seed);
+    lines.push('grade: ' + R.grade + '   composite: ' + num(R.comp, 1) + ' / 106');
+    lines.push('decisions ' + num(R.g.decision, 1) + '/100, diagnosis ' + R.dg.correct + '/' + R.dg.total + ', lens charges unspent ' + App.charges);
+    lines.push('');
+    WORLDS.forEach(function (w) {
+      lines.push(LABEL[w] + ' (' + C.worlds[w].structure + '): score ' + num(R.g.mean[w], 0) +
+        ', banked ' + money(App.totals[w] || 0));
+      insights(w).forEach(function (s) { lines.push('  - ' + s); });
+      lines.push('');
+    });
+    lines.push('synthesis');
+    synthesis(R.g).forEach(function (s) { lines.push('  ' + s); });
+    lines.push('');
+    lines.push('verification: ' + R.code);
+    lines.push('');
+    lines.push(App.log.map(function (e) { return QM.dataLine(App.seed, e); }).join('\n'));
+    return lines.join('\n');
+  }
+
+  function exportJSON() {
+    var blob = {
+      tool: 'quattro-mondi', version: 1, exported: new Date().toISOString(),
+      name: App.name, seed: App.seed, round: App.round, charges: App.charges,
+      states: App.states, log: App.log, totals: App.totals, diag: App.diag,
+      diagDone: App.diagDone, screen: App.screen, payload: payload()
+    };
+    var text = JSON.stringify(blob, null, 2);
+    try {
+      var url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+      var a = document.createElement('a');
+      a.href = url; a.download = 'quattro-mondi-' + App.seed + '.json';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      flash('exported');
+    } catch (e) {
+      copyText(text, 'download blocked, so the json is on your clipboard');
+    }
+  }
+
+  function importFile(ev) {
+    var f = ev.target.files && ev.target.files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var d = JSON.parse(rd.result);
+        if (d.tool !== 'quattro-mondi') throw new Error('not a quattro mondi file');
+        if (d.seed !== App.seed && !window.confirm('that file was played on seed ' + d.seed +
+          '. load it and switch to that seed?')) return;
+        if (d.seed !== App.seed) { location.search = '?seed=' + d.seed + '&import=1'; return; }
+        ['name', 'round', 'charges', 'states', 'log', 'totals', 'diag', 'diagDone', 'screen'].forEach(function (k) {
+          if (d[k] !== undefined) App[k] = d[k];
+        });
+        App.__items = null; App.dec = {}; App.committed = {};
+        save(); render(); flash('imported');
+      } catch (e) { window.alert('could not read that file: ' + e.message); }
+    };
+    rd.readAsText(f);
+  }
+
+  /* ====================================================================
+     Actions
+     ==================================================================== */
+  document.addEventListener('click', function (ev) {
+    var t = ev.target.closest ? ev.target.closest('[data-action]') : null;
+    if (!t) return;
+    var a = t.getAttribute('data-action'), w = App.view;
+    if (a === 'tab') { App.view = t.getAttribute('data-world'); save(); renderRound(); return; }
+    if (a === 'start' || a === 'continue') {
+      var nm = $('player-name');
+      if (nm) App.name = nm.value.slice(0, 40);
+      App.screen = 'round'; save(); render(); return;
+    }
+    if (a === 'restart') { if (window.confirm('start this seed again from month 1? your current game will be lost.')) resetGame(true); return; }
+    if (a === 'reset') { if (window.confirm('reset the game and clear the saved progress for seed ' + App.seed + '?')) resetGame(true); return; }
+    if (a === 'newseed') { location.search = '?seed=' + (1000 + Math.floor(Math.random() * 9000)); return; }
+    if (a === 'commit') { App.committed[w] = true; save(); renderRound(); return; }
+    if (a === 'uncommit') { App.committed[w] = false; save(); renderRound(); return; }
+    if (a === 'match') { App.dec[w].ask = rstate(w).price; save(); renderRound(); return; }
+    if (a === 'lens') {
+      if (App.charges <= 0 || lensOn(w)) return;
+      App.charges -= 1; App.lens[lensKey(w)] = true; save(); renderRound(); return;
+    }
+    if (a === 'cartel') {
+      var v = t.getAttribute('data-val'), T = C.model.triangolo, d = App.dec[w];
+      if (v === 'decline') { d.cartel = 'decline'; d.p = rstate(w).P0; }
+      if (v === 'accept') { d.cartel = 'accept'; d.p = T.cartelPrice; }
+      if (v === 'cheat') { d.cartel = 'accept'; d.p = 30.90; }
+      save(); renderRound(); return;
+    }
+    if (a === 'report') { App.dec[w].report = !App.dec[w].report; save(); renderRound(); return; }
+    if (a === 'advance') { if (allCommitted()) advance(); return; }
+    if (a === 'next') { App.screen = 'round'; App.view = 'quadrato'; save(); render(); return; }
+    if (a === 'todiagnosis') { App.screen = 'diagnosis'; save(); render(); return; }
+    if (a === 'submitdiag') {
+      var items = diagItems();
+      for (var i = 0; i < items.length; i++) {
+        if (App.diag[i] === undefined || App.diag[i] === null) { window.alert('answer all eight first. question ' + (i + 1) + ' is still open.'); return; }
+      }
+      App.diagDone = true; save(); render(); return;
+    }
+    if (a === 'toresults') { App.screen = 'results'; save(); render(); return; }
+    if (a === 'copycode') { copyText(verifyLink(), 'verification code and link copied'); return; }
+    if (a === 'copytext') { copyText(textReport(), 'results copied as text'); return; }
+    if (a === 'export') { exportJSON(); return; }
+    if (a === 'import') { $('import-file').click(); return; }
+    if (a === 'print') { window.print(); return; }
+  });
+
+  $('theme-toggle').addEventListener('click', function () {
+    theme = theme === 'dark' ? 'light' : 'dark';
+    put('qm.theme', theme);
+    applyTheme(theme);
+  });
+
+  window.addEventListener('resize', function () {
+    clearTimeout(window.__qmr);
+    window.__qmr = setTimeout(redrawCharts, 180);
+  });
+
+  /* ====================================================================
+     Routes: the game, the in browser test suite, and verification
+     ==================================================================== */
+  function renderTests() {
+    main.innerHTML = '<h2 style="margin-top:18px">running the suite</h2><p>one moment.</p>';
+    setTimeout(function () {
+      var r = QM.selfTest({ evSeeds: 250, baseSeeds: 40 });
+      main.innerHTML = '<div class="band ' + (r.failed ? 'fill-red' : 'fill-blue') + '" style="margin-top:14px;color:#fff">' +
+        '<h2 style="color:#fff">' + r.passed + ' passed, ' + r.failed + ' failed</h2></div>' +
+        '<div class="block" style="margin-top:14px">' + r.results.map(function (x) {
+          return '<div style="padding:6px 0;border-bottom:2px solid var(--concrete)">' +
+            '<b>' + (x.ok ? 'pass' : 'FAIL') + '</b> ' + esc(x.name) +
+            (x.detail ? ' <span class="small muted">[' + esc(x.detail) + ']</span>' : '') + '</div>';
+        }).join('') + '</div>';
+      if (window.console) console.log(r.passed + ' passed, ' + r.failed + ' failed');
+    }, 30);
+  }
+
+  function renderVerify(code, b64) {
+    var out;
+    try {
+      var p = JSON.parse(atob(decodeURIComponent(b64)));
+      var r = QM.replay(p);
+      var match = r.code === decodeURIComponent(code);
+      out = '<div class="band ' + (match ? 'fill-blue' : 'fill-red') + '" style="margin-top:14px;color:#fff">' +
+        '<h2 style="color:#fff">' + (match ? 'the code checks out' : 'the code does not match') + '</h2></div>' +
+        '<div class="block" style="margin-top:14px"><p>seed ' + p.seed + '</p>' +
+        '<p>recomputed composite: <b>' + num(r.composite, 1) + ' / 106</b> (' + esc(r.grade) + ')</p>' +
+        '<p>decision score ' + num(r.decision, 1) + ', diagnosis ' + r.diagnosis.correct + '/' + r.diagnosis.total +
+        ', lens charges unspent ' + (p.lens || 0) + '</p>' +
+        '<p>recomputed code: <b class="mono-ish">' + esc(r.code) + '</b><br>submitted code: <b class="mono-ish">' + esc(decodeURIComponent(code)) + '</b></p></div>' +
+        '<details class="data" style="margin-top:14px"><summary>replayed log</summary><pre class="data-lines">' +
+        esc(r.game.log.map(function (e) { return QM.dataLine(p.seed, e); }).join('\n')) + '</pre></details>';
+    } catch (e) {
+      out = '<div class="band fill-red" style="margin-top:14px;color:#fff"><h2 style="color:#fff">could not read that log</h2></div>' +
+        '<div class="block" style="margin-top:14px">' + esc(e.message) + '</div>';
+    }
+    main.innerHTML = out;
+  }
+
+  /* ---- boot ----------------------------------------------------------- */
+  function boot() {
+    applyTheme(theme);
+    var seedParam = parseInt(params.get('seed'), 10);
+    App.seed = (isFinite(seedParam) && seedParam > 0) ? (seedParam >>> 0) : (1000 + Math.floor(Math.random() * 9000));
+    $('seed-label').textContent = String(App.seed);
+    SC = QM.makeScenario(App.seed);
+    WORLDS.forEach(function (w) { App.states[w] = QM.worlds[w].init(); App.totals[w] = 0; });
+
+    $('footer-tools').innerHTML = ' &middot; <a href="?test=1">run the tests</a> &middot; seed ' + App.seed;
+
+    if (params.get('test') === '1') { renderTests(); return; }
+    if (params.get('verify') && params.get('log')) { renderVerify(params.get('verify'), params.get('log')); return; }
+
+    loadSave();
+    if (App.screen === 'round' && App.round > ROUNDS) App.screen = 'diagnosis';
+    var best = null;
+    try { best = JSON.parse(get(bestKey())); } catch (e) { best = null; }
+    App.best = best;
+    render();
+    // the ghosts play in the background so the results screen is instant
+    setTimeout(function () { try { ghosts(); } catch (e) { /* ignore */ } }, 400);
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>
