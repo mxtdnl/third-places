@@ -1,0 +1,1702 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>World Cafe</title>
+<style>
+/* ============================================================
+   WORLD CAFE: PROJECTION DECK (WEEK 4, EXPLAIN)
+   Sized as a 16:9 stage that always fits the viewport.
+   The root font-size IS the slide unit: 1rem = 1% of stage width.
+   Every dimension below is expressed in those units, so the whole
+   deck scales as one composition on any projector or laptop.
+   See SLIDES.md; theory-of-change.html is the reference deck.
+   ============================================================ */
+
+html {
+  font-size: min(1vw, 1.7778vh);
+}
+
+:root {
+  --bg: #F2DFBE;
+  --bg-card: #FFFAF2;
+  --bg-deep: #E8D2A8;
+  --text: #2A1F18;
+  --text-muted: #6A5A48;
+  --border: #D8C8A8;
+  --char-1: #5C3A96;
+  --char-2: #B52838;
+  --char-3: #C85218;
+  --char-4: #D4A020;
+  --char-5: #7A5828;
+  --char-6: #B83068;
+  --char-7: #CC6830;
+  --char-8: #7E58A8;
+  --correct: #2A7A42;
+  --correct-bg: #E6F4EA;
+  --incorrect: #B82828;
+  --incorrect-bg: #FDEEEE;
+  --slide-accent: var(--char-1);
+
+  /* Ink tones. Gold and orange fail WCAG AA as text on cream, so text set in
+     those two characteristics uses a darkened variant. Fills, rules, borders
+     and decorative shapes keep the exact palette values above. */
+  --char-4-ink: #7A5410;
+  --char-7-ink: #9E4718;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--text);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 1.85rem;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+.deck {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stage {
+  position: relative;
+  width: 100rem;
+  height: 56.25rem;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* ---------- Deck chrome ---------- */
+
+.progress-track {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 0.7rem;
+  background: var(--bg-deep);
+  z-index: 60;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--slide-accent);
+  transition: width 0.4s ease, background-color 0.3s ease;
+}
+
+.deck-chrome {
+  position: absolute;
+  bottom: 1.5rem;
+  right: 2.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--bg);
+  border: 0.2rem solid var(--border);
+  z-index: 60;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+/* Idle-hides during presentation so it never competes with the slide */
+.deck-chrome.idle { opacity: 0; pointer-events: none; }
+.nav-btn {
+  background: var(--char-1);
+  color: #fff;
+  border: none;
+  min-width: 4.4rem;
+  height: 2.6rem;
+  padding: 0 1.4rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.nav-btn:hover:not(:disabled) { background: var(--char-2); transform: translateY(-0.2rem); }
+.nav-btn:active { transform: translateY(0); }
+.nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.nav-btn.ghost {
+  background: transparent;
+  color: var(--text);
+  border: 0.2rem solid var(--text);
+}
+.nav-btn.ghost:hover { background: var(--text); color: var(--bg); }
+.nav-info {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0 0.6rem;
+}
+
+*:focus-visible {
+  outline: 0.3rem solid var(--char-1);
+  outline-offset: 0.2rem;
+}
+
+/* ---------- Slide frame ---------- */
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+.slide.active { display: block; animation: slideIn 0.32s ease; }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(1rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* The accent rail: a full-height Bauhaus bar carrying section identity */
+.rail {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 1.9rem;
+  background: var(--slide-accent);
+  z-index: 4;
+}
+
+.slide-inner {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  padding: 3.8rem 5.5rem 4.6rem 7rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.slide-no {
+  position: absolute;
+  top: 3.8rem;
+  right: 5.5rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  z-index: 5;
+}
+
+.s-head { flex-shrink: 0; margin-bottom: 2rem; }
+.s-head::before {
+  content: '';
+  display: block;
+  width: 13rem;
+  height: 0.9rem;
+  background: var(--slide-accent);
+  margin-bottom: 1.2rem;
+}
+.slide[data-accent="var(--char-4)"] .eyebrow { color: var(--char-4-ink); }
+.slide[data-accent="var(--char-7)"] .eyebrow { color: var(--char-7-ink); }
+
+.eyebrow {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 0.7rem;
+  color: var(--slide-accent);
+}
+h1 {
+  font-size: 7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 0.94;
+}
+h2 {
+  font-size: 3.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.015em;
+  line-height: 1.02;
+}
+h3 {
+  font-size: 2rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.s-body { flex: 1; min-height: 0; }
+p { font-size: 1.85rem; }
+.small { font-size: 1.55rem; }
+.micro { font-size: 1.25rem; }
+.muted { color: var(--text-muted); }
+.lede { font-size: 2.1rem; line-height: 1.4; color: var(--text-muted); }
+
+/* ---------- Layout helpers ---------- */
+
+.grid { display: grid; gap: 2.6rem; }
+.g-2 { grid-template-columns: 1fr 1fr; }
+.g-3 { grid-template-columns: repeat(3, 1fr); }
+.g-7-5 { grid-template-columns: 7fr 5fr; }
+.g-6-6 { grid-template-columns: 1fr 1fr; }
+.g-5-7 { grid-template-columns: 5fr 7fr; }
+.stack > * + * { margin-top: 1.2rem; }
+.fill { height: 100%; }
+.center-y { align-content: center; }
+
+/* ---------- Decorative geometry ---------- */
+
+.deco { position: absolute; z-index: 1; pointer-events: none; }
+.circle { border-radius: 50%; }
+
+/* ---------- Slide 1: title poster ---------- */
+
+.hero { align-items: center; }
+.hero h1 { margin-bottom: 2.4rem; }
+.hero-mark { position: relative; height: 42rem; }
+.hero-mark > div { position: absolute; }
+.hm-circle { width: 26rem; height: 26rem; border-radius: 50%; background: var(--char-1); top: 4rem; left: 7rem; }
+.hm-ring { width: 20rem; height: 20rem; border-radius: 50%; border: 1.6rem solid var(--char-6); top: 18rem; left: 0; }
+.hm-square { width: 12rem; height: 12rem; background: var(--char-4); top: 2rem; left: 26rem; transform: rotate(18deg); }
+.hm-tri {
+  width: 0; height: 0;
+  border-left: 7rem solid transparent;
+  border-right: 7rem solid transparent;
+  border-bottom: 12rem solid var(--char-2);
+  top: 27rem; left: 23rem;
+}
+.hm-bar { width: 33rem; height: 1.4rem; background: var(--char-3); top: 40rem; left: 2rem; transform: rotate(-4deg); }
+
+/* ---------- Verb sequence ---------- */
+
+.verb-band { display: flex; gap: 0.5rem; align-items: flex-end; }
+.verb-block {
+  flex: 1;
+  height: 6.6rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: #fff;
+  font-weight: 800;
+  font-size: 2.1rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.verb-block.current {
+  height: 8.4rem;
+  box-shadow: 0 0.4rem 1.2rem rgba(42,31,24,0.18);
+}
+.verb-block .here {
+  font-size: 1.05rem;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  opacity: 0.85;
+}
+.verb-weeks { display: flex; gap: 0.5rem; margin-top: 0.6rem; }
+.verb-weeks span {
+  flex: 1;
+  text-align: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ---------- Quote ---------- */
+
+.quote-block {
+  border-left: 1rem solid var(--char-4);
+  background: var(--bg-card);
+  padding: 2rem 2.4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.quote-block p {
+  font-size: 1.95rem;
+  font-style: italic;
+  line-height: 1.35;
+  margin-bottom: 1.4rem;
+}
+.quote-block .attribution {
+  font-size: 1.35rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ---------- Cards and banners ---------- */
+
+.card {
+  background: var(--bg-card);
+  border: 0.25rem solid var(--border);
+  padding: 2.2rem 2.4rem;
+}
+.card.accent-left { border-left: 0.9rem solid var(--slide-accent); }
+.card h3 { margin-bottom: 0.8rem; }
+
+.banner {
+  background: var(--slide-accent);
+  color: #fff;
+  padding: 2rem 2.4rem;
+}
+.banner p, .banner h2, .banner h3 { color: #fff; }
+
+/* ---------- Slide 4: the rounds chain ---------- */
+
+.flow-top, .flow-bottom { display: flex; align-items: center; gap: 1.4rem; }
+.flow-top { background: var(--bg-deep); padding: 0.7rem 1.6rem; margin-bottom: 1.3rem; }
+.flow-top .dir-label {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--char-1);
+}
+.flow-top .dir-rule { flex: 1; height: 0.4rem; background: var(--char-1); }
+
+.chain { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.6rem; }
+.chain-node {
+  background: var(--bg-card);
+  border: 0.25rem solid var(--border);
+  border-top: 0.9rem solid var(--node-color);
+  padding: 1.15rem 1.4rem 1.25rem;
+}
+.chain-node .node-label {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--node-ink, var(--node-color));
+  margin-bottom: 0.2rem;
+}
+.chain-node .node-mins {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.6rem;
+}
+.chain-node .node-text { font-size: 1.28rem; line-height: 1.36; }
+
+/* Movement chips sit in the seams between nodes */
+.chain-links {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.6rem;
+  margin: 0 calc(12.5% + 0.2rem);
+  padding-top: 1rem;
+}
+.chain-link { position: relative; text-align: center; }
+.chain-link::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 0.9rem solid transparent;
+  border-right: 0.9rem solid transparent;
+  border-bottom: 1.1rem solid var(--char-2);
+}
+.chain-link .link-tag {
+  display: block;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--char-2);
+  margin: 1.1rem 0 0.35rem;
+}
+.chain-link .link-text {
+  font-size: 1.18rem;
+  font-style: italic;
+  color: var(--text-muted);
+  line-height: 1.35;
+  border: 0.2rem dashed var(--char-2);
+  padding: 0.6rem 0.9rem;
+}
+
+.flow-bottom { margin-top: 1.3rem; }
+.flow-bottom .dir-label {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--char-5);
+}
+.flow-bottom .dir-rule { flex: 1; height: 0.4rem; background: var(--char-5); }
+
+/* ---------- Slide 5: the four tables ---------- */
+
+.table-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.4rem; }
+.table-card {
+  background: var(--bg-card);
+  border: 0.25rem solid var(--border);
+  border-top: 0.9rem solid var(--tb-color);
+  padding: 1.2rem 1.4rem 1.3rem;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  color: var(--text);
+  transition: background-color 0.2s ease, transform 0.15s ease, border-color 0.2s ease;
+}
+.table-card:hover { transform: translateY(-0.3rem); }
+.table-card.active { background: var(--tb-tint); border-color: var(--tb-color); }
+.table-card .tb-num {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.table-card .tb-name {
+  display: block;
+  font-size: 1.95rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--tb-ink, var(--tb-color));
+  margin: 0.15rem 0 0.5rem;
+}
+.table-card .tb-claim { display: block; font-size: 1.22rem; line-height: 1.36; color: var(--text-muted); }
+
+.table-detail {
+  margin-top: 1.6rem;
+  border-top: 0.5rem solid var(--detail-color, var(--char-8));
+  border-left: 0.25rem solid var(--border);
+  border-right: 0.25rem solid var(--border);
+  border-bottom: 0.25rem solid var(--border);
+  background: var(--bg-card);
+  padding: 1.6rem 2rem;
+  min-height: 15rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.table-detail .detail-placeholder {
+  font-size: 1.6rem;
+  font-style: italic;
+  color: var(--text-muted);
+}
+.detail-grid { display: grid; grid-template-columns: 7fr 5fr; gap: 2.4rem; }
+.detail-label {
+  font-weight: 800;
+  font-size: 1.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--detail-ink, var(--detail-color));
+  margin-bottom: 0.5rem;
+}
+.table-detail p { font-size: 1.5rem; line-height: 1.42; }
+
+/* ---------- Slide 6: roles ---------- */
+
+.role-card {
+  background: var(--bg-card);
+  border: 0.25rem solid var(--border);
+  border-left: 0.9rem solid var(--role-color);
+  padding: 1.15rem 1.6rem 1.25rem;
+}
+.role-card .role-name {
+  font-size: 1.9rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--role-ink, var(--role-color));
+  margin-bottom: 0.2rem;
+}
+.role-card .role-sub {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.7rem;
+}
+.role-list { list-style: none; }
+.role-list li {
+  position: relative;
+  padding-left: 2rem;
+  font-size: 1.3rem;
+  line-height: 1.38;
+  margin-bottom: 0.42rem;
+}
+.role-list li:last-child { margin-bottom: 0; }
+.role-list li::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0.5rem;
+  width: 0.9rem; height: 0.9rem;
+  background: var(--role-color);
+}
+
+/* ---------- Slide 7: what counts as an explanation ---------- */
+
+.crit-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 1.6rem; flex: 1; min-height: 0; }
+.crit-card {
+  background: var(--bg-card);
+  border: 0.25rem solid var(--border);
+  border-left: 0.9rem solid var(--crit-color);
+  padding: 1.5rem 1.8rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.crit-card .crit-name {
+  font-weight: 800;
+  font-size: 1.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--crit-ink, var(--crit-color));
+  margin-bottom: 0.55rem;
+}
+.crit-card .crit-desc { font-size: 1.45rem; line-height: 1.38; }
+.crit-card .crit-eg {
+  display: block;
+  margin-top: 0.6rem;
+  font-size: 1.3rem;
+  font-style: italic;
+  color: var(--text-muted);
+  line-height: 1.34;
+}
+
+/* ---------- Quizzes ---------- */
+
+.question { font-size: 2.3rem; font-weight: 700; line-height: 1.3; margin-bottom: 1.4rem; }
+
+.quiz-options { display: grid; gap: 1.1rem; }
+.quiz-options.two-up { grid-template-columns: 1fr 1fr; }
+.quiz-options.three-up { grid-template-columns: repeat(3, 1fr); gap: 1.3rem; }
+.quiz-options.three-up .quiz-option { font-size: 1.5rem; padding: 1.6rem 1.6rem; }
+
+.quiz-option {
+  background: var(--bg-card);
+  border: 0.25rem solid var(--border);
+  padding: 1.4rem 1.7rem;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1.5rem;
+  line-height: 1.35;
+  text-align: left;
+  color: var(--text);
+  transition: border-color 0.15s ease, background-color 0.2s ease, transform 0.15s ease;
+  display: flex;
+  align-items: flex-start;
+  gap: 1.1rem;
+  min-height: 2.5rem;
+}
+.quiz-option:hover:not(.disabled) { border-color: var(--slide-accent); transform: translateY(-0.2rem); }
+.quiz-option .opt-letter {
+  font-weight: 800;
+  font-size: 1.6rem;
+  min-width: 2rem;
+  color: var(--slide-accent);
+  text-transform: uppercase;
+}
+.quiz-option.selected { border-color: var(--char-1); background: rgba(92,58,150,0.10); }
+.quiz-option.correct { border-color: var(--correct); background: var(--correct-bg); }
+.quiz-option.correct .opt-letter { color: var(--correct); }
+.quiz-option.incorrect { border-color: var(--incorrect); background: var(--incorrect-bg); opacity: 0.7; }
+.quiz-option.disabled { cursor: default; pointer-events: none; }
+
+.check-btn {
+  background: var(--char-3);
+  color: #fff;
+  border: none;
+  padding: 0 2.6rem;
+  height: 3.4rem;
+  font-weight: 700;
+  font-size: 1.3rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.check-btn:hover { background: var(--char-2); transform: translateY(-0.2rem); }
+.check-btn:active { transform: translateY(0); }
+
+.feedback {
+  display: none;
+  border-left: 0.8rem solid var(--correct);
+  background: var(--correct-bg);
+  padding: 1.2rem 1.7rem;
+  animation: feedbackIn 0.3s ease;
+}
+.feedback.wrong { border-left-color: var(--incorrect); background: var(--incorrect-bg); }
+.feedback.visible { display: block; }
+.feedback p { font-size: 1.45rem; line-height: 1.42; }
+
+@keyframes feedbackIn {
+  from { opacity: 0; transform: translateY(0.8rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.exercise-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  margin: 1rem 0 0.9rem;
+}
+.multi-note { font-size: 1.3rem; color: var(--text-muted); font-style: italic; }
+
+.statement-banner {
+  background: var(--char-5);
+  color: #fff;
+  padding: 1.2rem 1.8rem;
+  font-size: 1.45rem;
+  font-style: italic;
+  line-height: 1.35;
+  margin-bottom: 1.4rem;
+}
+
+/* ---------- Slide 10: etiquette ---------- */
+
+.etq-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4rem; }
+.etq-card {
+  background: var(--bg-card);
+  border: 0.25rem solid var(--border);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.etq-card .etq-head {
+  background: var(--etq-color);
+  color: var(--etq-fg, #fff);
+  padding: 1.1rem 1.5rem;
+}
+.etq-card .etq-src {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin-bottom: 0.25rem;
+}
+.etq-card .etq-name {
+  display: block;
+  font-size: 1.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1.1;
+}
+.etq-card .etq-body { padding: 1.2rem 1.5rem 1.4rem; font-size: 1.28rem; line-height: 1.4; flex: 1; }
+
+/* ---------- Slide 11: run of play ---------- */
+
+.run-band { display: flex; gap: 0.5rem; align-items: flex-end; }
+.run-block {
+  flex: 1;
+  height: 12.4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: var(--run-color);
+  color: var(--run-fg, #fff);
+  padding: 0 0.6rem;
+  text-align: center;
+}
+.run-block .run-mins { font-size: 3.7rem; font-weight: 800; line-height: 1; }
+.run-block .run-unit {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+.run-labels { display: flex; gap: 0.5rem; margin-top: 0.7rem; }
+.run-labels span {
+  flex: 1;
+  text-align: center;
+  font-size: 1.22rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.25;
+}
+
+/* ---------- Slide 12: takeaways ---------- */
+
+.takeaway-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem 2.8rem; }
+.takeaway {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.3rem;
+  border-top: 0.4rem solid var(--tk-color);
+  padding-top: 1.4rem;
+}
+.takeaway .tk-num {
+  font-size: 3.2rem;
+  font-weight: 800;
+  color: var(--tk-ink, var(--tk-color));
+  line-height: 1;
+  flex-shrink: 0;
+  min-width: 3.2rem;
+}
+.takeaway .tk-text { font-size: 1.72rem; line-height: 1.4; }
+
+/* ---------- Print-only blank card sheet ----------
+   Four A6-proportioned cards on one A4 page with dashed cut lines, so a
+   facilitator can print blanks from the same file as the deck. Sized in mm
+   because it must come out at a physical size on paper. */
+
+.card-sheet { display: none; }
+
+/* ---------- Motion preference ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ---------- Narrow / portrait fallback: flow document ---------- */
+
+@media screen and (max-width: 860px), screen and (max-aspect-ratio: 1/1) {
+  html { font-size: max(3.1vw, 9px); }
+  body { overflow: auto; background: var(--bg); }
+  .deck { position: static; display: block; }
+  .stage { width: 100%; height: auto; min-height: 100vh; padding-bottom: 8rem; }
+  .slide { position: static; }
+  .slide-inner { height: auto; padding: 5rem 2.5rem 3rem 4rem; }
+  .slide-no { top: 2rem; right: 2.5rem; }
+  .progress-track { position: fixed; }
+  .deck-chrome {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg-card);
+    border-top: 0.4rem solid var(--char-1);
+    padding: 1rem 2rem;
+    justify-content: space-between;
+  }
+  .nav-btn { height: 4rem; min-width: 4.4rem; font-size: 1.3rem; }
+  .nav-info { font-size: 1.3rem; }
+  .quiz-option, .quiz-options.three-up .quiz-option { min-height: 4rem; font-size: 1.6rem; }
+  .table-card { min-height: 4rem; }
+  .check-btn { height: 4rem; }
+  h1 { font-size: 5.2rem; }
+  h2 { font-size: 3.4rem; }
+  .lede { font-size: 2.1rem; }
+  .hero-mark { display: none; }
+  .g-2, .g-3, .g-7-5, .g-6-6, .g-5-7,
+  .quiz-options.two-up, .quiz-options.three-up,
+  .crit-grid, .etq-grid, .table-row, .detail-grid { grid-template-columns: 1fr; }
+  .crit-grid { grid-template-rows: auto; }
+  .chain { grid-template-columns: 1fr; }
+  .chain-links { grid-template-columns: 1fr; margin: 0; padding-top: 1.6rem; }
+  .chain-link { padding: 0 0 0.6rem; }
+  .flow-top, .flow-bottom { flex-wrap: wrap; }
+  .takeaway-grid { grid-template-columns: 1fr; }
+  .verb-band, .run-band { flex-wrap: wrap; }
+  .verb-block { flex: 1 0 45%; }
+  .run-block { flex: 1 0 30%; }
+  .verb-weeks, .run-labels { display: none; }
+  .hm-bar { display: none; }
+  .exercise-bar { flex-direction: column; align-items: flex-start; gap: 1rem; }
+}
+
+/* ---------- Print: clean A4, one slide per page ---------- */
+
+@media print {
+  @page { margin: 10mm; }
+  html { font-size: 8.6pt; }
+  body { background: #fff; overflow: visible; }
+  .deck { position: static; display: block; }
+  .stage { width: auto; height: auto; background: #fff; overflow: visible; }
+  .slide {
+    position: static;
+    display: block !important;
+    page-break-after: always;
+    animation: none;
+  }
+  .slide-inner { height: auto; padding: 3rem 3rem 3rem 5rem; }
+  .progress-track, .deck-chrome { display: none !important; }
+  .deco, .hero-mark { display: none !important; }
+  /* Only one table could ever print, so the shared panel goes */
+  .table-detail { display: none !important; }
+  /* The four-column chain is too narrow on A4, so pair it up */
+  .chain { grid-template-columns: repeat(2, 1fr); gap: 1.4rem; }
+  .chain-links { margin: 0; gap: 1.4rem; padding-top: 1.2rem; }
+  .chain-link::before { display: none; }
+  .table-row { grid-template-columns: repeat(2, 1fr); }
+  .run-band, .run-labels { flex-wrap: wrap; }
+
+  .card-sheet {
+    display: grid;
+    grid-template-columns: 95mm 95mm;
+    grid-template-rows: 134mm 134mm;
+    page-break-before: always;
+    page-break-after: auto;
+  }
+  .cs-card {
+    border: 0.3mm dashed #8A7A62;
+    padding: 6mm 6mm 5mm;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .cs-eyebrow {
+    font-size: 7pt;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #6A5A48;
+  }
+  .cs-rule { height: 1.6mm; background: #5C3A96; margin: 2mm 0 3mm; }
+  .cs-field { margin-bottom: 3mm; }
+  .cs-field-label {
+    font-size: 7pt;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #2A1F18;
+    margin-bottom: 1mm;
+  }
+  .cs-line { border-bottom: 0.25mm solid #B9A98C; height: 7.5mm; }
+  .cs-line + .cs-line { margin-top: 0.5mm; }
+  .cs-lens { display: flex; gap: 3mm; margin-top: 1mm; }
+  .cs-lens span {
+    font-size: 7pt;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 0.3mm solid #2A1F18;
+    padding: 1mm 2mm;
+  }
+  .cs-foot {
+    margin-top: auto;
+    font-size: 6.5pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #6A5A48;
+  }
+
+  .rail, .banner, .verb-block, .statement-banner, .etq-head, .run-block,
+  .chain-node, .table-card, .crit-card, .role-card, .takeaway, .quote-block,
+  .s-head::before, .flow-top, .cs-rule {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+</style>
+
+<div class="deck">
+<div class="stage" id="stage">
+
+  <div class="progress-track"><div class="progress-fill" id="progress"></div></div>
+
+  <!-- ============ SLIDE 1: TITLE ============ -->
+  <section class="slide" data-accent="var(--char-1)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <div class="s-body grid g-7-5 hero">
+        <div>
+          <span class="eyebrow">Week 4 &middot; Explain &middot; Method</span>
+          <h1>World<br>Caf&eacute;</h1>
+          <p class="lede">A conversation method that moves a whole room through the same set of questions in rounds. Today it produces one thing: a stack of explanations for each of the four decline claims, written by everyone in the room.</p>
+        </div>
+        <div class="hero-mark">
+          <div class="hm-circle"></div>
+          <div class="hm-square"></div>
+          <div class="hm-ring"></div>
+          <div class="hm-tri"></div>
+          <div class="hm-bar"></div>
+        </div>
+      </div>
+    </div>
+    <div class="deco circle" style="width: 33rem; height: 33rem; background: var(--char-8); opacity: 0.07; bottom: -13rem; left: -8rem"></div>
+    <div class="deco" style="width: 68rem; height: 1rem; background: var(--char-4); opacity: 0.12; bottom: 9rem; left: 6rem; transform: rotate(-2deg)"></div>
+  </section>
+
+  <!-- ============ SLIDE 2: WHERE THIS SITS ============ -->
+  <section class="slide" data-accent="var(--char-3)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <header class="s-head">
+        <span class="eyebrow">Week 4</span>
+        <h2>Where This Sits</h2>
+      </header>
+      <div class="s-body">
+        <p class="small" style="max-width: 84rem; margin-bottom: 2.2rem">You have spent two weeks describing the phenomenon. Explaining it means proposing <strong>mechanisms</strong> that would produce what you described.</p>
+        <div class="verb-band">
+          <div class="verb-block" style="background: var(--char-5)">Describe</div>
+          <div class="verb-block current" style="background: var(--char-3)"><span class="here">You Are Here</span>Explain</div>
+          <div class="verb-block" style="background: var(--char-4); color: var(--text)">Adjudicate</div>
+          <div class="verb-block" style="background: var(--char-2)">Intervene</div>
+        </div>
+        <div class="verb-weeks">
+          <span>Weeks 2-3</span><span>Weeks 4-5</span><span>Weeks 6-7</span><span>Weeks 9-14</span>
+        </div>
+        <div class="grid g-2" style="margin-top: 2.2rem">
+          <p class="small">A World Caf&eacute; suits this moment because explanation benefits from many minds on the same claim. One group generates three or four mechanisms. A room of thirty generates thirty, and the weak ones show themselves quickly.</p>
+          <p class="small">Two things stay out of the room today. Nobody ranks the explanations, which is week 6 work. Nobody proposes what the club in Bod&oslash; should build, which is week 9 work.</p>
+        </div>
+      </div>
+    </div>
+    <div class="deco circle" style="width: 26rem; height: 26rem; border: 1.2rem solid var(--char-3); opacity: 0.09; top: -7rem; right: -5rem"></div>
+    <div class="deco" style="width: 9rem; height: 9rem; background: var(--char-1); opacity: 0.11; bottom: 6rem; right: 12rem; transform: rotate(20deg)"></div>
+  </section>
+
+  <!-- ============ SLIDE 3: WHAT IS A WORLD CAFE ============ -->
+  <section class="slide" data-accent="var(--char-4)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <header class="s-head">
+        <span class="eyebrow">Definition</span>
+        <h2>What Is A World Caf&eacute;?</h2>
+      </header>
+      <div class="s-body grid g-6-6 center-y">
+        <div class="quote-block">
+          <p>"The innovative design of the World Caf&eacute; enables groups, often numbering in the hundreds of people, to participate together in evolving rounds of dialogue while at the same time remaining part of a single, larger, connected conversation."</p>
+          <div class="attribution">Brown, Isaacs and the World Caf&eacute; Community, 2005</div>
+        </div>
+        <div class="stack">
+          <p class="small">Three features carry the method. Conversation runs in short timed rounds on a fixed question. People move between rounds while one host stays at each table. A report-out at the end gathers the whole room's answers in one place.</p>
+          <p class="small">Hosting a Caf&eacute; differs from running breakout groups, and the movement is what does the work. By the third round an idea raised at one table has travelled to three others and been rebuilt by people who did not think of it.</p>
+          <div class="banner" style="--slide-accent: var(--char-4); background: var(--char-4); padding: 1.4rem 2.2rem">
+            <p style="font-size: 1.45rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; margin: 0; color: var(--text)">Four tables &middot; One conversation</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="deco circle" style="width: 19rem; height: 19rem; border: 1rem solid var(--char-8); opacity: 0.09; top: 6rem; right: 6rem"></div>
+    <div class="deco" style="width: 40rem; height: 8rem; background: var(--char-4); opacity: 0.07; bottom: 3rem; right: -8rem; transform: rotate(-4deg)"></div>
+  </section>
+
+  <!-- ============ SLIDE 4: THE ROUNDS ============ -->
+  <section class="slide" data-accent="var(--char-6)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <header class="s-head" style="margin-bottom: 1.6rem">
+        <span class="eyebrow">Structure</span>
+        <h2>Three Rounds, Then The Room</h2>
+      </header>
+      <div class="s-body">
+        <div class="flow-top">
+          <span class="dir-label">People move this way: a new table, a new claim, every round</span>
+          <span class="dir-rule"></span>
+        </div>
+
+        <div class="chain">
+          <div class="chain-node" style="--node-color: var(--char-3)">
+            <div class="node-label">Round One</div>
+            <div class="node-mins">16 minutes</div>
+            <div class="node-text">Each table holds one claim all session. The stack is empty, so round one sets the starting point for everyone who follows.</div>
+          </div>
+          <div class="chain-node" style="--node-color: var(--char-5)">
+            <div class="node-label">Round Two</div>
+            <div class="node-mins">16 minutes</div>
+            <div class="node-text">New claim, new people. The host summarises what the last group left before you add anything.</div>
+          </div>
+          <div class="chain-node" style="--node-color: var(--char-6)">
+            <div class="node-label">Round Three</div>
+            <div class="node-mins">16 minutes</div>
+            <div class="node-text">Two groups have already worked this claim. Extend, challenge or connect what is on the table.</div>
+          </div>
+          <div class="chain-node" style="--node-color: var(--char-1)">
+            <div class="node-label">Report-Out</div>
+            <div class="node-mins">20 minutes</div>
+            <div class="node-text">Silent reflection, then each host gives the room two or three mechanisms. This is where you meet the fourth claim.</div>
+          </div>
+        </div>
+
+        <div class="chain-links">
+          <div class="chain-link">
+            <span class="link-tag">Move</span>
+            <div class="link-text">travellers split up, so no two arrive together</div>
+          </div>
+          <div class="chain-link">
+            <span class="link-tag">Move</span>
+            <div class="link-text">hosts stay, carrying the thread across all three rounds</div>
+          </div>
+          <div class="chain-link">
+            <span class="link-tag">Move</span>
+            <div class="link-text">cards stay behind, so the stack grows while the people change</div>
+          </div>
+        </div>
+
+        <div class="flow-bottom">
+          <span class="dir-rule"></span>
+          <span class="dir-label">Cards stay put: one accumulating stack per claim</span>
+        </div>
+      </div>
+    </div>
+    <div class="deco circle" style="width: 29rem; height: 29rem; background: var(--char-6); opacity: 0.06; top: 13rem; right: -12rem"></div>
+    <div class="deco" style="width: 8rem; height: 8rem; background: var(--char-4); opacity: 0.11; top: 3rem; right: 8rem; transform: rotate(16deg)"></div>
+  </section>
+
+  <!-- ============ SLIDE 5: THE FOUR TABLES ============ -->
+  <section class="slide" data-accent="var(--char-8)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <header class="s-head" style="margin-bottom: 1.4rem">
+        <span class="eyebrow">The Room</span>
+        <h2>Four Tables, Four Claims</h2>
+      </header>
+      <div class="s-body" style="display: flex; flex-direction: column">
+        <p class="small" style="margin-bottom: 1.3rem; flex-shrink: 0">"Decline" is four separable claims. Each table takes one of them. Select a table to see its question.</p>
+        <div class="table-row" id="tables">
+          <button class="table-card" data-table="0" style="--tb-color: var(--char-3); --tb-tint: rgba(200,82,24,0.10)">
+            <span class="tb-num">Table One</span>
+            <span class="tb-name">Supply</span>
+            <span class="tb-claim">Fewer third places exist than before.</span>
+          </button>
+          <button class="table-card" data-table="1" style="--tb-color: var(--char-5); --tb-tint: rgba(122,88,40,0.10)">
+            <span class="tb-num">Table Two</span>
+            <span class="tb-name">Use</span>
+            <span class="tb-claim">People use the third places that exist less than before.</span>
+          </button>
+          <button class="table-card" data-table="2" style="--tb-color: var(--char-6); --tb-tint: rgba(184,48,104,0.10)">
+            <span class="tb-num">Table Three</span>
+            <span class="tb-name">Quality</span>
+            <span class="tb-claim">Those that remain function less well as third places.</span>
+          </button>
+          <button class="table-card" data-table="3" style="--tb-color: var(--char-8); --tb-tint: rgba(126,88,168,0.10)">
+            <span class="tb-num">Table Four</span>
+            <span class="tb-name">Outcome</span>
+            <span class="tb-claim">Social consequences such as belonging and trust have worsened.</span>
+          </button>
+        </div>
+        <div class="table-detail" id="table-detail">
+          <p class="detail-placeholder">Select a table above to read its question.</p>
+        </div>
+      </div>
+    </div>
+    <div class="deco circle" style="width: 24rem; height: 24rem; background: var(--char-8); opacity: 0.06; bottom: -10rem; right: -7rem"></div>
+    <div class="deco" style="width: 10rem; height: 10rem; background: var(--char-2); opacity: 0.10; top: 4rem; right: 10rem; transform: rotate(32deg)"></div>
+  </section>
+
+  <!-- ============ SLIDE 6: ROLES ============ -->
+  <section class="slide" data-accent="var(--char-2)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <header class="s-head">
+        <span class="eyebrow">Roles</span>
+        <h2>Hosts And Travellers</h2>
+      </header>
+      <div class="s-body grid g-5-7 center-y">
+        <div class="stack">
+          <p>Every table keeps one <strong>host</strong> for the whole session. Everyone else <strong>travels</strong>.</p>
+          <p class="small">Choose the four hosts before round one. The role asks for someone willing to listen for three rounds and summarise what they heard, which is harder than arguing for a favourite mechanism.</p>
+          <p class="small">Four hosts seated, the rest of the room in motion.</p>
+        </div>
+        <div class="stack">
+          <div class="role-card" style="--role-color: var(--char-2)">
+            <div class="role-name">The Host</div>
+            <div class="role-sub">Stays &middot; All three rounds</div>
+            <ul class="role-list">
+              <li>Welcomes each new group and states the claim and the question.</li>
+              <li>Gives a sixty-second summary of what previous groups proposed.</li>
+              <li>Keeps the stack in order and keeps a running note card.</li>
+              <li>Reports two or three mechanisms to the room at the end.</li>
+            </ul>
+          </div>
+          <div class="role-card" style="--role-color: var(--char-8)">
+            <div class="role-name">The Traveller</div>
+            <div class="role-sub">Moves &middot; Alone, every round</div>
+            <ul class="role-list">
+              <li>Moves alone at every bell, away from the people just sat with.</li>
+              <li>Reads the stack before adding to it.</li>
+              <li>Writes one index card per round and leaves it on the table.</li>
+              <li>Carries one idea from the last table into the next conversation.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="deco circle" style="width: 27rem; height: 27rem; border: 1.2rem solid var(--char-2); opacity: 0.08; bottom: -9rem; left: 24rem"></div>
+    <div class="deco" style="width: 11rem; height: 11rem; background: var(--char-4); opacity: 0.11; top: 4rem; right: 7rem; transform: rotate(24deg)"></div>
+  </section>
+
+  <!-- ============ SLIDE 7: WHAT COUNTS AS AN EXPLANATION ============ -->
+  <section class="slide" data-accent="var(--char-7)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <header class="s-head" style="margin-bottom: 1.5rem">
+        <span class="eyebrow">Standard</span>
+        <h2>What Counts As An Explanation</h2>
+      </header>
+      <div class="s-body" style="display: flex; flex-direction: column">
+        <p class="small" style="max-width: 84rem; margin-bottom: 1.6rem; flex-shrink: 0">A card earns its place on the stack when it does these things. The first three are compulsory.</p>
+        <div class="crit-grid">
+          <div class="crit-card" style="--crit-color: var(--char-1)">
+            <div class="crit-name">Mechanism</div>
+            <div class="crit-desc">One sentence saying what produces what, with the direction of causation stated.</div>
+            <span class="crit-eg">"X rises, which raises Y, which lowers Z."</span>
+          </div>
+          <div class="crit-card" style="--crit-color: var(--char-2)">
+            <div class="crit-name">Lens</div>
+            <div class="crit-desc">Psychological, political or economic. Tag the card so the room can see which lens is crowded and which is thin.</div>
+          </div>
+          <div class="crit-card" style="--crit-color: var(--char-6)">
+            <div class="crit-name">Observable</div>
+            <div class="crit-desc">Something that would be true if the mechanism is real. This is what week 6 will test the mechanism against.</div>
+          </div>
+          <div class="crit-card" style="--crit-color: var(--char-5)">
+            <div class="crit-name">Level</div>
+            <div class="crit-desc">Where the mechanism operates: one person, one organisation, or a whole system.</div>
+          </div>
+          <div class="crit-card" style="--crit-color: var(--char-8)">
+            <div class="crit-name">Scope</div>
+            <div class="crit-desc">Where and when it would hold, and the case where you would expect it to fail.</div>
+          </div>
+          <div class="crit-card" style="--crit-color: var(--char-3)">
+            <div class="crit-name">Rivals Welcome</div>
+            <div class="crit-desc">Two cards may contradict each other and both stay on the stack. Week 6 adjudicates between them.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="deco" style="width: 44rem; height: 1.2rem; background: var(--char-7); opacity: 0.12; bottom: 6rem; left: -6rem; transform: rotate(-3deg)"></div>
+    <div class="deco circle" style="width: 22rem; height: 22rem; background: var(--char-1); opacity: 0.06; top: -8rem; right: -6rem"></div>
+  </section>
+
+  <!-- ============ SLIDE 8: SINGLE-SELECT CHECK ============ -->
+  <section class="slide" data-accent="var(--char-5)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <header class="s-head" style="margin-bottom: 1.4rem">
+        <span class="eyebrow">Check</span>
+        <h2>Explanation Or Restatement?</h2>
+      </header>
+      <div class="s-body">
+        <div class="statement-banner">Four cards have been left on the Use table. Only one of them explains the claim.</div>
+        <div class="quiz-options two-up" id="quiz1">
+          <button class="quiz-option" data-val="a">
+            <span class="opt-letter">A</span>
+            <span>People visit third places less often than they used to.</span>
+          </button>
+          <button class="quiz-option" data-val="b">
+            <span class="opt-letter">B</span>
+            <span>Longer commutes cut discretionary evening time, so an unplanned stop now competes with a fixed arrival time at home.</span>
+          </button>
+          <button class="quiz-option" data-val="c">
+            <span class="opt-letter">C</span>
+            <span>The fall in visits is steeper among people under thirty than among pensioners.</span>
+          </button>
+          <button class="quiz-option" data-val="d">
+            <span class="opt-letter">D</span>
+            <span>People are lonelier now and they go out less.</span>
+          </button>
+        </div>
+        <div class="feedback" id="quiz1-fb" style="margin-top: 1.4rem">
+          <p><strong>Correct.</strong> B names a mechanism and a direction of causation, so it can be wrong, which is what makes it an explanation. A restates the claim. C sharpens the description by adding a subgroup, which helps when describing and stays silent on why. D places two descriptions side by side with "and" holding them together, where an explanation needs a link.</p>
+        </div>
+        <div class="feedback wrong" id="quiz1-fb-wrong" style="margin-top: 1.4rem">
+          <p><strong>Not yet.</strong> Ask of each card: does it say what produces what? A description can be true at any level of detail and still explain nothing. Try again.</p>
+        </div>
+      </div>
+    </div>
+    <div class="deco circle" style="width: 25rem; height: 25rem; background: var(--char-5); opacity: 0.07; bottom: -10rem; right: -6rem"></div>
+    <div class="deco" style="width: 11rem; height: 11rem; background: var(--char-6); opacity: 0.10; top: 3rem; right: 9rem; transform: rotate(28deg)"></div>
+  </section>
+
+  <!-- ============ SLIDE 9: MULTI-SELECT CHECK ============ -->
+  <section class="slide" data-accent="var(--char-1)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <header class="s-head" style="margin-bottom: 1.3rem">
+        <span class="eyebrow">Check</span>
+        <h2>What Goes On The Card</h2>
+      </header>
+      <div class="s-body">
+        <p class="question" style="font-size: 2.1rem; margin-bottom: 1.3rem">Select everything that belongs on an index card today.</p>
+        <div class="quiz-options three-up" id="quiz2">
+          <button class="quiz-option" data-correct="true" onclick="toggleMulti(this)">
+            <span class="opt-letter">1</span>
+            <span>The mechanism, in one sentence</span>
+          </button>
+          <button class="quiz-option" data-correct="true" onclick="toggleMulti(this)">
+            <span class="opt-letter">2</span>
+            <span>The lens it comes from</span>
+          </button>
+          <button class="quiz-option" data-correct="true" onclick="toggleMulti(this)">
+            <span class="opt-letter">3</span>
+            <span>Something that would be true if the mechanism holds</span>
+          </button>
+          <button class="quiz-option" data-correct="false" onclick="toggleMulti(this)">
+            <span class="opt-letter">4</span>
+            <span>A ranking of this mechanism against the others on the stack</span>
+          </button>
+          <button class="quiz-option" data-correct="true" onclick="toggleMulti(this)">
+            <span class="opt-letter">5</span>
+            <span>Table and round number, so the card can be filed</span>
+          </button>
+          <button class="quiz-option" data-correct="false" onclick="toggleMulti(this)">
+            <span class="opt-letter">6</span>
+            <span>What the club in Bod&oslash; should build as a result</span>
+          </button>
+        </div>
+        <div class="exercise-bar">
+          <span class="multi-note">Four of the six belong on the card.</span>
+          <button class="check-btn" id="quiz2-btn" onclick="checkMulti()">Check Answers</button>
+        </div>
+        <div class="feedback" id="quiz2-fb">
+          <p><strong>Cards 1, 2, 3 and 5.</strong> Card 4 asks for a judgement between rival mechanisms, which the adjudication criteria in week 6 exist to make. Card 6 jumps to intervention, five weeks early, and the usual cost of that jump is an intervention aimed at a mechanism nobody checked. Keep the stack full of rivals and leave them unranked.</p>
+        </div>
+      </div>
+    </div>
+    <div class="deco circle" style="width: 30rem; height: 30rem; border: 1.3rem solid var(--char-1); opacity: 0.07; top: 16rem; right: -12rem"></div>
+    <div class="deco" style="width: 9rem; height: 9rem; background: var(--char-4); opacity: 0.11; top: 4rem; right: 7rem; transform: rotate(20deg)"></div>
+  </section>
+
+  <!-- ============ SLIDE 10: ETIQUETTE ============ -->
+  <section class="slide" data-accent="var(--char-6)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <header class="s-head" style="margin-bottom: 1.5rem">
+        <span class="eyebrow">Etiquette</span>
+        <h2>House Rules</h2>
+      </header>
+      <div class="s-body">
+        <p class="small" style="margin-bottom: 1.4rem">Three from the World Caf&eacute; guide. Three for this room.</p>
+        <div class="etq-grid">
+          <div class="etq-card" style="--etq-color: var(--char-6)">
+            <div class="etq-head">
+              <span class="etq-src">World Caf&eacute;</span>
+              <span class="etq-name">Speak With Your Mind And Heart</span>
+            </div>
+            <div class="etq-body">A half-formed mechanism said aloud is worth more to the table than a finished one kept back.</div>
+          </div>
+          <div class="etq-card" style="--etq-color: var(--char-4); --etq-fg: var(--text)">
+            <div class="etq-head">
+              <span class="etq-src">World Caf&eacute;</span>
+              <span class="etq-name">Play, Draw And Doodle</span>
+            </div>
+            <div class="etq-body">Draw the mechanism on the paper. Arrows expose a missing step faster than sentences do.</div>
+          </div>
+          <div class="etq-card" style="--etq-color: var(--char-2)">
+            <div class="etq-head">
+              <span class="etq-src">World Caf&eacute;</span>
+              <span class="etq-name">Focus On What Matters</span>
+            </div>
+            <div class="etq-body">Your table has one claim. Explain that claim, and leave the other three to their own tables.</div>
+          </div>
+          <div class="etq-card" style="--etq-color: var(--char-1)">
+            <div class="etq-head">
+              <span class="etq-src">This Room</span>
+              <span class="etq-name">Read Before You Add</span>
+            </div>
+            <div class="etq-body">Read the stack first. Extending someone else's mechanism counts for more than a duplicate of it.</div>
+          </div>
+          <div class="etq-card" style="--etq-color: var(--char-5)">
+            <div class="etq-head">
+              <span class="etq-src">This Room</span>
+              <span class="etq-name">Travel Alone</span>
+            </div>
+            <div class="etq-body">Split up between rounds. Ideas spread across the room only when the people do.</div>
+          </div>
+          <div class="etq-card" style="--etq-color: var(--char-8)">
+            <div class="etq-head">
+              <span class="etq-src">This Room</span>
+              <span class="etq-name">Name Your Lens</span>
+            </div>
+            <div class="etq-body">Every card carries a lens tag. An untagged card cannot be compared with anything.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="deco" style="width: 46rem; height: 1.2rem; background: var(--char-4); opacity: 0.12; bottom: 5rem; right: -7rem; transform: rotate(3deg)"></div>
+    <div class="deco circle" style="width: 21rem; height: 21rem; background: var(--char-6); opacity: 0.06; top: -7rem; right: 14rem"></div>
+  </section>
+
+  <!-- ============ SLIDE 11: RUN OF PLAY ============ -->
+  <section class="slide" data-accent="var(--char-4)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <header class="s-head">
+        <span class="eyebrow">Timing</span>
+        <h2>Run Of Play</h2>
+      </header>
+      <div class="s-body">
+        <p class="small" style="max-width: 84rem; margin-bottom: 2rem">Ninety minutes, with two minutes of resettling folded into each move.</p>
+        <div class="run-band">
+          <div class="run-block" style="--run-color: var(--char-1)">
+            <span class="run-mins">8</span><span class="run-unit">Min</span>
+          </div>
+          <div class="run-block" style="--run-color: var(--char-3)">
+            <span class="run-mins">16</span><span class="run-unit">Min</span>
+          </div>
+          <div class="run-block" style="--run-color: var(--char-6)">
+            <span class="run-mins">16</span><span class="run-unit">Min</span>
+          </div>
+          <div class="run-block" style="--run-color: var(--char-8)">
+            <span class="run-mins">16</span><span class="run-unit">Min</span>
+          </div>
+          <div class="run-block" style="--run-color: var(--char-5)">
+            <span class="run-mins">3</span><span class="run-unit">Min</span>
+          </div>
+          <div class="run-block" style="--run-color: var(--char-2)">
+            <span class="run-mins">20</span><span class="run-unit">Min</span>
+          </div>
+        </div>
+        <div class="run-labels">
+          <span>Brief and choose hosts</span>
+          <span>Round one</span>
+          <span>Round two</span>
+          <span>Round three</span>
+          <span>Silent reflection</span>
+          <span>Report-out</span>
+        </div>
+        <div class="grid g-2" style="margin-top: 2.8rem">
+          <p>The guide recommends twenty to twenty-five minutes a round. Sixteen is a compression that buys a full report-out inside a ninety-minute session, so the brief has to be short and the bell has to be firm.</p>
+          <p>The three minutes of silence before the report-out are part of the method. Hosts use them to pick what to say; travellers use them to work out which mechanism they will take into week 5.</p>
+        </div>
+      </div>
+    </div>
+    <div class="deco circle" style="width: 28rem; height: 28rem; background: var(--char-4); opacity: 0.08; bottom: -11rem; left: 22rem"></div>
+    <div class="deco" style="width: 10rem; height: 10rem; background: var(--char-2); opacity: 0.10; top: 4rem; right: 8rem; transform: rotate(35deg)"></div>
+  </section>
+
+  <!-- ============ SLIDE 12: REPORT-OUT AND AFTER ============ -->
+  <section class="slide" data-accent="var(--char-8)">
+    <div class="rail"></div>
+    <div class="slide-no"></div>
+    <div class="slide-inner">
+      <header class="s-head" style="margin-bottom: 1.6rem">
+        <span class="eyebrow">Close</span>
+        <h2>The Report-Out, And After</h2>
+      </header>
+      <div class="s-body">
+        <div class="takeaway-grid">
+          <div class="takeaway" style="--tk-color: var(--char-1)">
+            <span class="tk-num">01</span>
+            <span class="tk-text">Three minutes of silence first. Nobody speaks until everyone has read their own cards back.</span>
+          </div>
+          <div class="takeaway" style="--tk-color: var(--char-3)">
+            <span class="tk-num">02</span>
+            <span class="tk-text">Each host gives two or three mechanisms, and the room hears a summary rather than a transcript.</span>
+          </div>
+          <div class="takeaway" style="--tk-color: var(--char-6)">
+            <span class="tk-num">03</span>
+            <span class="tk-text">Responses get grouped at the front of the room by pattern, so shared mechanisms and empty lenses both become visible.</span>
+          </div>
+          <div class="takeaway" style="--tk-color: var(--char-5)">
+            <span class="tk-num">04</span>
+            <span class="tk-text">Every card is kept. Four stacks leave the room as the cohort's explanation set for the four claims.</span>
+          </div>
+          <div class="takeaway" style="--tk-color: var(--char-2)">
+            <span class="tk-num">05</span>
+            <span class="tk-text">The stacks go on the claim wall, where a mechanism can be revised in public once the field visit contradicts it.</span>
+          </div>
+          <div class="takeaway" style="--tk-color: var(--char-8)">
+            <span class="tk-num">06</span>
+            <span class="tk-text">Nothing is ranked today. Week 6 takes two rival mechanisms off these stacks and adjudicates between them.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="deco" style="width: 14rem; height: 14rem; background: var(--char-4); opacity: 0.11; top: 3rem; right: 4rem; transform: rotate(25deg)"></div>
+    <div class="deco" style="width: 46rem; height: 1.2rem; background: var(--char-2); opacity: 0.12; bottom: 7rem; left: -6rem; transform: rotate(-3deg)"></div>
+    <div class="deco circle" style="width: 18rem; height: 18rem; border: 0.9rem solid var(--char-8); opacity: 0.07; bottom: -6rem; right: 12rem"></div>
+  </section>
+
+  <div class="deck-chrome">
+    <button class="nav-btn ghost" id="fs-btn" onclick="toggleFullscreen()" title="Toggle full screen (F)">Full Screen</button>
+    <button class="nav-btn" id="prev-btn" onclick="go(-1)" aria-label="Previous slide">&#9664;</button>
+    <span class="nav-info" id="nav-info"></span>
+    <button class="nav-btn" id="next-btn" onclick="go(1)" aria-label="Next slide">&#9654;</button>
+  </div>
+
+</div>
+</div>
+
+<!-- ============ PRINT ONLY: BLANK INDEX CARDS ============
+     Four A6-proportioned blanks per A4 page with dashed cut lines. Hidden on
+     screen; prints as the page after the last slide. -->
+<section class="card-sheet" aria-hidden="true">
+  <div class="cs-card">
+    <div class="cs-eyebrow">Week 4 &middot; Explain &middot; World Caf&eacute;</div>
+    <div class="cs-rule"></div>
+    <div class="cs-field">
+      <div class="cs-field-label">Claim (tick one)</div>
+      <div class="cs-lens"><span>Supply</span><span>Use</span><span>Quality</span><span>Outcome</span></div>
+    </div>
+    <div class="cs-field">
+      <div class="cs-field-label">Mechanism: what produces what</div>
+      <div class="cs-line"></div><div class="cs-line"></div><div class="cs-line"></div><div class="cs-line"></div>
+    </div>
+    <div class="cs-field">
+      <div class="cs-field-label">Lens (tick one)</div>
+      <div class="cs-lens"><span>Psychological</span><span>Political</span><span>Economic</span></div>
+    </div>
+    <div class="cs-field">
+      <div class="cs-field-label">If this holds, we would expect</div>
+      <div class="cs-line"></div><div class="cs-line"></div><div class="cs-line"></div>
+    </div>
+    <div class="cs-foot">Table ________ &middot; Round ________</div>
+  </div>
+  <div class="cs-card">
+    <div class="cs-eyebrow">Week 4 &middot; Explain &middot; World Caf&eacute;</div>
+    <div class="cs-rule"></div>
+    <div class="cs-field">
+      <div class="cs-field-label">Claim (tick one)</div>
+      <div class="cs-lens"><span>Supply</span><span>Use</span><span>Quality</span><span>Outcome</span></div>
+    </div>
+    <div class="cs-field">
+      <div class="cs-field-label">Mechanism: what produces what</div>
+      <div class="cs-line"></div><div class="cs-line"></div><div class="cs-line"></div><div class="cs-line"></div>
+    </div>
+    <div class="cs-field">
+      <div class="cs-field-label">Lens (tick one)</div>
+      <div class="cs-lens"><span>Psychological</span><span>Political</span><span>Economic</span></div>
+    </div>
+    <div class="cs-field">
+      <div class="cs-field-label">If this holds, we would expect</div>
+      <div class="cs-line"></div><div class="cs-line"></div><div class="cs-line"></div>
+    </div>
+    <div class="cs-foot">Table ________ &middot; Round ________</div>
+  </div>
+  <div class="cs-card">
+    <div class="cs-eyebrow">Week 4 &middot; Explain &middot; World Caf&eacute;</div>
+    <div class="cs-rule"></div>
+    <div class="cs-field">
+      <div class="cs-field-label">Claim (tick one)</div>
+      <div class="cs-lens"><span>Supply</span><span>Use</span><span>Quality</span><span>Outcome</span></div>
+    </div>
+    <div class="cs-field">
+      <div class="cs-field-label">Mechanism: what produces what</div>
+      <div class="cs-line"></div><div class="cs-line"></div><div class="cs-line"></div><div class="cs-line"></div>
+    </div>
+    <div class="cs-field">
+      <div class="cs-field-label">Lens (tick one)</div>
+      <div class="cs-lens"><span>Psychological</span><span>Political</span><span>Economic</span></div>
+    </div>
+    <div class="cs-field">
+      <div class="cs-field-label">If this holds, we would expect</div>
+      <div class="cs-line"></div><div class="cs-line"></div><div class="cs-line"></div>
+    </div>
+    <div class="cs-foot">Table ________ &middot; Round ________</div>
+  </div>
+  <div class="cs-card">
+    <div class="cs-eyebrow">Week 4 &middot; Explain &middot; World Caf&eacute;</div>
+    <div class="cs-rule"></div>
+    <div class="cs-field">
+      <div class="cs-field-label">Claim (tick one)</div>
+      <div class="cs-lens"><span>Supply</span><span>Use</span><span>Quality</span><span>Outcome</span></div>
+    </div>
+    <div class="cs-field">
+      <div class="cs-field-label">Mechanism: what produces what</div>
+      <div class="cs-line"></div><div class="cs-line"></div><div class="cs-line"></div><div class="cs-line"></div>
+    </div>
+    <div class="cs-field">
+      <div class="cs-field-label">Lens (tick one)</div>
+      <div class="cs-lens"><span>Psychological</span><span>Political</span><span>Economic</span></div>
+    </div>
+    <div class="cs-field">
+      <div class="cs-field-label">If this holds, we would expect</div>
+      <div class="cs-line"></div><div class="cs-line"></div><div class="cs-line"></div>
+    </div>
+    <div class="cs-foot">Table ________ &middot; Round ________</div>
+  </div>
+</section>
+
+<script>
+var slides = document.querySelectorAll('.slide');
+var current = 0;
+var totalSlides = slides.length;
+
+function showSlide(n) {
+  slides.forEach(function(s) { s.classList.remove('active'); });
+  slides[n].classList.add('active');
+  current = n;
+
+  var accent = slides[n].getAttribute('data-accent') || 'var(--char-1)';
+  document.documentElement.style.setProperty('--slide-accent', accent);
+  document.getElementById('progress').style.width = ((n + 1) / totalSlides * 100) + '%';
+  document.getElementById('progress').style.background = accent;
+  document.getElementById('nav-info').textContent = (n + 1) + ' / ' + totalSlides;
+  document.getElementById('prev-btn').disabled = n === 0;
+  document.getElementById('next-btn').disabled = n === totalSlides - 1;
+  window.scrollTo(0, 0);
+}
+
+function go(dir) {
+  var next = current + dir;
+  if (next >= 0 && next < totalSlides) showSlide(next);
+}
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+  } else if (document.exitFullscreen) {
+    document.exitFullscreen();
+  }
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); go(1); }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); go(-1); }
+  if (e.key === 'Home') { e.preventDefault(); showSlide(0); }
+  if (e.key === 'End') { e.preventDefault(); showSlide(totalSlides - 1); }
+  if (e.key === 'f' || e.key === 'F') { e.preventDefault(); toggleFullscreen(); }
+});
+
+// Number every slide
+slides.forEach(function(s, i) {
+  var el = s.querySelector('.slide-no');
+  if (el) el.textContent = String(i + 1).padStart(2, '0') + ' / ' + String(totalSlides).padStart(2, '0');
+});
+
+// ---- The four tables: select one, shared detail panel (slide 5) ----
+// PLACEHOLDER content. Each entry is the guiding question a table works on for
+// the whole session, plus the line telling travellers what to put on the card.
+// Edit the question text freely; keep one entry per claim, in this order.
+var TABLES = [
+  {
+    color: 'var(--char-3)',
+    name: 'Supply',
+    question: "PLACEHOLDER: What mechanisms would reduce the number of third places in a town over twenty years? Name the mechanism, name who or what drives it, and say at which point the count actually falls.",
+    card: "PLACEHOLDER: One mechanism per card. Write the chain that ends in a place closing or never opening."
+  },
+  {
+    color: 'var(--char-5)',
+    name: 'Use',
+    question: "PLACEHOLDER: If the same places stay open, what would make people visit them less often? Work from the decision one person makes on an ordinary Tuesday evening, then say what changed about that decision.",
+    card: "PLACEHOLDER: One mechanism per card. Say what the person is doing instead, and why that became easier."
+  },
+  {
+    color: 'var(--char-6)',
+    name: 'Quality',
+    question: "PLACEHOLDER: What would cause a place that is still open and still busy to function less well as a third place? Name which of Oldenburg's eight characteristics degrades first, and what degrades it.",
+    card: "PLACEHOLDER: One mechanism per card. Name the characteristic, then the mechanism that erodes it."
+  },
+  {
+    color: 'var(--char-8)',
+    name: 'Outcome',
+    question: "PLACEHOLDER: Through what mechanism would a change in third places alter belonging or trust? State the direction of causation, and say how you would tell it apart from the reverse.",
+    card: "PLACEHOLDER: One mechanism per card. Be explicit about which way the causal arrow points."
+  }
+];
+
+function showTable(card) {
+  var idx = parseInt(card.getAttribute('data-table'), 10);
+  var data = TABLES[idx];
+  document.querySelectorAll('.table-card').forEach(function(c) { c.classList.remove('active'); });
+  card.classList.add('active');
+  var panel = document.getElementById('table-detail');
+  panel.style.setProperty('--detail-color', data.color);
+  panel.style.setProperty('--detail-ink', data.ink || data.color);
+  panel.innerHTML =
+    '<div class="detail-grid">' +
+      '<div>' +
+        '<div class="detail-label">' + data.name + ': the question</div>' +
+        '<p>' + data.question + '</p>' +
+      '</div>' +
+      '<div>' +
+        '<div class="detail-label">On the card</div>' +
+        '<p>' + data.card + '</p>' +
+      '</div>' +
+    '</div>';
+}
+
+document.querySelectorAll('#tables .table-card').forEach(function(c) {
+  c.addEventListener('click', function() { showTable(c); });
+});
+
+// ---- Single-select check (slide 8) ----
+(function() {
+  var opts = document.querySelectorAll('#quiz1 .quiz-option');
+  opts.forEach(function(opt) {
+    opt.addEventListener('click', function() {
+      if (opt.classList.contains('disabled')) return;
+      var val = opt.getAttribute('data-val');
+      opts.forEach(function(o) {
+        o.classList.add('disabled');
+        if (o.getAttribute('data-val') === 'b') {
+          o.classList.add('correct');
+        } else if (o === opt && val !== 'b') {
+          o.classList.add('incorrect');
+        }
+      });
+      if (val === 'b') {
+        document.getElementById('quiz1-fb').classList.add('visible');
+      } else {
+        document.getElementById('quiz1-fb-wrong').classList.add('visible');
+        setTimeout(function() {
+          document.getElementById('quiz1-fb-wrong').classList.remove('visible');
+          opts.forEach(function(o) {
+            o.classList.remove('disabled', 'correct', 'incorrect');
+          });
+        }, 2500);
+      }
+    });
+  });
+})();
+
+// ---- Multi-select check (slide 9) ----
+function toggleMulti(el) {
+  if (el.classList.contains('disabled')) return;
+  el.classList.toggle('selected');
+}
+
+function checkMulti() {
+  var opts = document.querySelectorAll('#quiz2 .quiz-option');
+  opts.forEach(function(o) {
+    o.classList.add('disabled');
+    var isCorrect = o.getAttribute('data-correct') === 'true';
+    var wasSelected = o.classList.contains('selected');
+    o.classList.remove('selected');
+    if (isCorrect) {
+      o.classList.add('correct');
+    } else if (wasSelected) {
+      o.classList.add('incorrect');
+    }
+  });
+  document.getElementById('quiz2-fb').classList.add('visible');
+  document.getElementById('quiz2-btn').style.display = 'none';
+}
+
+// ---- Keep the stage pinned ----
+// Decorative shapes bleed past the frame, so the stage is technically
+// scrollable. Focusing a control inside it could otherwise nudge the whole
+// slide sideways mid-presentation.
+(function() {
+  var stage = document.getElementById('stage');
+  stage.addEventListener('scroll', function() {
+    if (stage.scrollLeft !== 0) stage.scrollLeft = 0;
+    if (stage.scrollTop !== 0) stage.scrollTop = 0;
+  });
+})();
+
+// ---- Presenter chrome auto-hides when idle ----
+(function() {
+  var chrome = document.querySelector('.deck-chrome');
+  var timer;
+  function wake() {
+    chrome.classList.remove('idle');
+    clearTimeout(timer);
+    timer = setTimeout(function() { chrome.classList.add('idle'); }, 2500);
+  }
+  ['mousemove', 'keydown', 'touchstart', 'click'].forEach(function(evt) {
+    document.addEventListener(evt, wake);
+  });
+  wake();
+})();
+
+showSlide(0);
+</script>

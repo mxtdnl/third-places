@@ -12,6 +12,7 @@ Interactive teaching tools for Ray Oldenburg's third-place theory. Static HTML f
 - `third-place-recall.html` — Recall reconstruction exercise for the eight characteristics (Activity 5)
 - `evidence-compass.html` — Evidence evaluation across disciplinary lenses (Activity 6)
 - `theory-of-change.html` — Interactive slide deck on Theory of Change methodology (Activity 7)
+- `week4-world-cafe.html` — Week 4 World Café deck (Activity 11): projection deck introducing the World Café method and running it over the four decline claims, with a print-only sheet of four A6 index-card blanks. Built to `SLIDES.md`
 - `week5-field-trip-planner.html` — Week 5 field trip planner (Activity 8): plan a London site visit, record observations in the field, debrief predictions against observations and print claim wall cards
 - `week6a-criteria-forge.html` — Week 6a criteria forge (Activity 9): adjudicate between two competing explanations before any criteria are taught, then dissect the committed justification sentence by sentence to reveal which of the four formal criteria were implicitly used
 - `week6b-adjudication-bench.html` — Adjudication Bench (Activity 10, week 6b): groups adjudicate between two competing explanations for a decline claim using four criteria, with predictions locked before evidence. Export JSON schema is documented in the file header for the week 7 tool
