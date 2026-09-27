@@ -1,0 +1,2566 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signal Tower</title>
+<!--
+  Signal Tower - a 10-15 minute single-player simulation about leading and
+  lagging indicators. One self-contained file: no build step, no network.
+
+  Scripts
+    script#model         CONFIG (all editable content and tuning) and the
+                         pure engine ST: RNG, MODEL, OBSERVE, BOTS, SCORE,
+                         selfTest. No DOM access; tests/signal-tower.mjs runs
+                         it in node.
+    script#ui            the screen state machine:
+                         intro -> sort -> quest -> build -> season -> reveal
+                         -> transfer, with rerun returning to build on the
+                         same seed.
+
+  Saved state (localStorage key CONFIG.storageKey, and the Export JSON file)
+  holds inputs only - seed, quest, dashboard, weekly allocations, review
+  changes - and the season is replayed from them, so an export always
+  reproduces the same season.
+
+  ?test=1 runs the model suite in the browser.
+-->
+<style>
+/* ===========================================================================
+   Signal Tower - Bauhaus in six colours (spec 8.1). Shape carries meaning:
+   triangle = leading, circle = lagging, square = action or energy,
+   red diagonal bar = disruption. Sentence case throughout.
+   =========================================================================== */
+:root {
+  --ochre: #C9922E;     /* leading indicators (triangles) */
+  --purple: #4E2A63;    /* lagging indicators (circles) */
+  --brown: #6A4028;     /* actions, effort, tower blocks (squares) */
+  --red: #B8322A;       /* events, warnings, burnout, vanity exposed */
+  --red-text: #A32A22;  /* red deepened for small text on or in red (AA) */
+  --paper: #E6DDC8;     /* ground */
+  --card: #F3EEE2;      /* raised paper for cards and panels */
+  --ink: #1A1612;       /* text, rules, fog hatching */
+  --rule: 4px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Jost, Futura, "Century Gothic", "Avenir Next", Avenir, "Trebuchet MS", sans-serif;
+  font-size: 17px;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+h1, h2, h3, h4 { font-weight: 700; line-height: 1.05; margin: 0; }
+h2 { font-size: clamp(1.9rem, 5vw, 3.2rem); letter-spacing: -0.01em; }
+h3 { font-size: clamp(1.15rem, 2.4vw, 1.45rem); }
+p { margin: 0 0 0.8em; max-width: 64ch; }
+a { color: var(--purple); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: -999px; top: 0; background: var(--ink); color: var(--paper); padding: 10px 16px; z-index: 50; }
+.skip:focus { left: 16px; }
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; box-shadow: 0 0 0 7px var(--ochre); }
+.shell { max-width: 1180px; margin: 0 auto; padding: 0 16px 48px; }
+.muted { opacity: 0.8; }
+.small { font-size: 0.86rem; }
+.num { font-variant-numeric: tabular-nums; }
+.angled { display: inline-block; transform: rotate(-4deg); transform-origin: left bottom; }
+
+/* ---- shapes (inline markers) -------------------------------------------- */
+.tri { display: inline-block; width: 0; height: 0; border-left: 0.5em solid transparent; border-right: 0.5em solid transparent; border-bottom: 0.86em solid var(--ochre); vertical-align: -0.05em; }
+.cir { display: inline-block; width: 0.9em; height: 0.9em; border-radius: 50%; background: var(--purple); vertical-align: -0.1em; }
+.sq { display: inline-block; width: 0.8em; height: 0.8em; background: var(--brown); vertical-align: -0.05em; }
+.bar-red { display: inline-block; width: 1.3em; height: 0.35em; background: var(--red); transform: rotate(-25deg); vertical-align: 0.15em; }
+
+/* ---- masthead ----------------------------------------------------------- */
+.masthead { position: relative; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px; padding: 14px 0 10px; border-bottom: var(--rule) solid var(--ink); }
+.masthead h1 { font-size: 1.5rem; }
+.masthead h1 .tri { margin-right: 6px; }
+.phasebar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; list-style: none; margin: 0; padding: 0; }
+.phasebar li { height: 8px; background: rgba(26,22,18,0.14); }
+.phasebar li.done { background: var(--brown); }
+.phasebar li.now { background: var(--ochre); outline: 2px solid var(--ink); }
+.meta { text-align: right; font-size: 0.86rem; line-height: 1.3; }
+.meta b { font-size: 1rem; }
+
+/* ---- buttons ------------------------------------------------------------ */
+button, .btn {
+  font: inherit; font-weight: 700; letter-spacing: 0.01em;
+  background: var(--card); color: var(--ink);
+  border: 3px solid var(--ink); border-radius: 0;
+  padding: 8px 16px; min-height: 44px; min-width: 44px; cursor: pointer;
+  transition: transform 0.12s ease, background-color 0.15s ease, color 0.15s ease;
+}
+button:hover:not(:disabled), .btn:hover { transform: translateY(-2px); }
+button:active:not(:disabled) { transform: translateY(0); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+button.primary { background: var(--purple); color: var(--paper); border-color: var(--purple); }
+button.primary:hover:not(:disabled) { background: var(--brown); border-color: var(--brown); }
+button.go { background: var(--ochre); color: var(--ink); }
+button.ghost { background: transparent; }
+button.danger { background: var(--red-text); color: var(--paper); border-color: var(--red-text); }
+button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.row.end { justify-content: flex-end; }
+label { font-weight: 700; display: block; margin-bottom: 4px; }
+input[type="text"], input[type="number"], select, textarea {
+  font: inherit; color: var(--ink); background: var(--card);
+  border: 3px solid var(--ink); border-radius: 0; padding: 8px 10px; min-height: 44px; width: 100%;
+}
+
+/* ---- screens ------------------------------------------------------------ */
+.screen { padding-top: 22px; }
+.screen > header { position: relative; margin-bottom: 18px; padding-top: 18px; }
+.screen > header h2 { outline: none; }
+.lede { font-size: 1.12rem; max-width: 60ch; }
+.panel { background: var(--card); border: 3px solid var(--ink); padding: 16px; position: relative; }
+.eyebrow { font-weight: 700; font-size: 0.86rem; letter-spacing: 0.04em; margin-bottom: 4px; }
+.band { height: 10px; background: var(--ink); margin: 26px 0; position: relative; }
+.band::after { content: ''; position: absolute; left: 12%; top: -8px; width: 26px; height: 26px; background: var(--ochre); transform: rotate(18deg); }
+
+/* ---- intro -------------------------------------------------------------- */
+.intro-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 28px; align-items: center; }
+.intro-grid .tower-wrap { max-width: 380px; }
+.poster-line { font-size: clamp(1.7rem, 4.4vw, 2.9rem); font-weight: 700; line-height: 1.08; margin: 0 0 18px; transform: rotate(-3deg); transform-origin: left; max-width: 16ch; }
+.poster-line span { background: var(--ink); color: var(--paper); padding: 0 0.15em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.setup { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 560px; margin: 14px 0 18px; }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; margin: 10px 0 18px; font-size: 0.95rem; }
+
+/* ---- sort --------------------------------------------------------------- */
+.bins { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+.bin { border: 3px dashed var(--ink); padding: 14px; min-height: 96px; display: grid; grid-template-columns: 70px 1fr; gap: 12px; align-items: center; background: rgba(243,238,226,0.6); }
+.bin.over { background: var(--card); border-style: solid; }
+.bin .big-tri { width: 0; height: 0; border-left: 34px solid transparent; border-right: 34px solid transparent; border-bottom: 60px solid var(--ochre); }
+.bin .big-cir { width: 64px; height: 64px; border-radius: 50%; background: var(--purple); }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+.scard { background: var(--card); border: 3px solid var(--ink); padding: 12px; display: flex; flex-direction: column; gap: 8px; position: relative; overflow: hidden; }
+.scard .grip { cursor: grab; touch-action: none; font-weight: 700; user-select: none; }
+.scard .fb { font-size: 0.92rem; border-left: 6px solid var(--brown); padding-left: 8px; }
+.scard.trap .fb { border-left-color: var(--red); }
+.scard.trap::after { content: ''; position: absolute; right: -16px; top: 10px; width: 90px; height: 10px; background: var(--red); transform: rotate(35deg); pointer-events: none; }
+.scard.placed-lead { border-left: 10px solid var(--ochre); }
+.scard.placed-lag { border-left: 10px solid var(--purple); }
+
+/* ---- quest -------------------------------------------------------------- */
+.quests { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.qcard { text-align: left; display: flex; flex-direction: column; gap: 8px; padding: 18px; min-height: 190px; position: relative; overflow: hidden; }
+.qcard .qgoal { font-size: 1.35rem; line-height: 1.1; }
+.qcard .qname { font-size: 0.9rem; }
+.qcard::after { content: ''; position: absolute; right: -24px; bottom: -24px; width: 90px; height: 90px; background: var(--c, var(--ochre)); transform: rotate(20deg); opacity: 0.9; }
+.qcard:nth-child(2)::after { border-radius: 50%; }
+.qcard:nth-child(3)::after { background: transparent; width: 0; height: 0; border-left: 50px solid transparent; border-right: 50px solid transparent; border-bottom: 86px solid var(--c); transform: rotate(-12deg); }
+.qcard span { position: relative; z-index: 1; font-weight: 500; }
+.qcard .qgoal { font-weight: 700; }
+
+/* ---- build -------------------------------------------------------------- */
+.dashframe { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+.slot { border: 3px dashed var(--ink); padding: 12px; min-height: 150px; display: flex; flex-direction: column; gap: 8px; background: rgba(243,238,226,0.6); }
+.slot.filled { border-style: solid; background: var(--card); }
+.slot.lag.filled { border-color: var(--purple); border-width: 4px; }
+.slot.lead.filled { border-color: var(--ochre); border-width: 4px; }
+.slot .sname { font-weight: 700; line-height: 1.2; }
+.stepper { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.stepper button { padding: 4px 0; width: 44px; }
+.stepper output { min-width: 3.2ch; text-align: center; font-weight: 700; font-size: 1.15rem; }
+.deck-head { display: flex; justify-content: space-between; align-items: end; gap: 12px; flex-wrap: wrap; margin: 12px 0 10px; }
+.deck { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.icard { background: var(--card); border: 3px solid var(--ink); padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+.icard.side-lag { border-top: 10px solid var(--purple); }
+.icard.side-lead { border-top: 10px solid var(--ochre); }
+.icard.chosen { outline: 3px solid var(--brown); outline-offset: -8px; }
+.icard .iname { font-weight: 700; line-height: 1.2; }
+.icard .imeta { font-size: 0.86rem; }
+.pips { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 0.86rem; align-items: center; }
+.pips .p { display: inline-flex; gap: 3px; }
+.pip { width: 12px; height: 12px; display: inline-block; border: 2px solid var(--ink); }
+.pip.cir { border-radius: 50%; }
+.pip.on { background: var(--ink); }
+.pip.tri { border: 0; width: 0; height: 0; border-left: 7px solid transparent; border-right: 7px solid transparent; border-bottom: 12px solid rgba(26,22,18,0.2); background: none; }
+.pip.tri.on { border-bottom-color: var(--ink); }
+.mentor { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; }
+.mentor .tok { width: 22px; height: 22px; background: var(--purple); border-radius: 50%; }
+.mentor .tok.used { background: transparent; border: 3px solid var(--purple); }
+.note { border-left: 8px solid var(--ochre); padding: 8px 12px; background: var(--card); margin: 12px 0; }
+.note.warn { border-left-color: var(--red); }
+
+/* ---- season ------------------------------------------------------------- */
+.season { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 6fr); grid-template-areas: "tower dash" "tower energy" "strip strip"; gap: 14px; }
+.season .tower-panel { grid-area: tower; }
+.season .dash-panel { grid-area: dash; }
+.season .energy-panel { grid-area: energy; }
+.season .strip { grid-area: strip; }
+.tower-panel { padding: 8px; background: var(--card); border: 3px solid var(--ink); display: flex; flex-direction: column; justify-content: center; gap: 10px; }
+.tower-key { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.84rem; padding: 4px 6px 2px; border-top: 3px solid var(--ink); }
+.tower-key .hatch { display: inline-block; width: 16px; height: 12px; vertical-align: -1px; background: repeating-linear-gradient(45deg, var(--ink) 0 2px, var(--paper) 2px 5px); }
+.tower-key .strain { display: inline-block; width: 16px; height: 12px; vertical-align: -1px; background: repeating-linear-gradient(-60deg, var(--red) 0 3px, var(--card) 3px 7px); }
+.tower-panel svg { width: 100%; height: auto; display: block; max-height: 560px; }
+.lead-row { display: grid; grid-template-columns: 22px minmax(0, 1.4fr) 150px minmax(0, 1fr); gap: 10px; align-items: center; padding: 8px 0; border-bottom: 2px solid rgba(26,22,18,0.15); }
+.lead-row:last-child { border-bottom: 0; }
+.lead-row .val { font-weight: 700; font-size: 1.15rem; }
+.lead-row .tgt { font-size: 0.84rem; }
+.metpip { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--ink); margin-right: 5px; vertical-align: -1px; }
+.metpip.on { background: var(--ink); }
+.spark { width: 150px; height: 42px; display: block; }
+.lag-row { display: grid; grid-template-columns: 76px 1fr; gap: 12px; align-items: center; padding-top: 10px; margin-top: 6px; border-top: 3px solid var(--ink); }
+.iris { width: 70px; height: 70px; }
+.iris .blade { transition: transform 0.5s ease; transform-origin: 35px 35px; }
+.energy-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.pool { display: flex; flex-wrap: wrap; gap: 5px; min-height: 30px; padding: 6px; border: 3px dashed var(--brown); }
+.pool.over { background: rgba(106,64,40,0.12); }
+.token { width: 22px; height: 22px; background: var(--brown); display: inline-block; touch-action: none; cursor: grab; }
+.token.pop-burst { animation: burst 0.5s ease; }
+@keyframes burst { 0% { transform: scale(1); } 40% { transform: scale(1.35) rotate(20deg); background: var(--ochre); } 100% { transform: scale(1); } }
+.act { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 6px 6px; border: 2px solid transparent; }
+.act.over { border-color: var(--brown); background: rgba(106,64,40,0.08); }
+.act .aname { font-weight: 700; line-height: 1.2; }
+.act .atoks { display: flex; flex-wrap: wrap; gap: 4px; min-height: 22px; margin-top: 4px; }
+.act.blocked { position: relative; opacity: 0.6; }
+.act.blocked::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 6px; background: var(--red); transform: rotate(-3deg); pointer-events: none; }
+.act.rest .token { background: var(--paper); border: 3px solid var(--brown); }
+.strip { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto; gap: 14px; align-items: stretch; }
+.weeks { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; align-self: center; }
+.weeks span { height: 34px; border: 2px solid var(--ink); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; }
+.weeks span.done { background: var(--brown); color: var(--paper); border-color: var(--brown); }
+.weeks span.now { background: var(--ochre); }
+.weeks span.cp { border-radius: 50%; }
+.ev { border: 3px solid var(--ink); padding: 10px 14px; background: var(--card); position: relative; overflow: hidden; }
+.ev h4 { font-size: 1.05rem; margin-bottom: 2px; }
+.ev.bad { background: var(--red-text); color: var(--paper); border-color: var(--red-text); }
+.ev.bad::after { content: ''; position: absolute; right: -10px; top: 12px; width: 80px; height: 10px; background: var(--paper); transform: rotate(-30deg); opacity: 0.85; }
+.ev.bad .bar-red { background: var(--paper); }
+.ev.good { border-left: 12px solid var(--ochre); }
+.ev + .ev { margin-top: 8px; }
+.commit { display: flex; flex-direction: column; justify-content: center; gap: 6px; }
+.review { border: 4px solid var(--purple); }
+.review .rhead { background: var(--purple); color: var(--paper); margin: -16px -16px 12px; padding: 12px 16px; }
+.new-block { animation: drop 0.45s cubic-bezier(.3,1.4,.6,1); transform-box: fill-box; }
+@keyframes drop { from { transform: translateY(-40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* ---- reveal ------------------------------------------------------------- */
+.arch { background: var(--purple); color: var(--paper); padding: 22px 24px; position: relative; overflow: hidden; margin-bottom: 18px; }
+.arch h2 { transform: rotate(-3deg); transform-origin: left; display: inline-block; }
+.arch p { margin: 12px 0 0; font-size: 1.08rem; }
+.arch::after { content: ''; position: absolute; right: 30px; top: -30px; width: 140px; height: 140px; border-radius: 50%; border: 14px solid var(--ochre); }
+.reveal-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.stat { border: 3px solid var(--ink); padding: 10px 12px; background: var(--card); }
+.stat b { display: block; font-size: 1.7rem; line-height: 1.1; }
+.stat.you { border-color: var(--brown); border-left-width: 12px; }
+.chart { width: 100%; height: auto; display: block; }
+.mults { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+.mult { border: 3px solid var(--ink); background: var(--card); padding: 10px; }
+.mult.vanity, .mult.badlag { border-color: var(--red-text); }
+.flips { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+.flip { perspective: 900px; min-height: 250px; }
+.flip-inner { position: relative; width: 100%; height: 100%; min-height: 250px; transition: transform 0.6s ease; transform-style: preserve-3d; }
+.flip.flipped .flip-inner { transform: rotateY(180deg); }
+.face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border: 3px solid var(--ink); background: var(--card); padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.face.back { transform: rotateY(180deg); }
+.face.back.k-vanity, .face.back.k-badlag { border-color: var(--red-text); border-width: 4px; }
+.kind { font-weight: 700; font-size: 0.9rem; padding: 2px 8px; align-self: flex-start; }
+.kind.k-lead, .kind.k-guardrail { background: var(--ochre); color: var(--ink); }
+.kind.k-lag { background: var(--purple); color: var(--paper); }
+.kind.k-vanity, .kind.k-badlag { background: var(--red-text); color: var(--paper); }
+.kind.k-weak { background: var(--brown); color: var(--paper); }
+.dataline { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.82rem; background: var(--ink); color: var(--paper); padding: 10px 12px; overflow-wrap: anywhere; }
+table.attempts { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+table.attempts th, table.attempts td { text-align: left; padding: 6px 8px; border-bottom: 2px solid rgba(26,22,18,0.2); }
+.fog-band { animation: fogout 0.7s ease forwards; }
+@keyframes fogout { to { opacity: 0; transform: translateY(-14px); } }
+.painted-fall { animation: fall 1.1s ease-in forwards; transform-box: fill-box; transform-origin: center; }
+@keyframes fall { 0% { transform: none; } 30% { transform: rotate(-4deg); } 100% { transform: translateY(160px) rotate(14deg); opacity: 0; } }
+.stand { animation: stand 0.8s ease; transform-box: fill-box; transform-origin: bottom; }
+@keyframes stand { from { transform: scaleY(0.92); } to { transform: none; } }
+
+/* ---- transfer ----------------------------------------------------------- */
+.tcard { background: var(--card); border: 4px solid var(--ink); padding: 18px; position: relative; overflow: hidden; }
+.tcard::before { content: ''; position: absolute; right: -40px; top: -40px; width: 130px; height: 130px; background: var(--ochre); transform: rotate(24deg); opacity: 0.9; }
+.tcard > * { position: relative; }
+.tgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
+.tfield { display: flex; flex-direction: column; gap: 4px; }
+.tfield.wide { grid-column: 1 / -1; }
+.tfield .hint { font-size: 0.84rem; }
+.wc { font-size: 0.8rem; font-weight: 700; }
+.wc.ok { color: var(--brown); }
+.wc.short { color: var(--red-text); }
+.checks { display: flex; flex-wrap: wrap; gap: 6px; }
+.checks button { min-height: 44px; padding: 4px 10px; font-size: 0.86rem; }
+.sharpen { display: grid; grid-template-columns: minmax(0, 2fr) 90px minmax(0, 1fr) auto; gap: 6px; align-items: center; }
+.rule-line { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.rule-line input { width: auto; flex: 1 1 140px; }
+.print-only { display: none; }
+
+/* ---- footer ------------------------------------------------------------- */
+.foot { border-top: var(--rule) solid var(--ink); margin-top: 36px; padding-top: 12px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.status { min-height: 1.5em; font-weight: 700; }
+.tests li { margin: 4px 0; }
+.tests .fail { color: var(--red-text); font-weight: 700; }
+
+/* ---- drag ghost --------------------------------------------------------- */
+.ghost-drag { position: fixed; pointer-events: none; z-index: 100; opacity: 0.9; }
+
+/* ---- responsive --------------------------------------------------------- */
+@media (max-width: 900px) {
+  .season { grid-template-columns: 1fr; grid-template-areas: "tower" "dash" "energy" "strip"; }
+  .tower-panel svg { max-height: 240px; }
+  .strip { grid-template-columns: 1fr; }
+  .dashframe { grid-template-columns: 1fr 1fr; }
+  .reveal-grid { grid-template-columns: 1fr; }
+  .intro-grid { grid-template-columns: 1fr; }
+  .intro-grid .tower-wrap { max-width: 260px; }
+}
+@media (max-width: 600px) {
+  body { font-size: 16px; }
+  .masthead { grid-template-columns: 1fr auto; }
+  .masthead .phasebar { grid-column: 1 / -1; grid-row: 2; }
+  .setup, .bins, .tgrid { grid-template-columns: 1fr; }
+  .dashframe { grid-template-columns: 1fr; }
+  .lead-row { grid-template-columns: 22px minmax(0, 1fr) minmax(0, 1fr); }
+  .lead-row .spark-cell { grid-column: 2 / -1; grid-row: 2; }
+  .bin { grid-template-columns: 50px 1fr; }
+  .sharpen { grid-template-columns: 1fr 80px; }
+  .weeks span { height: 28px; font-size: 0.7rem; }
+}
+
+/* ---- reduced motion ----------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  button:hover:not(:disabled), .btn:hover { transform: none; }
+  .fog-band { opacity: 0; }
+  .painted-fall { opacity: 0; }
+}
+
+/* ---- print (A4) --------------------------------------------------------- */
+@media print {
+  @page { size: A4; margin: 14mm; }
+  body { background: #FFFFFF; font-size: 11pt; }
+  .masthead .phasebar, .foot, .skip, button, .no-print, .ghost-drag { display: none !important; }
+  .panel, .tcard, .stat, .mult, .face, .icard { background: #FFFFFF; box-shadow: none; }
+  .print-only { display: block; }
+  .tfield .hint, .wc, .checks { display: none !important; }
+  input::placeholder { color: transparent; }
+  .tcard { border-width: 3px; page-break-inside: avoid; }
+  input[type="text"], input[type="number"] { border: 0; border-bottom: 1.5px solid #000; background: #FFFFFF; padding: 2px 0; min-height: 0; }
+  .flip .flip-inner { transform: none !important; }
+  .flip .face.front { display: none; }
+  .flip .face.back { position: static; transform: none; }
+  .flip, .flip-inner { min-height: 0; }
+  .arch, .kind, .dataline, .tcard::before, .tri, .cir, .sq, .pip, .metpip, .weeks span, .token, svg { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .fog-band, .painted-fall { animation: none; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="shell">
+  <header class="masthead">
+    <h1><span class="tri" aria-hidden="true"></span>Signal Tower</h1>
+    <ol class="phasebar" id="phasebar" aria-label="Session progress"></ol>
+    <div class="meta" id="meta" aria-live="polite"></div>
+  </header>
+  <main id="main" tabindex="-1">
+    <div id="screen"></div>
+  </main>
+  <footer class="foot">
+    <div class="row">
+      <span id="reset-wrap"><button type="button" class="ghost" data-action="reset-ask" id="reset-btn">Reset</button></span>
+      <button type="button" class="ghost" data-action="export" id="export-btn">Export JSON</button>
+      <button type="button" class="ghost" data-action="import" id="import-btn">Import JSON</button>
+      <input type="file" id="import-file" accept="application/json,.json" class="sr" tabindex="-1" aria-hidden="true">
+    </div>
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+    <div class="small"><a href="index.html">All activities</a> &middot; <a href="?test=1">Run the tests</a></div>
+  </footer>
+</div>
+<script id="model">
+/* ==========================================================================
+   CONFIG - every piece of editable content and every tuning number.
+   Text can be edited freely. Numbers in CONFIG.model and the e / f values
+   on actions change the simulation and invalidate the calibration record:
+   re-run `node tests/signal-tower.mjs --full` after touching them.
+   ======================================================================== */
+const CONFIG = {
+  weeks: 12,
+  checkpoints: [4, 8, 12],        // lag iris opens after these weeks
+  reviews: [4, 8],                // review stops (targets + one swap)
+  leadSlots: 3,                   // triangle slots on the dashboard
+  storageKey: 'signal-tower-v1',  // browser storage key (bump when the state shape changes)
+
+  /* ---- simulation constants (spec section 4) --------------------------- */
+  model: {
+    start: { C: 20, H: 0, F: 0.1 },
+    baseEnergy: 10,
+    minEnergy: 3,
+    attention: 1.15,          // tracked-with-target actions
+    habitUp: 0.08,            // all tracked targets met
+    habitDown: 0.10,
+    habitGain: 0.5,           // gain x (1 + habitGain * H)
+    capacity: 120,            // gain x (1 - C / capacity)
+    gainScale: 0.8,           // CALIBRATION: global scale on weekly gain
+    saturation: 4,            // CALIBRATION: tokens past this on one action work at half rate
+    decay: 1.5,               // lost when fewer than 3 productive tokens are placed
+    productiveE: 0.5,         // an action with e >= this is productive
+    fatigueScale: 0.5,        // CALIBRATION: scales every action's f
+    fatigueRecover: 0.05,     // natural weekly recovery
+    restRecover: 0.15,        // per rest token
+    burnoutAt: 0.7,
+    burnoutEnergy: 3,         // energy lost the week after a burnout
+    burnoutCrash: 0.15,       // CALIBRATION: fatigue shed by the forced crash
+    swapCost: 1,              // energy cost of swapping an indicator at review
+    eventChance: 0.6,
+    plateauMult: 0.5,
+    plateauWeeks: 2,
+    expertF: 0.2,              // ghost expert rests to keep fatigue below this
+    expertMu: 3               // ghost expert's shadow price on fatigue
+  },
+
+  /* ---- palette (spec 8.1). The page's CSS custom properties mirror these;
+     the self test checks every text pairing listed in textPairs. --------- */
+  palette: { ochre: '#C9922E', purple: '#4E2A63', brown: '#6A4028', red: '#B8322A', redText: '#A32A22',
+    paper: '#E6DDC8', card: '#F3EEE2', ink: '#1A1612' },
+  // [text, background, minimum ratio]. 4.5 for body text, 3 for large type.
+  textPairs: [['ink', 'paper', 4.5], ['ink', 'card', 4.5], ['ink', 'ochre', 4.5], ['paper', 'purple', 4.5],
+    ['paper', 'brown', 4.5], ['paper', 'redText', 4.5], ['card', 'redText', 4.5], ['paper', 'red', 3], ['purple', 'paper', 4.5],
+    ['purple', 'card', 4.5], ['brown', 'paper', 4.5], ['brown', 'card', 4.5], ['redText', 'card', 4.5], ['paper', 'ink', 4.5]],
+
+  /* ---- scoring -------------------------------------------------------- */
+  score: {
+    ratingWeight: 60,         // mean rating 1..3 mapped onto 0..60
+    validLag: 10,
+    controllableLeads: 15,    // >= 2 leads with Controllable 3 reading an action with e >= 0.9
+    guardrail: 15,
+    vanityPenalty: 15,
+    highDash: 70,             // "high dashboard quality"
+    lowDash: 50,              // "weak dashboard"
+    highOutcome: 65,
+    goodOutcome: 60,
+    busyShare: 0.4,
+    burnouts: 2
+  },
+
+  /* ---- copy ----------------------------------------------------------- */
+  text: {
+    title: 'Signal Tower',
+    coldOpen: 'You are building something you can\'t see. Choose your windows wisely.',
+    phases: ['Cold open', 'Sort the signals', 'Choose a quest', 'Build your dashboard', 'The season', 'The fog lifts', 'Your real dashboard']
+  },
+
+  /* ---- phase 2: sort the signals -------------------------------------- */
+  // answer: 'lead' | 'lag' | 'trap'. A trap card gets the trap line whichever bin it lands in.
+  sortCards: [
+    { id: 's1', text: 'Practice problems attempted each week', answer: 'lead',
+      why: 'Leading: you control it this week and it moves before the exam does.' },
+    { id: 's2', text: 'Final mark on the module', answer: 'lag',
+      why: 'Lagging: it confirms the outcome after the chance to act has passed.' },
+    { id: 's3', text: 'Kilometres run this week', answer: 'lead',
+      why: 'Leading: frequent, controllable and it predicts race fitness.' },
+    { id: 's4', text: 'Half-marathon finish time', answer: 'lag',
+      why: 'Lagging: one reading, on race day, when it is too late to change training.' },
+    { id: 's5', text: 'Tailored job applications sent per week', answer: 'lead',
+      why: 'Leading: an input you can raise tomorrow.' },
+    { id: 's6', text: 'Job offers received', answer: 'lag',
+      why: 'Lagging: the result of months of inputs, and slow to arrive.' },
+    { id: 's7', text: 'Annual performance rating', answer: 'lag',
+      why: 'Lagging: a yearly verdict, not a weekly steering signal.' },
+    { id: 's8', text: 'App streak days', answer: 'trap',
+      why: 'A trap: it looks leading, but it measures showing up, not learning. Ten seconds a day keeps the streak alive.' }
+  ],
+
+  /* ---- common event core (spec 4.5) ------------------------------------
+     effect keys: energy (+/- tokens this week), fatigue (+F), block
+     ('strongest' action unavailable), boost ('feedback' action x mult),
+     shiny (vanity readings of the shiny action doubled), plateau (hidden).
+     Headlines per quest live on each quest's `headlines`. */
+  events: [
+    { id: 'deadline', energy: -4, weight: 1 },
+    { id: 'cold', energy: -3, fatigue: 0.1, weight: 1 },
+    { id: 'cancelled', block: true, weight: 1 },
+    { id: 'friend', boost: 1.5, weight: 1 },
+    { id: 'shiny', shiny: 2, weight: 1 },
+    { id: 'holiday', energy: 3, weight: 1 },
+    { id: 'plateau', plateau: true, weight: 1 }
+  ],
+  eventText: {
+    deadline: { head: 'A deadline ate the week', body: 'Four fewer energy tokens this week.' },
+    cold: { head: 'Caught a cold', body: 'Three fewer tokens, and you start the week more tired.' },
+    cancelled: { head: 'Opportunity cancelled', body: 'Your strongest action is unavailable this week.' },
+    friend: { head: 'A friend offers help', body: 'One action works half as well again this week.' },
+    shiny: { head: 'Shiny distraction', body: 'Something flattering is louder than usual this week.' },
+    holiday: { head: 'A holiday frees up time', body: 'Three extra energy tokens this week.' },
+    plateau: { head: 'A quiet week', body: 'Nothing unusual happened. Or so it seems.' },
+    none: { head: 'An ordinary week', body: 'No surprises.' },
+    burnout: { head: 'Burnout', body: 'You ran on empty. Three fewer tokens this week, and nothing on your dashboard warned you unless you were watching fatigue.' },
+    injury: { head: 'Injured', body: 'Speed work on tired legs. You lose ground and three tokens next week.' }
+  },
+
+  /* ---- ghost policies used for the comparison ------------------------- */
+  // Each quest names its expert dashboard in quest.expert.
+
+  /* ---- quests (spec section 5) ------------------------------------------
+     Action fields: e true effectiveness, f fatigue per token, synergy
+     { partner, min, mult } multiplies THIS action when both have >= min tokens,
+     risk (optional injury rule).
+     Indicator fields:
+       side    'lag' (circle, lag slot) or 'lead' (triangle, lead slots)
+       kind    lag | badlag | lead | vanity | weak | guardrail (hidden from the player)
+       cadence 'w' weekly, 4 = weeks 4/8/12, 12 = week 12 only
+       read    { t:'lin', a, C, F, tok:{action:k}, mul:action, lag, noise, scale, dp, min, max }
+               { t:'steps', steps:[...], noise }
+               { t:'acc', base, tok:{action:k}, C, noise, dp }
+       requires { action, min }  no reading ("no data") when not met
+       better  'up' or 'down'; target { def, min, max, step }
+       ratings [Predictive, Controllable, Timely, Honest], each 1-3
+       tells   the one sentence shown on the card flip */
+  quests: [
+    {
+      id: 'speaking', name: 'Public speaking', goal: 'Give a talk that lands',
+      blurb: 'Twelve weeks to become a speaker people want to hear again.',
+      strongest: 'volunteer', feedback: 'review', shiny: 'watch',
+      actions: [
+        { id: 'rehearse', name: 'Rehearse aloud and record', e: 1.0, f: 0.04, synergy: { partner: 'review', min: 2, mult: 1.3 } },
+        { id: 'volunteer', name: 'Volunteer for speaking slots', e: 1.3, f: 0.08 },
+        { id: 'review', name: 'Review recordings and feedback', e: 0.9, f: 0.02 },
+        { id: 'watch', name: 'Watch great speakers', e: 0.25, f: 0, pop: true },
+        { id: 'slides', name: 'Polish slides', e: 0.15, f: 0.02, pop: true },
+        { id: 'rest', name: 'Rest', e: 0, f: 0, rest: true }
+      ],
+      indicators: [
+        { id: 'rating', side: 'lag', kind: 'lag', name: 'Audience rating at the monthly club talk', unit: 'out of 100',
+          cadence: 4, read: { t: 'lin', a: 0, C: 1, noise: 4, dp: 0, min: 0, max: 100 }, better: 'up', ratings: [3, 1, 1, 3],
+          tells: 'An honest verdict, but only three times a season and never in time to change that month.' },
+        { id: 'invites', side: 'lag', kind: 'lag', name: 'Invitations to speak again', unit: 'invitations',
+          cadence: 4, read: { t: 'steps', steps: [35, 50, 65, 80], noise: 4 }, better: 'up', ratings: [2, 1, 1, 3],
+          tells: 'Honest but coarse: it only ticks over when you cross a threshold.' },
+        { id: 'followers', side: 'lag', kind: 'badlag', name: 'Social media followers', unit: 'followers',
+          cadence: 4, read: { t: 'acc', base: 4, tok: { slides: 3, watch: 2 }, noise: 6, dp: 0, start: 120 }, better: 'up', ratings: [1, 1, 1, 1],
+          tells: 'It grew with slides and watching, not with speaking. It would have cheered a flat tower.' },
+        { id: 'rehearsals', side: 'lead', kind: 'lead', name: 'Recorded rehearsals', unit: 'rehearsals',
+          cadence: 'w', read: { t: 'lin', tok: { rehearse: 1 } }, better: 'up', target: { def: 3, min: 0, max: 8, step: 1 }, ratings: [3, 3, 3, 3],
+          tells: 'The input that builds the skill, counted weekly and impossible to fake without doing it.' },
+        { id: 'filler', side: 'lead', kind: 'lead', name: 'Filler words per minute', unit: 'per minute',
+          cadence: 'w', read: { t: 'lin', a: 12, C: -0.1, noise: 1, dp: 1, min: 0.5 }, requires: { action: 'rehearse', min: 1 },
+          better: 'down', target: { def: 8, min: 2, max: 12, step: 0.5 }, ratings: [3, 2, 3, 3],
+          tells: 'It reads the skill itself, weekly. A flat line while inputs held steady was a plateau talking.' },
+        { id: 'volunteered', side: 'lead', kind: 'lead', name: 'Speaking slots volunteered', unit: 'slots',
+          cadence: 'w', read: { t: 'lin', tok: { volunteer: 1 } }, better: 'up', target: { def: 2, min: 0, max: 8, step: 1 }, ratings: [3, 3, 3, 2],
+          tells: 'The highest-yield input. Easy to pad with slots you never prepare for.' },
+        { id: 'actioned', side: 'lead', kind: 'lead', name: 'Feedback points actioned', unit: 'points',
+          cadence: 'w', read: { t: 'lin', tok: { review: 2 } }, better: 'up', target: { def: 4, min: 0, max: 16, step: 1 }, ratings: [2, 3, 3, 2],
+          tells: 'Good at keeping review alive. It counts points, not how well you fixed them.' },
+        { id: 'watched', side: 'lead', kind: 'vanity', name: 'Hours of talks watched', unit: 'hours',
+          cadence: 'w', read: { t: 'lin', tok: { watch: 1.5 }, dp: 1 }, better: 'up', target: { def: 3, min: 0, max: 15, step: 0.5 }, ratings: [1, 3, 3, 1],
+          tells: 'It felt like study. Watching others speak barely moves your own speaking.' },
+        { id: 'slidesMade', side: 'lead', kind: 'vanity', name: 'Slides produced', unit: 'slides',
+          cadence: 'w', read: { t: 'lin', tok: { slides: 4 } }, better: 'up', target: { def: 8, min: 0, max: 40, step: 2 }, ratings: [1, 3, 3, 1],
+          tells: 'A painted backdrop. Slides grow while the speaker does not.' },
+        { id: 'confident', side: 'lead', kind: 'vanity', name: 'How confident I feel', unit: 'out of 10',
+          cadence: 'w', read: { t: 'lin', a: 0, C: 1, tok: { watch: 12 }, noise: 15, scale: 0.1, dp: 0, min: 1, max: 10 }, better: 'up', target: { def: 6, min: 1, max: 10, step: 1 }, ratings: [1, 1, 3, 1],
+          tells: 'Noisy, and inflated by an evening of watching experts. Feelings are not a tower.' },
+        { id: 'rested', side: 'lead', kind: 'guardrail', name: 'Hours rested', unit: 'hours',
+          cadence: 'w', read: { t: 'lin', a: 0, F: 20, noise: 1, dp: 0, min: 0 }, better: 'up', target: { def: 10, min: 0, max: 20, step: 1 }, ratings: [2, 3, 3, 2],
+          tells: 'The only window onto fatigue. Without it, burnout arrives unannounced.' }
+      ],
+      expert: { lag: 'rating', leads: ['rehearsals', 'volunteered', 'rested'], targets: { rehearsals: 3, volunteered: 3, rested: 10 } },
+      headlines: {
+        deadline: 'Year-end report due: your evenings are gone',
+        cold: 'Your voice is a croak',
+        cancelled: 'The club cancels its open-mic night',
+        friend: 'A friend offers to give you honest notes',
+        shiny: 'A famous speaker drops a twelve-hour masterclass',
+        holiday: 'A bank holiday gives you a spare day',
+        burnout: 'Your cousin\'s wedding ate Saturday, and you had nothing left'
+      }
+    },
+    {
+      id: 'running', name: 'Half-marathon', goal: 'Finish strong',
+      blurb: 'Twelve weeks to a half-marathon you finish running, not hobbling.',
+      strongest: 'long', feedback: 'long', shiny: 'kit',
+      actions: [
+        { id: 'easy', name: 'Easy runs', e: 1.0, f: 0.02 },
+        { id: 'long', name: 'Long run', e: 1.3, f: 0.06 },
+        { id: 'speed', name: 'Speed session', e: 1.1, f: 0.1, risk: { overF: 0.6, p: 0.5, guard: 'strength', per: 0.2, cLoss: 3, energy: 3 } },
+        { id: 'strength', name: 'Strength and mobility', e: 0.5, f: 0.02 },
+        { id: 'kit', name: 'Buy new kit', e: 0.1, f: 0, pop: true },
+        { id: 'rest', name: 'Rest', e: 0, f: 0, rest: true }
+      ],
+      indicators: [
+        { id: 'tt10k', side: 'lag', kind: 'lag', name: '10k time trial', unit: 'minutes',
+          cadence: 4, read: { t: 'lin', a: 72, C: -0.3, noise: 1.2, dp: 1 }, better: 'down', ratings: [3, 1, 1, 3],
+          tells: 'A true test of fitness, three times a season. A checkpoint, not a steering wheel.' },
+        { id: 'weight', side: 'lag', kind: 'badlag', name: 'Body weight', unit: 'kg',
+          cadence: 4, read: { t: 'acc', base: 0, tok: { easy: -0.04, long: -0.05, speed: -0.03 }, noise: 0.6, dp: 1, start: 78 }, better: 'down', ratings: [1, 2, 1, 2],
+          tells: 'It drifted with water and dinners. It says little about whether you can run 21 km.' },
+        { id: 'finish', side: 'lag', kind: 'lag', name: 'Race finish time', unit: 'minutes',
+          cadence: 12, read: { t: 'lin', a: 150, C: -0.7, noise: 2, dp: 0 }, better: 'down', ratings: [3, 1, 1, 3],
+          tells: 'The truest verdict of all, and it arrives on race day with nothing to steer by before.' },
+        { id: 'km', side: 'lead', kind: 'lead', name: 'Easy kilometres', unit: 'km',
+          cadence: 'w', read: { t: 'lin', tok: { easy: 8 } }, better: 'up', target: { def: 24, min: 0, max: 80, step: 4 }, ratings: [3, 3, 3, 3],
+          tells: 'The base that everything else stands on, counted every week.' },
+        { id: 'longdone', side: 'lead', kind: 'lead', name: 'Long run distance', unit: 'km',
+          cadence: 'w', read: { t: 'lin', tok: { long: 5 } }, better: 'up', target: { def: 10, min: 0, max: 40, step: 5 }, ratings: [3, 3, 3, 3],
+          tells: 'The highest-yield session, and you know by Sunday whether it happened.' },
+        { id: 'rhr', side: 'lead', kind: 'lead', name: 'Resting heart rate trend', unit: 'bpm',
+          cadence: 'w', read: { t: 'lin', a: 68, C: -0.15, lag: 2, noise: 1, dp: 0 }, better: 'down', target: { def: 62, min: 45, max: 70, step: 1 }, ratings: [3, 1, 2, 3],
+          tells: 'It reads fitness itself, two weeks late. It would have shown a plateau as a flat line.' },
+        { id: 'kudos', side: 'lead', kind: 'vanity', name: 'Running-app kudos', unit: 'kudos',
+          cadence: 'w', read: { t: 'lin', tok: { kit: 6, easy: 1, long: 2, speed: 1 }, noise: 2, dp: 0, min: 0 }, better: 'up', target: { def: 10, min: 0, max: 60, step: 2 }, ratings: [1, 2, 3, 1],
+          tells: 'New trainers photograph well. Kudos rose fastest in the weeks you trained least.' },
+        { id: 'kitspend', side: 'lead', kind: 'vanity', name: 'Kit spend', unit: 'pounds',
+          cadence: 'w', read: { t: 'lin', tok: { kit: 40 } }, better: 'up', target: { def: 40, min: 0, max: 200, step: 10 }, ratings: [1, 3, 3, 1],
+          tells: 'Spending is not training. This window showed a painted tower.' },
+        { id: 'fresh', side: 'lead', kind: 'guardrail', name: 'Legs feel fresh', unit: 'out of 10',
+          cadence: 'w', read: { t: 'lin', F: 10, noise: 1.5, dp: 0, min: 1, max: 10 }, better: 'up', target: { def: 5, min: 1, max: 10, step: 1 }, ratings: [2, 2, 3, 1],
+          tells: 'A noisy guardrail, but a guardrail: it was your only view of fatigue.' },
+        { id: 'restdays', side: 'lead', kind: 'guardrail', name: 'Rest days taken', unit: 'days',
+          cadence: 'w', read: { t: 'lin', tok: { rest: 1 } }, better: 'up', target: { def: 2, min: 0, max: 7, step: 1 }, ratings: [2, 3, 3, 3],
+          tells: 'It counts the recovery you planned, which is most of what a guardrail needs to do.' }
+      ],
+      expert: { lag: 'tt10k', leads: ['km', 'longdone', 'fresh'], targets: { km: 24, longdone: 10, fresh: 5 } },
+      headlines: {
+        deadline: 'Work crunch: training squeezed into lunch breaks',
+        cold: 'A head cold and a box of tissues',
+        cancelled: 'The trail is flooded: no long run this week',
+        friend: 'A club runner offers to pace your long run',
+        shiny: 'Carbon-plate shoes are on sale',
+        holiday: 'Half-term: mornings are free',
+        burnout: 'Legs of lead, and a week you could not face',
+        injury: 'A calf twinge on tired legs'
+      }
+    },
+    {
+      id: 'spanish', name: 'Conversational Spanish', goal: 'Hold a 20-minute conversation',
+      blurb: 'Twelve weeks to hold twenty minutes of real conversation.',
+      strongest: 'convo', feedback: 'convo', shiny: 'streak',
+      actions: [
+        { id: 'convo', name: 'Conversation with a person', e: 1.4, f: 0.09 },
+        { id: 'srs', name: 'Spaced-repetition reviews', e: 0.9, f: 0.02 },
+        { id: 'grammar', name: 'Grammar drills', e: 0.6, f: 0.03 },
+        { id: 'tv', name: 'Spanish TV and podcasts', e: 0.35, f: 0, pop: true },
+        { id: 'streak', name: 'Keep the app streak alive', e: 0.2, f: 0, pop: true },
+        { id: 'rest', name: 'Rest', e: 0, f: 0, rest: true }
+      ],
+      indicators: [
+        { id: 'mockb1', side: 'lag', kind: 'lag', name: 'Mock B1 speaking test', unit: 'out of 100',
+          cadence: 4, read: { t: 'lin', C: 1, noise: 4, dp: 0, min: 0, max: 100 }, better: 'up', ratings: [3, 1, 1, 3],
+          tells: 'The honest checkpoint. Three readings a season, each too late to change that month.' },
+        { id: 'wordsKnown', side: 'lag', kind: 'badlag', name: 'Words "known" in the app', unit: 'words',
+          cadence: 4, read: { t: 'acc', base: 20, tok: { streak: 25, tv: 10, srs: 10 }, noise: 8, dp: 0, start: 300 }, better: 'up', ratings: [1, 2, 1, 1],
+          tells: 'It only ever goes up. Knowing a word in an app is not using it in a café.' },
+        { id: 'minutes', side: 'lead', kind: 'lead', name: 'Minutes speaking with a person', unit: 'minutes',
+          cadence: 'w', read: { t: 'lin', tok: { convo: 30 } }, better: 'up', target: { def: 60, min: 0, max: 300, step: 15 }, ratings: [3, 3, 3, 3],
+          tells: 'The closest input to the goal itself, counted weekly.' },
+        { id: 'reviews', side: 'lead', kind: 'lead', name: 'Reviews completed', unit: 'cards',
+          cadence: 'w', read: { t: 'lin', tok: { srs: 50 } }, better: 'up', target: { def: 100, min: 0, max: 500, step: 25 }, ratings: [2, 3, 3, 2],
+          tells: 'Keeps vocabulary alive. It counts cards, not whether you can use them.' },
+        { id: 'newWords', side: 'lead', kind: 'lead', name: 'New words used in conversation', unit: 'words',
+          cadence: 'w', read: { t: 'lin', C: 0.12, mul: 'convo', noise: 1, dp: 0, min: 0 }, requires: { action: 'convo', min: 1 }, better: 'up', target: { def: 8, min: 0, max: 40, step: 1 }, ratings: [3, 2, 3, 3],
+          tells: 'It reads the skill in use. When it flattened with steady conversation, progress had stalled.' },
+        { id: 'streakDays', side: 'lead', kind: 'vanity', name: 'App streak days', unit: 'days',
+          cadence: 'w', read: { t: 'acc', base: 0, tok: { streak: 7, srs: 1, tv: 1 }, cap: { perWeek: 7 }, dp: 0, start: 0 }, better: 'up', target: { def: 7, min: 0, max: 84, step: 7 }, ratings: [1, 3, 3, 1],
+          tells: 'The trap from the warm-up. It measured showing up, not learning.' },
+        { id: 'tvHours', side: 'lead', kind: 'weak', name: 'Hours of Spanish TV', unit: 'hours',
+          cadence: 'w', read: { t: 'lin', tok: { tv: 2 } }, better: 'up', target: { def: 4, min: 0, max: 30, step: 1 }, ratings: [1, 3, 3, 2],
+          tells: 'Pleasant exposure, weak on its own. Listening is not speaking.' },
+        { id: 'sleep', side: 'lead', kind: 'guardrail', name: 'Sleep hours per night', unit: 'hours',
+          cadence: 'w', read: { t: 'lin', a: 5, F: 3.5, noise: 0.3, dp: 1 }, better: 'up', target: { def: 7, min: 4, max: 9, step: 0.5 }, ratings: [2, 3, 3, 2],
+          tells: 'Your one view of fatigue. Tired brains do not retain new words.' }
+      ],
+      expert: { lag: 'mockb1', leads: ['minutes', 'reviews', 'sleep'], targets: { minutes: 60, reviews: 100, sleep: 7 } },
+      headlines: {
+        deadline: 'Exams at work: Spanish goes on the back burner',
+        cold: 'A cold, and no voice to practise with',
+        cancelled: 'Your conversation partner is away',
+        friend: 'A Spanish colleague offers lunchtime chats',
+        shiny: 'The app launches a double-XP weekend',
+        holiday: 'A long weekend with nothing planned',
+        burnout: 'Your brain refuses one more conjugation'
+      }
+    },
+    {
+      id: 'network', name: 'Professional network', goal: 'Build a network that opens doors',
+      blurb: 'Twelve weeks to a network that sends real opportunities your way.',
+      strongest: 'coffee', feedback: 'coffee', shiny: 'connect',
+      actions: [
+        { id: 'coffee', name: 'One-to-one coffee conversations', e: 1.3, f: 0.07 },
+        { id: 'followup', name: 'Follow up within 48 hours', e: 1.0, f: 0.02, synergy: { partner: 'coffee', min: 2, mult: 1.3 } },
+        { id: 'give', name: 'Give value: introduce or share', e: 1.1, f: 0.04 },
+        { id: 'events', name: 'Attend large events', e: 0.4, f: 0.03, pop: true },
+        { id: 'connect', name: 'Grow connection count', e: 0.15, f: 0.01, pop: true },
+        { id: 'rest', name: 'Rest', e: 0, f: 0, rest: true }
+      ],
+      indicators: [
+        { id: 'referrals', side: 'lag', kind: 'lag', name: 'Warm referrals and opportunities', unit: 'this month',
+          cadence: 4, read: { t: 'steps', steps: [30, 42, 54, 66, 78], noise: 4 }, better: 'up', ratings: [3, 1, 1, 3],
+          tells: 'The real outcome, and slow: doors open months after the conversations that earned them.' },
+        { id: 'views', side: 'lag', kind: 'badlag', name: 'Profile views', unit: 'views',
+          cadence: 4, read: { t: 'acc', base: 10, tok: { connect: 12, events: 6 }, noise: 10, dp: 0, start: 40 }, better: 'up', ratings: [1, 1, 1, 1],
+          tells: 'Views rose with connection requests. Nobody who viewed you sent a referral.' },
+        { id: 'meaningful', side: 'lead', kind: 'lead', name: 'Meaningful conversations', unit: 'conversations',
+          cadence: 'w', read: { t: 'lin', a: 0.4, C: 0.01, mul: 'coffee', noise: 0.25, dp: 1, min: 0 }, requires: { action: 'coffee', min: 1 }, better: 'up', target: { def: 2, min: 0, max: 10, step: 0.5 }, ratings: [3, 3, 3, 2],
+          tells: 'More of your coffees turned into real conversations as you improved. A flat line meant a plateau.' },
+        { id: 'followups', side: 'lead', kind: 'lead', name: 'Follow-ups sent within 48 hours', unit: 'follow-ups',
+          cadence: 'w', read: { t: 'lin', tok: { followup: 2 } }, better: 'up', target: { def: 4, min: 0, max: 20, step: 1 }, ratings: [3, 3, 3, 2],
+          tells: 'The multiplier on every coffee, counted weekly.' },
+        { id: 'intros', side: 'lead', kind: 'lead', name: 'Introductions made for others', unit: 'introductions',
+          cadence: 'w', read: { t: 'lin', tok: { give: 1 } }, better: 'up', target: { def: 2, min: 0, max: 10, step: 1 }, ratings: [2, 3, 3, 3],
+          tells: 'Giving first builds the trust that referrals run on.' },
+        { id: 'connections', side: 'lead', kind: 'vanity', name: 'Connection count', unit: 'connections',
+          cadence: 'w', read: { t: 'acc', base: 0, tok: { connect: 15, events: 5 }, dp: 0, start: 250 }, better: 'up', target: { def: 280, min: 0, max: 1000, step: 10 }, ratings: [1, 3, 3, 1],
+          tells: 'A number that only goes up, whatever the relationships behind it.' },
+        { id: 'eventsAttended', side: 'lead', kind: 'weak', name: 'Events attended', unit: 'events',
+          cadence: 'w', read: { t: 'lin', tok: { events: 1 } }, better: 'up', target: { def: 1, min: 0, max: 10, step: 1 }, ratings: [1, 3, 3, 2],
+          tells: 'Rooms full of name badges. Attendance is not connection.' },
+        { id: 'evenings', side: 'lead', kind: 'guardrail', name: 'Evenings kept free', unit: 'evenings',
+          cadence: 'w', read: { t: 'lin', F: 7, noise: 0.5, dp: 0, min: 0, max: 7 }, better: 'up', target: { def: 3, min: 0, max: 7, step: 1 }, ratings: [2, 3, 3, 2],
+          tells: 'Your one view of fatigue. Networking on empty reads as networking.' }
+      ],
+      expert: { lag: 'referrals', leads: ['meaningful', 'followups', 'evenings'], targets: { meaningful: 1.5, followups: 4, evenings: 3 } },
+      headlines: {
+        deadline: 'Quarter-end: your diary is solid',
+        cold: 'Nobody wants coffee with a cough',
+        cancelled: 'Everyone you planned to meet is on leave',
+        friend: 'A mentor offers a warm introduction',
+        shiny: 'Your post goes mildly viral',
+        holiday: 'A quiet week in the office',
+        burnout: 'One more networking drink too many'
+      }
+    }
+  ],
+
+  /* ---- archetypes (spec section 6) --------------------------------------
+     Checked in this order; the first match is assigned. */
+  archetypes: {
+    burnout: { title: 'Burnout Sprinter', line: 'You pushed hard and burned out at least twice. A guardrail would have warned you weeks earlier.' },
+    vanity: { title: 'Vanity Curator', line: 'Two or more of your windows looked onto painted backdrops. They rewarded the wrong work.' },
+    busy: { title: 'Busy Bee', line: 'Four in ten of your tokens went on work that felt productive but barely moved the tower.' },
+    lucky: { title: 'Lucky Wanderer', line: 'A good outcome from a weak dashboard. Outcome is not decision quality: the same choices could easily have gone worse.' },
+    reader: { title: 'Signal Reader', line: 'A strong dashboard and a strong tower. Your windows showed you the truth in time to act.' },
+    rearview: { title: 'Rear-View Driver', line: 'You watched the outcome but had few controllable leads to steer by.' },
+    steady: { title: 'Steady Climber', line: 'A sound season with room to sharpen your windows. Try the rerun with a different dashboard.' }
+  },
+
+  /* ---- phase 7: your real dashboard ----------------------------------- */
+  // minWords: the minimum word count for each field (live counter shown).
+  transfer: {
+    fields: [
+      { id: 'goal', label: 'Goal', hint: 'What are you building over the next twelve weeks?', minWords: 6, check: false },
+      { id: 'lag', label: 'Lagging indicator', hint: 'The outcome you will check, e.g. a mock test score.', minWords: 3, check: true },
+      { id: 'lagWhen', label: 'When you will check it', hint: 'e.g. the last Friday of each month', minWords: 3, check: false },
+      { id: 'lead1', label: 'Leading indicator 1', hint: 'Number, unit, per week, e.g. 3 recorded rehearsals per week', minWords: 4, check: true, sharpen: true },
+      { id: 'lead2', label: 'Leading indicator 2', hint: 'Number, unit, per week', minWords: 4, check: true, sharpen: true },
+      { id: 'guard', label: 'Guardrail', hint: 'What warns you of burnout?', minWords: 3, check: true },
+      { id: 'guardLevel', label: 'Warning level', hint: 'e.g. fewer than 7 hours of sleep for three nights', minWords: 3, check: false },
+      { id: 'ifLead', label: 'If-then: lead', hint: 'If [lead] ...', minWords: 2, check: false, rule: true },
+      { id: 'ifX', label: 'is below', hint: '[x]', minWords: 1, check: false, rule: true },
+      { id: 'ifThen', label: 'for two weeks, then I will', hint: '[action]', minWords: 3, check: false, rule: true },
+      { id: 'reviewDay', label: 'Review day', hint: 'e.g. Sunday evening, 15 minutes', minWords: 1, check: false }
+    ],
+    criteria: ['Predictive', 'Controllable', 'Timely', 'Honest']
+  }
+};
+
+/* ==========================================================================
+   Engine. Nothing below touches the DOM: tests/signal-tower.mjs evaluates
+   this script in node and the page runs the same code at ?test=1.
+   ======================================================================== */
+const ST = (function () {
+  const M = CONFIG.model;
+  const W = CONFIG.weeks;
+
+  /* ---- RNG: seeded mulberry32 ----------------------------------------- */
+  function hashStr(s) {
+    let h = 2166136261 >>> 0;
+    for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+    h ^= h >>> 13; h = Math.imul(h, 0x5bd1e995) >>> 0; h ^= h >>> 15;
+    return h >>> 0;
+  }
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  // Separate streams: events come from the seed alone; measurement noise is
+  // keyed by seed + indicator + week, so the dashboard never changes events.
+  function unit(seed, key, week) { return mulberry32(hashStr(seed + '|' + key + '|' + week))(); }
+  function gauss(seed, key, week) {
+    const r = mulberry32(hashStr(seed + '|n|' + key + '|' + week));
+    const u = Math.max(r(), 1e-9), v = r();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+  const RNG = { hashStr: hashStr, mulberry32: mulberry32, unit: unit, gauss: gauss };
+
+  /* ---- content lookups ------------------------------------------------ */
+  function quest(id) { return CONFIG.quests.find(function (q) { return q.id === id; }); }
+  function action(q, id) { return q.actions.find(function (a) { return a.id === id; }); }
+  function indicator(q, id) { return q.indicators.find(function (i) { return i.id === id; }); }
+  function eventDef(id) { return CONFIG.events.find(function (e) { return e.id === id; }); }
+  function clamp(x, lo, hi) { return Math.max(lo, Math.min(hi, x)); }
+  function round(x, dp) { const k = Math.pow(10, dp || 0); return Math.round(x * k) / k; }
+
+  /* ---- event schedule (seed only) -------------------------------------- */
+  function schedule(seed) {
+    const r = mulberry32(hashStr(seed + '|events'));
+    const deck = CONFIG.events;
+    const total = deck.reduce(function (s, e) { return s + e.weight; }, 0);
+    const out = [];
+    let plateauAt = 0;
+    for (let w = 1; w <= W; w++) {
+      const roll = r(), pick = r() * total;
+      let id = 'none';
+      if (roll < M.eventChance) {
+        let acc = 0;
+        for (let i = 0; i < deck.length; i++) { acc += deck[i].weight; if (pick < acc) { id = deck[i].id; break; } }
+      }
+      // one plateau per season, starting in a week that is not a checkpoint
+      // and early enough for its effect to show before the season ends
+      if (id === 'plateau' && (plateauAt || CONFIG.checkpoints.indexOf(w) >= 0 || w < 2 || w > 10)) id = 'none';
+      if (id === 'plateau') plateauAt = w;
+      out.push(id);
+    }
+    if (!plateauAt) {
+      const options = [5, 6, 7];
+      plateauAt = options[Math.floor(r() * options.length)];
+      out[plateauAt - 1] = 'plateau';
+    }
+    return { events: out, plateauAt: plateauAt };
+  }
+
+  /* ---- MODEL ---------------------------------------------------------- */
+  function initState(q) {
+    const acc = {};
+    q.indicators.forEach(function (ind) { if (ind.read.t === 'acc') acc[ind.id] = 0; });
+    return { week: 0, C: M.start.C, H: M.start.H, F: M.start.F, Chist: [M.start.C], acc: acc,
+      burnoutLast: false, injuryLast: false, burnouts: 0, injuries: 0 };
+  }
+
+  // Which actions feed an indicator (token terms, multiplier and precondition).
+  function feeds(ind) {
+    const out = [];
+    const rd = ind.read;
+    if (rd.tok) Object.keys(rd.tok).forEach(function (k) { out.push(k); });
+    if (rd.mul) out.push(rd.mul);
+    if (ind.requires) out.push(ind.requires.action);
+    return out;
+  }
+
+  function energyFor(state, eventId, pendingCost) {
+    const ev = eventDef(eventId) || {};
+    let E = M.baseEnergy + (ev.energy || 0);
+    if (state.burnoutLast) E -= M.burnoutEnergy;
+    if (state.injuryLast) E -= (state.injuryEnergy || 0);
+    E -= pendingCost || 0;
+    return Math.max(M.minEnergy, E);
+  }
+
+  function sat(n) { return Math.min(n, M.saturation) + 0.5 * Math.max(0, n - M.saturation); }
+
+  // Effective (pre-multiplier) effort per action for an allocation.
+  function efforts(q, alloc, ctx) {
+    const out = {};
+    q.actions.forEach(function (a) {
+      if (a.rest) return;
+      const n = alloc[a.id] || 0;
+      let eff = sat(n) * a.e;
+      if (ctx.attended && ctx.attended[a.id]) eff *= M.attention;
+      if (a.synergy && n >= a.synergy.min && (alloc[a.synergy.partner] || 0) >= a.synergy.min) eff *= a.synergy.mult;
+      if (ctx.boost && a.id === q.feedback) eff *= ctx.boost;
+      out[a.id] = eff;
+    });
+    return out;
+  }
+
+  function attendedSet(q, dash) {
+    const set = {};
+    (dash.leads || []).forEach(function (id) {
+      const ind = indicator(q, id);
+      if (ind && dash.targets && dash.targets[id] !== undefined) feeds(ind).forEach(function (a) { set[a] = true; });
+    });
+    return set;
+  }
+
+  // Clean an allocation: integers, no blocked action, total within energy.
+  function sanitise(q, alloc, energy, blocked) {
+    const out = {};
+    let left = energy;
+    q.actions.forEach(function (a) {
+      let n = Math.max(0, Math.floor(alloc[a.id] || 0));
+      if (a.id === blocked) n = 0;
+      n = Math.min(n, left);
+      left -= n;
+      out[a.id] = n;
+    });
+    return out;
+  }
+
+  /* step(q, state, alloc, ctx) -> { state, log }  (pure: state is copied) */
+  function step(q, state, alloc, ctx) {
+    const ev = eventDef(ctx.event) || {};
+    const s = { week: state.week + 1, C: state.C, H: state.H, F: state.F, Chist: state.Chist.slice(),
+      acc: Object.assign({}, state.acc), burnoutLast: false, injuryLast: false, injuryEnergy: 0,
+      burnouts: state.burnouts, injuries: state.injuries };
+    const blocked = ev.block ? q.strongest : null;
+    const a = sanitise(q, alloc, ctx.energy, blocked);
+    const eff = efforts(q, a, { attended: ctx.attended, boost: ev.boost });
+    let sum = 0, productive = 0, fat = 0, rest = 0;
+    q.actions.forEach(function (act) {
+      const n = a[act.id];
+      if (act.rest) { rest += n; return; }
+      sum += eff[act.id];
+      if (act.e >= M.productiveE) productive += n;
+      fat += n * act.f;
+    });
+    const plateau = ctx.plateau ? M.plateauMult : 1;
+    const gain = sum * (1 + M.habitGain * state.H) * (1 - state.F) * (1 - state.C / M.capacity) * M.gainScale * plateau;
+    const decay = productive < 3 ? M.decay : 0;
+    s.C = clamp(state.C + gain - decay, 0, 100);
+
+    // injury risk (running): speed work on tired legs
+    let injury = false;
+    q.actions.forEach(function (act) {
+      const rk = act.risk;
+      if (!rk || !a[act.id] || state.F <= rk.overF) return;
+      const p = Math.max(0, rk.p - rk.per * (a[rk.guard] || 0));
+      if (unit(ctx.seed, 'injury', s.week) < p) {
+        injury = true; s.C = clamp(s.C - rk.cLoss, 0, 100); s.injuryLast = true; s.injuryEnergy = rk.energy; s.injuries++;
+      }
+    });
+
+    s.F = clamp(state.F + M.fatigueScale * fat + (ev.fatigue || 0) - M.fatigueRecover - M.restRecover * rest, 0, 1);
+    let burnout = false;
+    if (s.F > M.burnoutAt) { burnout = true; s.burnouts++; s.burnoutLast = true; s.F = clamp(s.F - M.burnoutCrash, 0, 1); }
+
+    // accumulating indicators (followers, streaks, connection counts)
+    q.indicators.forEach(function (ind) {
+      const rd = ind.read;
+      if (rd.t !== 'acc') return;
+      let inc = rd.base || 0;
+      Object.keys(rd.tok || {}).forEach(function (k) {
+        let n = a[k] || 0;
+        if (ev.shiny && k === q.shiny) n *= ev.shiny;
+        inc += rd.tok[k] * n;
+      });
+      if (rd.cap) inc = Math.min(inc, rd.cap.perWeek);
+      if (rd.noise) inc += rd.noise * gauss(ctx.seed, 'walk:' + ind.id, s.week);
+      s.acc[ind.id] = s.acc[ind.id] + inc;
+    });
+    s.Chist.push(s.C);
+
+    const readings = {};
+    q.indicators.forEach(function (ind) { readings[ind.id] = OBSERVE.read(q, ind, s, a, ev, ctx.seed); });
+
+    // habit: every tracked lead target met this week
+    const tracked = (ctx.dash && ctx.dash.leads) || [];
+    const met = {};
+    let allMet = tracked.length > 0;
+    tracked.forEach(function (id) {
+      const ind = indicator(q, id);
+      const r = readings[id], t = ctx.dash.targets[id];
+      const ok = r !== null && r !== undefined && t !== undefined && (ind.better === 'down' ? r <= t : r >= t);
+      met[id] = ok;
+      if (!ok) allMet = false;
+    });
+    s.H = clamp(state.H + (allMet ? M.habitUp : -M.habitDown), 0, 1);
+
+    return { state: s, log: { week: s.week, alloc: a, event: ctx.event, energy: ctx.energy, blocked: blocked,
+      plateau: !!ctx.plateau, gain: gain, decay: decay, C: s.C, F: s.F, H: s.H, burnout: burnout, injury: injury,
+      readings: readings, met: met, allMet: allMet } };
+  }
+
+  /* ---- OBSERVE -------------------------------------------------------- */
+  const OBSERVE = {
+    due: function (ind, week) {
+      if (ind.cadence === 'w') return true;
+      if (ind.cadence === 12) return week === W;
+      return week % ind.cadence === 0;
+    },
+    // Returns a number, null (no data this week) or undefined (not due).
+    read: function (q, ind, s, a, ev, seed) {
+      if (!OBSERVE.due(ind, s.week)) return undefined;
+      if (ind.requires && (a[ind.requires.action] || 0) < ind.requires.min) return null;
+      const rd = ind.read;
+      const z = gauss(seed, ind.id, s.week);
+      const flatter = ind.kind === 'vanity' || ind.kind === 'badlag';
+      let v;
+      if (rd.t === 'steps') {
+        const c = s.C + (rd.noise || 0) * z;
+        v = rd.steps.filter(function (x) { return c >= x; }).length;
+        return v;
+      }
+      if (rd.t === 'acc') {
+        v = (rd.start || 0) + s.acc[ind.id];
+      } else {
+        const Ct = s.Chist[Math.max(0, s.Chist.length - 1 - (rd.lag || 0))];
+        v = (rd.a || 0) + (rd.C || 0) * Ct + (rd.F || 0) * (1 - s.F);
+        Object.keys(rd.tok || {}).forEach(function (k) {
+          let n = a[k] || 0;
+          if (flatter && ev.shiny && k === q.shiny) n *= ev.shiny;
+          v += rd.tok[k] * n;
+        });
+        if (rd.mul) v *= (a[rd.mul] || 0);
+        v += (rd.noise || 0) * z;
+        if (rd.scale) v *= rd.scale;
+      }
+      if (rd.min !== undefined) v = Math.max(rd.min, v);
+      if (rd.max !== undefined) v = Math.min(rd.max, v);
+      return round(v, rd.dp || 0);
+    },
+    // Everything the player may see: chosen indicators' readings plus the
+    // visible event. Fatigue only appears through a chosen guardrail.
+    view: function (run) {
+      const ids = [run.dash.lag].concat(run.dash.leads).filter(Boolean);
+      return run.log.map(function (l) {
+        const r = {};
+        ids.forEach(function (id) { if (l.readings[id] !== undefined) r[id] = l.readings[id]; });
+        return { week: l.week, event: l.event === 'plateau' ? 'none' : l.event, burnout: l.burnout, injury: l.injury, readings: r, met: l.met };
+      });
+    }
+  };
+
+  /* ---- run: a season in progress -------------------------------------- */
+  function newRun(seed, questId, dash) {
+    const q = quest(questId);
+    const sch = schedule(seed);
+    return { seed: seed, quest: questId, events: sch.events, plateauAt: sch.plateauAt,
+      dash: { lag: dash.lag || null, leads: (dash.leads || []).slice(), targets: Object.assign({}, dash.targets || {}) },
+      state: initState(q), log: [], pendingCost: 0, swaps: [] };
+  }
+  function weekContext(run) {
+    const q = quest(run.quest);
+    const week = run.state.week + 1;
+    const ev = run.events[week - 1];
+    const def = eventDef(ev) || {};
+    return { week: week, event: ev, energy: energyFor(run.state, ev, run.pendingCost),
+      blocked: def.block ? q.strongest : null, boost: def.boost ? q.feedback : null,
+      plateau: run.plateauAt && (week === run.plateauAt || week === run.plateauAt + M.plateauWeeks - 1) };
+  }
+  function playWeek(run, alloc) {
+    const q = quest(run.quest);
+    const c = weekContext(run);
+    const res = step(q, run.state, alloc, { seed: run.seed, event: c.event, energy: c.energy, plateau: c.plateau,
+      attended: attendedSet(q, run.dash), dash: run.dash });
+    res.log.dash = { lag: run.dash.lag, leads: run.dash.leads.slice(), targets: Object.assign({}, run.dash.targets) };
+    run.state = res.state;
+    run.log.push(res.log);
+    run.pendingCost = 0;
+    return res.log;
+  }
+  // Review stop: new targets, and optionally swap one indicator (costs energy).
+  function review(run, change) {
+    if (change.targets) Object.assign(run.dash.targets, change.targets);
+    if (change.swap && change.swap.from && change.swap.to && change.swap.from !== change.swap.to) {
+      const q = quest(run.quest);
+      const to = indicator(q, change.swap.to);
+      if (run.dash.lag === change.swap.from && to.side === 'lag') run.dash.lag = to.id;
+      else {
+        const i = run.dash.leads.indexOf(change.swap.from);
+        if (i >= 0 && to.side === 'lead') {
+          run.dash.leads[i] = to.id;
+          delete run.dash.targets[change.swap.from];
+          if (run.dash.targets[to.id] === undefined) run.dash.targets[to.id] = to.target.def;
+        }
+      }
+      run.swaps.push({ week: run.state.week, from: change.swap.from, to: change.swap.to });
+      run.pendingCost = M.swapCost;
+    }
+  }
+  // Replays a saved season from its inputs only: seed, quest, dashboard,
+  // allocations and review changes. Used for autosave and import.
+  function replay(save) {
+    const run = newRun(save.seed, save.quest, save.dash);
+    (save.allocs || []).forEach(function (al, i) {
+      playWeek(run, al);
+      const rv = (save.reviews || {})[i + 1];
+      if (rv) review(run, rv);
+    });
+    return run;
+  }
+
+  /* ---- BOTS and calibration policies ---------------------------------- */
+  function lastReading(run, id) {
+    for (let i = run.log.length - 1; i >= 0; i--) {
+      const v = run.log[i].readings[id];
+      if (v !== undefined && v !== null) return v;
+    }
+    return undefined;
+  }
+  // Fatigue estimate from a fatigue-reading guardrail (invert a + F(1 - F)).
+  function fatigueEstimate(run, q) {
+    const g = run.dash.leads.map(function (id) { return indicator(q, id); })
+      .find(function (ind) { return ind.kind === 'guardrail' && ind.read.F; });
+    if (!g) return null;
+    const r = lastReading(run, g.id);
+    if (r === undefined) return M.start.F;
+    return clamp(1 - (r - (g.read.a || 0)) / g.read.F, 0, 1);
+  }
+  function tokensForTarget(q, ind, target) {
+    const rd = ind.read;
+    if (rd.t !== 'lin' || !rd.tok || rd.C || rd.F) {
+      return ind.requires ? { action: ind.requires.action, n: ind.requires.min } : null;
+    }
+    const k = Object.keys(rd.tok)[0];
+    return { action: k, n: Math.ceil(target / rd.tok[k] - 1e-9) };
+  }
+  function totalEff(q, alloc, ctx) {
+    const e = efforts(q, alloc, ctx);
+    return Object.keys(e).reduce(function (s, k) { return s + e[k]; }, 0);
+  }
+  function fatigueOf(q, alloc) {
+    return q.actions.reduce(function (s, a) { return s + (a.rest ? 0 : (alloc[a.id] || 0) * a.f); }, 0);
+  }
+  // Greedy fill: meet tracked token targets first, then add each token where
+  // it buys the most effort net of a fatigue shadow price (mu).
+  function greedy(q, run, n, blocked, mu, extra) {
+    const alloc = {};
+    q.actions.forEach(function (a) { alloc[a.id] = 0; });
+    const ctx = { attended: attendedSet(q, run.dash) };
+    let left = n;
+    run.dash.leads.forEach(function (id) {
+      const ind = indicator(q, id);
+      const need = tokensForTarget(q, ind, run.dash.targets[id]);
+      if (!need || need.action === 'rest' || need.action === blocked) return;
+      const act = action(q, need.action);
+      if (act.e < M.productiveE && !extra) return;
+      const add = Math.max(0, Math.min(left, need.n - alloc[need.action]));
+      alloc[need.action] += add; left -= add;
+    });
+    while (left > 0) {
+      let best = null, bv = -Infinity;
+      const base = totalEff(q, alloc, ctx);
+      q.actions.forEach(function (a) {
+        if (a.rest || a.id === blocked) return;
+        alloc[a.id]++;
+        const v = totalEff(q, alloc, ctx) - base - mu * M.fatigueScale * a.f;
+        alloc[a.id]--;
+        if (v > bv) { bv = v; best = a.id; }
+      });
+      alloc[best]++; left--;
+    }
+    return alloc;
+  }
+  const BOTS = {
+    // 2 tokens on each of the five levers, no dashboard.
+    passive: function (run, c) {
+      const q = quest(run.quest);
+      const levers = q.actions.filter(function (a) { return !a.rest; });
+      const alloc = {};
+      let left = c.energy;
+      for (let round = 0; round < 2; round++) {
+        levers.forEach(function (a) { if (left > 0 && a.id !== c.blocked) { alloc[a.id] = (alloc[a.id] || 0) + 1; left--; } });
+      }
+      return alloc;
+    },
+    // Best dashboard; greedy toward high-e leads; rests to hold fatigue down
+    // as read through its guardrail.
+    expert: function (run, c) {
+      const q = quest(run.quest);
+      const Fe = fatigueEstimate(run, q);
+      const F0 = Fe === null ? run.state.F : Fe;
+      const evF = (eventDef(c.event) || {}).fatigue || 0;
+      let pick = null;
+      for (let r = 0; r <= c.energy; r++) {
+        const al = greedy(q, run, c.energy - r, c.blocked, M.expertMu);
+        const Fn = F0 + M.fatigueScale * fatigueOf(q, al) + evF - M.fatigueRecover - M.restRecover * r;
+        pick = { al: al, r: r };
+        if (Fn <= M.expertF) break;
+      }
+      pick.al.rest = pick.r;
+      return pick.al;
+    },
+    // Calibration: good dashboard, sensible but imperfect play.
+    sensible: function (run, c) {
+      const q = quest(run.quest);
+      const Fe = fatigueEstimate(run, q);
+      const r = (Fe !== null && Fe > 0.5) ? 3 : 1;
+      const al = BOTS.lagOnly(run, { energy: c.energy - r, blocked: c.blocked, noBurnoutRest: true, pops: 2 });
+      al.rest = r;
+      return al;
+    },
+    // Calibration: lag-only dashboard, sensible allocation, blind to fatigue
+    // until a burnout card lands.
+    lagOnly: function (run, c) {
+      const q = quest(run.quest);
+      const prod = q.actions.filter(function (a) { return !a.rest && a.e >= M.productiveE && a.id !== c.blocked; })
+        .sort(function (x, y) { return y.e - x.e; });
+      const pops = q.actions.filter(function (a) { return a.pop; }).slice(0, c.pops || 1);
+      const last = run.log[run.log.length - 1];
+      const al = {};
+      const r = (!c.noBurnoutRest && last && last.burnout) ? 3 : 0;
+      let left = c.energy - r - pops.length;
+      pops.forEach(function (p) { al[p.id] = 1; });
+      al.rest = r;
+      // 3/3/2/2 down the effectiveness order; hard sessions (f >= 0.1) get one
+      const shares = [3, 3, 2, 2];
+      for (let i = 0, guard = 0; left > 0 && guard < 50; i = (i + 1) % prod.length, guard++) {
+        const cap = prod[i].f >= 0.1 ? 1 : 99;
+        const k = Math.min(left, shares[i] || 1, Math.max(0, cap - (al[prod[i].id] || 0)));
+        al[prod[i].id] = (al[prod[i].id] || 0) + k; left -= k;
+      }
+      if (left > 0) al.rest += left;
+      return al;
+    },
+    // Calibration: vanity-heavy dashboard, chasing its flattering readings.
+    vanity: function (run, c) {
+      const q = quest(run.quest);
+      const pops = q.actions.filter(function (a) { return a.pop; });
+      const prod = q.actions.filter(function (a) { return !a.rest && !a.pop && a.id !== c.blocked; })
+        .sort(function (x, y) { return y.e - x.e; });
+      const al = {};
+      let left = c.energy;
+      pops.forEach(function (a) { const k = Math.min(left, 3); al[a.id] = k; left -= k; });
+      for (let i = 0; left > 0; i = (i + 1) % prod.length) { al[prod[i].id] = (al[prod[i].id] || 0) + 1; left--; }
+      return al;
+    },
+    // Calibration: all tokens on one action every week.
+    spam: function (id) {
+      return function (run, c) {
+        const al = {}; const q = quest(run.quest);
+        al[id === c.blocked ? q.actions.find(function (a) { return !a.rest && a.id !== c.blocked; }).id : id] = c.energy;
+        return al;
+      };
+    }
+  };
+  function dashFor(questId, style) {
+    const q = quest(questId);
+    const ex = q.expert;
+    if (style === 'expert' || style === 'sensible') return { lag: ex.lag, leads: ex.leads.slice(), targets: Object.assign({}, ex.targets) };
+    if (style === 'lagOnly') return { lag: ex.lag, leads: [], targets: {} };
+    if (style === 'vanity') {
+      const v = q.indicators.filter(function (i) { return i.side === 'lead' && (i.kind === 'vanity' || i.kind === 'weak'); }).slice(0, 3);
+      const bad = q.indicators.find(function (i) { return i.kind === 'badlag'; });
+      const t = {}; v.forEach(function (i) { t[i.id] = i.target.def; });
+      return { lag: bad.id, leads: v.map(function (i) { return i.id; }), targets: t };
+    }
+    return { lag: null, leads: [], targets: {} };
+  }
+  function playSeason(seed, questId, dash, policy) {
+    const run = newRun(seed, questId, dash);
+    for (let w = 1; w <= W; w++) playWeek(run, policy(run, weekContext(run)));
+    return run;
+  }
+  function ghosts(seed, questId) {
+    return {
+      passive: playSeason(seed, questId, dashFor(questId, 'passive'), BOTS.passive),
+      expert: playSeason(seed, questId, dashFor(questId, 'expert'), BOTS.expert)
+    };
+  }
+
+  /* ---- SCORE ---------------------------------------------------------- */
+  const SCORE = {
+    dashboard: function (questId, dash) {
+      const q = quest(questId);
+      const S = CONFIG.score;
+      const chosen = [dash.lag].concat(dash.leads).filter(Boolean).map(function (id) { return indicator(q, id); });
+      if (!chosen.length) return 0;
+      let sum = 0, cnt = 0;
+      chosen.forEach(function (i) { i.ratings.forEach(function (r) { sum += r; cnt++; }); });
+      let score = ((sum / cnt) - 1) / 2 * S.ratingWeight;
+      const lag = dash.lag && indicator(q, dash.lag);
+      if (lag && lag.kind === 'lag') score += S.validLag;
+      const ctrl = chosen.filter(function (i) {
+        if (i.side !== 'lead' || i.ratings[1] < 3) return false;
+        return feeds(i).some(function (a) { const act = action(q, a); return act && act.e >= 0.9; });
+      }).length;
+      if (ctrl >= 2) score += S.controllableLeads;
+      if (chosen.some(function (i) { return i.kind === 'guardrail'; })) score += S.guardrail;
+      score -= S.vanityPenalty * chosen.filter(function (i) { return i.kind === 'vanity'; }).length;
+      return Math.round(clamp(score, 0, 100));
+    },
+    // dashboard used for scoring is the one in place for most of the season
+    finalDash: function (run) { return run.dash; },
+    summary: function (run) {
+      const q = quest(run.quest);
+      const S = CONFIG.score;
+      let low = 0, all = 0;
+      run.log.forEach(function (l) {
+        q.actions.forEach(function (a) { if (a.rest) return; const n = l.alloc[a.id] || 0; all += n; if (a.e < M.productiveE) low += n; });
+      });
+      const dash = run.dash;
+      const chosen = [dash.lag].concat(dash.leads).filter(Boolean).map(function (id) { return indicator(q, id); });
+      const vanity = chosen.filter(function (i) { return i.kind === 'vanity'; }).length;
+      const lag = dash.lag && indicator(q, dash.lag);
+      const ctrl = chosen.filter(function (i) {
+        return i.side === 'lead' && i.ratings[1] >= 3 && feeds(i).some(function (a) { const act = action(q, a); return act && act.e >= 0.9; });
+      }).length;
+      const dashQ = SCORE.dashboard(run.quest, dash);
+      const C = run.state.C;
+      const busyShare = all ? low / all : 0;
+      let arch = 'steady';
+      if (run.state.burnouts >= S.burnouts) arch = 'burnout';
+      else if (vanity >= 2) arch = 'vanity';
+      else if (busyShare >= S.busyShare) arch = 'busy';
+      else if (dashQ < S.lowDash && C >= S.goodOutcome) arch = 'lucky';
+      else if (dashQ >= S.highDash && C >= S.highOutcome) arch = 'reader';
+      else if (lag && lag.kind === 'lag' && ctrl < 2) arch = 'rearview';
+      return { finalC: C, dashQ: dashQ, vanity: vanity, burnouts: run.state.burnouts, busyShare: busyShare,
+        controllable: ctrl, archetype: arch };
+    },
+    dataLine: function (run, g) {
+      const s = SCORE.summary(run);
+      return ['DATA', 'quest=' + run.quest, 'seed=' + run.seed, 'dashQ=' + s.dashQ, 'finalC=' + round(s.finalC, 1),
+        'passiveC=' + round(g.passive.state.C, 1), 'expertC=' + round(g.expert.state.C, 1), 'archetype=' + s.archetype,
+        'vanity=' + s.vanity, 'burnouts=' + s.burnouts, 'lag=' + (run.dash.lag || '-'), 'leads=' + run.dash.leads.join('+'),
+        'swaps=' + run.swaps.length].join('|');
+    }
+  };
+
+  /* ---- colour contrast (WCAG 2.x) ------------------------------------- */
+  function luminance(hex) {
+    const v = [1, 3, 5].map(function (i) {
+      const c = parseInt(hex.substr(i, 2), 16) / 255;
+      return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+  }
+  function contrast(a, b) {
+    const x = luminance(a), y = luminance(b);
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  }
+
+  /* ==========================================================================
+     Self test. The same suite runs in node (tests/signal-tower.mjs) and in
+     the browser at ?test=1.
+     ======================================================================== */
+  function selfTest(opts) {
+    opts = opts || {};
+    const N = opts.seeds || 50;
+    const out = [];
+    function t(name, fn) {
+      try { const d = fn(); out.push({ name: name, ok: true, detail: d || '' }); }
+      catch (e) { out.push({ name: name, ok: false, detail: e.message }); }
+    }
+    function ok(cond, msg) { if (!cond) throw new Error(msg); return msg; }
+    function mean(a) { return a.reduce(function (s, x) { return s + x; }, 0) / a.length; }
+    function sd(a) { const m = mean(a); return Math.sqrt(mean(a.map(function (x) { return (x - m) * (x - m); }))); }
+    function seeds() { const s = []; for (let i = 0; i < N; i++) s.push('cal' + i); return s; }
+    const fixed = function (al) { return function () { return al; }; };
+
+    /* --- content integrity -------------------------------------------- */
+    t('content: every quest is complete and internally consistent', function () {
+      CONFIG.quests.forEach(function (q) {
+        ok(q.actions.length === 6, q.id + ' needs 6 actions');
+        ok(q.actions.filter(function (a) { return a.rest; }).length === 1, q.id + ' needs one rest action');
+        [q.strongest, q.feedback, q.shiny].forEach(function (id) { ok(action(q, id), q.id + ': unknown action ' + id); });
+        q.indicators.forEach(function (ind) {
+          feeds(ind).forEach(function (a) { ok(action(q, a), ind.id + ' feeds unknown action ' + a); });
+          ok(ind.ratings.length === 4 && ind.ratings.every(function (r) { return r >= 1 && r <= 3; }), ind.id + ' ratings');
+          ok(ind.side === 'lag' ? ind.cadence !== 'w' : ind.cadence === 'w', ind.id + ' cadence does not match its side');
+          if (ind.side === 'lead') ok(ind.target && ind.target.def >= ind.target.min && ind.target.def <= ind.target.max, ind.id + ' target');
+          ok(typeof ind.tells === 'string' && ind.tells.length > 10, ind.id + ' needs a card-flip sentence');
+        });
+        ['lag', 'badlag', 'vanity', 'guardrail'].forEach(function (k) {
+          ok(q.indicators.some(function (i) { return i.kind === k; }), q.id + ' has no ' + k + ' indicator');
+        });
+        const ex = q.expert;
+        ok(indicator(q, ex.lag).side === 'lag', q.id + ' expert lag');
+        ex.leads.forEach(function (id) { ok(indicator(q, id).side === 'lead', q.id + ' expert lead ' + id); });
+      });
+      ok(CONFIG.sortCards.length === 8, 'eight sort cards');
+      ok(CONFIG.sortCards.some(function (c) { return c.answer === 'trap' && /streak/i.test(c.text); }), 'the app-streak trap card');
+      return CONFIG.quests.length + ' quests';
+    });
+
+    /* --- spec 11: acceptance checks ----------------------------------- */
+    t('same seed and same allocations produce identical results', function () {
+      const al = { rehearse: 3, volunteer: 2, review: 2, watch: 1, rest: 2 };
+      const d = dashFor('speaking', 'expert');
+      const a = playSeason('twin', 'speaking', d, fixed(al));
+      const b = playSeason('twin', 'speaking', d, fixed(al));
+      ok(JSON.stringify(a.log) === JSON.stringify(b.log), 'logs differ');
+      return 'final C ' + round(a.state.C, 2);
+    });
+    t('swapping indicators leaves the event sequence unchanged', function () {
+      CONFIG.quests.forEach(function (q) {
+        const a = playSeason('swap', q.id, dashFor(q.id, 'expert'), BOTS.expert);
+        const b = playSeason('swap', q.id, dashFor(q.id, 'vanity'), BOTS.vanity);
+        ok(JSON.stringify(a.log.map(function (l) { return l.event; })) === JSON.stringify(b.log.map(function (l) { return l.event; })), q.id + ' events differ');
+      });
+      return 'events come from the seed alone';
+    });
+    t('measurement noise does not depend on the dashboard', function () {
+      const al = { rehearse: 2, volunteer: 2, review: 2, watch: 2, slides: 1, rest: 1 };
+      const a = playSeason('noise', 'speaking', { lag: 'rating', leads: [], targets: {} }, fixed(al));
+      const b = playSeason('noise', 'speaking', { lag: 'followers', leads: [], targets: {} }, fixed(al));
+      ok(JSON.stringify(a.log.map(function (l) { return l.readings; })) === JSON.stringify(b.log.map(function (l) { return l.readings; })), 'readings differ');
+      return 'separate streams';
+    });
+    t('a replayed save reproduces the season exactly', function () {
+      const d = dashFor('network', 'expert');
+      const live = newRun('replay', 'network', d);
+      const allocs = [];
+      for (let w = 1; w <= W; w++) { const al = BOTS.expert(live, weekContext(live)); allocs.push(al); playWeek(live, al); }
+      const again = replay(JSON.parse(JSON.stringify({ seed: 'replay', quest: 'network', dash: d, allocs: allocs, reviews: {} })));
+      ok(JSON.stringify(again.log) === JSON.stringify(live.log), 'replay drifted');
+      return 'final C ' + round(again.state.C, 2);
+    });
+    t('a vanity indicator can rise while true C is flat', function () {
+      const r = playSeason('vain', 'speaking', dashFor('speaking', 'vanity'), fixed({ watch: 4, slides: 4, rest: 2 }));
+      const c4 = r.log[3].C, c8 = r.log[7].C;
+      const f4 = r.log[3].readings.followers, f8 = r.log[7].readings.followers;
+      const h1 = r.log[0].readings.watched, h8 = r.log[7].readings.watched;
+      ok(c8 <= c4 + 1, 'C rose from ' + c4 + ' to ' + c8);
+      ok(f8 > f4, 'followers did not rise: ' + f4 + ' -> ' + f8);
+      ok(h8 >= r.dash.targets.watched && h1 >= r.dash.targets.watched, 'hours watched missed its target');
+      return 'C ' + round(c4, 1) + ' -> ' + round(c8, 1) + ', followers ' + f4 + ' -> ' + f8;
+    });
+    t('fatigue is invisible without a guardrail indicator', function () {
+      CONFIG.quests.forEach(function (q) {
+        q.indicators.forEach(function (ind) {
+          if (ind.read.F) ok(ind.kind === 'guardrail', ind.id + ' reads fatigue but is not a guardrail');
+        });
+        const d = { lag: q.expert.lag, leads: q.expert.leads.filter(function (id) { return indicator(q, id).kind !== 'guardrail'; }), targets: {} };
+        const run = playSeason('fog', q.id, d, BOTS.passive);
+        OBSERVE.view(run).forEach(function (v) {
+          Object.keys(v.readings).forEach(function (id) { ok(!indicator(q, id).read.F, id + ' leaked fatigue'); });
+          ok(v.F === undefined && v.H === undefined && v.C === undefined, 'hidden state leaked into the view');
+        });
+      });
+      return 'only a chosen guardrail shows F';
+    });
+    t('the plateau flattens good leads before the next lag checkpoint', function () {
+      const leads = { speaking: 'filler', spanish: 'newWords', network: 'meaningful' };
+      const bits = [];
+      Object.keys(leads).forEach(function (qid) {
+        const q = quest(qid), ind = indicator(q, leads[qid]);
+        const sign = ind.better === 'down' ? -1 : 1;
+        const flat = [], normal = [];
+        seeds().forEach(function (sd0) {
+          const run = playSeason(sd0, qid, dashFor(qid, 'sensible'), BOTS.sensible);
+          const p = run.plateauAt;
+          const next = CONFIG.checkpoints.find(function (c) { return c > p; });
+          ok(next !== undefined && p < next, 'plateau at ' + p + ' has no later checkpoint');
+          // noise-free expected reading: coefficient on C, times tokens when multiplied
+          const slope = function (w) {
+            const l = run.log[w - 1], prev = run.log[w - 2];
+            const k = ind.read.mul ? (l.alloc[ind.read.mul] || 0) : 1;
+            return sign * ind.read.C * k * (l.C - prev.C);
+          };
+          flat.push(slope(p));
+          if (p >= 3) normal.push(slope(p - 1));
+        });
+        const mf = mean(flat), mn = mean(normal);
+        ok(mf < 0.6 * mn, qid + ': plateau week moved ' + round(mf, 2) + ' vs ' + round(mn, 2) + ' the week before');
+        bits.push(qid + ' ' + round(mf / mn * 100, 0) + '%');
+      });
+      return 'plateau-week movement as share of the week before: ' + bits.join(', ');
+    });
+
+    /* --- spec 10: calibration ----------------------------------------- */
+    const bands = { passive: [35, 45], lagOnly: [45, 55], vanity: [35, 45], sensible: [65, 75], expert: [75, 85] };
+    const calib = {};
+    CONFIG.quests.forEach(function (q) {
+      calib[q.id] = {};
+      Object.keys(bands).forEach(function (p) {
+        calib[q.id][p] = seeds().map(function (s) { return playSeason(s, q.id, dashFor(q.id, p), BOTS[p]).state.C; });
+      });
+    });
+    Object.keys(bands).forEach(function (p) {
+      t('calibration: ' + p + ' mean final C in ' + bands[p].join('-'), function () {
+        return CONFIG.quests.map(function (q) {
+          const m = mean(calib[q.id][p]);
+          ok(m >= bands[p][0] && m <= bands[p][1], q.id + ' ' + round(m, 1));
+          return q.id + ' ' + round(m, 1) + '+/-' + round(sd(calib[q.id][p]), 1);
+        }).join(', ');
+      });
+    });
+    t('calibration: dashboard effect exceeds seed-to-seed spread', function () {
+      return CONFIG.quests.map(function (q) {
+        const gap = mean(calib[q.id].sensible) - mean(calib[q.id].lagOnly);
+        const spread = Math.max(sd(calib[q.id].sensible), sd(calib[q.id].lagOnly));
+        ok(gap > spread, q.id + ' gap ' + round(gap, 1) + ' vs sd ' + round(spread, 1));
+        return q.id + ' ' + round(gap / spread, 1) + 'x';
+      }).join(', ');
+    });
+    t('calibration: no single-action spam beats the expert', function () {
+      return CONFIG.quests.map(function (q) {
+        const ex = mean(calib[q.id].expert);
+        let best = 0, who = '';
+        q.actions.forEach(function (a) {
+          if (a.rest) return;
+          const m = mean(seeds().slice(0, 20).map(function (s) { return playSeason(s, q.id, dashFor(q.id, 'expert'), BOTS.spam(a.id)).state.C; }));
+          if (m > best) { best = m; who = a.id; }
+        });
+        ok(best < ex, q.id + ' spam ' + who + ' ' + round(best, 1) + ' beats expert ' + round(ex, 1));
+        return q.id + ' best spam ' + who + ' ' + round(best, 1);
+      }).join(', ');
+    });
+    t('calibration: burnout is reachable without a guardrail', function () {
+      return CONFIG.quests.map(function (q) {
+        const n = seeds().slice(0, 20).filter(function (s) {
+          return playSeason(s, q.id, dashFor(q.id, 'lagOnly'), BOTS.lagOnly).state.burnouts > 0;
+        }).length;
+        ok(n >= 10, q.id + ' only ' + n + '/20 seeds burn out');
+        return q.id + ' ' + n + '/20';
+      }).join(', ');
+    });
+    t('calibration: the vanity dashboard looks strong while the tower lags', function () {
+      return CONFIG.quests.map(function (q) {
+        let met = 0, total = 0;
+        seeds().slice(0, 20).forEach(function (s) {
+          const r = playSeason(s, q.id, dashFor(q.id, 'vanity'), BOTS.vanity);
+          r.log.forEach(function (l) { total++; if (l.allMet) met++; });
+        });
+        ok(met / total >= 0.6, q.id + ' vanity targets met only ' + round(100 * met / total, 0) + '%');
+        return q.id + ' ' + round(100 * met / total, 0) + '% of weeks on target';
+      }).join(', ');
+    });
+
+    /* --- scoring ------------------------------------------------------- */
+    t('dashboard quality ranks expert > lag-only > vanity', function () {
+      return CONFIG.quests.map(function (q) {
+        const e = SCORE.dashboard(q.id, dashFor(q.id, 'expert'));
+        const l = SCORE.dashboard(q.id, dashFor(q.id, 'lagOnly'));
+        const v = SCORE.dashboard(q.id, dashFor(q.id, 'vanity'));
+        ok(e > l && l > v, q.id + ' ' + e + '/' + l + '/' + v);
+        ok(e >= CONFIG.score.highDash, q.id + ' expert dashboard ' + e + ' is not "high"');
+        return q.id + ' ' + e + '/' + l + '/' + v;
+      }).join(', ');
+    });
+    t('archetypes: expert reads signals, vanity curates, passive burns out', function () {
+      const e = SCORE.summary(playSeason('arch', 'speaking', dashFor('speaking', 'expert'), BOTS.expert));
+      const v = SCORE.summary(playSeason('arch', 'speaking', dashFor('speaking', 'vanity'), fixed({ rehearse: 2, review: 1, watch: 3, slides: 3, rest: 1 })));
+      const p = SCORE.summary(playSeason('arch', 'speaking', dashFor('speaking', 'passive'), BOTS.passive));
+      ok(e.archetype === 'reader', 'expert got ' + e.archetype);
+      ok(v.archetype === 'vanity', 'vanity got ' + v.archetype);
+      ok(p.archetype === 'burnout', 'passive got ' + p.archetype);
+      return e.archetype + ' / ' + v.archetype + ' / ' + p.archetype;
+    });
+    t('the DATA line carries every documented field', function () {
+      const run = playSeason('data', 'running', dashFor('running', 'expert'), BOTS.expert);
+      const line = SCORE.dataLine(run, ghosts('data', 'running'));
+      ['quest=', 'seed=', 'dashQ=', 'finalC=', 'passiveC=', 'expertC=', 'archetype=', 'vanity=', 'burnouts='].forEach(function (k) {
+        ok(line.indexOf('|' + k) > 0, 'missing ' + k);
+      });
+      return line;
+    });
+    t('review swap costs one energy token the next week', function () {
+      const run = newRun('rev', 'speaking', dashFor('speaking', 'expert'));
+      for (let w = 1; w <= 4; w++) playWeek(run, { rehearse: 3 });
+      const before = energyFor(run.state, run.events[4], 0);
+      review(run, { swap: { from: 'rested', to: 'filler' } });
+      ok(weekContext(run).energy === Math.max(M.minEnergy, before - M.swapCost), 'energy not reduced');
+      ok(run.dash.leads.indexOf('filler') >= 0 && run.dash.targets.filler === 8, 'swap not applied');
+      return 'energy ' + before + ' -> ' + weekContext(run).energy;
+    });
+    t('palette pairings meet WCAG AA for text', function () {
+      const P = CONFIG.palette;
+      return CONFIG.textPairs.map(function (pr) {
+        const c = contrast(P[pr[0]], P[pr[1]]);
+        ok(c >= pr[2], pr[0] + ' on ' + pr[1] + ' ' + round(c, 2) + ' < ' + pr[2]);
+        return pr[0] + '/' + pr[1] + ' ' + round(c, 1);
+      }).join(', ');
+    });
+
+    return { results: out, passed: out.filter(function (r) { return r.ok; }).length, failed: out.filter(function (r) { return !r.ok; }).length };
+  }
+
+  return { CONFIG: CONFIG, RNG: RNG, MODEL: { initState: initState, step: step, energyFor: energyFor, feeds: feeds, sanitise: sanitise },
+    OBSERVE: OBSERVE, BOTS: BOTS, SCORE: SCORE, schedule: schedule, quest: quest, action: action, indicator: indicator,
+    eventDef: eventDef, newRun: newRun, weekContext: weekContext, playWeek: playWeek, review: review, replay: replay,
+    playSeason: playSeason, ghosts: ghosts, dashFor: dashFor, round: round, contrast: contrast, selfTest: selfTest };
+})();
+</script>
+<script id="ui">
+(function () {
+  'use strict';
+  var C = ST.CONFIG, M = C.model, W = C.weeks;
+  var KEY = C.storageKey;
+  var SCREENS = ['intro', 'sort', 'quest', 'build', 'season', 'reveal', 'transfer'];
+  var SEED_WORDS = ['lantern', 'harbour', 'granite', 'meadow', 'copper', 'orchard', 'tundra', 'ember', 'quarry', 'beacon', 'willow', 'fjord', 'saffron', 'kestrel', 'basalt', 'juniper'];
+  var reduceMotion = false;
+  try { reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduceMotion = false; }
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s === undefined || s === null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function words(s) { return String(s || '').trim().split(/\s+/).filter(function (w) { return /[A-Za-z0-9À-ɏ]/.test(w); }).length; }
+  function fmt(v, ind) {
+    if (v === null) return 'no data';
+    if (v === undefined) return '-';
+    var dp = (ind && ind.read.dp) || 0;
+    return Number(v).toFixed(dp);
+  }
+  function pickSeed() { return SEED_WORDS[Math.floor(Math.random() * SEED_WORDS.length)] + '-' + (10 + Math.floor(Math.random() * 90)); }
+
+  /* ======================================================================
+     State. Inputs only: the season is replayed from them.
+     ==================================================================== */
+  function emptyDash() { return { lag: null, leads: [null, null, null], targets: {} }; }
+  function freshState(seed) {
+    return { v: 1, screen: 'intro', name: '', seed: seed || pickSeed(), sort: {}, quest: null,
+      dash: emptyDash(), mentor: null, allocs: [], reviews: {}, draft: {}, reviewDraft: null,
+      attempts: [], flipped: {}, transfer: { f: {}, checks: {} }, revealed: false };
+  }
+  var S = freshState();
+  var lastCommitted = 0;   // for the drop-in animation of the newest block
+  var revealPlayed = false;
+
+  function save() {
+    var txt = JSON.stringify(S);
+    try { localStorage.setItem(KEY, txt); } catch (e) { /* storage unavailable: carry on */ }
+  }
+  function load() {
+    var raw = null;
+    try { raw = localStorage.getItem(KEY); } catch (e) { raw = null; }
+    if (!raw) return false;
+    try { return adopt(JSON.parse(raw)); } catch (e) { return false; }
+  }
+  function clearSaved() {
+    try { localStorage.removeItem(KEY); } catch (e) { /* nothing to clear */ }
+  }
+  // Validate an imported or stored object and take it as the state.
+  function adopt(obj) {
+    if (!obj || obj.v !== 1 || typeof obj.seed !== 'string') return false;
+    var base = freshState(obj.seed);
+    Object.keys(base).forEach(function (k) { if (obj[k] !== undefined) base[k] = obj[k]; });
+    if (SCREENS.indexOf(base.screen) < 0) base.screen = 'intro';
+    if (base.quest && !ST.quest(base.quest)) return false;
+    if (!Array.isArray(base.allocs) || base.allocs.length > W) return false;
+    if (!base.dash || !Array.isArray(base.dash.leads)) base.dash = emptyDash();
+    while (base.dash.leads.length < C.leadSlots) base.dash.leads.push(null);
+    S = base;
+    lastCommitted = S.allocs.length;
+    revealPlayed = S.revealed;
+    return true;
+  }
+
+  function Q() { return S.quest ? ST.quest(S.quest) : null; }
+  function runDash() {
+    var t = {};
+    S.dash.leads.forEach(function (id) { if (id) t[id] = S.dash.targets[id]; });
+    return { lag: S.dash.lag, leads: S.dash.leads.filter(Boolean), targets: t };
+  }
+  function currentRun() {
+    return ST.replay({ seed: S.seed, quest: S.quest, dash: runDash(), allocs: S.allocs, reviews: S.reviews });
+  }
+  function pendingReview() {
+    var w = S.allocs.length;
+    return C.reviews.indexOf(w) >= 0 && !S.reviews[w];
+  }
+
+  /* ======================================================================
+     SVG: the tower in the fog
+     ==================================================================== */
+  var TW = { w: 320, h: 440, ground: 410, x0: 100, x1: 220, k: 3.6 };
+  function yOf(c) { return TW.ground - c * TW.k; }
+  // Blocks: each week's gain is a block on the stack; losses trim the top.
+  function blocks(hist) {
+    var stack = [{ lo: 0, hi: hist[0], i: 0 }];
+    for (var t = 1; t < hist.length; t++) {
+      var top = stack[stack.length - 1].hi;
+      if (hist[t] > top + 0.05) stack.push({ lo: top, hi: hist[t], i: t });
+      else {
+        while (stack.length && stack[stack.length - 1].lo >= hist[t]) stack.pop();
+        if (!stack.length) stack.push({ lo: 0, hi: Math.max(hist[t], 0.5), i: 0 });
+        else stack[stack.length - 1].hi = Math.min(stack[stack.length - 1].hi, hist[t]);
+      }
+    }
+    return stack;
+  }
+  function towerBlocks(hist, cls, newest) {
+    var out = '';
+    blocks(hist).forEach(function (b, n) {
+      var inset = [0, 10, 4, 14, 6][n % 5];
+      var x = TW.x0 + inset, w = (TW.x1 - TW.x0) - inset * 2;
+      var y = yOf(b.hi), h = Math.max(1, (b.hi - b.lo) * TW.k);
+      var isNew = newest && b.i === hist.length - 1;
+      out += '<rect class="' + (isNew ? 'new-block' : '') + '" x="' + x + '" y="' + y.toFixed(1) + '" width="' + w + '" height="' + h.toFixed(1) + '" fill="' + cls + '" stroke="#1A1612" stroke-width="2"/>';
+      if (h > 14 && n % 3 === 1) out += '<rect x="' + (x + 8) + '" y="' + (y + 5).toFixed(1) + '" width="10" height="10" fill="#C9922E"/>';
+      if (h > 14 && n % 3 === 2) out += '<circle cx="' + (x + w - 12) + '" cy="' + (y + h / 2).toFixed(1) + '" r="5" fill="#E6DDC8"/>';
+    });
+    return out;
+  }
+  function paintedBlocks(c) {
+    var y = yOf(c);
+    return '<rect x="' + (TW.x0 - 6) + '" y="' + y.toFixed(1) + '" width="' + (TW.x1 - TW.x0 + 12) + '" height="' + (TW.ground - y).toFixed(1) + '" fill="#C9922E" stroke="#1A1612" stroke-width="2"/>' +
+      '<rect x="' + (TW.x0 + 14) + '" y="' + (y + 10).toFixed(1) + '" width="30" height="30" fill="#E6DDC8"/>' +
+      '<circle cx="' + (TW.x1 - 26) + '" cy="' + (y + 40).toFixed(1) + '" r="12" fill="#6A4028"/>';
+  }
+  var LEAD_SLOTS = [{ cx: 118, cy: 312 }, { cx: 204, cy: 228 }, { cx: 150, cy: 146 }];
+  function triPts(s) { return s.cx + ',' + (s.cy - 40) + ' ' + (s.cx - 48) + ',' + (s.cy + 32) + ' ' + (s.cx + 48) + ',' + (s.cy + 32); }
+  function clarity(ind) { return ind.ratings[0] === 3 ? 0 : ind.ratings[0] === 2 ? 0.45 : 0.78; }
+
+  /* opts: id, hist (true C history), run (for windows), mode 'fog' | 'reveal' | 'plain', newest */
+  function towerSVG(opts) {
+    var id = opts.id, hist = opts.hist, q = Q();
+    var run = opts.run;
+    var wins = [];
+    if (run && q) {
+      run.dash.leads.forEach(function (lid, i) { if (i < 3) wins.push({ ind: ST.indicator(q, lid), slot: LEAD_SLOTS[i], shape: 'tri' }); });
+    }
+    var lagInd = run && q && run.dash.lag ? ST.indicator(q, run.dash.lag) : null;
+    var week = run ? run.state.week : 0;
+    var lagOpen = lagInd && run.log.length && run.log[run.log.length - 1].readings[lagInd.id] !== undefined;
+    var nowC = hist[hist.length - 1];
+    var lagSlot = { cx: 160, cy: lagOpen || opts.mode === 'reveal' ? Math.min(TW.ground - 40, Math.max(60, yOf(nowC))) : 62, r: 36 };
+    var F = run ? run.state.F : M.start.F;
+    var maxPainted = hist.reduce(function (m, x) { return Math.max(m, x); }, 0);
+    var paintedC = Math.min(96, Math.max(maxPainted, 20) + 12 + 2.2 * week);
+
+    var s = '<svg viewBox="0 0 ' + TW.w + ' ' + TW.h + '" role="img" aria-labelledby="' + id + '-t" focusable="false">';
+    s += '<title id="' + id + '-t">' + esc(opts.label || 'The tower in the fog') + '</title>';
+    s += '<defs>';
+    s += '<pattern id="' + id + '-hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="9" height="9" fill="#E6DDC8"/><rect width="3" height="9" fill="#1A1612" opacity="0.55"/></pattern>';
+    s += '<pattern id="' + id + '-haze" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="4" height="9" fill="#E6DDC8"/><rect x="4" width="2" height="9" fill="#1A1612" opacity="0.5"/></pattern>';
+    s += '<mask id="' + id + '-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="' + TW.w + '" height="' + TW.h + '"><rect width="' + TW.w + '" height="' + TW.h + '" fill="#FFFFFF"/>';
+    wins.forEach(function (w) { s += '<polygon points="' + triPts(w.slot) + '" fill="#000000"/>'; });
+    if (lagInd && lagOpen) s += '<circle cx="' + lagSlot.cx + '" cy="' + lagSlot.cy + '" r="' + lagSlot.r + '" fill="#000000"/>';
+    s += '</mask>';
+    wins.forEach(function (w, i) { s += '<clipPath id="' + id + '-clip' + i + '"><polygon points="' + triPts(w.slot) + '"/></clipPath>'; });
+    s += '</defs>';
+
+    // ground and sky geometry
+    s += '<rect width="' + TW.w + '" height="' + TW.h + '" fill="#E6DDC8"/>';
+    s += '<circle cx="262" cy="70" r="46" fill="#4E2A63" opacity="0.12"/>';
+    s += '<rect x="24" y="96" width="44" height="44" fill="#C9922E" opacity="0.18" transform="rotate(18 46 118)"/>';
+    s += '<g class="' + (opts.mode === 'reveal' && !reduceMotion ? 'stand' : '') + '">' + towerBlocks(hist, '#6A4028', opts.newest) + '</g>';
+
+    var fog = opts.mode !== 'plain';
+    if (fog) {
+      // painted backdrops sit in front of the real tower inside vanity windows
+      wins.forEach(function (w, i) {
+        if (w.ind.kind === 'vanity' || w.ind.kind === 'badlag') {
+          var fall = opts.mode === 'reveal';
+          s += '<g clip-path="url(#' + id + '-clip' + i + ')"><g class="' + (fall ? 'painted-fall' : '') + '" style="' + (fall ? 'animation-delay:' + (1.2 + i * 0.2) + 's' : '') + '">' +
+            '<rect width="' + TW.w + '" height="' + TW.ground + '" fill="#E6DDC8"/>' + paintedBlocks(paintedC) +
+            (fall ? '<rect x="0" y="0" width="' + TW.w + '" height="' + TW.h + '" fill="none" stroke="#B8322A" stroke-width="10"/>' : '') + '</g></g>';
+        } else {
+          var cl = clarity(w.ind);
+          if (cl > 0 && opts.mode !== 'reveal') s += '<g clip-path="url(#' + id + '-clip' + i + ')"><rect width="' + TW.w + '" height="' + TW.h + '" fill="url(#' + id + '-haze)" opacity="' + cl + '"/></g>';
+          if (w.ind.kind === 'guardrail' && opts.mode !== 'reveal') {
+            var op = Math.min(0.95, F * 1.2).toFixed(2);
+            s += '<g clip-path="url(#' + id + '-clip' + i + ')" opacity="' + op + '">';
+            for (var b = -2; b < 6; b++) s += '<rect x="' + (w.slot.cx - 60 + b * 22) + '" y="' + (w.slot.cy - 50) + '" width="8" height="110" fill="#B8322A" transform="rotate(30 ' + w.slot.cx + ' ' + w.slot.cy + ')"/>';
+            s += '</g>';
+          }
+        }
+      });
+      // the fog itself, in eight bands so it can lift band by band
+      var bands = 8, bh = TW.ground / bands;
+      s += '<g mask="url(#' + id + '-mask)">';
+      for (var k = 0; k < bands; k++) {
+        var lifting = opts.mode === 'reveal';
+        s += '<rect class="' + (lifting ? 'fog-band' : '') + '" style="' + (lifting ? 'animation-delay:' + (0.15 + (bands - 1 - k) * 0.14).toFixed(2) + 's' : '') + '" x="0" y="' + (k * bh).toFixed(1) + '" width="' + TW.w + '" height="' + (bh + 0.6).toFixed(1) + '" fill="url(#' + id + '-hatch)"/>';
+      }
+      s += '</g>';
+      // window frames: triangles for leads, a circle with an iris for the lag
+      wins.forEach(function (w) {
+        var exposed = opts.mode === 'reveal' && (w.ind.kind === 'vanity' || w.ind.kind === 'badlag');
+        s += '<polygon points="' + triPts(w.slot) + '" fill="none" stroke="' + (exposed ? '#B8322A' : '#C9922E') + '" stroke-width="5" stroke-linejoin="miter"/>';
+      });
+      if (lagInd) {
+        s += '<circle cx="' + lagSlot.cx + '" cy="' + lagSlot.cy + '" r="' + lagSlot.r + '" fill="none" stroke="#4E2A63" stroke-width="6"/>';
+        if (!lagOpen && opts.mode !== 'reveal') {
+          for (var bl = 0; bl < 6; bl++) {
+            s += '<path d="M' + lagSlot.cx + ' ' + lagSlot.cy + ' L' + (lagSlot.cx + lagSlot.r) + ' ' + lagSlot.cy + ' A' + lagSlot.r + ' ' + lagSlot.r + ' 0 0 0 ' +
+              (lagSlot.cx + lagSlot.r * Math.cos(-Math.PI / 3)).toFixed(1) + ' ' + (lagSlot.cy + lagSlot.r * Math.sin(-Math.PI / 3)).toFixed(1) + ' Z" fill="#4E2A63" stroke="#E6DDC8" stroke-width="1.5" transform="rotate(' + (bl * 60) + ' ' + lagSlot.cx + ' ' + lagSlot.cy + ')"/>';
+          }
+        }
+      }
+    }
+    s += '<rect x="0" y="' + TW.ground + '" width="' + TW.w + '" height="' + (TW.h - TW.ground) + '" fill="#1A1612"/>';
+    s += '<rect x="' + (TW.x1 + 24) + '" y="' + (TW.ground - 6) + '" width="70" height="6" fill="#B8322A" transform="rotate(-6 ' + (TW.x1 + 24) + ' ' + TW.ground + ')"/>';
+    s += '</svg>';
+    return s;
+  }
+
+  /* ---- small charts ----------------------------------------------------- */
+  function sparkline(vals, target, better, w, h) {
+    w = w || 150; h = h || 42;
+    var nums = vals.filter(function (v) { return v !== null && v !== undefined; });
+    var all = nums.concat(target !== undefined ? [target] : []);
+    if (!all.length) return '<svg class="spark" viewBox="0 0 ' + w + ' ' + h + '" aria-hidden="true"></svg>';
+    var lo = Math.min.apply(null, all), hi = Math.max.apply(null, all);
+    if (hi - lo < 1e-9) { hi += 1; lo -= 1; }
+    var px = function (i) { return 4 + i * (w - 8) / (W - 1); };
+    var py = function (v) { return h - 5 - (v - lo) / (hi - lo) * (h - 10); };
+    var s = '<svg class="spark" viewBox="0 0 ' + w + ' ' + h + '" aria-hidden="true"><rect width="' + w + '" height="' + h + '" fill="#E6DDC8"/>';
+    if (target !== undefined) s += '<line x1="0" x2="' + w + '" y1="' + py(target).toFixed(1) + '" y2="' + py(target).toFixed(1) + '" stroke="#1A1612" stroke-width="1.5" stroke-dasharray="4 3"/>';
+    var seg = [];
+    var flush = function () { if (seg.length > 1) s += '<polyline points="' + seg.join(' ') + '" fill="none" stroke="#6A4028" stroke-width="2.5"/>'; seg = []; };
+    vals.forEach(function (v, i) {
+      if (v === null || v === undefined) { flush(); return; }
+      seg.push(px(i).toFixed(1) + ',' + py(v).toFixed(1));
+    });
+    flush();
+    for (var i = vals.length - 1; i >= 0; i--) {
+      if (vals[i] !== null && vals[i] !== undefined) { s += '<polygon points="' + px(i).toFixed(1) + ',' + (py(vals[i]) - 6).toFixed(1) + ' ' + (px(i) - 5).toFixed(1) + ',' + (py(vals[i]) + 3).toFixed(1) + ' ' + (px(i) + 5).toFixed(1) + ',' + (py(vals[i]) + 3).toFixed(1) + '" fill="#C9922E" stroke="#1A1612" stroke-width="1"/>'; break; }
+    }
+    return s + '</svg>';
+  }
+  function lineChart(series, opts) {
+    var w = 560, h = 300, l = 38, r = 96, t = 14, b = 34;
+    var px = function (i) { return l + i * (w - l - r) / W; };
+    var py = function (v) { return t + (100 - v) / 100 * (h - t - b); };
+    var s = '<svg class="chart" viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-labelledby="gc-t"><title id="gc-t">' + esc(opts.label) + '</title>';
+    for (var g = 0; g <= 100; g += 25) {
+      s += '<line x1="' + l + '" x2="' + (w - r) + '" y1="' + py(g) + '" y2="' + py(g) + '" stroke="#1A1612" stroke-opacity="0.15"/>';
+      s += '<text x="' + (l - 6) + '" y="' + (py(g) + 4) + '" font-size="11" text-anchor="end" fill="#1A1612">' + g + '</text>';
+    }
+    for (var wk = 0; wk <= W; wk += 2) s += '<text x="' + px(wk) + '" y="' + (h - 12) + '" font-size="11" text-anchor="middle" fill="#1A1612">' + wk + '</text>';
+    s += '<text x="' + ((l + w - r) / 2) + '" y="' + (h - 0) + '" font-size="11" text-anchor="middle" fill="#1A1612">week</text>';
+    var ends = [];
+    series.forEach(function (se) {
+      s += '<polyline points="' + se.vals.map(function (v, i) { return px(i).toFixed(1) + ',' + py(v).toFixed(1); }).join(' ') + '" fill="none" stroke="' + se.color + '" stroke-width="' + se.width + '"' + (se.dash ? ' stroke-dasharray="' + se.dash + '"' : '') + '/>';
+      ends.push({ y: py(se.vals[se.vals.length - 1]), se: se });
+    });
+    ends.sort(function (a, b2) { return a.y - b2.y; });
+    for (var i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 16) ends[i].y = ends[i - 1].y + 16;
+    ends.forEach(function (e) {
+      s += '<text x="' + (px(W) + 8) + '" y="' + (e.y + 4).toFixed(1) + '" font-size="13" font-weight="700" fill="#1A1612">' + esc(e.se.name) + ' ' + Math.round(e.se.vals[e.se.vals.length - 1]) + '</text>';
+    });
+    return s + '</svg>';
+  }
+  function overlay(ind, run) {
+    var trueC = run.log.map(function (l) { return l.C; });
+    var vals = run.log.map(function (l) { return l.readings[ind.id]; });
+    var nums = vals.filter(function (v) { return v !== null && v !== undefined; });
+    var w = 240, h = 110, pad = 8;
+    var px = function (i) { return pad + i * (w - 2 * pad) / (W - 1); };
+    var cy = function (v) { return h - pad - v / 100 * (h - 2 * pad); };
+    var s = '<svg class="chart" viewBox="0 0 ' + w + ' ' + h + '" aria-hidden="true"><rect width="' + w + '" height="' + h + '" fill="#E6DDC8"/>';
+    s += '<polyline points="' + trueC.map(function (v, i) { return px(i).toFixed(1) + ',' + cy(v).toFixed(1); }).join(' ') + '" fill="none" stroke="#6A4028" stroke-width="3"/>';
+    if (nums.length) {
+      var lo = Math.min.apply(null, nums), hi = Math.max.apply(null, nums);
+      if (hi - lo < 1e-9) { hi += 1; lo -= 1; }
+      var down = ind.better === 'down';
+      var ry = function (v) { var f = (v - lo) / (hi - lo); if (down) f = 1 - f; return h - pad - (0.1 + 0.8 * f) * (h - 2 * pad); };
+      var col = ind.kind === 'vanity' || ind.kind === 'badlag' ? '#B8322A' : ind.side === 'lag' ? '#4E2A63' : '#C9922E';
+      vals.forEach(function (v, i) {
+        if (v === null || v === undefined) return;
+        var x = px(i), y = ry(v);
+        if (ind.side === 'lag') s += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="6" fill="' + col + '" stroke="#1A1612"/>';
+        else s += '<polygon points="' + x.toFixed(1) + ',' + (y - 6).toFixed(1) + ' ' + (x - 5).toFixed(1) + ',' + (y + 4).toFixed(1) + ' ' + (x + 5).toFixed(1) + ',' + (y + 4).toFixed(1) + '" fill="' + col + '" stroke="#1A1612" stroke-width="1"/>';
+      });
+    }
+    return s + '</svg>';
+  }
+  function pipsHTML(ind) {
+    var shape = ind.side === 'lag' ? 'cir' : 'tri';
+    return '<div class="pips">' + C.transfer.criteria.map(function (name, i) {
+      var r = ind.ratings[i], p = '';
+      for (var k = 1; k <= 3; k++) p += '<span class="pip ' + shape + (k <= r ? ' on' : '') + '" aria-hidden="true"></span>';
+      return '<span>' + name + '</span><span class="p" aria-label="' + name + ' ' + r + ' of 3">' + p + '<span class="sr">' + r + ' of 3</span></span>';
+    }).join('') + '</div>';
+  }
+  var KIND_LABEL = { lag: 'Honest lag', badlag: 'A lag that flatters', lead: 'Leading', vanity: 'Vanity: a painted backdrop', weak: 'Weak lead', guardrail: 'Guardrail' };
+  function cadenceText(ind) {
+    if (ind.cadence === 'w') return 'Every week';
+    if (ind.cadence === 12) return 'Week 12 only';
+    return 'Weeks 4, 8 and 12';
+  }
+  function shapeOf(ind) { return ind.side === 'lag' ? '<span class="cir" aria-hidden="true"></span>' : '<span class="tri" aria-hidden="true"></span>'; }
+
+  /* ======================================================================
+     Screens
+     ==================================================================== */
+  var R = {};
+
+  R.intro = function () {
+    return '<section class="screen">' +
+      '<div class="intro-grid">' +
+      '<div class="tower-wrap">' + towerSVG({ id: 'tw-intro', hist: [M.start.C], mode: 'fog', label: 'A tower hidden in fog' }) + '</div>' +
+      '<div>' +
+      '<header><h2 id="screen-h" tabindex="-1" class="sr">Cold open</h2></header>' +
+      '<p class="poster-line"><span>' + esc(C.text.coldOpen) + '</span></p>' +
+      '<p class="lede">Twelve weeks. One goal. Your real progress is hidden in the fog, and the only way to see it is through the windows you choose.</p>' +
+      '<div class="legend"><span><span class="tri"></span> Leading indicator</span><span><span class="cir"></span> Lagging indicator</span><span><span class="sq"></span> Action or energy</span><span><span class="bar-red"></span> Disruption</span></div>' +
+      '<div class="setup">' +
+      '<div><label for="seed-in">Seed word</label><input type="text" id="seed-in" data-bind="seed" value="' + esc(S.seed) + '" autocomplete="off" spellcheck="false"><div class="small muted">Same seed, same season. Share it to play identical weeks.</div></div>' +
+      '<div><label for="name-in">Your name (optional)</label><input type="text" id="name-in" data-bind="name" value="' + esc(S.name) + '" autocomplete="off"></div>' +
+      '</div>' +
+      '<div class="row"><button type="button" class="primary" data-action="go" data-to="sort" id="begin">Begin</button><button type="button" class="ghost" data-action="new-seed" id="new-seed">New seed</button></div>' +
+      '</div></div></section>';
+  };
+
+  R.sort = function () {
+    var done = C.sortCards.filter(function (c) { return S.sort[c.id]; }).length;
+    var cards = C.sortCards.map(function (c) {
+      var got = S.sort[c.id];
+      var fb = '';
+      var cls = 'scard';
+      if (got) {
+        cls += ' placed-' + got;
+        if (c.answer === 'trap') { cls += ' trap'; fb = '<div class="fb"><b>Trap.</b> ' + esc(c.why) + '</div>'; }
+        else fb = '<div class="fb"><b>' + (got === c.answer ? 'Yes.' : 'Not quite.') + '</b> ' + esc(c.why) + '</div>';
+      }
+      return '<div class="' + cls + '" data-card="' + c.id + '">' +
+        '<div class="grip" data-drag="sort:' + c.id + '" aria-hidden="true">' + esc(c.text) + '</div><span class="sr">' + esc(c.text) + '</span>' +
+        '<div class="row">' +
+        '<button type="button" id="sl-' + c.id + '" data-action="sort" data-card="' + c.id + '" data-bin="lead" aria-pressed="' + (got === 'lead') + '"><span class="tri" aria-hidden="true"></span> Leading</button>' +
+        '<button type="button" id="sg-' + c.id + '" data-action="sort" data-card="' + c.id + '" data-bin="lag" aria-pressed="' + (got === 'lag') + '"><span class="cir" aria-hidden="true"></span> Lagging</button>' +
+        '</div>' + fb + '</div>';
+    }).join('');
+    return '<section class="screen"><header><h2 id="screen-h" tabindex="-1"><span class="angled">Sort the signals</span></h2>' +
+      '<p class="lede">Leading indicators point forward: predictive, controllable, frequent. Lagging indicators confirm the outcome, late. Drag each card to a bin, or use its buttons.</p></header>' +
+      '<div class="bins">' +
+      '<div class="bin" data-drop="bin:lead"><div class="big-tri" aria-hidden="true"></div><div><b>Leading</b><div class="small">' + C.sortCards.filter(function (c) { return S.sort[c.id] === 'lead'; }).length + ' cards</div></div></div>' +
+      '<div class="bin" data-drop="bin:lag"><div class="big-cir" aria-hidden="true"></div><div><b>Lagging</b><div class="small">' + C.sortCards.filter(function (c) { return S.sort[c.id] === 'lag'; }).length + ' cards</div></div></div>' +
+      '</div>' +
+      '<div class="cards">' + cards + '</div>' +
+      '<div class="row end" style="margin-top:18px"><span class="small">' + done + ' of ' + C.sortCards.length + ' sorted</span>' +
+      '<button type="button" class="primary" data-action="go" data-to="quest" id="sort-next"' + (done < C.sortCards.length ? ' disabled' : '') + '>Choose a quest</button></div></section>';
+  };
+
+  R.quest = function () {
+    var cols = ['#C9922E', '#4E2A63', '#B8322A', '#6A4028'];
+    return '<section class="screen"><header><h2 id="screen-h" tabindex="-1"><span class="angled">Choose a quest</span></h2>' +
+      '<p class="lede">One goal for the season. Each has its own actions, windows and traps.</p></header>' +
+      '<div class="quests">' + C.quests.map(function (q, i) {
+        return '<button type="button" class="qcard" id="q-' + q.id + '" data-action="quest" data-quest="' + q.id + '" style="--c:' + cols[i % 4] + '"' + (S.quest === q.id ? ' aria-pressed="true"' : '') + '>' +
+          '<span class="qname">' + esc(q.name) + '</span><span class="qgoal">' + esc(q.goal) + '</span><span>' + esc(q.blurb) + '</span></button>';
+      }).join('') + '</div></section>';
+  };
+
+  function targetStepper(ind, value, prefix) {
+    var t = ind.target;
+    var word = ind.better === 'down' ? 'at most' : 'at least';
+    return '<div class="stepper" role="group" aria-label="Weekly target for ' + esc(ind.name) + '">' +
+      '<span class="small">' + word + '</span>' +
+      '<button type="button" id="' + prefix + 'dn-' + ind.id + '" data-action="target" data-ind="' + ind.id + '" data-d="-1" data-ctx="' + prefix + '" aria-label="Lower the target"' + (value <= t.min ? ' disabled' : '') + '>&minus;</button>' +
+      '<output class="num" aria-live="polite">' + fmt(value, { read: { dp: t.step < 1 ? 1 : 0 } }) + '</output>' +
+      '<button type="button" id="' + prefix + 'up-' + ind.id + '" data-action="target" data-ind="' + ind.id + '" data-d="1" data-ctx="' + prefix + '" aria-label="Raise the target"' + (value >= t.max ? ' disabled' : '') + '>+</button>' +
+      '<span class="small">' + esc(ind.unit) + ' per week</span></div>';
+  }
+
+  R.build = function () {
+    var q = Q();
+    var d = S.dash;
+    var lagInd = d.lag ? ST.indicator(q, d.lag) : null;
+    var slots = '<div class="slot lag' + (lagInd ? ' filled' : '') + '"><div class="eyebrow"><span class="cir" aria-hidden="true"></span> Lag window</div>' +
+      (lagInd ? '<div class="sname">' + esc(lagInd.name) + '</div><div class="small">' + cadenceText(lagInd) + '</div><button type="button" class="ghost" id="rm-lag" data-action="unslot" data-slot="lag">Remove</button>'
+        : '<div class="small">Pick one lagging indicator: the outcome you will check.</div>') + '</div>';
+    d.leads.forEach(function (lid, i) {
+      var ind = lid ? ST.indicator(q, lid) : null;
+      slots += '<div class="slot lead' + (ind ? ' filled' : '') + '"><div class="eyebrow"><span class="tri" aria-hidden="true"></span> Lead window ' + (i + 1) + '</div>' +
+        (ind ? '<div class="sname">' + esc(ind.name) + '</div>' + targetStepper(ind, d.targets[lid], 'b') +
+          '<button type="button" class="ghost" id="rm-' + i + '" data-action="unslot" data-slot="' + i + '">Remove</button>'
+          : '<div class="small">Pick a weekly signal, then sharpen it into a target.</div>') + '</div>';
+    });
+    var order = deckOrder(q);
+    var card = function (ind) {
+      var chosen = d.lag === ind.id || d.leads.indexOf(ind.id) >= 0;
+      var full = ind.side === 'lag' ? false : d.leads.indexOf(null) < 0;
+      var mentorShown = S.mentor === ind.id;
+      return '<div class="icard side-' + ind.side + (chosen ? ' chosen' : '') + '">' +
+        '<div class="iname">' + shapeOf(ind) + ' ' + esc(ind.name) + '</div>' +
+        '<div class="imeta">' + cadenceText(ind) + ' &middot; ' + esc(ind.unit) + (ind.requires ? ' &middot; needs ' + esc(ST.action(q, ind.requires.action).name.toLowerCase()) + ' that week' : '') + '</div>' +
+        (mentorShown ? '<div class="small"><b>The mentor rates it:</b></div>' + pipsHTML(ind) : '') +
+        '<div class="row" style="margin-top:auto">' +
+        (chosen ? '<span class="small"><b>On your dashboard</b></span>' :
+          '<button type="button" id="add-' + ind.id + '" data-action="slot" data-ind="' + ind.id + '"' + (full ? ' disabled' : '') + '>' + (ind.side === 'lag' ? 'Use as lag' : 'Add to dashboard') + '</button>') +
+        (!S.mentor ? '<button type="button" class="ghost" id="ask-' + ind.id + '" data-action="mentor" data-ind="' + ind.id + '">Ask the mentor</button>' : '') +
+        '</div></div>';
+    };
+    var lags = order.filter(function (i) { return i.side === 'lag'; });
+    var leads = order.filter(function (i) { return i.side === 'lead'; });
+    var empty = d.leads.filter(function (x) { return !x; }).length;
+    var prev = S.attempts.length ? '<div class="note">Rerun on seed <b>' + esc(S.seed) + '</b>: same events, same noise. Only your dashboard changes.</div>' : '';
+    return '<section class="screen"><header><h2 id="screen-h" tabindex="-1"><span class="angled">Build your dashboard</span></h2>' +
+      '<p class="lede"><b>' + esc(q.goal) + '.</b> Choose one lag window and up to three lead windows. Give each lead a weekly target: tracked targets focus effort and, when met, build habit.</p></header>' + prev +
+      '<div class="dashframe">' + slots + '</div>' +
+      '<div class="deck-head"><h3>The deck</h3><span class="mentor"><span class="tok' + (S.mentor ? ' used' : '') + '" aria-hidden="true"></span>' +
+      (S.mentor ? 'Mentor token used' : 'One mentor token: reveals one card\'s hidden ratings') + '</span></div>' +
+      '<h4 style="margin:6px 0 8px"><span class="cir" aria-hidden="true"></span> Lagging windows</h4><div class="deck">' + lags.map(card).join('') + '</div>' +
+      '<h4 style="margin:18px 0 8px"><span class="tri" aria-hidden="true"></span> Leading windows</h4><div class="deck">' + leads.map(card).join('') + '</div>' +
+      (empty && d.lag ? '<div class="note warn">' + empty + ' lead window' + (empty > 1 ? 's are' : ' is') + ' still empty. You can start like this, but you will steer by the lag alone.</div>' : '') +
+      '<div class="row end" style="margin-top:16px"><button type="button" class="primary" id="start-season" data-action="start"' + (d.lag ? '' : ' disabled') + '>Start the season</button></div>' +
+      '</section>';
+  };
+  // Lead cards are shuffled by seed so vanity cards do not sit together.
+  function deckOrder(q) {
+    var r = ST.RNG.mulberry32(ST.RNG.hashStr(S.seed + '|deck|' + q.id));
+    var list = q.indicators.slice();
+    for (var i = list.length - 1; i > 0; i--) { var j = Math.floor(r() * (i + 1)); var t = list[i]; list[i] = list[j]; list[j] = t; }
+    return list;
+  }
+
+  function eventCards(run, ctx) {
+    var q = Q();
+    var out = '';
+    var last = run.log[run.log.length - 1];
+    if (last && last.burnout) out += '<div class="ev bad"><h4><span class="bar-red" aria-hidden="true"></span> ' + esc(q.headlines.burnout || C.eventText.burnout.head) + '</h4><div>' + esc(C.eventText.burnout.body) + '</div></div>';
+    if (last && last.injury) out += '<div class="ev bad"><h4><span class="bar-red" aria-hidden="true"></span> ' + esc(q.headlines.injury || C.eventText.injury.head) + '</h4><div>' + esc(C.eventText.injury.body) + '</div></div>';
+    var id = ctx.event === 'plateau' ? 'none' : ctx.event;   // the plateau is hidden
+    var t = C.eventText[id];
+    var head = (q.headlines && q.headlines[id]) || t.head;
+    var body = t.body;
+    if (id === 'cancelled') body = ST.action(q, q.strongest).name + ' is unavailable this week.';
+    if (id === 'friend') body = ST.action(q, q.feedback).name + ' works half as well again this week.';
+    var bad = id === 'deadline' || id === 'cold' || id === 'cancelled';
+    var good = id === 'holiday' || id === 'friend';
+    out += '<div class="ev' + (bad ? ' bad' : good ? ' good' : '') + '"><div class="small">Week ' + ctx.week + '</div><h4>' + (bad ? '<span class="bar-red" aria-hidden="true"></span> ' : '') + esc(head) + '</h4><div>' + esc(body) + '</div></div>';
+    if (run.pendingCost) out += '<div class="ev"><h4>Swap cost</h4><div>Changing a window cost one token this week.</div></div>';
+    return out;
+  }
+
+  function dashPanel(run) {
+    var q = Q();
+    var rows = run.dash.leads.map(function (lid) {
+      var ind = ST.indicator(q, lid);
+      var vals = [];
+      for (var i = 0; i < W; i++) vals.push(i < run.log.length ? run.log[i].readings[lid] : undefined);
+      var lastLog = run.log[run.log.length - 1];
+      var v = lastLog ? lastLog.readings[lid] : undefined;
+      var tgt = run.dash.targets[lid];
+      var met = lastLog && lastLog.met && lastLog.met[lid];
+      var status = !lastLog ? 'no reading yet' : v === null ? 'no data this week' : met ? 'on target' : 'off target';
+      return '<div class="lead-row"><span class="tri" aria-hidden="true"></span>' +
+        '<div><div><b>' + esc(ind.name) + '</b></div><div class="tgt">Target ' + (ind.better === 'down' ? 'at most ' : 'at least ') + fmt(tgt, ind) + ' ' + esc(ind.unit) + '</div></div>' +
+        '<div class="spark-cell">' + sparkline(vals, tgt, ind.better) + '</div>' +
+        '<div><span class="val num">' + fmt(v, ind) + '</span> <span class="small">' + (v === null || v === undefined ? '' : esc(ind.unit)) + '</span>' +
+        '<div class="small"><span class="metpip' + (met ? ' on' : '') + '" aria-hidden="true"></span>' + status + '</div></div></div>';
+    }).join('');
+    if (!rows) rows = '<p class="small">No lead windows. You are steering by the lag alone.</p>';
+    var lag = run.dash.lag ? ST.indicator(q, run.dash.lag) : null;
+    var lagHTML = '';
+    if (lag) {
+      var reads = run.log.map(function (l) { return { w: l.week, v: l.readings[lag.id] }; }).filter(function (x) { return x.v !== undefined; });
+      var open = reads.length && reads[reads.length - 1].w === run.log.length;
+      var iris = '<svg class="iris" viewBox="0 0 70 70" aria-hidden="true"><circle cx="35" cy="35" r="31" fill="' + (open ? '#E6DDC8' : '#4E2A63') + '" stroke="#4E2A63" stroke-width="6"/>' +
+        (open ? '<circle cx="35" cy="35" r="12" fill="#4E2A63"/>' : '<line x1="10" y1="35" x2="60" y2="35" stroke="#E6DDC8" stroke-width="3"/><line x1="35" y1="10" x2="35" y2="60" stroke="#E6DDC8" stroke-width="3"/>') + '</svg>';
+      var next = C.checkpoints.find(function (c) { return c > run.log.length && (lag.cadence === 4 || c === W); });
+      lagHTML = '<div class="lag-row">' + iris + '<div><b>' + esc(lag.name) + '</b>' +
+        (reads.length ? '<div>' + reads.map(function (x) { return 'Week ' + x.w + ': <b class="num">' + fmt(x.v, lag) + '</b> ' + esc(lag.unit); }).join(' &middot; ') + '</div>' : '<div class="small">Shutter closed.</div>') +
+        (next ? '<div class="small">Opens again after week ' + next + '.</div>' : '') + '</div></div>';
+    }
+    return '<div class="panel dash-panel"><div class="eyebrow">Your dashboard</div>' + rows + lagHTML + '</div>';
+  }
+
+  function energyPanel(run, ctx) {
+    var q = Q();
+    var alloc = S.draft;
+    var used = q.actions.reduce(function (s, a) { return s + (alloc[a.id] || 0); }, 0);
+    var free = ctx.energy - used;
+    var pool = '';
+    for (var i = 0; i < free; i++) pool += '<span class="token" data-drag="tok:pool" aria-hidden="true"></span>';
+    var acts = q.actions.map(function (a) {
+      var n = alloc[a.id] || 0;
+      var blocked = ctx.blocked === a.id;
+      var toks = '';
+      for (var k = 0; k < n; k++) toks += '<span class="token' + (a.pop && k === n - 1 && S.popFlash === a.id ? ' pop-burst' : '') + '" data-drag="tok:' + a.id + '" aria-hidden="true"></span>';
+      return '<div class="act' + (blocked ? ' blocked' : '') + (a.rest ? ' rest' : '') + '" data-drop="' + (blocked ? '' : 'act:' + a.id) + '">' +
+        '<div><div class="aname"><span class="sq" aria-hidden="true"></span> ' + esc(a.name) + (blocked ? ' <span class="small">(unavailable)</span>' : '') + '</div><div class="atoks">' + toks + '</div></div>' +
+        '<div class="stepper" role="group" aria-label="' + esc(a.name) + '">' +
+        '<button type="button" id="dn-' + a.id + '" data-action="alloc" data-act="' + a.id + '" data-d="-1" aria-label="Take a token from ' + esc(a.name) + '"' + (n <= 0 ? ' disabled' : '') + '>&minus;</button>' +
+        '<output class="num" aria-label="' + esc(a.name) + ' tokens">' + n + '</output>' +
+        '<button type="button" id="up-' + a.id + '" data-action="alloc" data-act="' + a.id + '" data-d="1" aria-label="Add a token to ' + esc(a.name) + '"' + (free <= 0 || blocked ? ' disabled' : '') + '>+</button>' +
+        '</div></div>';
+    }).join('');
+    return '<div class="panel energy-panel"><div class="energy-head"><div class="eyebrow">Energy this week: <span class="num">' + ctx.energy + '</span> tokens, <span class="num">' + free + '</span> unplaced</div>' +
+      '<button type="button" class="ghost" data-action="clear-alloc" id="clear-alloc">Clear</button></div>' +
+      '<div class="pool" data-drop="pool" aria-hidden="true">' + pool + '</div>' + acts + '</div>';
+  }
+
+  function reviewPanel(run) {
+    var q = Q();
+    var week = S.allocs.length;
+    var rd = S.reviewDraft;
+    var lag = run.dash.lag ? ST.indicator(q, run.dash.lag) : null;
+    var lagV = lag ? run.log[week - 1].readings[lag.id] : undefined;
+    var chosen = [run.dash.lag].concat(run.dash.leads).filter(Boolean);
+    var fromInd = rd.from ? ST.indicator(q, rd.from) : null;
+    var options = fromInd ? q.indicators.filter(function (i) { return i.side === fromInd.side && chosen.indexOf(i.id) < 0; }) : [];
+    return '<div class="panel energy-panel review"><div class="rhead"><h3>Review stop: week ' + week + '</h3></div>' +
+      (lag ? '<p>The iris opens. <b>' + esc(lag.name) + ': ' + (lagV === undefined ? 'no reading until week ' + W : fmt(lagV, lag) + ' ' + esc(lag.unit)) + '.</b> A lag reading is a checkpoint, not a steering wheel.</p>' : '<p>No lag window to open.</p>') +
+      (run.dash.leads.length ? '<h4 style="margin:10px 0 6px">Adjust targets</h4>' + run.dash.leads.map(function (lid) {
+        var ind = ST.indicator(q, lid);
+        return '<div style="margin-bottom:8px"><div><b>' + esc(ind.name) + '</b></div>' + targetStepper(ind, rd.targets[lid], 'r') + '</div>';
+      }).join('') : '') +
+      '<h4 style="margin:12px 0 6px">Swap one window (costs one token next week)</h4>' +
+      '<div class="setup" style="margin:0 0 10px"><div><label for="swap-from">Replace</label><select id="swap-from" data-bind="swap-from"><option value="">Keep all windows</option>' +
+      chosen.map(function (id) { return '<option value="' + id + '"' + (rd.from === id ? ' selected' : '') + '>' + esc(ST.indicator(q, id).name) + '</option>'; }).join('') + '</select></div>' +
+      '<div><label for="swap-to">With</label><select id="swap-to" data-bind="swap-to"' + (fromInd ? '' : ' disabled') + '><option value="">Choose</option>' +
+      options.map(function (i) { return '<option value="' + i.id + '"' + (rd.to === i.id ? ' selected' : '') + '>' + esc(i.name) + '</option>'; }).join('') + '</select></div></div>' +
+      '<div class="row end"><button type="button" class="primary" id="review-done" data-action="review-done">Continue the season</button></div></div>';
+  }
+
+  R.season = function () {
+    var run = currentRun();
+    var done = run.log.length;
+    var hist = [M.start.C].concat(run.log.map(function (l) { return l.C; }));
+    var weekStrip = '';
+    for (var w = 1; w <= W; w++) {
+      var cls = w <= done ? 'done' : w === done + 1 ? 'now' : '';
+      if (C.checkpoints.indexOf(w) >= 0) cls += ' cp';
+      weekStrip += '<span class="' + cls + '" title="Week ' + w + '">' + w + '</span>';
+    }
+    var label = 'The tower in the fog after week ' + done + '. ' + describeWindows(run);
+    var hasGuard = run.dash.leads.some(function (id) { return ST.indicator(Q(), id).kind === 'guardrail'; });
+    var key = '<div class="tower-key" aria-hidden="true"><span><span class="hatch"></span> Fog</span><span><span class="tri"></span> Lead window, clearer when more predictive</span>' +
+      (run.dash.lag ? '<span><span class="cir"></span> Lag iris, opens at weeks 4, 8, 12</span>' : '') + (hasGuard ? '<span><span class="strain"></span> Strain seen by your guardrail</span>' : '') + '</div>';
+    var tower = '<div class="tower-panel">' + towerSVG({ id: 'tw-season', hist: hist, run: run, mode: 'fog', newest: done > 0 && done === lastCommitted && !reduceMotion, label: label }) + key + '</div>';
+    var right, strip;
+    if (done >= W) {
+      right = '<div class="panel energy-panel"><h3>Week 12 is done.</h3><p>The season is over. Time to see what was really there.</p><button type="button" class="primary" data-action="go" data-to="reveal" id="lift">Lift the fog</button></div>';
+      strip = '<div class="strip"><div class="weeks" aria-label="Weeks">' + weekStrip + '</div><div></div><div></div></div>';
+    } else if (pendingReview()) {
+      right = reviewPanel(run);
+      strip = '<div class="strip"><div class="weeks" aria-label="Weeks">' + weekStrip + '</div><div></div><div></div></div>';
+    } else {
+      var ctx = ST.weekContext(run);
+      clampDraft(ctx);
+      var used = Object.keys(S.draft).reduce(function (s, k) { return s + S.draft[k]; }, 0);
+      right = energyPanel(run, ctx);
+      strip = '<div class="strip"><div class="weeks" aria-label="Weeks, ' + done + ' of ' + W + ' done">' + weekStrip + '</div>' +
+        '<div aria-live="polite">' + eventCards(run, ctx) + '</div>' +
+        '<div class="commit"><button type="button" class="primary" id="commit" data-action="commit">Commit week ' + ctx.week + '</button>' +
+        '<span class="small">' + (ctx.energy - used > 0 ? (ctx.energy - used) + ' unplaced token' + (ctx.energy - used > 1 ? 's' : '') + ' will be wasted' : 'All tokens placed') + '</span></div></div>';
+    }
+    return '<section class="screen"><header><h2 id="screen-h" tabindex="-1" class="sr">The season, week ' + Math.min(done + 1, W) + '</h2></header>' +
+      '<div class="season">' + tower + dashPanel(run) + right + strip + '</div></section>';
+  };
+  function describeWindows(run) {
+    var q = Q();
+    var n = run.dash.leads.length;
+    var s = n ? n + ' triangular window' + (n > 1 ? 's' : '') + ' onto the tower.' : 'No lead windows.';
+    if (run.dash.lag) s += ' The circular lag window is ' + (run.log.length && run.log[run.log.length - 1].readings[run.dash.lag] !== undefined ? 'open.' : 'shuttered.');
+    if (run.dash.leads.some(function (id) { return ST.indicator(q, id).kind === 'guardrail'; })) {
+      var F = run.state.F;
+      s += ' The guardrail window shows ' + (F > 0.6 ? 'heavy' : F > 0.35 ? 'some' : 'little') + ' strain.';
+    }
+    return s;
+  }
+  function clampDraft(ctx) {
+    var q = Q();
+    var left = ctx.energy;
+    q.actions.forEach(function (a) {
+      var n = Math.max(0, Math.floor(S.draft[a.id] || 0));
+      if (a.id === ctx.blocked) n = 0;
+      n = Math.min(n, left); left -= n;
+      S.draft[a.id] = n;
+    });
+  }
+
+  R.reveal = function () {
+    var q = Q();
+    var run = currentRun();
+    var g = ST.ghosts(S.seed, S.quest);
+    var sum = ST.SCORE.summary(run);
+    var arch = C.archetypes[sum.archetype];
+    var hist = [M.start.C].concat(run.log.map(function (l) { return l.C; }));
+    var animate = !revealPlayed && !reduceMotion;
+    var lag = run.dash.lag ? ST.indicator(q, run.dash.lag) : null;
+    var lagFinal = lag ? run.log[W - 1].readings[lag.id] : undefined;
+    var chosen = [run.dash.lag].concat(run.dash.leads).filter(Boolean).map(function (id) { return ST.indicator(q, id); });
+    var series = [
+      { name: 'Expert', vals: [M.start.C].concat(g.expert.log.map(function (l) { return l.C; })), color: '#4E2A63', width: 3 },
+      { name: 'You', vals: hist, color: '#6A4028', width: 5 },
+      { name: 'Passive', vals: [M.start.C].concat(g.passive.log.map(function (l) { return l.C; })), color: '#1A1612', width: 2.5, dash: '6 5' }
+    ];
+    var data = ST.SCORE.dataLine(run, g);
+    var att = S.attempts.slice();
+    var attemptsHTML = att.length ? '<h3 style="margin:26px 0 8px">Your runs on seed ' + esc(S.seed) + '</h3><table class="attempts"><thead><tr><th scope="col">Run</th><th scope="col">Dashboard</th><th scope="col">Quality</th><th scope="col">Final tower</th></tr></thead><tbody>' +
+      att.concat([{ dash: runDash(), dashQ: sum.dashQ, finalC: sum.finalC }]).map(function (a, i) {
+        var names = [a.dash.lag].concat(a.dash.leads).filter(Boolean).map(function (id) { return ST.indicator(q, id).name; }).join(', ');
+        return '<tr><td>' + (i + 1) + (i === att.length ? ' (this run)' : '') + '</td><td>' + esc(names) + '</td><td class="num">' + a.dashQ + '</td><td class="num">' + Math.round(a.finalC) + '</td></tr>';
+      }).join('') + '</tbody></table>' : '';
+    var flips = chosen.map(function (ind) {
+      var f = S.flipped[ind.id];
+      return '<div class="flip' + (f ? ' flipped' : '') + '"><div class="flip-inner">' +
+        '<div class="face front"' + (f ? ' aria-hidden="true"' : '') + '><div class="iname"><b>' + shapeOf(ind) + ' ' + esc(ind.name) + '</b></div><div class="small">' + cadenceText(ind) + '</div>' +
+        '<div style="margin-top:auto"><button type="button" id="flip-' + ind.id + '" data-action="flip" data-ind="' + ind.id + '"' + (f ? ' tabindex="-1"' : '') + '>Flip the card</button></div></div>' +
+        '<div class="face back k-' + ind.kind + '"' + (f ? '' : ' aria-hidden="true"') + '><span class="kind k-' + ind.kind + '">' + KIND_LABEL[ind.kind] + '</span><div><b>' + esc(ind.name) + '</b></div>' + pipsHTML(ind) +
+        '<div class="small">' + esc(ind.tells) + '</div>' +
+        '<div style="margin-top:auto"><button type="button" class="ghost" id="unflip-' + ind.id + '" data-action="flip" data-ind="' + ind.id + '"' + (f ? '' : ' tabindex="-1"') + '>Flip back</button></div></div>' +
+        '</div></div>';
+    }).join('');
+    var mults = chosen.map(function (ind) {
+      return '<div class="mult ' + ind.kind + '"><div><b>' + shapeOf(ind) + ' ' + esc(ind.name) + '</b></div>' + overlay(ind, run) + '<div class="small">Brown line: the real tower. Shapes: what this window read' + (ind.better === 'down' ? ' (flipped, so up is better)' : '') + '.</div></div>';
+    }).join('');
+    var lucky = sum.archetype === 'lucky' ? '<p><b>Outcome is not decision quality.</b> A good tower from a weak dashboard is luck you cannot repeat on purpose.</p>' : '';
+    var labelReal = 'The fog lifted. Your real tower stands at ' + Math.round(sum.finalC) + ' out of 100.';
+    return '<section class="screen"><header><h2 id="screen-h" tabindex="-1" class="sr">The fog lifts</h2></header>' +
+      '<div class="arch"><div class="eyebrow">Your season, in one title</div><h2>' + esc(arch.title) + '</h2><p>' + esc(arch.line) + '</p>' + lucky + '</div>' +
+      '<div class="reveal-grid">' +
+      '<div class="tower-panel">' + towerSVG({ id: 'tw-reveal', hist: hist, run: run, mode: animate ? 'reveal' : 'plain', label: labelReal }) + '</div>' +
+      '<div><div class="stats">' +
+      '<div class="stat you"><span class="small">Your real tower</span><b class="num">' + Math.round(sum.finalC) + '</b><span class="small">out of 100</span></div>' +
+      (lag ? '<div class="stat"><span class="small">' + esc(lag.name) + ', week 12</span><b class="num">' + fmt(lagFinal, lag) + '</b><span class="small">' + esc(lag.unit) + ', with noise</span></div>' : '') +
+      '<div class="stat"><span class="small">Dashboard quality</span><b class="num">' + sum.dashQ + '</b><span class="small">out of 100</span></div>' +
+      '<div class="stat"><span class="small">Burnouts</span><b class="num">' + sum.burnouts + '</b></div>' +
+      '<div class="stat"><span class="small">Passive ghost</span><b class="num">' + Math.round(g.passive.state.C) + '</b></div>' +
+      '<div class="stat"><span class="small">Expert ghost</span><b class="num">' + Math.round(g.expert.state.C) + '</b></div>' +
+      '</div>' +
+      '<h3 style="margin:18px 0 6px">Three towers, same weeks</h3>' +
+      lineChart(series, { label: 'Tower height by week: you ' + Math.round(sum.finalC) + ', passive ghost ' + Math.round(g.passive.state.C) + ', expert ghost ' + Math.round(g.expert.state.C) }) +
+      '<p class="small">Same seed, same events. The passive ghost spread two tokens across every lever with no dashboard. The expert tracked ' +
+      esc(q.expert.leads.map(function (id) { return ST.indicator(q, id).name.toLowerCase(); }).join(', ')) + '.</p>' +
+      '</div></div>' +
+      '<div class="band" aria-hidden="true"></div>' +
+      '<h3 style="margin-bottom:8px">Where your windows lied or lagged</h3><div class="mults">' + (mults || '<p>No windows chosen.</p>') + '</div>' +
+      '<div class="band" aria-hidden="true"></div>' +
+      '<h3 style="margin-bottom:8px">Flip your cards</h3><div class="flips">' + flips + '</div>' +
+      attemptsHTML +
+      '<h3 style="margin:26px 0 8px">Results line</h3><div class="dataline" id="dataline">' + esc(data) + '</div>' +
+      '<div class="row" style="margin-top:14px"><button type="button" data-action="copy-results" id="copy-results">Copy as text</button>' +
+      '<button type="button" data-action="print" id="print-results">Print</button>' +
+      '<button type="button" class="go" data-action="rerun" id="rerun">Rerun with a new dashboard</button>' +
+      '<button type="button" class="primary" data-action="go" data-to="transfer" id="to-transfer">Build your real dashboard</button></div>' +
+      '</section>';
+  };
+
+  function tval(id) { return S.transfer.f[id] || ''; }
+  function wcHTML(id, min) {
+    var n = words(tval(id));
+    return '<span class="wc ' + (n >= min ? 'ok' : 'short') + '" id="wc-' + id + '">' + n + ' / ' + min + ' words</span>';
+  }
+  function checksHTML(id) {
+    var ch = S.transfer.checks[id] || {};
+    return '<div class="checks" role="group" aria-label="Self-check for this indicator">' + C.transfer.criteria.map(function (c) {
+      return '<button type="button" id="ck-' + id + '-' + c + '" data-action="check" data-field="' + id + '" data-crit="' + c + '" aria-pressed="' + (!!ch[c]) + '">' + c + '</button>';
+    }).join('') + '</div><div class="print-only small">Meets: ' + (C.transfer.criteria.filter(function (c) { return ch[c]; }).join(', ') || 'not yet checked') + '</div>';
+  }
+  function fieldDef(id) { return C.transfer.fields.find(function (f) { return f.id === id; }); }
+  function textField(id, wide) {
+    var f = fieldDef(id);
+    return '<div class="tfield' + (wide ? ' wide' : '') + '"><label for="tf-' + id + '">' + esc(f.label) + '</label>' +
+      '<input type="text" id="tf-' + id + '" data-bind="t:' + id + '" value="' + esc(tval(id)) + '" aria-describedby="h-' + id + ' wc-' + id + '">' +
+      '<span class="hint" id="h-' + id + '">' + esc(f.hint) + '</span>' + wcHTML(id, f.minWords) + (f.check ? checksHTML(id) : '') + '</div>';
+  }
+  function sharpenField(id) {
+    var f = fieldDef(id);
+    return '<div class="tfield wide"><label for="tf-' + id + '">' + esc(f.label) + '</label>' +
+      '<div class="sharpen"><input type="text" id="tf-' + id + '" data-bind="t:' + id + '" value="' + esc(tval(id)) + '" aria-describedby="h-' + id + ' wc-' + id + '" placeholder="What you will count">' +
+      '<input type="number" id="tf-' + id + 'N" data-bind="t:' + id + 'N" value="' + esc(tval(id + 'N')) + '" aria-label="' + esc(f.label) + ': number" min="0" step="any" placeholder="Number">' +
+      '<input type="text" id="tf-' + id + 'U" data-bind="t:' + id + 'U" value="' + esc(tval(id + 'U')) + '" aria-label="' + esc(f.label) + ': unit" placeholder="Unit">' +
+      '<span>per week</span></div>' +
+      '<span class="hint" id="h-' + id + '">' + esc(f.hint) + '</span>' + wcHTML(id, f.minWords) + checksHTML(id) + '</div>';
+  }
+  function transferComplete() {
+    return C.transfer.fields.every(function (f) { return words(tval(f.id)) >= f.minWords; }) &&
+      ['lead1', 'lead2'].every(function (id) { return tval(id + 'N') !== '' && words(tval(id + 'U')) >= 1; });
+  }
+  R.transfer = function () {
+    var ok = transferComplete();
+    return '<section class="screen"><header class="no-print"><h2 id="screen-h" tabindex="-1"><span class="angled">Your real dashboard</span></h2>' +
+      '<p class="lede">Now for a goal of your own. One lag, two sharpened leads, one guardrail, an if-then rule and a review day. Tick the criteria each indicator meets.</p></header>' +
+      '<div class="tcard"><div class="print-only"><h2>My dashboard</h2>' + (S.name ? '<p>' + esc(S.name) + '</p>' : '') + '</div>' +
+      '<div class="tgrid">' +
+      textField('goal', true) +
+      textField('lag') + textField('lagWhen') +
+      sharpenField('lead1') + sharpenField('lead2') +
+      textField('guard') + textField('guardLevel') +
+      '<div class="tfield wide"><span id="rule-l" style="font-weight:700">If-then rule</span><div class="rule-line" role="group" aria-labelledby="rule-l"><span>If</span>' +
+      '<input type="text" id="tf-ifLead" data-bind="t:ifLead" value="' + esc(tval('ifLead')) + '" aria-label="Lead indicator" placeholder="lead">' +
+      '<span>is below</span><input type="text" id="tf-ifX" data-bind="t:ifX" value="' + esc(tval('ifX')) + '" aria-label="Threshold" placeholder="x" style="flex:0 1 90px">' +
+      '<span>for two weeks, then I will</span><input type="text" id="tf-ifThen" data-bind="t:ifThen" value="' + esc(tval('ifThen')) + '" aria-label="Action" placeholder="action"></div>' +
+      '<div class="row">' + wcHTML('ifLead', fieldDef('ifLead').minWords) + wcHTML('ifX', 1) + wcHTML('ifThen', fieldDef('ifThen').minWords) + '</div></div>' +
+      textField('reviewDay', true) +
+      '</div></div>' +
+      '<div class="row no-print" style="margin-top:14px"><span class="status" id="t-status">' + (ok ? 'Every field is complete.' : 'Fill every field to its minimum word count.') + '</span></div>' +
+      '<div class="row" style="margin-top:8px"><button type="button" data-action="copy-transfer" id="copy-transfer">Copy as text</button>' +
+      '<button type="button" data-action="print" id="print-transfer">Print</button>' +
+      '<button type="button" class="ghost" data-action="go" data-to="reveal" id="back-reveal">Back to the results</button></div></section>';
+  };
+
+  /* ======================================================================
+     Render
+     ==================================================================== */
+  function render(focusHeading) {
+    var active = document.activeElement;
+    var fid = active && active.id;
+    var sel = null;
+    if (active && active.tagName === 'INPUT' && active.type === 'text') { try { sel = [active.selectionStart, active.selectionEnd]; } catch (e) { sel = null; } }
+    $('screen').innerHTML = R[S.screen]();
+    var idx = SCREENS.indexOf(S.screen);
+    $('phasebar').innerHTML = C.text.phases.map(function (p, i) {
+      return '<li class="' + (i < idx ? 'done' : i === idx ? 'now' : '') + '"' + (i === idx ? ' aria-current="step"' : '') + '><span class="sr">' + esc(p) + (i === idx ? ' (current)' : '') + '</span></li>';
+    }).join('');
+    var q = Q();
+    $('meta').innerHTML = '<b>' + esc(C.text.phases[idx]) + '</b><br>Seed <span class="num">' + esc(S.seed) + '</span>' + (q && idx >= 3 ? ' &middot; ' + esc(q.name) : '');
+    if (S.screen === 'reveal' && !revealPlayed) { revealPlayed = true; S.revealed = true; }
+    S.popFlash = null;
+    save();
+    if (focusHeading) {
+      var h = $('screen-h');
+      if (h) h.focus({ preventScroll: true });
+      window.scrollTo(0, 0);
+    } else if (fid && $(fid)) {
+      var el = $(fid);
+      if (el.disabled) { var alt = el.parentNode && el.parentNode.querySelector('button:not(:disabled)'); if (alt) alt.focus({ preventScroll: true }); }
+      else { el.focus({ preventScroll: true }); if (sel && el.setSelectionRange) { try { el.setSelectionRange(sel[0], sel[1]); } catch (e) { /* not a text input */ } } }
+    }
+  }
+  function go(screen) { S.screen = screen; render(true); }
+  function say(msg) { $('status').textContent = msg; }
+
+  /* ======================================================================
+     Actions
+     ==================================================================== */
+  var A = {};
+  A.go = function (el) { go(el.getAttribute('data-to')); };
+  A['new-seed'] = function () { S.seed = pickSeed(); render(); };
+  A.sort = function (el) { S.sort[el.getAttribute('data-card')] = el.getAttribute('data-bin'); render(); };
+  A.quest = function (el) {
+    var id = el.getAttribute('data-quest');
+    if (S.quest !== id) { S.quest = id; S.dash = emptyDash(); S.mentor = null; S.attempts = []; S.allocs = []; S.reviews = {}; S.draft = {}; S.flipped = {}; S.revealed = false; revealPlayed = false; }
+    go('build');
+  };
+  A.slot = function (el) {
+    var ind = ST.indicator(Q(), el.getAttribute('data-ind'));
+    if (ind.side === 'lag') S.dash.lag = ind.id;
+    else {
+      var i = S.dash.leads.indexOf(null);
+      if (i < 0) return;
+      S.dash.leads[i] = ind.id;
+      S.dash.targets[ind.id] = ind.target.def;
+    }
+    render();
+  };
+  A.unslot = function (el) {
+    var s = el.getAttribute('data-slot');
+    if (s === 'lag') S.dash.lag = null;
+    else { var id = S.dash.leads[+s]; delete S.dash.targets[id]; S.dash.leads[+s] = null; }
+    render();
+    var h = $('screen-h'); if (h) h.focus({ preventScroll: true });
+  };
+  A.mentor = function (el) { if (!S.mentor) { S.mentor = el.getAttribute('data-ind'); render(); say('The mentor has rated ' + ST.indicator(Q(), S.mentor).name + '.'); } };
+  A.target = function (el) {
+    var ind = ST.indicator(Q(), el.getAttribute('data-ind'));
+    var ctx = el.getAttribute('data-ctx');
+    var bag = ctx === 'r' ? S.reviewDraft.targets : S.dash.targets;
+    var v = bag[ind.id] + (+el.getAttribute('data-d')) * ind.target.step;
+    bag[ind.id] = ST.round(Math.max(ind.target.min, Math.min(ind.target.max, v)), 2);
+    render();
+  };
+  A.start = function () {
+    S.allocs = []; S.reviews = {}; S.draft = {}; S.reviewDraft = null; S.flipped = {}; S.revealed = false; revealPlayed = false; lastCommitted = 0;
+    go('season');
+  };
+  A.alloc = function (el) { moveToken(el.getAttribute('data-d') === '1' ? 'pool' : el.getAttribute('data-act'), el.getAttribute('data-d') === '1' ? el.getAttribute('data-act') : 'pool'); };
+  A['clear-alloc'] = function () { S.draft = {}; render(); };
+  A.commit = function () {
+    var run = currentRun();
+    var ctx = ST.weekContext(run);
+    clampDraft(ctx);
+    S.allocs.push(Object.assign({}, S.draft));
+    lastCommitted = S.allocs.length;
+    if (pendingReview()) {
+      var r2 = currentRun();
+      S.reviewDraft = { targets: Object.assign({}, r2.dash.targets), from: '', to: '' };
+    }
+    render();
+    var w = S.allocs.length;
+    say(w >= W ? 'Season complete.' : pendingReview() ? 'Review stop after week ' + w + '.' : 'Week ' + w + ' committed.');
+    var target = $('commit') || $('review-done') || $('lift');
+    if (target) target.focus({ preventScroll: true });
+  };
+  A['review-done'] = function () {
+    var rd = S.reviewDraft;
+    var change = { targets: rd.targets };
+    if (rd.from && rd.to) change.swap = { from: rd.from, to: rd.to };
+    S.reviews[S.allocs.length] = change;
+    S.reviewDraft = null;
+    // keep the build-screen dashboard in step so a later swap is reflected everywhere
+    render();
+    var c = $('commit'); if (c) c.focus({ preventScroll: true });
+  };
+  A.flip = function (el) {
+    var id = el.getAttribute('data-ind');
+    S.flipped[id] = !S.flipped[id];
+    render();
+    var next = $((S.flipped[id] ? 'unflip-' : 'flip-') + id);
+    if (next) next.focus({ preventScroll: true });
+  };
+  A.rerun = function () {
+    var run = currentRun();
+    var sum = ST.SCORE.summary(run);
+    S.attempts.push({ dash: runDash(), dashQ: sum.dashQ, finalC: sum.finalC, archetype: sum.archetype });
+    S.allocs = []; S.reviews = {}; S.draft = {}; S.mentor = null; S.flipped = {}; S.revealed = false; revealPlayed = false;
+    go('build');
+  };
+  A.check = function (el) {
+    var f = el.getAttribute('data-field'), c = el.getAttribute('data-crit');
+    S.transfer.checks[f] = S.transfer.checks[f] || {};
+    S.transfer.checks[f][c] = !S.transfer.checks[f][c];
+    render();
+  };
+  A['copy-results'] = function () {
+    var q = Q(), run = currentRun(), sum = ST.SCORE.summary(run), g = ST.ghosts(S.seed, S.quest);
+    var lines = ['Signal Tower results' + (S.name ? ' - ' + S.name : ''), 'Quest: ' + q.goal + ' (seed ' + S.seed + ')',
+      'Title: ' + C.archetypes[sum.archetype].title, 'Real tower: ' + Math.round(sum.finalC) + '/100. Passive ghost ' + Math.round(g.passive.state.C) + ', expert ghost ' + Math.round(g.expert.state.C) + '.',
+      'Dashboard quality: ' + sum.dashQ + '/100. Burnouts: ' + sum.burnouts + '.', 'Windows:'];
+    [run.dash.lag].concat(run.dash.leads).filter(Boolean).forEach(function (id) {
+      var ind = ST.indicator(q, id);
+      lines.push('- ' + ind.name + ' [' + KIND_LABEL[ind.kind] + '; P' + ind.ratings[0] + ' C' + ind.ratings[1] + ' T' + ind.ratings[2] + ' H' + ind.ratings[3] + ']: ' + ind.tells);
+    });
+    lines.push('', ST.SCORE.dataLine(run, g));
+    copy(lines.join('\n'));
+  };
+  A['copy-transfer'] = function () {
+    var ch = function (id) { var c = S.transfer.checks[id] || {}; var on = C.transfer.criteria.filter(function (k) { return c[k]; }); return on.length ? ' [' + on.join(', ') + ']' : ''; };
+    var lines = ['My dashboard' + (S.name ? ' - ' + S.name : ''),
+      'Goal: ' + tval('goal'),
+      'Lagging indicator: ' + tval('lag') + ch('lag') + ', checked ' + tval('lagWhen'),
+      'Leading indicator 1: ' + tval('lead1') + ' - ' + tval('lead1N') + ' ' + tval('lead1U') + ' per week' + ch('lead1'),
+      'Leading indicator 2: ' + tval('lead2') + ' - ' + tval('lead2N') + ' ' + tval('lead2U') + ' per week' + ch('lead2'),
+      'Guardrail: ' + tval('guard') + ch('guard') + '; warning level: ' + tval('guardLevel'),
+      'If ' + tval('ifLead') + ' is below ' + tval('ifX') + ' for two weeks, then I will ' + tval('ifThen') + '.',
+      'Review day: ' + tval('reviewDay')];
+    copy(lines.join('\n'));
+  };
+  A.print = function () { window.print(); };
+  A['reset-ask'] = function () {
+    $('reset-wrap').innerHTML = '<span class="row"><span class="small"><b>Erase everything?</b></span><button type="button" class="danger" data-action="reset-yes" id="reset-yes">Yes, reset</button><button type="button" data-action="reset-no" id="reset-no">Cancel</button></span>';
+    $('reset-no').focus();
+  };
+  A['reset-no'] = function () { restoreReset(); $('reset-btn').focus(); };
+  A['reset-yes'] = function () { clearSaved(); S = freshState(); lastCommitted = 0; revealPlayed = false; restoreReset(); go('intro'); say('Reset. A fresh session has started.'); };
+  function restoreReset() { $('reset-wrap').innerHTML = '<button type="button" class="ghost" data-action="reset-ask" id="reset-btn">Reset</button>'; }
+  A['export'] = function () {
+    var blob = new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'signal-tower-' + S.seed.replace(/[^A-Za-z0-9-]/g, '') + '.json';
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    say('Exported.');
+  };
+  A['import'] = function () { $('import-file').click(); };
+
+  function copy(text) {
+    var done = function () { say('Copied to the clipboard.'); };
+    var fallback = function () {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.left = '-9999px';
+      document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      say(ok ? 'Copied to the clipboard.' : 'Copy failed: select the text and copy it by hand.');
+    };
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback);
+    else fallback();
+  }
+
+  function moveToken(from, to) {
+    if (S.screen !== 'season' || pendingReview() || S.allocs.length >= W) return;
+    var run = currentRun();
+    var ctx = ST.weekContext(run);
+    clampDraft(ctx);
+    var used = Object.keys(S.draft).reduce(function (s, k) { return s + S.draft[k]; }, 0);
+    if (from === to) return;
+    if (from === 'pool') { if (used >= ctx.energy) return; }
+    else { if (!S.draft[from]) return; S.draft[from]--; }
+    if (to !== 'pool') {
+      if (to === ctx.blocked) { if (from !== 'pool') S.draft[from]++; return; }
+      S.draft[to] = (S.draft[to] || 0) + 1;
+      var a = ST.action(Q(), to);
+      if (a && a.pop) S.popFlash = to;
+    }
+    render();
+  }
+
+  /* ---- delegated events ------------------------------------------------- */
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-action]');
+    if (!el || el.disabled) return;
+    var fn = A[el.getAttribute('data-action')];
+    if (fn) { e.preventDefault(); fn(el); }
+  });
+  document.addEventListener('input', function (e) {
+    var el = e.target, b = el.getAttribute && el.getAttribute('data-bind');
+    if (!b) return;
+    if (b === 'seed') { S.seed = el.value.trim().slice(0, 40) || pickSeed(); save(); $('meta').innerHTML = '<b>Cold open</b><br>Seed <span class="num">' + esc(S.seed) + '</span>'; return; }
+    if (b === 'name') { S.name = el.value.slice(0, 80); save(); return; }
+    if (b.indexOf('t:') === 0) {
+      var id = b.slice(2);
+      S.transfer.f[id] = el.value;
+      save();
+      var f = fieldDef(id);
+      var wc = $('wc-' + id);
+      if (wc && f) { var n = words(el.value); wc.textContent = n + ' / ' + f.minWords + ' words'; wc.className = 'wc ' + (n >= f.minWords ? 'ok' : 'short'); }
+      var st = $('t-status');
+      if (st) st.textContent = transferComplete() ? 'Every field is complete.' : 'Fill every field to its minimum word count.';
+    }
+  });
+  document.addEventListener('change', function (e) {
+    var el = e.target, b = el.getAttribute && el.getAttribute('data-bind');
+    if (b === 'swap-from') { S.reviewDraft.from = el.value; S.reviewDraft.to = ''; render(); }
+    else if (b === 'swap-to') { S.reviewDraft.to = el.value; render(); }
+    else if (el.id === 'import-file' && el.files && el.files[0]) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        var ok = false;
+        try { ok = adopt(JSON.parse(reader.result)); } catch (err) { ok = false; }
+        if (ok) { go(S.screen); say('Imported.'); } else say('That file is not a Signal Tower export.');
+        el.value = '';
+      };
+      reader.readAsText(el.files[0]);
+    }
+  });
+
+  /* ---- pointer drag (tokens and sort cards); buttons are the keyboard path */
+  var drag = null;
+  document.addEventListener('pointerdown', function (e) {
+    var src = e.target.closest('[data-drag]');
+    if (!src || e.button > 0) return;
+    e.preventDefault();
+    var r = src.getBoundingClientRect();
+    var ghost = src.cloneNode(true);
+    ghost.classList.add('ghost-drag');
+    ghost.style.width = r.width + 'px';
+    ghost.style.left = r.left + 'px'; ghost.style.top = r.top + 'px';
+    document.body.appendChild(ghost);
+    drag = { src: src.getAttribute('data-drag'), ghost: ghost, dx: e.clientX - r.left, dy: e.clientY - r.top, over: null, moved: false };
+  });
+  document.addEventListener('pointermove', function (e) {
+    if (!drag) return;
+    drag.moved = true;
+    drag.ghost.style.left = (e.clientX - drag.dx) + 'px';
+    drag.ghost.style.top = (e.clientY - drag.dy) + 'px';
+    drag.ghost.style.display = 'none';
+    var under = document.elementFromPoint(e.clientX, e.clientY);
+    drag.ghost.style.display = '';
+    var zone = under && under.closest('[data-drop]');
+    if (drag.over && drag.over !== zone) drag.over.classList.remove('over');
+    if (zone && zone.getAttribute('data-drop')) { zone.classList.add('over'); drag.over = zone; } else drag.over = null;
+  });
+  function endDrag(e) {
+    if (!drag) return;
+    var d = drag; drag = null;
+    d.ghost.remove();
+    if (d.over) d.over.classList.remove('over');
+    if (!d.over || !d.moved) return;
+    var to = d.over.getAttribute('data-drop');
+    if (d.src.indexOf('sort:') === 0 && to.indexOf('bin:') === 0) { S.sort[d.src.slice(5)] = to.slice(4); render(); }
+    else if (d.src.indexOf('tok:') === 0) {
+      var from = d.src.slice(4);
+      var dest = to === 'pool' ? 'pool' : to.indexOf('act:') === 0 ? to.slice(4) : null;
+      if (dest) moveToken(from, dest);
+    }
+  }
+  document.addEventListener('pointerup', endDrag);
+  document.addEventListener('pointercancel', function () { if (drag) { drag.ghost.remove(); if (drag.over) drag.over.classList.remove('over'); drag = null; } });
+
+  /* ---- ?test=1 ---------------------------------------------------------- */
+  function runTests() {
+    $('screen').innerHTML = '<section class="screen"><header><h2 id="screen-h" tabindex="-1">Model tests</h2><p class="lede">Running&hellip;</p></header></section>';
+    setTimeout(function () {
+      var r = ST.selfTest({ seeds: 50 });
+      $('screen').innerHTML = '<section class="screen"><header><h2 id="screen-h" tabindex="-1">Model tests</h2>' +
+        '<p class="lede" id="test-summary">' + r.passed + ' passed, ' + r.failed + ' failed</p></header><ol class="tests">' +
+        r.results.map(function (t) { return '<li class="' + (t.ok ? 'pass' : 'fail') + '"><b>' + (t.ok ? 'pass' : 'FAIL') + '</b> ' + esc(t.name) + ' <span class="small muted">' + esc(t.detail) + '</span></li>'; }).join('') +
+        '</ol><p><a href="signal-tower.html">Back to the game</a></p></section>';
+    }, 30);
+  }
+
+  /* ---- boot ------------------------------------------------------------- */
+  if (/[?&]test=1\b/.test(location.search)) { runTests(); return; }
+  load();
+  if ((S.screen === 'season' || S.screen === 'reveal' || S.screen === 'build') && !S.quest) S.screen = 'quest';
+  if ((S.screen === 'reveal' || S.screen === 'transfer') && S.allocs.length < W) S.screen = S.quest ? 'season' : 'intro';
+  if (S.screen === 'season' && pendingReview() && !S.reviewDraft) S.reviewDraft = { targets: Object.assign({}, currentRun().dash.targets), from: '', to: '' };
+  render();
+})();
+</script>
+</body>
+</html>
