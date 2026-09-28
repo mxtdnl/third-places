@@ -10,7 +10,7 @@
 - The season is eight weeks. The lag iris opens after weeks 3, 6 and 8; review stops follow weeks 3 and 6.
 - A "How the tower works" explainer slide sits between the dashboard and the season. It uses the player's own dashboard and reads its numbers from `CONFIG`, so it stays in step with edits.
 - The build screen shows a ladder from the quest's wider vision to its goal to the lag and lead windows. The transfer card opens with a "Wider vision" field.
-- Mentor tokens (2 by default, `CONFIG.mentor`) cannot be spent before the season. They are spent at the review stops from week 3 on, where they help the swap decision.
+- The mentor token (one, `CONFIG.mentor`) cannot be spent before the season. It is spent at a review stop from week 3 on, where it helps the swap decision.
 - State autosaves to `localStorage` under `signal-tower-v2` (v1 saves from the twelve-week build are not loaded). Only the inputs are saved (seed, quest, dashboard, weekly allocations, review changes), and the season is replayed from them. Export JSON and Import JSON move a session between devices. Reset asks for confirmation first.
 
 ## Where the build departs from the spec
@@ -24,7 +24,7 @@ These are design decisions made during calibration. Each one can be changed in `
 | Attention | 1.15 | 1.25 | Recalibrated for eight weeks: widens the gap between tracked and untracked play |
 | Habit growth | +0.08 per week | +0.12 per week | With eight weeks, habit could not build to a meaningful level at 0.08 |
 | Burnout energy | E −3 next week | E −4 | Recalibrated for eight weeks |
-| Mentor token | one, at the dashboard | two, only at review stops from week 3 | Instructor request |
+| Mentor token | one, at the dashboard | one, only at a review stop from week 3 | Instructor request |
 | Fatigue scale | not specified | `fatigueScale 0.5` on every action's `f` | With raw `f` values the passive bot burns out almost every week |
 | Saturation | not specified | tokens past 4 on one action work at half rate | Stops single-action spam beating the expert |
 | Burnout | E −3 next week | also sheds 0.15 fatigue (the crash) | Without it, burnout repeats every week once F passes 0.7 |
