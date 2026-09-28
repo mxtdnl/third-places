@@ -14,9 +14,9 @@
                          selfTest. No DOM access; tests/signal-tower.mjs runs
                          it in node.
     script#ui            the screen state machine:
-                         intro -> sort -> quest -> build -> season -> reveal
-                         -> transfer, with rerun returning to build on the
-                         same seed.
+                         intro -> sort -> quest -> build -> brief (how the
+                         tower works) -> season -> reveal -> transfer, with
+                         rerun returning to build on the same seed.
 
   Saved state (localStorage key CONFIG.storageKey, and the Export JSON file)
   holds inputs only - seed, quest, dashboard, weekly allocations, review
@@ -78,7 +78,7 @@ a { color: var(--purple); }
 .masthead { position: relative; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px; padding: 14px 0 10px; border-bottom: var(--rule) solid var(--ink); }
 .masthead h1 { font-size: 1.5rem; }
 .masthead h1 .tri { margin-right: 6px; }
-.phasebar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; list-style: none; margin: 0; padding: 0; }
+.phasebar { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; list-style: none; margin: 0; padding: 0; }
 .phasebar li { height: 8px; background: rgba(26,22,18,0.14); }
 .phasebar li.done { background: var(--brown); }
 .phasebar li.now { background: var(--ochre); outline: 2px solid var(--ink); }
@@ -183,6 +183,39 @@ input[type="text"], input[type="number"], select, textarea {
 .mentor .tok { width: 22px; height: 22px; background: var(--purple); border-radius: 50%; }
 .mentor .tok.used { background: transparent; border: 3px solid var(--purple); }
 .note { border-left: 8px solid var(--ochre); padding: 8px 12px; background: var(--card); margin: 12px 0; }
+.mentor-box { border-top: 3px solid var(--ink); margin-top: 14px; padding-top: 10px; }
+.mentor-box .rated { border-left: 6px solid var(--purple); padding: 6px 10px; margin: 8px 0; background: var(--paper); }
+
+/* ---- vision ladder (build) ---------------------------------------------- */
+.ladder { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; margin-bottom: 14px; border: 3px solid var(--ink); }
+.rung { padding: 12px 16px; position: relative; }
+.rung .eyebrow { margin-bottom: 2px; }
+.rung.vision { grid-column: 1 / -1; background: var(--purple); color: var(--paper); overflow: hidden; }
+.rung.vision::after { content: ''; position: absolute; right: -18px; top: -18px; width: 70px; height: 70px; border-radius: 50%; border: 10px solid var(--ochre); pointer-events: none; }
+.rung.vision .vtext { font-size: 1.2rem; font-weight: 700; line-height: 1.2; max-width: 52ch; position: relative; }
+.rung.goal { grid-column: 1 / -1; background: var(--ochre); color: var(--ink); border-top: 3px solid var(--ink); }
+.rung.goal .gtext { font-size: 1.1rem; font-weight: 700; }
+.rung.how { background: var(--card); border-top: 3px solid var(--ink); font-size: 0.95rem; }
+.rung.how + .rung.how { border-left: 3px solid var(--ink); }
+.rung .arrow { font-weight: 700; }
+
+/* ---- brief: how the tower works ----------------------------------------- */
+.brief { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: 22px; align-items: start; }
+.brief .tower-panel svg { max-height: 460px; }
+.rules { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; list-style: none; margin: 0; padding: 0; counter-reset: rule; }
+.rules li { background: var(--card); border: 3px solid var(--ink); padding: 10px 12px 10px 14px; position: relative; counter-increment: rule; }
+.rules li::before { content: counter(rule); position: absolute; top: -3px; right: -3px; background: var(--ink); color: var(--paper); font-weight: 700; font-size: 0.8rem; padding: 2px 7px; }
+.rules li h3 { font-size: 1.05rem; margin: 0 26px 4px 0; display: flex; gap: 8px; align-items: center; }
+.rules li p { margin: 0; font-size: 0.95rem; }
+.rules li.r-tower { border-left: 10px solid var(--brown); }
+.rules li.r-lead { border-left: 10px solid var(--ochre); }
+.rules li.r-lag { border-left: 10px solid var(--purple); }
+.rules li.r-energy { border-left: 10px solid var(--brown); }
+.rules li.r-fatigue { border-left: 10px solid var(--red); }
+.rules li.r-review { border-left: 10px solid var(--purple); }
+.timeline { margin-top: 16px; }
+.timeline .weeks span.cp { background: var(--purple); color: var(--paper); border-color: var(--purple); }
+.timeline .weeks span.end { background: var(--ink); color: var(--paper); }
 .note.warn { border-left-color: var(--red); }
 
 /* ---- season ------------------------------------------------------------- */
@@ -220,7 +253,7 @@ input[type="text"], input[type="number"], select, textarea {
 .act.blocked::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 6px; background: var(--red); transform: rotate(-3deg); pointer-events: none; }
 .act.rest .token { background: var(--paper); border: 3px solid var(--brown); }
 .strip { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto; gap: 14px; align-items: stretch; }
-.weeks { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; align-self: center; }
+.weeks { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; align-self: center; }
 .weeks span { height: 34px; border: 2px solid var(--ink); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; }
 .weeks span.done { background: var(--brown); color: var(--paper); border-color: var(--brown); }
 .weeks span.now { background: var(--ochre); }
@@ -310,12 +343,15 @@ table.attempts th, table.attempts td { text-align: left; padding: 6px 8px; borde
   .reveal-grid { grid-template-columns: 1fr; }
   .intro-grid { grid-template-columns: 1fr; }
   .intro-grid .tower-wrap { max-width: 260px; }
+  .brief { grid-template-columns: 1fr; }
+  .brief .tower-panel svg { max-height: 240px; }
 }
 @media (max-width: 600px) {
   body { font-size: 16px; }
   .masthead { grid-template-columns: 1fr auto; }
   .masthead .phasebar { grid-column: 1 / -1; grid-row: 2; }
-  .setup, .bins, .tgrid { grid-template-columns: 1fr; }
+  .setup, .bins, .tgrid, .rules, .ladder { grid-template-columns: 1fr; }
+  .rung.how + .rung.how { border-left: 0; }
   .dashframe { grid-template-columns: 1fr; }
   .lead-row { grid-template-columns: 22px minmax(0, 1fr) minmax(0, 1fr); }
   .lead-row .spark-cell { grid-column: 2 / -1; grid-row: 2; }
@@ -347,7 +383,7 @@ table.attempts th, table.attempts td { text-align: left; padding: 6px 8px; borde
   .flip .face.front { display: none; }
   .flip .face.back { position: static; transform: none; }
   .flip, .flip-inner { min-height: 0; }
-  .arch, .kind, .dataline, .tcard::before, .tri, .cir, .sq, .pip, .metpip, .weeks span, .token, svg { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .arch, .kind, .dataline, .tcard::before, .rung.vision, .rung.goal, .tri, .cir, .sq, .pip, .metpip, .weeks span, .token, svg { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .fog-band, .painted-fall { animation: none; }
 }
 </style>
@@ -382,23 +418,26 @@ table.attempts th, table.attempts td { text-align: left; padding: 6px 8px; borde
    re-run `node tests/signal-tower.mjs --full` after touching them.
    ======================================================================== */
 const CONFIG = {
-  weeks: 12,
-  checkpoints: [4, 8, 12],        // lag iris opens after these weeks
-  reviews: [4, 8],                // review stops (targets + one swap)
+  weeks: 8,
+  checkpoints: [3, 6, 8],         // lag iris opens after these weeks (the last is the season's end)
+  reviews: [3, 6],                // review stops (targets + one swap)
   leadSlots: 3,                   // triangle slots on the dashboard
-  storageKey: 'signal-tower-v1',  // browser storage key (bump when the state shape changes)
+  // Mentor tokens: each reveals one card's hidden ratings. They can only be
+  // spent at a review stop from week `fromWeek` on, never before the season.
+  mentor: { tokens: 2, fromWeek: 3 },
+  storageKey: 'signal-tower-v2',  // browser storage key (bump when the state shape changes)
 
   /* ---- simulation constants (spec section 4) --------------------------- */
   model: {
     start: { C: 20, H: 0, F: 0.1 },
     baseEnergy: 10,
     minEnergy: 3,
-    attention: 1.15,          // tracked-with-target actions
-    habitUp: 0.08,            // all tracked targets met
+    attention: 1.25,          // CALIBRATION: tracked-with-target actions (1.15 in the spec)
+    habitUp: 0.12,            // CALIBRATION: all tracked targets met (0.08 in the spec)
     habitDown: 0.10,
     habitGain: 0.5,           // gain x (1 + habitGain * H)
     capacity: 120,            // gain x (1 - C / capacity)
-    gainScale: 0.8,           // CALIBRATION: global scale on weekly gain
+    gainScale: 1.13,          // CALIBRATION: global scale on weekly gain
     saturation: 4,            // CALIBRATION: tokens past this on one action work at half rate
     decay: 1.5,               // lost when fewer than 3 productive tokens are placed
     productiveE: 0.5,         // an action with e >= this is productive
@@ -406,7 +445,7 @@ const CONFIG = {
     fatigueRecover: 0.05,     // natural weekly recovery
     restRecover: 0.15,        // per rest token
     burnoutAt: 0.7,
-    burnoutEnergy: 3,         // energy lost the week after a burnout
+    burnoutEnergy: 4,         // CALIBRATION: energy lost the week after a burnout (3 in the spec)
     burnoutCrash: 0.15,       // CALIBRATION: fatigue shed by the forced crash
     swapCost: 1,              // energy cost of swapping an indicator at review
     eventChance: 0.6,
@@ -444,7 +483,8 @@ const CONFIG = {
   text: {
     title: 'Signal Tower',
     coldOpen: 'You are building something you can\'t see. Choose your windows wisely.',
-    phases: ['Cold open', 'Sort the signals', 'Choose a quest', 'Build your dashboard', 'The season', 'The fog lifts', 'Your real dashboard']
+    seasonLength: 'Eight weeks',
+    phases: ['Cold open', 'Sort the signals', 'Choose a quest', 'Build your dashboard', 'How the tower works', 'The season', 'The fog lifts', 'Your real dashboard']
   },
 
   /* ---- phase 2: sort the signals -------------------------------------- */
@@ -491,7 +531,7 @@ const CONFIG = {
     holiday: { head: 'A holiday frees up time', body: 'Three extra energy tokens this week.' },
     plateau: { head: 'A quiet week', body: 'Nothing unusual happened. Or so it seems.' },
     none: { head: 'An ordinary week', body: 'No surprises.' },
-    burnout: { head: 'Burnout', body: 'You ran on empty. Three fewer tokens this week, and nothing on your dashboard warned you unless you were watching fatigue.' },
+    burnout: { head: 'Burnout', body: 'You ran on empty. Four fewer tokens this week, and nothing on your dashboard warned you unless you were watching fatigue.' },
     injury: { head: 'Injured', body: 'Speed work on tired legs. You lose ground and three tokens next week.' }
   },
 
@@ -499,13 +539,14 @@ const CONFIG = {
   // Each quest names its expert dashboard in quest.expert.
 
   /* ---- quests (spec section 5) ------------------------------------------
+     vision  the wider aim the quest's goal serves, shown above the dashboard
      Action fields: e true effectiveness, f fatigue per token, synergy
      { partner, min, mult } multiplies THIS action when both have >= min tokens,
      risk (optional injury rule).
      Indicator fields:
        side    'lag' (circle, lag slot) or 'lead' (triangle, lead slots)
        kind    lag | badlag | lead | vanity | weak | guardrail (hidden from the player)
-       cadence 'w' weekly, 4 = weeks 4/8/12, 12 = week 12 only
+       cadence 'w' weekly, 'cp' = each checkpoint week, 'end' = the last week only
        read    { t:'lin', a, C, F, tok:{action:k}, mul:action, lag, noise, scale, dp, min, max }
                { t:'steps', steps:[...], noise }
                { t:'acc', base, tok:{action:k}, C, noise, dp }
@@ -516,7 +557,8 @@ const CONFIG = {
   quests: [
     {
       id: 'speaking', name: 'Public speaking', goal: 'Give a talk that lands',
-      blurb: 'Twelve weeks to become a speaker people want to hear again.',
+      blurb: 'Eight weeks to become a speaker people want to hear again.',
+      vision: 'PLACEHOLDER: Be someone whose ideas are heard, trusted to speak up for a team or a cause.',
       strongest: 'volunteer', feedback: 'review', shiny: 'watch',
       actions: [
         { id: 'rehearse', name: 'Rehearse aloud and record', e: 1.0, f: 0.04, synergy: { partner: 'review', min: 2, mult: 1.3 } },
@@ -528,13 +570,13 @@ const CONFIG = {
       ],
       indicators: [
         { id: 'rating', side: 'lag', kind: 'lag', name: 'Audience rating at the monthly club talk', unit: 'out of 100',
-          cadence: 4, read: { t: 'lin', a: 0, C: 1, noise: 4, dp: 0, min: 0, max: 100 }, better: 'up', ratings: [3, 1, 1, 3],
+          cadence: 'cp', read: { t: 'lin', a: 0, C: 1, noise: 4, dp: 0, min: 0, max: 100 }, better: 'up', ratings: [3, 1, 1, 3],
           tells: 'An honest verdict, but only three times a season and never in time to change that month.' },
         { id: 'invites', side: 'lag', kind: 'lag', name: 'Invitations to speak again', unit: 'invitations',
-          cadence: 4, read: { t: 'steps', steps: [35, 50, 65, 80], noise: 4 }, better: 'up', ratings: [2, 1, 1, 3],
+          cadence: 'cp', read: { t: 'steps', steps: [35, 50, 65, 80], noise: 4 }, better: 'up', ratings: [2, 1, 1, 3],
           tells: 'Honest but coarse: it only ticks over when you cross a threshold.' },
         { id: 'followers', side: 'lag', kind: 'badlag', name: 'Social media followers', unit: 'followers',
-          cadence: 4, read: { t: 'acc', base: 4, tok: { slides: 3, watch: 2 }, noise: 6, dp: 0, start: 120 }, better: 'up', ratings: [1, 1, 1, 1],
+          cadence: 'cp', read: { t: 'acc', base: 4, tok: { slides: 3, watch: 2 }, noise: 6, dp: 0, start: 120 }, better: 'up', ratings: [1, 1, 1, 1],
           tells: 'It grew with slides and watching, not with speaking. It would have cheered a flat tower.' },
         { id: 'rehearsals', side: 'lead', kind: 'lead', name: 'Recorded rehearsals', unit: 'rehearsals',
           cadence: 'w', read: { t: 'lin', tok: { rehearse: 1 } }, better: 'up', target: { def: 3, min: 0, max: 8, step: 1 }, ratings: [3, 3, 3, 3],
@@ -575,25 +617,26 @@ const CONFIG = {
     },
     {
       id: 'running', name: 'Half-marathon', goal: 'Finish strong',
-      blurb: 'Twelve weeks to a half-marathon you finish running, not hobbling.',
+      blurb: 'Eight weeks to a half-marathon you finish running, not hobbling.',
+      vision: 'PLACEHOLDER: Stay fit and well for life, with energy for the things that matter to you.',
       strongest: 'long', feedback: 'long', shiny: 'kit',
       actions: [
         { id: 'easy', name: 'Easy runs', e: 1.0, f: 0.02 },
-        { id: 'long', name: 'Long run', e: 1.3, f: 0.06 },
-        { id: 'speed', name: 'Speed session', e: 1.1, f: 0.1, risk: { overF: 0.6, p: 0.5, guard: 'strength', per: 0.2, cLoss: 3, energy: 3 } },
+        { id: 'long', name: 'Long run', e: 1.4, f: 0.06 },
+        { id: 'speed', name: 'Speed session', e: 1.1, f: 0.12, risk: { overF: 0.6, p: 0.5, guard: 'strength', per: 0.2, cLoss: 3, energy: 3 } },
         { id: 'strength', name: 'Strength and mobility', e: 0.5, f: 0.02 },
         { id: 'kit', name: 'Buy new kit', e: 0.1, f: 0, pop: true },
         { id: 'rest', name: 'Rest', e: 0, f: 0, rest: true }
       ],
       indicators: [
         { id: 'tt10k', side: 'lag', kind: 'lag', name: '10k time trial', unit: 'minutes',
-          cadence: 4, read: { t: 'lin', a: 72, C: -0.3, noise: 1.2, dp: 1 }, better: 'down', ratings: [3, 1, 1, 3],
+          cadence: 'cp', read: { t: 'lin', a: 72, C: -0.3, noise: 1.2, dp: 1 }, better: 'down', ratings: [3, 1, 1, 3],
           tells: 'A true test of fitness, three times a season. A checkpoint, not a steering wheel.' },
         { id: 'weight', side: 'lag', kind: 'badlag', name: 'Body weight', unit: 'kg',
-          cadence: 4, read: { t: 'acc', base: 0, tok: { easy: -0.04, long: -0.05, speed: -0.03 }, noise: 0.6, dp: 1, start: 78 }, better: 'down', ratings: [1, 2, 1, 2],
+          cadence: 'cp', read: { t: 'acc', base: 0, tok: { easy: -0.04, long: -0.05, speed: -0.03 }, noise: 0.6, dp: 1, start: 78 }, better: 'down', ratings: [1, 2, 1, 2],
           tells: 'It drifted with water and dinners. It says little about whether you can run 21 km.' },
         { id: 'finish', side: 'lag', kind: 'lag', name: 'Race finish time', unit: 'minutes',
-          cadence: 12, read: { t: 'lin', a: 150, C: -0.7, noise: 2, dp: 0 }, better: 'down', ratings: [3, 1, 1, 3],
+          cadence: 'end', read: { t: 'lin', a: 150, C: -0.7, noise: 2, dp: 0 }, better: 'down', ratings: [3, 1, 1, 3],
           tells: 'The truest verdict of all, and it arrives on race day with nothing to steer by before.' },
         { id: 'km', side: 'lead', kind: 'lead', name: 'Easy kilometres', unit: 'km',
           cadence: 'w', read: { t: 'lin', tok: { easy: 8 } }, better: 'up', target: { def: 24, min: 0, max: 80, step: 4 }, ratings: [3, 3, 3, 3],
@@ -631,22 +674,23 @@ const CONFIG = {
     },
     {
       id: 'spanish', name: 'Conversational Spanish', goal: 'Hold a 20-minute conversation',
-      blurb: 'Twelve weeks to hold twenty minutes of real conversation.',
+      blurb: 'Eight weeks to hold twenty minutes of real conversation.',
+      vision: 'PLACEHOLDER: Live, work and make friends confidently in a second language.',
       strongest: 'convo', feedback: 'convo', shiny: 'streak',
       actions: [
         { id: 'convo', name: 'Conversation with a person', e: 1.4, f: 0.09 },
         { id: 'srs', name: 'Spaced-repetition reviews', e: 0.9, f: 0.02 },
         { id: 'grammar', name: 'Grammar drills', e: 0.6, f: 0.03 },
-        { id: 'tv', name: 'Spanish TV and podcasts', e: 0.35, f: 0, pop: true },
-        { id: 'streak', name: 'Keep the app streak alive', e: 0.2, f: 0, pop: true },
+        { id: 'tv', name: 'Spanish TV and podcasts', e: 0.25, f: 0, pop: true },
+        { id: 'streak', name: 'Keep the app streak alive', e: 0.1, f: 0, pop: true },
         { id: 'rest', name: 'Rest', e: 0, f: 0, rest: true }
       ],
       indicators: [
         { id: 'mockb1', side: 'lag', kind: 'lag', name: 'Mock B1 speaking test', unit: 'out of 100',
-          cadence: 4, read: { t: 'lin', C: 1, noise: 4, dp: 0, min: 0, max: 100 }, better: 'up', ratings: [3, 1, 1, 3],
+          cadence: 'cp', read: { t: 'lin', C: 1, noise: 4, dp: 0, min: 0, max: 100 }, better: 'up', ratings: [3, 1, 1, 3],
           tells: 'The honest checkpoint. Three readings a season, each too late to change that month.' },
         { id: 'wordsKnown', side: 'lag', kind: 'badlag', name: 'Words "known" in the app', unit: 'words',
-          cadence: 4, read: { t: 'acc', base: 20, tok: { streak: 25, tv: 10, srs: 10 }, noise: 8, dp: 0, start: 300 }, better: 'up', ratings: [1, 2, 1, 1],
+          cadence: 'cp', read: { t: 'acc', base: 20, tok: { streak: 25, tv: 10, srs: 10 }, noise: 8, dp: 0, start: 300 }, better: 'up', ratings: [1, 2, 1, 1],
           tells: 'It only ever goes up. Knowing a word in an app is not using it in a café.' },
         { id: 'minutes', side: 'lead', kind: 'lead', name: 'Minutes speaking with a person', unit: 'minutes',
           cadence: 'w', read: { t: 'lin', tok: { convo: 30 } }, better: 'up', target: { def: 60, min: 0, max: 300, step: 15 }, ratings: [3, 3, 3, 3],
@@ -658,7 +702,7 @@ const CONFIG = {
           cadence: 'w', read: { t: 'lin', C: 0.12, mul: 'convo', noise: 1, dp: 0, min: 0 }, requires: { action: 'convo', min: 1 }, better: 'up', target: { def: 8, min: 0, max: 40, step: 1 }, ratings: [3, 2, 3, 3],
           tells: 'It reads the skill in use. When it flattened with steady conversation, progress had stalled.' },
         { id: 'streakDays', side: 'lead', kind: 'vanity', name: 'App streak days', unit: 'days',
-          cadence: 'w', read: { t: 'acc', base: 0, tok: { streak: 7, srs: 1, tv: 1 }, cap: { perWeek: 7 }, dp: 0, start: 0 }, better: 'up', target: { def: 7, min: 0, max: 84, step: 7 }, ratings: [1, 3, 3, 1],
+          cadence: 'w', read: { t: 'acc', base: 0, tok: { streak: 7, srs: 1, tv: 1 }, cap: { perWeek: 7 }, dp: 0, start: 0 }, better: 'up', target: { def: 7, min: 0, max: 56, step: 7 }, ratings: [1, 3, 3, 1],
           tells: 'The trap from the warm-up. It measured showing up, not learning.' },
         { id: 'tvHours', side: 'lead', kind: 'weak', name: 'Hours of Spanish TV', unit: 'hours',
           cadence: 'w', read: { t: 'lin', tok: { tv: 2 } }, better: 'up', target: { def: 4, min: 0, max: 30, step: 1 }, ratings: [1, 3, 3, 2],
@@ -680,22 +724,23 @@ const CONFIG = {
     },
     {
       id: 'network', name: 'Professional network', goal: 'Build a network that opens doors',
-      blurb: 'Twelve weeks to a network that sends real opportunities your way.',
+      blurb: 'Eight weeks to a network that sends real opportunities your way.',
+      vision: 'PLACEHOLDER: Build a working life where opportunities arrive through people who know and trust your work.',
       strongest: 'coffee', feedback: 'coffee', shiny: 'connect',
       actions: [
         { id: 'coffee', name: 'One-to-one coffee conversations', e: 1.3, f: 0.07 },
         { id: 'followup', name: 'Follow up within 48 hours', e: 1.0, f: 0.02, synergy: { partner: 'coffee', min: 2, mult: 1.3 } },
         { id: 'give', name: 'Give value: introduce or share', e: 1.1, f: 0.04 },
-        { id: 'events', name: 'Attend large events', e: 0.4, f: 0.03, pop: true },
+        { id: 'events', name: 'Attend large events', e: 0.3, f: 0.03, pop: true },
         { id: 'connect', name: 'Grow connection count', e: 0.15, f: 0.01, pop: true },
         { id: 'rest', name: 'Rest', e: 0, f: 0, rest: true }
       ],
       indicators: [
         { id: 'referrals', side: 'lag', kind: 'lag', name: 'Warm referrals and opportunities', unit: 'this month',
-          cadence: 4, read: { t: 'steps', steps: [30, 42, 54, 66, 78], noise: 4 }, better: 'up', ratings: [3, 1, 1, 3],
+          cadence: 'cp', read: { t: 'steps', steps: [30, 42, 54, 66, 78], noise: 4 }, better: 'up', ratings: [3, 1, 1, 3],
           tells: 'The real outcome, and slow: doors open months after the conversations that earned them.' },
         { id: 'views', side: 'lag', kind: 'badlag', name: 'Profile views', unit: 'views',
-          cadence: 4, read: { t: 'acc', base: 10, tok: { connect: 12, events: 6 }, noise: 10, dp: 0, start: 40 }, better: 'up', ratings: [1, 1, 1, 1],
+          cadence: 'cp', read: { t: 'acc', base: 10, tok: { connect: 12, events: 6 }, noise: 10, dp: 0, start: 40 }, better: 'up', ratings: [1, 1, 1, 1],
           tells: 'Views rose with connection requests. Nobody who viewed you sent a referral.' },
         { id: 'meaningful', side: 'lead', kind: 'lead', name: 'Meaningful conversations', unit: 'conversations',
           cadence: 'w', read: { t: 'lin', a: 0.4, C: 0.01, mul: 'coffee', noise: 0.25, dp: 1, min: 0 }, requires: { action: 'coffee', min: 1 }, better: 'up', target: { def: 2, min: 0, max: 10, step: 0.5 }, ratings: [3, 3, 3, 2],
@@ -745,7 +790,8 @@ const CONFIG = {
   // minWords: the minimum word count for each field (live counter shown).
   transfer: {
     fields: [
-      { id: 'goal', label: 'Goal', hint: 'What are you building over the next twelve weeks?', minWords: 6, check: false },
+      { id: 'vision', label: 'Wider vision', hint: 'The larger aim this goal serves. Why does it matter to you?', minWords: 6, check: false },
+      { id: 'goal', label: 'Goal', hint: 'What are you building over the next eight weeks? How does it move you towards the vision?', minWords: 6, check: false },
       { id: 'lag', label: 'Lagging indicator', hint: 'The outcome you will check, e.g. a mock test score.', minWords: 3, check: true },
       { id: 'lagWhen', label: 'When you will check it', hint: 'e.g. the last Friday of each month', minWords: 3, check: false },
       { id: 'lead1', label: 'Leading indicator 1', hint: 'Number, unit, per week, e.g. 3 recorded rehearsals per week', minWords: 4, check: true, sharpen: true },
@@ -818,12 +864,12 @@ const ST = (function () {
       }
       // one plateau per season, starting in a week that is not a checkpoint
       // and early enough for its effect to show before the season ends
-      if (id === 'plateau' && (plateauAt || CONFIG.checkpoints.indexOf(w) >= 0 || w < 2 || w > 10)) id = 'none';
+      if (id === 'plateau' && (plateauAt || CONFIG.checkpoints.indexOf(w) >= 0 || w < 2 || w > W - 2)) id = 'none';
       if (id === 'plateau') plateauAt = w;
       out.push(id);
     }
     if (!plateauAt) {
-      const options = [5, 6, 7];
+      const options = [4, 5];
       plateauAt = options[Math.floor(r() * options.length)];
       out[plateauAt - 1] = 'plateau';
     }
@@ -975,8 +1021,8 @@ const ST = (function () {
   const OBSERVE = {
     due: function (ind, week) {
       if (ind.cadence === 'w') return true;
-      if (ind.cadence === 12) return week === W;
-      return week % ind.cadence === 0;
+      if (ind.cadence === 'end') return week === W;
+      return CONFIG.checkpoints.indexOf(week) >= 0;
     },
     // Returns a number, null (no data this week) or undefined (not due).
     read: function (q, ind, s, a, ev, seed) {
@@ -1345,6 +1391,7 @@ const ST = (function () {
         ok(q.actions.length === 6, q.id + ' needs 6 actions');
         ok(q.actions.filter(function (a) { return a.rest; }).length === 1, q.id + ' needs one rest action');
         [q.strongest, q.feedback, q.shiny].forEach(function (id) { ok(action(q, id), q.id + ': unknown action ' + id); });
+        ok(typeof q.vision === 'string' && q.vision.length > 10, q.id + ' needs a wider vision');
         q.indicators.forEach(function (ind) {
           feeds(ind).forEach(function (a) { ok(action(q, a), ind.id + ' feeds unknown action ' + a); });
           ok(ind.ratings.length === 4 && ind.ratings.every(function (r) { return r >= 1 && r <= 3; }), ind.id + ' ratings');
@@ -1360,6 +1407,9 @@ const ST = (function () {
         ex.leads.forEach(function (id) { ok(indicator(q, id).side === 'lead', q.id + ' expert lead ' + id); });
       });
       ok(CONFIG.sortCards.length === 8, 'eight sort cards');
+      ok(CONFIG.checkpoints[CONFIG.checkpoints.length - 1] === W, 'the last checkpoint is the last week');
+      CONFIG.reviews.forEach(function (w) { ok(CONFIG.checkpoints.indexOf(w) >= 0 && w < W, 'review stop ' + w + ' is not a checkpoint before the end'); });
+      ok(CONFIG.reviews.some(function (w) { return w >= CONFIG.mentor.fromWeek; }), 'no review stop where mentor tokens can be spent');
       ok(CONFIG.sortCards.some(function (c) { return c.answer === 'trap' && /streak/i.test(c.text); }), 'the app-streak trap card');
       return CONFIG.quests.length + ' quests';
     });
@@ -1399,13 +1449,15 @@ const ST = (function () {
     });
     t('a vanity indicator can rise while true C is flat', function () {
       const r = playSeason('vain', 'speaking', dashFor('speaking', 'vanity'), fixed({ watch: 4, slides: 4, rest: 2 }));
-      const c4 = r.log[3].C, c8 = r.log[7].C;
-      const f4 = r.log[3].readings.followers, f8 = r.log[7].readings.followers;
-      const h1 = r.log[0].readings.watched, h8 = r.log[7].readings.watched;
-      ok(c8 <= c4 + 1, 'C rose from ' + c4 + ' to ' + c8);
-      ok(f8 > f4, 'followers did not rise: ' + f4 + ' -> ' + f8);
-      ok(h8 >= r.dash.targets.watched && h1 >= r.dash.targets.watched, 'hours watched missed its target');
-      return 'C ' + round(c4, 1) + ' -> ' + round(c8, 1) + ', followers ' + f4 + ' -> ' + f8;
+      // first two lag checkpoints
+      const i = CONFIG.checkpoints[0] - 1, j = CONFIG.checkpoints[1] - 1;
+      const ca = r.log[i].C, cb = r.log[j].C;
+      const fa = r.log[i].readings.followers, fb = r.log[j].readings.followers;
+      const h1 = r.log[0].readings.watched, hb = r.log[j].readings.watched;
+      ok(cb <= ca + 1, 'C rose from ' + ca + ' to ' + cb);
+      ok(fb > fa, 'followers did not rise: ' + fa + ' -> ' + fb);
+      ok(hb >= r.dash.targets.watched && h1 >= r.dash.targets.watched, 'hours watched missed its target');
+      return 'C ' + round(ca, 1) + ' -> ' + round(cb, 1) + ', followers ' + fa + ' -> ' + fb;
     });
     t('fatigue is invisible without a guardrail indicator', function () {
       CONFIG.quests.forEach(function (q) {
@@ -1569,7 +1621,7 @@ const ST = (function () {
   'use strict';
   var C = ST.CONFIG, M = C.model, W = C.weeks;
   var KEY = C.storageKey;
-  var SCREENS = ['intro', 'sort', 'quest', 'build', 'season', 'reveal', 'transfer'];
+  var SCREENS = ['intro', 'sort', 'quest', 'build', 'brief', 'season', 'reveal', 'transfer'];
   var SEED_WORDS = ['lantern', 'harbour', 'granite', 'meadow', 'copper', 'orchard', 'tundra', 'ember', 'quarry', 'beacon', 'willow', 'fjord', 'saffron', 'kestrel', 'basalt', 'juniper'];
   var reduceMotion = false;
   try { reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduceMotion = false; }
@@ -1594,8 +1646,8 @@ const ST = (function () {
      ==================================================================== */
   function emptyDash() { return { lag: null, leads: [null, null, null], targets: {} }; }
   function freshState(seed) {
-    return { v: 1, screen: 'intro', name: '', seed: seed || pickSeed(), sort: {}, quest: null,
-      dash: emptyDash(), mentor: null, allocs: [], reviews: {}, draft: {}, reviewDraft: null,
+    return { v: 2, screen: 'intro', name: '', seed: seed || pickSeed(), sort: {}, quest: null,
+      dash: emptyDash(), mentor: [], mentorPick: '', allocs: [], reviews: {}, draft: {}, reviewDraft: null,
       attempts: [], flipped: {}, transfer: { f: {}, checks: {} }, revealed: false };
   }
   var S = freshState();
@@ -1617,13 +1669,14 @@ const ST = (function () {
   }
   // Validate an imported or stored object and take it as the state.
   function adopt(obj) {
-    if (!obj || obj.v !== 1 || typeof obj.seed !== 'string') return false;
+    if (!obj || obj.v !== 2 || typeof obj.seed !== 'string') return false;
     var base = freshState(obj.seed);
     Object.keys(base).forEach(function (k) { if (obj[k] !== undefined) base[k] = obj[k]; });
     if (SCREENS.indexOf(base.screen) < 0) base.screen = 'intro';
     if (base.quest && !ST.quest(base.quest)) return false;
     if (!Array.isArray(base.allocs) || base.allocs.length > W) return false;
     if (!base.dash || !Array.isArray(base.dash.leads)) base.dash = emptyDash();
+    if (!Array.isArray(base.mentor)) base.mentor = [];
     while (base.dash.leads.length < C.leadSlots) base.dash.leads.push(null);
     S = base;
     lastCommitted = S.allocs.length;
@@ -1640,6 +1693,13 @@ const ST = (function () {
   function currentRun() {
     return ST.replay({ seed: S.seed, quest: S.quest, dash: runDash(), allocs: S.allocs, reviews: S.reviews });
   }
+  function mentorLeft() { return Math.max(0, C.mentor.tokens - S.mentor.length); }
+  function mentorTokensHTML() {
+    var t = '';
+    for (var i = 0; i < C.mentor.tokens; i++) t += '<span class="tok' + (i < S.mentor.length ? ' used' : '') + '" aria-hidden="true"></span>';
+    return t;
+  }
+  function weekList(ws) { return ws.length > 1 ? ws.slice(0, -1).join(', ') + ' and ' + ws[ws.length - 1] : String(ws[0]); }
   function pendingReview() {
     var w = S.allocs.length;
     return C.reviews.indexOf(w) >= 0 && !S.reviews[w];
@@ -1702,7 +1762,7 @@ const ST = (function () {
     var lagSlot = { cx: 160, cy: lagOpen || opts.mode === 'reveal' ? Math.min(TW.ground - 40, Math.max(60, yOf(nowC))) : 62, r: 36 };
     var F = run ? run.state.F : M.start.F;
     var maxPainted = hist.reduce(function (m, x) { return Math.max(m, x); }, 0);
-    var paintedC = Math.min(96, Math.max(maxPainted, 20) + 12 + 2.2 * week);
+    var paintedC = Math.min(96, Math.max(maxPainted, 20) + 12 + 26 * week / W);
 
     var s = '<svg viewBox="0 0 ' + TW.w + ' ' + TW.h + '" role="img" aria-labelledby="' + id + '-t" focusable="false">';
     s += '<title id="' + id + '-t">' + esc(opts.label || 'The tower in the fog') + '</title>';
@@ -1853,8 +1913,8 @@ const ST = (function () {
   var KIND_LABEL = { lag: 'Honest lag', badlag: 'A lag that flatters', lead: 'Leading', vanity: 'Vanity: a painted backdrop', weak: 'Weak lead', guardrail: 'Guardrail' };
   function cadenceText(ind) {
     if (ind.cadence === 'w') return 'Every week';
-    if (ind.cadence === 12) return 'Week 12 only';
-    return 'Weeks 4, 8 and 12';
+    if (ind.cadence === 'end') return 'Week ' + W + ' only';
+    return 'Weeks ' + weekList(C.checkpoints);
   }
   function shapeOf(ind) { return ind.side === 'lag' ? '<span class="cir" aria-hidden="true"></span>' : '<span class="tri" aria-hidden="true"></span>'; }
 
@@ -1870,7 +1930,7 @@ const ST = (function () {
       '<div>' +
       '<header><h2 id="screen-h" tabindex="-1" class="sr">Cold open</h2></header>' +
       '<p class="poster-line"><span>' + esc(C.text.coldOpen) + '</span></p>' +
-      '<p class="lede">Twelve weeks. One goal. Your real progress is hidden in the fog, and the only way to see it is through the windows you choose.</p>' +
+      '<p class="lede">' + esc(C.text.seasonLength) + '. One goal. Your real progress is hidden in the fog, and the only way to see it is through the windows you choose.</p>' +
       '<div class="legend"><span><span class="tri"></span> Leading indicator</span><span><span class="cir"></span> Lagging indicator</span><span><span class="sq"></span> Action or energy</span><span><span class="bar-red"></span> Disruption</span></div>' +
       '<div class="setup">' +
       '<div><label for="seed-in">Seed word</label><input type="text" id="seed-in" data-bind="seed" value="' + esc(S.seed) + '" autocomplete="off" spellcheck="false"><div class="small muted">Same seed, same season. Share it to play identical weeks.</div></div>' +
@@ -1936,42 +1996,46 @@ const ST = (function () {
     var lagInd = d.lag ? ST.indicator(q, d.lag) : null;
     var slots = '<div class="slot lag' + (lagInd ? ' filled' : '') + '"><div class="eyebrow"><span class="cir" aria-hidden="true"></span> Lag window</div>' +
       (lagInd ? '<div class="sname">' + esc(lagInd.name) + '</div><div class="small">' + cadenceText(lagInd) + '</div><button type="button" class="ghost" id="rm-lag" data-action="unslot" data-slot="lag">Remove</button>'
-        : '<div class="small">Pick one lagging indicator: the outcome you will check.</div>') + '</div>';
+        : '<div class="small">Pick one lagging indicator: the evidence that the goal was reached.</div>') + '</div>';
     d.leads.forEach(function (lid, i) {
       var ind = lid ? ST.indicator(q, lid) : null;
       slots += '<div class="slot lead' + (ind ? ' filled' : '') + '"><div class="eyebrow"><span class="tri" aria-hidden="true"></span> Lead window ' + (i + 1) + '</div>' +
         (ind ? '<div class="sname">' + esc(ind.name) + '</div>' + targetStepper(ind, d.targets[lid], 'b') +
           '<button type="button" class="ghost" id="rm-' + i + '" data-action="unslot" data-slot="' + i + '">Remove</button>'
-          : '<div class="small">Pick a weekly signal, then sharpen it into a target.</div>') + '</div>';
+          : '<div class="small">Pick a weekly signal that moves the goal, then sharpen it into a target.</div>') + '</div>';
     });
     var order = deckOrder(q);
     var card = function (ind) {
       var chosen = d.lag === ind.id || d.leads.indexOf(ind.id) >= 0;
       var full = ind.side === 'lag' ? false : d.leads.indexOf(null) < 0;
-      var mentorShown = S.mentor === ind.id;
       return '<div class="icard side-' + ind.side + (chosen ? ' chosen' : '') + '">' +
         '<div class="iname">' + shapeOf(ind) + ' ' + esc(ind.name) + '</div>' +
         '<div class="imeta">' + cadenceText(ind) + ' &middot; ' + esc(ind.unit) + (ind.requires ? ' &middot; needs ' + esc(ST.action(q, ind.requires.action).name.toLowerCase()) + ' that week' : '') + '</div>' +
-        (mentorShown ? '<div class="small"><b>The mentor rates it:</b></div>' + pipsHTML(ind) : '') +
         '<div class="row" style="margin-top:auto">' +
         (chosen ? '<span class="small"><b>On your dashboard</b></span>' :
           '<button type="button" id="add-' + ind.id + '" data-action="slot" data-ind="' + ind.id + '"' + (full ? ' disabled' : '') + '>' + (ind.side === 'lag' ? 'Use as lag' : 'Add to dashboard') + '</button>') +
-        (!S.mentor ? '<button type="button" class="ghost" id="ask-' + ind.id + '" data-action="mentor" data-ind="' + ind.id + '">Ask the mentor</button>' : '') +
         '</div></div>';
     };
     var lags = order.filter(function (i) { return i.side === 'lag'; });
     var leads = order.filter(function (i) { return i.side === 'lead'; });
     var empty = d.leads.filter(function (x) { return !x; }).length;
     var prev = S.attempts.length ? '<div class="note">Rerun on seed <b>' + esc(S.seed) + '</b>: same events, same noise. Only your dashboard changes.</div>' : '';
+    var ladder = '<div class="ladder" role="group" aria-label="From vision to indicators">' +
+      '<div class="rung vision"><div class="eyebrow">The wider vision: why this goal matters</div><div class="vtext">' + esc(q.vision) + '</div></div>' +
+      '<div class="rung goal"><div class="eyebrow">The goal for these ' + W + ' weeks, one step towards the vision</div><div class="gtext">' + esc(q.goal) + '</div></div>' +
+      '<div class="rung how"><div class="eyebrow"><span class="cir" aria-hidden="true"></span> Lagging: did we get there?</div>The outcome that shows the goal was reached. It confirms progress late, at the checkpoints.</div>' +
+      '<div class="rung how"><div class="eyebrow"><span class="tri" aria-hidden="true"></span> Leading: what moves it this week?</div>The weekly inputs and early signs that drive the goal, and through it the vision.</div>' +
+      '</div>';
     return '<section class="screen"><header><h2 id="screen-h" tabindex="-1"><span class="angled">Build your dashboard</span></h2>' +
-      '<p class="lede"><b>' + esc(q.goal) + '.</b> Choose one lag window and up to three lead windows. Give each lead a weekly target: tracked targets focus effort and, when met, build habit.</p></header>' + prev +
+      '<p class="lede">Work down from the vision. Choose one lag window that tells you whether the goal was reached, and up to three lead windows that track what moves it. Give each lead a weekly target: tracked targets focus effort and, when met, build habit.</p></header>' + prev +
+      ladder +
       '<div class="dashframe">' + slots + '</div>' +
-      '<div class="deck-head"><h3>The deck</h3><span class="mentor"><span class="tok' + (S.mentor ? ' used' : '') + '" aria-hidden="true"></span>' +
-      (S.mentor ? 'Mentor token used' : 'One mentor token: reveals one card\'s hidden ratings') + '</span></div>' +
+      '<div class="deck-head"><h3>The deck</h3><span class="mentor">' + mentorTokensHTML() +
+      C.mentor.tokens + ' mentor token' + (C.mentor.tokens > 1 ? 's' : '') + ', to spend at the review stops from week ' + C.mentor.fromWeek + ' on. Each reveals one card\'s hidden ratings.</span></div>' +
       '<h4 style="margin:6px 0 8px"><span class="cir" aria-hidden="true"></span> Lagging windows</h4><div class="deck">' + lags.map(card).join('') + '</div>' +
       '<h4 style="margin:18px 0 8px"><span class="tri" aria-hidden="true"></span> Leading windows</h4><div class="deck">' + leads.map(card).join('') + '</div>' +
       (empty && d.lag ? '<div class="note warn">' + empty + ' lead window' + (empty > 1 ? 's are' : ' is') + ' still empty. You can start like this, but you will steer by the lag alone.</div>' : '') +
-      '<div class="row end" style="margin-top:16px"><button type="button" class="primary" id="start-season" data-action="start"' + (d.lag ? '' : ' disabled') + '>Start the season</button></div>' +
+      '<div class="row end" style="margin-top:16px"><button type="button" class="primary" id="start-season" data-action="start"' + (d.lag ? '' : ' disabled') + '>Next: how the tower works</button></div>' +
       '</section>';
   };
   // Lead cards are shuffled by seed so vanity cards do not sit together.
@@ -2026,7 +2090,7 @@ const ST = (function () {
       var open = reads.length && reads[reads.length - 1].w === run.log.length;
       var iris = '<svg class="iris" viewBox="0 0 70 70" aria-hidden="true"><circle cx="35" cy="35" r="31" fill="' + (open ? '#E6DDC8' : '#4E2A63') + '" stroke="#4E2A63" stroke-width="6"/>' +
         (open ? '<circle cx="35" cy="35" r="12" fill="#4E2A63"/>' : '<line x1="10" y1="35" x2="60" y2="35" stroke="#E6DDC8" stroke-width="3"/><line x1="35" y1="10" x2="35" y2="60" stroke="#E6DDC8" stroke-width="3"/>') + '</svg>';
-      var next = C.checkpoints.find(function (c) { return c > run.log.length && (lag.cadence === 4 || c === W); });
+      var next = C.checkpoints.find(function (c) { return c > run.log.length && (lag.cadence === 'cp' || c === W); });
       lagHTML = '<div class="lag-row">' + iris + '<div><b>' + esc(lag.name) + '</b>' +
         (reads.length ? '<div>' + reads.map(function (x) { return 'Week ' + x.w + ': <b class="num">' + fmt(x.v, lag) + '</b> ' + esc(lag.unit); }).join(' &middot; ') + '</div>' : '<div class="small">Shutter closed.</div>') +
         (next ? '<div class="small">Opens again after week ' + next + '.</div>' : '') + '</div></div>';
@@ -2079,8 +2143,63 @@ const ST = (function () {
       chosen.map(function (id) { return '<option value="' + id + '"' + (rd.from === id ? ' selected' : '') + '>' + esc(ST.indicator(q, id).name) + '</option>'; }).join('') + '</select></div>' +
       '<div><label for="swap-to">With</label><select id="swap-to" data-bind="swap-to"' + (fromInd ? '' : ' disabled') + '><option value="">Choose</option>' +
       options.map(function (i) { return '<option value="' + i.id + '"' + (rd.to === i.id ? ' selected' : '') + '>' + esc(i.name) + '</option>'; }).join('') + '</select></div></div>' +
+      mentorBox(week) +
       '<div class="row end"><button type="button" class="primary" id="review-done" data-action="review-done">Continue the season</button></div></div>';
   }
+  // Mentor tokens can only be spent at a review stop from week C.mentor.fromWeek on.
+  function mentorBox(week) {
+    if (week < C.mentor.fromWeek) return '';
+    var q = Q();
+    var left = mentorLeft();
+    var group = function (side, label) {
+      var list = q.indicators.filter(function (i) { return i.side === side && S.mentor.indexOf(i.id) < 0; });
+      return list.length ? '<optgroup label="' + label + '">' + list.map(function (i) { return '<option value="' + i.id + '"' + (S.mentorPick === i.id ? ' selected' : '') + '>' + esc(i.name) + '</option>'; }).join('') + '</optgroup>' : '';
+    };
+    var ask = left ? '<p class="small">' + left + ' token' + (left > 1 ? 's' : '') + ' left. The mentor reveals how a card really rates on ' + C.transfer.criteria.join(', ').toLowerCase() + '.</p>' +
+      '<div class="setup" style="margin:0 0 8px"><div><label for="mentor-pick">Card to rate</label><select id="mentor-pick" data-bind="mentor-pick"><option value="">Choose a card</option>' +
+      group('lag', 'Lagging windows') + group('lead', 'Leading windows') + '</select></div>' +
+      '<div style="align-self:end"><button type="button" id="mentor-ask" data-action="mentor"' + (S.mentorPick ? '' : ' disabled') + '>Spend a mentor token</button></div></div>'
+      : '<p class="small">No mentor tokens left.</p>';
+    return '<div class="mentor-box"><h4 style="margin:0 0 6px"><span class="mentor">' + mentorTokensHTML() + 'Ask the mentor</span></h4>' + ask +
+      S.mentor.map(function (id) { var ind = ST.indicator(q, id); return '<div class="rated"><div><b>' + shapeOf(ind) + ' ' + esc(ind.name) + '</b></div>' + pipsHTML(ind) + '</div>'; }).join('') + '</div>';
+  }
+
+  // How the tower works: one explainer slide between the dashboard and the season.
+  R.brief = function () {
+    var q = Q();
+    var run = currentRun();   // no weeks played yet
+    var n = run.dash.leads.length;
+    var lag = ST.indicator(q, run.dash.lag);
+    var strip = '';
+    for (var w = 1; w <= W; w++) {
+      var cp = C.checkpoints.indexOf(w) >= 0;
+      strip += '<span class="' + (w === W ? 'end' : cp ? 'cp' : '') + '">' + w + '</span>';
+    }
+    var rules = [
+      ['r-tower', '<span class="sq" aria-hidden="true"></span> The tower is your real progress',
+        'Each week the energy you place adds blocks to it. It starts at ' + M.start.C + ' out of 100 and stays hidden in the fog until week ' + W + ' ends. A week with too little real work loses height.'],
+      ['r-lead', '<span class="tri" aria-hidden="true"></span> Lead windows read every week',
+        (n ? 'Your ' + n + ' triangular window' + (n > 1 ? 's show' : ' shows') : 'Triangular windows show') + ' a weekly reading against your target. More predictive windows see the tower more clearly. Actions you track with a target get extra focus, and meeting every target builds habit, so each token counts for more.'],
+      ['r-lag', '<span class="cir" aria-hidden="true"></span> The lag iris opens late',
+        'The circular window stays shuttered. ' + esc(lag.name) + ' reads ' + cadenceText(lag).toLowerCase() + '. A checkpoint, not a steering wheel.'],
+      ['r-energy', '<span class="sq" aria-hidden="true"></span> Energy is spent week by week',
+        'You get ' + M.baseEnergy + ' tokens a week to place on actions and rest. Events can add or take away tokens. Unplaced tokens are wasted: nothing carries over.'],
+      ['r-fatigue', '<span class="bar-red" aria-hidden="true"></span> Fatigue hides in the fog',
+        'Hard work builds fatigue, and fatigue slows every gain. Past a limit you burn out and lose ' + M.burnoutEnergy + ' tokens the next week. ' + (hasGuardrail(run) ? 'Your guardrail window shows the strain.' : 'Without a guardrail window you will not see it coming.')],
+      ['r-review', '<span class="cir" aria-hidden="true"></span> Review stops and the mentor',
+        'After weeks ' + weekList(C.reviews) + ' you stop, read the lag, adjust targets and may swap one window, which costs a token the next week. From week ' + C.mentor.fromWeek + ' you can spend ' + C.mentor.tokens + ' mentor token' + (C.mentor.tokens > 1 ? 's' : '') + ', each revealing one card\'s hidden ratings.']
+    ];
+    return '<section class="screen"><header><h2 id="screen-h" tabindex="-1"><span class="angled">How the tower works</span></h2>' +
+      '<p class="lede"><b>' + esc(q.goal) + '.</b> ' + esc(C.text.seasonLength) + ', and the tower below is what you are really building. You will only see it through the windows you just chose.</p></header>' +
+      '<div class="brief">' +
+      '<div class="tower-panel">' + towerSVG({ id: 'tw-brief', hist: [M.start.C], run: run, mode: 'fog', label: 'Your tower before week 1. ' + describeWindows(run) }) + towerKey(run) + '</div>' +
+      '<div><ol class="rules">' + rules.map(function (r) { return '<li class="' + r[0] + '"><h3>' + r[1] + '</h3><p>' + r[2] + '</p></li>'; }).join('') + '</ol>' +
+      '<div class="timeline"><div class="eyebrow">The season. Purple circles: checkpoints and review stops. Black square: the last week, then the fog lifts</div>' +
+      '<div class="weeks" aria-label="Weeks 1 to ' + W + '. Lag checkpoints after weeks ' + weekList(C.checkpoints) + '. Review stops after weeks ' + weekList(C.reviews) + '.">' + strip + '</div></div>' +
+      '<div class="row end" style="margin-top:18px"><button type="button" class="ghost" data-action="go" data-to="build" id="brief-back">Back to the dashboard</button>' +
+      '<button type="button" class="primary" data-action="enter" id="enter-tower">Enter the tower</button></div>' +
+      '</div></div></section>';
+  };
 
   R.season = function () {
     var run = currentRun();
@@ -2093,13 +2212,10 @@ const ST = (function () {
       weekStrip += '<span class="' + cls + '" title="Week ' + w + '">' + w + '</span>';
     }
     var label = 'The tower in the fog after week ' + done + '. ' + describeWindows(run);
-    var hasGuard = run.dash.leads.some(function (id) { return ST.indicator(Q(), id).kind === 'guardrail'; });
-    var key = '<div class="tower-key" aria-hidden="true"><span><span class="hatch"></span> Fog</span><span><span class="tri"></span> Lead window, clearer when more predictive</span>' +
-      (run.dash.lag ? '<span><span class="cir"></span> Lag iris, opens at weeks 4, 8, 12</span>' : '') + (hasGuard ? '<span><span class="strain"></span> Strain seen by your guardrail</span>' : '') + '</div>';
-    var tower = '<div class="tower-panel">' + towerSVG({ id: 'tw-season', hist: hist, run: run, mode: 'fog', newest: done > 0 && done === lastCommitted && !reduceMotion, label: label }) + key + '</div>';
+    var tower = '<div class="tower-panel">' + towerSVG({ id: 'tw-season', hist: hist, run: run, mode: 'fog', newest: done > 0 && done === lastCommitted && !reduceMotion, label: label }) + towerKey(run) + '</div>';
     var right, strip;
     if (done >= W) {
-      right = '<div class="panel energy-panel"><h3>Week 12 is done.</h3><p>The season is over. Time to see what was really there.</p><button type="button" class="primary" data-action="go" data-to="reveal" id="lift">Lift the fog</button></div>';
+      right = '<div class="panel energy-panel"><h3>Week ' + W + ' is done.</h3><p>The season is over. Time to see what was really there.</p><button type="button" class="primary" data-action="go" data-to="reveal" id="lift">Lift the fog</button></div>';
       strip = '<div class="strip"><div class="weeks" aria-label="Weeks">' + weekStrip + '</div><div></div><div></div></div>';
     } else if (pendingReview()) {
       right = reviewPanel(run);
@@ -2117,6 +2233,12 @@ const ST = (function () {
     return '<section class="screen"><header><h2 id="screen-h" tabindex="-1" class="sr">The season, week ' + Math.min(done + 1, W) + '</h2></header>' +
       '<div class="season">' + tower + dashPanel(run) + right + strip + '</div></section>';
   };
+  function hasGuardrail(run) { return run.dash.leads.some(function (id) { return ST.indicator(Q(), id).kind === 'guardrail'; }); }
+  function towerKey(run) {
+    var lag = run.dash.lag ? ST.indicator(Q(), run.dash.lag) : null;
+    return '<div class="tower-key" aria-hidden="true"><span><span class="hatch"></span> Fog</span><span><span class="tri"></span> Lead window, clearer when more predictive</span>' +
+      (lag ? '<span><span class="cir"></span> Lag iris, opens ' + cadenceText(lag).toLowerCase() + '</span>' : '') + (hasGuardrail(run) ? '<span><span class="strain"></span> Strain seen by your guardrail</span>' : '') + '</div>';
+  }
   function describeWindows(run) {
     var q = Q();
     var n = run.dash.leads.length;
@@ -2183,7 +2305,7 @@ const ST = (function () {
       '<div class="tower-panel">' + towerSVG({ id: 'tw-reveal', hist: hist, run: run, mode: animate ? 'reveal' : 'plain', label: labelReal }) + '</div>' +
       '<div><div class="stats">' +
       '<div class="stat you"><span class="small">Your real tower</span><b class="num">' + Math.round(sum.finalC) + '</b><span class="small">out of 100</span></div>' +
-      (lag ? '<div class="stat"><span class="small">' + esc(lag.name) + ', week 12</span><b class="num">' + fmt(lagFinal, lag) + '</b><span class="small">' + esc(lag.unit) + ', with noise</span></div>' : '') +
+      (lag ? '<div class="stat"><span class="small">' + esc(lag.name) + ', week ' + W + '</span><b class="num">' + fmt(lagFinal, lag) + '</b><span class="small">' + esc(lag.unit) + ', with noise</span></div>' : '') +
       '<div class="stat"><span class="small">Dashboard quality</span><b class="num">' + sum.dashQ + '</b><span class="small">out of 100</span></div>' +
       '<div class="stat"><span class="small">Burnouts</span><b class="num">' + sum.burnouts + '</b></div>' +
       '<div class="stat"><span class="small">Passive ghost</span><b class="num">' + Math.round(g.passive.state.C) + '</b></div>' +
@@ -2241,9 +2363,10 @@ const ST = (function () {
   R.transfer = function () {
     var ok = transferComplete();
     return '<section class="screen"><header class="no-print"><h2 id="screen-h" tabindex="-1"><span class="angled">Your real dashboard</span></h2>' +
-      '<p class="lede">Now for a goal of your own. One lag, two sharpened leads, one guardrail, an if-then rule and a review day. Tick the criteria each indicator meets.</p></header>' +
+      '<p class="lede">Now for a goal of your own. Start from the wider vision it serves, then one lag, two sharpened leads, one guardrail, an if-then rule and a review day. Tick the criteria each indicator meets.</p></header>' +
       '<div class="tcard"><div class="print-only"><h2>My dashboard</h2>' + (S.name ? '<p>' + esc(S.name) + '</p>' : '') + '</div>' +
       '<div class="tgrid">' +
+      textField('vision', true) +
       textField('goal', true) +
       textField('lag') + textField('lagWhen') +
       sharpenField('lead1') + sharpenField('lead2') +
@@ -2301,7 +2424,7 @@ const ST = (function () {
   A.sort = function (el) { S.sort[el.getAttribute('data-card')] = el.getAttribute('data-bin'); render(); };
   A.quest = function (el) {
     var id = el.getAttribute('data-quest');
-    if (S.quest !== id) { S.quest = id; S.dash = emptyDash(); S.mentor = null; S.attempts = []; S.allocs = []; S.reviews = {}; S.draft = {}; S.flipped = {}; S.revealed = false; revealPlayed = false; }
+    if (S.quest !== id) { S.quest = id; S.dash = emptyDash(); S.mentor = []; S.mentorPick = ''; S.attempts = []; S.allocs = []; S.reviews = {}; S.draft = {}; S.flipped = {}; S.revealed = false; revealPlayed = false; }
     go('build');
   };
   A.slot = function (el) {
@@ -2322,7 +2445,14 @@ const ST = (function () {
     render();
     var h = $('screen-h'); if (h) h.focus({ preventScroll: true });
   };
-  A.mentor = function (el) { if (!S.mentor) { S.mentor = el.getAttribute('data-ind'); render(); say('The mentor has rated ' + ST.indicator(Q(), S.mentor).name + '.'); } };
+  A.mentor = function () {
+    var id = S.mentorPick;
+    if (!id || !mentorLeft() || S.mentor.indexOf(id) >= 0 || !pendingReview() || S.allocs.length < C.mentor.fromWeek) return;
+    S.mentor.push(id); S.mentorPick = '';
+    render();
+    say('The mentor has rated ' + ST.indicator(Q(), id).name + '.');
+    var next = $('mentor-pick') || $('review-done'); if (next) next.focus({ preventScroll: true });
+  };
   A.target = function (el) {
     var ind = ST.indicator(Q(), el.getAttribute('data-ind'));
     var ctx = el.getAttribute('data-ctx');
@@ -2331,8 +2461,9 @@ const ST = (function () {
     bag[ind.id] = ST.round(Math.max(ind.target.min, Math.min(ind.target.max, v)), 2);
     render();
   };
-  A.start = function () {
-    S.allocs = []; S.reviews = {}; S.draft = {}; S.reviewDraft = null; S.flipped = {}; S.revealed = false; revealPlayed = false; lastCommitted = 0;
+  A.start = function () { go('brief'); };
+  A.enter = function () {
+    S.allocs = []; S.reviews = {}; S.draft = {}; S.reviewDraft = null; S.mentor = []; S.mentorPick = ''; S.flipped = {}; S.revealed = false; revealPlayed = false; lastCommitted = 0;
     go('season');
   };
   A.alloc = function (el) { moveToken(el.getAttribute('data-d') === '1' ? 'pool' : el.getAttribute('data-act'), el.getAttribute('data-d') === '1' ? el.getAttribute('data-act') : 'pool'); };
@@ -2374,7 +2505,7 @@ const ST = (function () {
     var run = currentRun();
     var sum = ST.SCORE.summary(run);
     S.attempts.push({ dash: runDash(), dashQ: sum.dashQ, finalC: sum.finalC, archetype: sum.archetype });
-    S.allocs = []; S.reviews = {}; S.draft = {}; S.mentor = null; S.flipped = {}; S.revealed = false; revealPlayed = false;
+    S.allocs = []; S.reviews = {}; S.draft = {}; S.mentor = []; S.mentorPick = ''; S.flipped = {}; S.revealed = false; revealPlayed = false;
     go('build');
   };
   A.check = function (el) {
@@ -2385,7 +2516,7 @@ const ST = (function () {
   };
   A['copy-results'] = function () {
     var q = Q(), run = currentRun(), sum = ST.SCORE.summary(run), g = ST.ghosts(S.seed, S.quest);
-    var lines = ['Signal Tower results' + (S.name ? ' - ' + S.name : ''), 'Quest: ' + q.goal + ' (seed ' + S.seed + ')',
+    var lines = ['Signal Tower results' + (S.name ? ' - ' + S.name : ''), 'Quest: ' + q.goal + ' (seed ' + S.seed + ')', 'Vision: ' + q.vision,
       'Title: ' + C.archetypes[sum.archetype].title, 'Real tower: ' + Math.round(sum.finalC) + '/100. Passive ghost ' + Math.round(g.passive.state.C) + ', expert ghost ' + Math.round(g.expert.state.C) + '.',
       'Dashboard quality: ' + sum.dashQ + '/100. Burnouts: ' + sum.burnouts + '.', 'Windows:'];
     [run.dash.lag].concat(run.dash.leads).filter(Boolean).forEach(function (id) {
@@ -2398,6 +2529,7 @@ const ST = (function () {
   A['copy-transfer'] = function () {
     var ch = function (id) { var c = S.transfer.checks[id] || {}; var on = C.transfer.criteria.filter(function (k) { return c[k]; }); return on.length ? ' [' + on.join(', ') + ']' : ''; };
     var lines = ['My dashboard' + (S.name ? ' - ' + S.name : ''),
+      'Wider vision: ' + tval('vision'),
       'Goal: ' + tval('goal'),
       'Lagging indicator: ' + tval('lag') + ch('lag') + ', checked ' + tval('lagWhen'),
       'Leading indicator 1: ' + tval('lead1') + ' - ' + tval('lead1N') + ' ' + tval('lead1U') + ' per week' + ch('lead1'),
@@ -2486,6 +2618,7 @@ const ST = (function () {
     var el = e.target, b = el.getAttribute && el.getAttribute('data-bind');
     if (b === 'swap-from') { S.reviewDraft.from = el.value; S.reviewDraft.to = ''; render(); }
     else if (b === 'swap-to') { S.reviewDraft.to = el.value; render(); }
+    else if (b === 'mentor-pick') { S.mentorPick = el.value; render(); }
     else if (el.id === 'import-file' && el.files && el.files[0]) {
       var reader = new FileReader();
       reader.onload = function () {
@@ -2556,7 +2689,8 @@ const ST = (function () {
   /* ---- boot ------------------------------------------------------------- */
   if (/[?&]test=1\b/.test(location.search)) { runTests(); return; }
   load();
-  if ((S.screen === 'season' || S.screen === 'reveal' || S.screen === 'build') && !S.quest) S.screen = 'quest';
+  if ((S.screen === 'season' || S.screen === 'reveal' || S.screen === 'build' || S.screen === 'brief') && !S.quest) S.screen = 'quest';
+  if (S.screen === 'brief' && !S.dash.lag) S.screen = 'build';
   if ((S.screen === 'reveal' || S.screen === 'transfer') && S.allocs.length < W) S.screen = S.quest ? 'season' : 'intro';
   if (S.screen === 'season' && pendingReview() && !S.reviewDraft) S.reviewDraft = { targets: Object.assign({}, currentRun().dash.targets), from: '', to: '' };
   render();
