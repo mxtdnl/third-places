@@ -17,11 +17,8 @@ Interactive teaching tools for Ray Oldenburg's third-place theory. Static HTML f
 - `week6a-criteria-forge.html` — Week 6a criteria forge (Activity 9): adjudicate between two competing explanations before any criteria are taught, then dissect the committed justification sentence by sentence to reveal which of the four formal criteria were implicitly used
 - `week6b-adjudication-bench.html` — Adjudication Bench (Activity 10, week 6b): groups adjudicate between two competing explanations for a decline claim using four criteria, with predictions locked before evidence. Export JSON schema is documented in the file header for the week 7 tool
 - `mondi.html` — Quattro Mondi (Activity 11): a single-player market-structure simulation. One pizza firm, identical costs, run simultaneously in perfect competition, monopolistic competition, oligopoly and monopoly over eight rounds. Seeded and deterministic, with a ghost leaderboard, a verification code and an in-browser test suite at `?test=1`. Design notes, calibration traces and the theory map in `mondi.md`; Node test harness in `tests/run.mjs`
-- `signal-tower.html` — Signal Tower (Activity 13): a 10–15 minute single-player simulation on leading, lagging, vanity and guardrail indicators. An eight-week personal goal, linked to a wider vision, with true progress hidden in fog; the chosen dashboard both informs and changes the outcome. Seeded and deterministic, ghost comparison, DATA results line, in-browser test suite at `?test=1`. Design notes and calibration record in `signal-tower.md`; Node harness in `tests/signal-tower.mjs`
-- `signal-tower.md` — Model changes from the design spec, calibration record and instructor notes for Signal Tower
 - `mondi.md` — Deployment, instructor notes, traced baselines, theory map and the calibration record for Quattro Mondi
 - `tests/run.mjs` — Node test harness for `mondi.html` (built-ins only): `node tests/run.mjs`, or `--full` for the 1000-seed calibration checks
-- `tests/signal-tower.mjs` — Node test harness for `signal-tower.html` (built-ins only): `node tests/signal-tower.mjs`, or `--full` for 200 seeds per policy
 - `SLIDES.md` — Blueprint for building a projection deck: the 16:9 stage model, type scale, slide archetypes, interaction patterns, contrast rules and the verification harnesses. Read before building or editing a deck; `theory-of-change.html` is the reference implementation
 - `third-place-content.md` — Source content and curriculum notes
 - `spec.md` — Mechanics, tuning values and design assumptions for the builder
@@ -32,8 +29,6 @@ When adding a new activity HTML file, also add a card for it in `index.html` (in
 ## Testing
 
 `mondi.html` has its own suite, which does not run through `test.html`: run `node tests/run.mjs` after changing it, or open `mondi.html?test=1`. Note that Quattro Mondi follows the Bauhaus design system documented in `mondi.md`, not the warm third-places palette described below.
-
-`signal-tower.html` likewise has its own suite (`node tests/signal-tower.mjs`, or `signal-tower.html?test=1`) and its own six-colour palette and sentence-case type from its design spec, recorded in `signal-tower.md`.
 
 After any change, open `test.html` in a browser (serve via any local HTTP server — the tests use XHR to load the other HTML files). All tests must pass.
 
