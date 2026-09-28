@@ -7,7 +7,11 @@
 - Open `signal-tower.html` from the file system or GitHub Pages. No network calls.
 - The seed word is shown in the header. Give the class one seed for identical seasons.
 - `signal-tower.html?test=1` runs the model suite in the browser. `node tests/signal-tower.mjs` runs the same suite plus file-level checks.
-- State autosaves to `localStorage` under `signal-tower-v1`. Only the inputs are saved (seed, quest, dashboard, weekly allocations, review changes), and the season is replayed from them. Export JSON and Import JSON move a session between devices. Reset asks for confirmation first.
+- The season is eight weeks. The lag iris opens after weeks 3, 6 and 8; review stops follow weeks 3 and 6.
+- A "How the tower works" explainer slide sits between the dashboard and the season. It uses the player's own dashboard and reads its numbers from `CONFIG`, so it stays in step with edits.
+- The build screen shows a ladder from the quest's wider vision to its goal to the lag and lead windows. The transfer card opens with a "Wider vision" field.
+- The mentor token (one, `CONFIG.mentor`) cannot be spent before the season. It is spent at a review stop from week 3 on, where it helps the swap decision.
+- State autosaves to `localStorage` under `signal-tower-v2` (v1 saves from the twelve-week build are not loaded). Only the inputs are saved (seed, quest, dashboard, weekly allocations, review changes), and the season is replayed from them. Export JSON and Import JSON move a session between devices. Reset asks for confirmation first.
 
 ## Where the build departs from the spec
 
@@ -15,15 +19,20 @@ These are design decisions made during calibration. Each one can be changed in `
 
 | Area | Spec | Build | Why |
 |---|---|---|---|
-| Gain scale | not specified | `gainScale 0.8` on weekly gain | With the raw formula the tower reaches 100 within the season |
+| Season length | 12 weeks, checkpoints 4/8/12 | 8 weeks, checkpoints 3/6/8, reviews after 3 and 6 | Instructor request: twelve weeks was too long for the session |
+| Gain scale | not specified | `gainScale 1.13` on weekly gain (0.8 in the twelve-week build) | Recalibrated for eight weeks |
+| Attention | 1.15 | 1.25 | Recalibrated for eight weeks: widens the gap between tracked and untracked play |
+| Habit growth | +0.08 per week | +0.12 per week | With eight weeks, habit could not build to a meaningful level at 0.08 |
+| Burnout energy | E −3 next week | E −4 | Recalibrated for eight weeks |
+| Mentor token | one, at the dashboard | one, only at a review stop from week 3 | Instructor request |
 | Fatigue scale | not specified | `fatigueScale 0.5` on every action's `f` | With raw `f` values the passive bot burns out almost every week |
 | Saturation | not specified | tokens past 4 on one action work at half rate | Stops single-action spam beating the expert |
 | Burnout | E −3 next week | also sheds 0.15 fatigue (the crash) | Without it, burnout repeats every week once F passes 0.7 |
 | Rest | `f = −0.15` and `−0.15 × rest` in the F update | counted once, in the F update | Avoids counting rest twice |
-| Plateau | drawn with p = 0.6/7 per week | exactly one plateau per season, starting in a non-checkpoint week from 2 to 10; if none is drawn it is placed in week 5, 6 or 7 | Every season needs the persistence-or-pivot lesson |
+| Plateau | drawn with p = 0.6/7 per week | exactly one plateau per season, starting in a non-checkpoint week from 2 to 6; if none is drawn it is placed in week 4 or 5 | Every season needs the persistence-or-pivot lesson |
 | Filler words noise | σ 2 | σ 1 | At σ 2 the plateau is not detectable in the lead |
-| Half-marathon fatigue | long run "f high", speed f 0.12 | easy 0.02, long 0.06, speed 0.10; injury p 0.5 − 0.2 × strength tokens when F > 0.6 | Brings the running quest into the calibration bands |
-| Spanish and network f values | not specified | convo 0.09, SRS 0.02, grammar 0.03, coffee 0.07, follow-up 0.02, give 0.04, events 0.03, connect 0.01 | Authored for calibration |
+| Half-marathon fatigue | long run "f high", speed f 0.12 | easy 0.02, long 0.06 (long e 1.4), speed 0.12; injury p 0.5 − 0.2 × strength tokens when F > 0.6 | Brings the running quest into the calibration bands |
+| Spanish and network f values | not specified | convo 0.09, SRS 0.02, grammar 0.03, coffee 0.07, follow-up 0.02, give 0.04, events 0.03, connect 0.01; e for TV 0.25, app streak 0.1, large events 0.3 | Authored for calibration (the e values were lowered for the eight-week season) |
 | Lead slots | 1 lag + 3 leads | the lag is required; lead slots may be left empty, with a warning | Allows the "lag-only dashboard" case in section 10 |
 | Archetypes | six titles, no order | checked in this order: Burnout Sprinter, Vanity Curator, Busy Bee, Lucky Wanderer, Signal Reader, Rear-View Driver; fallback **Steady Climber** | The spec does not define a default |
 | Typography | Jost, embedded or fallback | fallback stack only, starting with `Jost` if installed locally | No network or embedded font |
@@ -37,19 +46,21 @@ These are design decisions made during calibration. Each one can be changed in `
 
 | Policy (band) | Speaking | Running | Spanish | Network |
 |---|---|---|---|---|
-| Passive (35–45) | 42.5 ± 1.4 | 37.0 ± 3.9 | 42.1 ± 1.4 | 44.1 ± 1.3 |
-| Lag-only (45–55) | 51.6 ± 2.7 | 49.0 ± 3.5 | 49.5 ± 2.3 | 52.6 ± 2.7 |
-| Vanity-heavy (35–45) | 35.2 ± 4.0 | 38.6 ± 3.8 | 43.2 ± 3.9 | 35.9 ± 3.8 |
-| Good dashboard, sensible (65–75) | 69.0 ± 3.8 | 66.4 ± 2.1 | 69.9 ± 3.6 | 67.4 ± 2.7 |
-| Expert bot (75–85) | 77.2 ± 3.1 | 80.1 ± 2.9 | 77.2 ± 3.2 | 82.4 ± 2.9 |
+| Passive (35–45) | 43.7 ± 1.5 | 39.5 ± 2.8 | 42.0 ± 1.5 | 44.5 ± 1.5 |
+| Lag-only (45–55) | 49.9 ± 2.9 | 48.9 ± 3.1 | 47.4 ± 2.6 | 50.9 ± 3.2 |
+| Vanity-heavy (35–45) | 40.2 ± 3.7 | 44.4 ± 3.6 | 44.4 ± 3.4 | 39.7 ± 3.7 |
+| Good dashboard, sensible (65–75) | 68.9 ± 3.8 | 65.7 ± 2.3 | 68.7 ± 4.0 | 65.6 ± 2.6 |
+| Expert bot (75–85) | 77.0 ± 3.7 | 80.5 ± 3.9 | 77.3 ± 3.3 | 82.5 ± 3.5 |
+
+Several cells sit within 1 point of a band edge (network passive, running and Spanish vanity, running and network sensible). Small edits to `CONFIG.model` or to action `e`/`f` values can push them out; re-run `node tests/signal-tower.mjs --full` after any change.
 
 Other section 10 requirements, as checked by the suite:
 
-- **Dashboard effect vs seed spread:** the gap between sensible and lag-only play is 4.6× to 5.7× the larger SD.
-- **Spam:** the best single-action spam scores 44.6 (speaking), 49.6 (running), 47.0 (Spanish) and 49.6 (network), all well below the expert.
+- **Dashboard effect vs seed spread:** the gap between sensible and lag-only play is 4.6× to 5.4× the larger SD.
+- **Spam:** the best single-action spam scores 46.1 (speaking), 53.4 (running), 50.6 (Spanish) and 53.4 (network), all well below the expert.
 - **Burnout:** reached by lag-only play without a guardrail in 20 of 20 seeds on every quest.
-- **Vanity readings:** the vanity dashboard meets its own targets in 68% (speaking) to 100% of weeks while its tower stays at 35–45.
-- **Plateau:** in the plateau week, good C-reading leads (filler words, new words used, meaningful conversations) move 47–50% as much as the week before. The resting-heart-rate lead in the running quest lags two weeks, so it shows the plateau later, as its card says.
+- **Vanity readings:** the vanity dashboard meets its own targets in 74% (speaking) to 100% of weeks while its tower stays at 35–45.
+- **Plateau:** in the plateau week, good C-reading leads (filler words, new words used, meaningful conversations) move 45–50% as much as the week before. The resting-heart-rate lead in the running quest lags two weeks, so it shows the plateau later, as its card says.
 
 The policies are defined in `BOTS` in the model script:
 
@@ -61,4 +72,4 @@ The policies are defined in `BOTS` in the model script:
 
 ## Authored content to review
 
-The spec fully specifies the speaking quest only. For the other three quests these were authored for this build and are design values, not empirical claims: indicator ratings, noise, units, reading formulas, default targets, event headlines, card-flip sentences, and the `e` and `f` values the spec leaves open. The eight warm-up sort cards, the archetype lines and the fallback Steady Climber title are also authored. All of it lives in `CONFIG` in `signal-tower.html`.
+The spec fully specifies the speaking quest only. For the other three quests these were authored for this build and are design values, not empirical claims: indicator ratings, noise, units, reading formulas, default targets, event headlines, card-flip sentences, and the `e` and `f` values the spec leaves open. The four quest visions are prefixed `PLACEHOLDER:` and should be replaced with instructor wording. The eight warm-up sort cards, the explainer slide copy, the archetype lines and the fallback Steady Climber title are also authored. All of it lives in `CONFIG` in `signal-tower.html`.
