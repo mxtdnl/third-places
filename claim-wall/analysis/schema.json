@@ -1,0 +1,449 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claim-wall/analysis/schema.json",
+  "title": "Claim Wall Analysis",
+  "description": "One snapshot of the claim wall coded per ANALYSIS_PROTOCOL.md. Sub-scores are reported separately; there is no total.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "protocol_version", "theory_file", "snapshot", "entries", "claim_synthesis", "snapshot_gaps", "overrides"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "protocol_version": { "type": "string", "minLength": 1 },
+    "theory_file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "const": "../third-place-content.md" },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "snapshot": { "$ref": "#/$defs/snapshot" },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/entry" }
+    },
+    "claim_synthesis": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": { "$ref": "#/$defs/claim_synthesis" }
+    },
+    "snapshot_gaps": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["characteristics_unengaged_anywhere"],
+      "properties": {
+        "characteristics_unengaged_anywhere": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/characteristic_name" }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "overrides": {
+      "description": "Written by the viewer (Session 4) only; [] when written by the analyst. The analyst's original code is never edited in place.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/override" }
+    }
+  },
+
+  "$defs": {
+    "entry_id": { "type": "string", "pattern": "^S[0-9]+-[0-9]{3}$" },
+    "snapshot_id": { "type": "string", "pattern": "^S[0-9]+$" },
+    "claim_no": { "type": "integer", "minimum": 1, "maximum": 4 },
+    "claim_label": { "enum": ["Quantity", "Usage", "Outcomes", "Quality"] },
+    "lens": { "enum": ["Psychology", "Economics", "Politics"] },
+    "score": { "type": "integer", "enum": [0, 1, 2] },
+    "criterion": { "enum": ["claim_fit", "mechanism", "explains_change", "lens_fit", "testability", "scope", "oldenburg"] },
+
+    "characteristic_name": {
+      "description": "Exact names from the Section A headings of the theory file (ANALYSIS_PROTOCOL.md Section 2).",
+      "enum": [
+        "Neutral Ground",
+        "The Leveler",
+        "Conversation is the Main Activity",
+        "Accessibility and Accommodation",
+        "The Regulars",
+        "A Low Profile",
+        "The Mood is Playful",
+        "A Home Away from Home"
+      ]
+    },
+
+    "rationale": {
+      "description": "Every code carries one. Each quote must appear verbatim in Card_Text and contain no square brackets (checked by the validator).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["quotes", "text"],
+      "properties": {
+        "quotes": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1, "pattern": "^[^\\[\\]]+$" }
+        },
+        "text": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["snapshot_id", "snapshot_date", "source_workbook", "entry_count", "uncertain_count", "analyst", "generated_at"],
+      "properties": {
+        "snapshot_id": { "$ref": "#/$defs/snapshot_id" },
+        "snapshot_date": {
+          "description": "From Entries!Snapshot_Date; null when blank in the workbook.",
+          "type": ["string", "null"],
+          "format": "date"
+        },
+        "source_workbook": { "type": "string", "minLength": 1 },
+        "entry_count": { "type": "integer", "minimum": 1 },
+        "uncertain_count": { "type": "integer", "minimum": 0 },
+        "analyst": { "type": "string", "minLength": 1 },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "notes": {
+          "description": "Snapshot-level transcription notes, e.g. cards visible on the board but not captured.",
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry_id", "claim_no", "discipline", "card_text", "transcription_confidence", "transcription_caveat", "caveat_affects", "oldenburg", "strength"],
+      "properties": {
+        "entry_id": { "$ref": "#/$defs/entry_id" },
+        "claim_no": { "$ref": "#/$defs/claim_no" },
+        "discipline": { "$ref": "#/$defs/lens" },
+        "card_text": { "description": "Copied verbatim from the workbook; the validator checks equality.", "type": "string", "minLength": 1 },
+        "transcription_confidence": { "enum": ["High", "Uncertain"] },
+        "transcription_caveat": { "type": ["string", "null"] },
+        "caveat_affects": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/criterion" }
+        },
+        "oldenburg": { "$ref": "#/$defs/oldenburg" },
+        "strength": { "$ref": "#/$defs/strength" },
+        "analyst_note": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "transcription_confidence": { "const": "Uncertain" } } },
+          "then": { "properties": { "transcription_caveat": { "type": "string", "minLength": 1 } } }
+        }
+      ]
+    },
+
+    "oldenburg": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["engagement", "characteristics", "vocabulary_flags"],
+      "properties": {
+        "engagement": { "enum": ["engaged", "none"] },
+        "characteristics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "relation", "rationale"],
+            "properties": {
+              "name": { "$ref": "#/$defs/characteristic_name" },
+              "relation": { "enum": ["erodes", "barrier", "invokes"] },
+              "rationale": { "$ref": "#/$defs/rationale" }
+            }
+          }
+        },
+        "none_rationale": { "$ref": "#/$defs/rationale" },
+        "vocabulary_flags": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["term_as_written", "maps_to", "usage_matches_definition", "rationale"],
+            "properties": {
+              "term_as_written": { "type": "string", "minLength": 1 },
+              "maps_to": { "$ref": "#/$defs/characteristic_name" },
+              "usage_matches_definition": { "enum": ["matches", "partial", "does_not_match", "undeterminable"] },
+              "rationale": { "$ref": "#/$defs/rationale" }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "engagement": { "const": "none" } } },
+          "then": {
+            "required": ["none_rationale"],
+            "properties": { "characteristics": { "maxItems": 0 } }
+          },
+          "else": {
+            "properties": { "characteristics": { "minItems": 1 } }
+          }
+        }
+      ]
+    },
+
+    "strength": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_fit", "mechanism", "explains_change", "lens_fit", "testability", "scope"],
+      "properties": {
+        "claim_fit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["score", "rationale", "misfiled_to", "not_an_explanation"],
+          "properties": {
+            "score": { "$ref": "#/$defs/score" },
+            "rationale": { "$ref": "#/$defs/rationale" },
+            "misfiled_to": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/claim_no" }] },
+            "not_an_explanation": {
+              "oneOf": [
+                { "type": "null" },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["type", "rationale"],
+                  "properties": {
+                    "type": { "enum": ["restates_claim", "describes_outcome", "proposes_intervention"] },
+                    "rationale": { "$ref": "#/$defs/rationale" }
+                  }
+                }
+              ]
+            }
+          },
+          "allOf": [
+            {
+              "if": { "properties": { "not_an_explanation": { "type": "object" } } },
+              "then": { "properties": { "score": { "const": 0 } } }
+            }
+          ]
+        },
+        "mechanism": { "$ref": "#/$defs/simple_subscore" },
+        "explains_change": { "$ref": "#/$defs/simple_subscore" },
+        "lens_fit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["score", "rationale", "actual_lens"],
+          "properties": {
+            "score": { "$ref": "#/$defs/score" },
+            "rationale": { "$ref": "#/$defs/rationale" },
+            "actual_lens": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["primary", "secondary"],
+              "properties": {
+                "primary": { "enum": ["Psychology", "Economics", "Politics", "Undeterminable"] },
+                "secondary": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/lens" } }
+              }
+            }
+          }
+        },
+        "testability": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["score", "rationale", "testable_implication", "implication_note"],
+          "properties": {
+            "score": { "$ref": "#/$defs/score" },
+            "rationale": { "$ref": "#/$defs/rationale" },
+            "testable_implication": { "type": ["string", "null"] },
+            "implication_note": {
+              "description": "Score 1: the element the analyst supplied. Score 0: why no implication can be derived. Score 2: may be empty.",
+              "type": "string"
+            }
+          },
+          "allOf": [
+            {
+              "if": { "properties": { "score": { "const": 0 } } },
+              "then": { "properties": { "testable_implication": { "type": "null" }, "implication_note": { "minLength": 1 } } },
+              "else": { "properties": { "testable_implication": { "type": "string", "minLength": 1 } } }
+            },
+            {
+              "if": { "properties": { "score": { "const": 1 } } },
+              "then": { "properties": { "implication_note": { "minLength": 1 } } }
+            }
+          ]
+        },
+        "scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["score", "rationale", "stated_scope", "bodo_question"],
+          "properties": {
+            "score": { "$ref": "#/$defs/score" },
+            "rationale": { "$ref": "#/$defs/rationale" },
+            "stated_scope": { "type": ["string", "null"] },
+            "bodo_question": { "type": "string", "pattern": "\\?\\s*$" }
+          }
+        }
+      }
+    },
+
+    "simple_subscore": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["score", "rationale"],
+      "properties": {
+        "score": { "$ref": "#/$defs/score" },
+        "rationale": { "$ref": "#/$defs/rationale" }
+      }
+    },
+
+    "claim_synthesis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_no", "claim_label", "claim_text", "candidates", "imported_candidates", "nearest_misses", "clusters", "convergence", "tensions", "gaps"],
+      "properties": {
+        "claim_no": { "$ref": "#/$defs/claim_no" },
+        "claim_label": { "$ref": "#/$defs/claim_label" },
+        "claim_text": { "type": "string", "minLength": 1 },
+        "candidates": {
+          "description": "Entries filed here passing the gate in protocol 9.1, in the stated order.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/candidate" }
+        },
+        "imported_candidates": {
+          "description": "Entries filed elsewhere whose misfiled_to is this claim.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/candidate" }
+        },
+        "nearest_misses": {
+          "description": "Required in practice when candidates is empty: entries closest to the gate and the criterion each fails.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["entry_id", "fails"],
+            "properties": {
+              "entry_id": { "$ref": "#/$defs/entry_id" },
+              "fails": { "type": "array", "minItems": 1, "items": { "enum": ["claim_fit", "mechanism", "explains_change"] } }
+            }
+          }
+        },
+        "clusters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["cluster_id", "kind", "entry_ids", "shared_element", "quotes"],
+            "properties": {
+              "cluster_id": { "type": "string", "minLength": 1 },
+              "kind": { "enum": ["duplicate", "overlap"] },
+              "entry_ids": { "type": "array", "minItems": 2, "uniqueItems": true, "items": { "$ref": "#/$defs/entry_id" } },
+              "shared_element": { "type": "string", "minLength": 1 },
+              "quotes": {
+                "description": "Verbatim fragments from at least two of the clustered cards.",
+                "type": "array",
+                "minItems": 2,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["entry_id", "quote"],
+                  "properties": {
+                    "entry_id": { "$ref": "#/$defs/entry_id" },
+                    "quote": { "type": "string", "minLength": 1, "pattern": "^[^\\[\\]]+$" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "convergence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["entry_ids", "shared_mechanism", "lenses"],
+            "properties": {
+              "entry_ids": { "type": "array", "minItems": 2, "uniqueItems": true, "items": { "$ref": "#/$defs/entry_id" } },
+              "shared_mechanism": { "type": "string", "minLength": 1 },
+              "lenses": { "type": "array", "minItems": 2, "uniqueItems": true, "items": { "$ref": "#/$defs/lens" } }
+            }
+          }
+        },
+        "tensions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["entry_ids", "description"],
+            "properties": {
+              "entry_ids": { "type": "array", "minItems": 2, "uniqueItems": true, "items": { "$ref": "#/$defs/entry_id" } },
+              "description": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "gaps": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["characteristics_unengaged", "lenses_without_mechanism"],
+          "properties": {
+            "characteristics_unengaged": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/characteristic_name" } },
+            "lenses_without_mechanism": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/lens" } },
+            "notes": { "type": "string" }
+          }
+        }
+      }
+    },
+
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry_id", "subscores", "why"],
+      "properties": {
+        "entry_id": { "$ref": "#/$defs/entry_id" },
+        "subscores": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["claim_fit", "mechanism", "explains_change", "lens_fit", "testability", "scope"],
+          "properties": {
+            "claim_fit": { "$ref": "#/$defs/score" },
+            "mechanism": { "$ref": "#/$defs/score" },
+            "explains_change": { "$ref": "#/$defs/score" },
+            "lens_fit": { "$ref": "#/$defs/score" },
+            "testability": { "$ref": "#/$defs/score" },
+            "scope": { "$ref": "#/$defs/score" }
+          }
+        },
+        "why": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "override": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["override_id", "target", "pointer", "original_value", "override_value", "reason", "by", "at"],
+      "properties": {
+        "override_id": { "type": "string", "minLength": 1 },
+        "target": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": {
+            "kind": { "enum": ["entry", "claim_synthesis", "snapshot_gaps"] },
+            "entry_id": { "$ref": "#/$defs/entry_id" },
+            "claim_no": { "$ref": "#/$defs/claim_no" }
+          },
+          "allOf": [
+            { "if": { "properties": { "kind": { "const": "entry" } } }, "then": { "required": ["entry_id"] } },
+            { "if": { "properties": { "kind": { "const": "claim_synthesis" } } }, "then": { "required": ["claim_no"] } }
+          ]
+        },
+        "pointer": {
+          "description": "RFC 6901 JSON Pointer from the document root to the overridden field, e.g. /entries/4/strength/mechanism/score.",
+          "type": "string",
+          "pattern": "^(/[^/]*)+$"
+        },
+        "original_value": { "description": "The analyst's value at the pointer, preserved verbatim." },
+        "override_value": {},
+        "reason": { "type": "string", "minLength": 1 },
+        "by": { "type": "string", "minLength": 1 },
+        "at": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}
