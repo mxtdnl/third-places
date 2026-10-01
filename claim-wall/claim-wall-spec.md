@@ -9,7 +9,7 @@ This spec is built across several Claude Code sessions. **Every session starts b
 | 1 | Theory extraction, protocol, schema | Approved (proposed defaults for A2, A5, A8, A9 adopted) | Yes, 2026-10-01 |
 | 2 | Code S1 entries, validator | Approved (codes and the eight judgement calls in HANDOFF.md adopted as written) | Yes, 2026-10-01 |
 | 3 | Viewer: read-only views | Approved (student-view calls adopted; .xlsx export via inline writer, not SheetJS) | Yes, 2026-10-01 |
-| 4 | Viewer: override, export, snapshot loading | Not started | — |
+| 4 | Viewer: override, export, snapshot loading | Complete; awaiting approval (judgement calls 1–9 in HANDOFF.md) | — |
 | 5 | Snapshot comparison (runs once S2 exists) | Blocked: no S2 | — |
 | R | Recurring: code a new snapshot | Available after 2 | — |
 

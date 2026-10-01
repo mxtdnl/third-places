@@ -141,3 +141,72 @@ Max approved Session 2 without amendments. `analysis/S1.json` stands as coded, a
 Max approved Session 3 without amendments. Student-view boundary calls 1–5 above are adopted as written. The viewer was not added to `../index.html` or to the `../CLAUDE.md` file list, because spec Section 3 keeps changes inside `claim-wall/`. Session 4 may begin.
 
 **Decision for Session 4: .xlsx export without SheetJS.** The viewer writes .xlsx itself, using a minimal inline writer: a zip archive of the required XML parts (content types, relationships, workbook, worksheets) and plain flat sheets, with no formulas or styling. No library is loaded from a CDN or vendored into the file. This keeps the viewer consistent with the repo's no-external-dependencies rule, and it keeps working offline from `file://`. This decision supersedes the "(SheetJS)" note in spec Section 5 and the CDN clause in Section 3 for this build. No .xlsx import is needed: Session 4 loads analysis JSON only, and its round-trip test uses the JSON export. Session 4 should check that the exported .xlsx opens with `openpyxl` and that its cell values equal the reconciled JSON.
+
+---
+
+## Session 4: Viewer, override, export, snapshot loading (2026-10-01)
+
+**Status:** complete, awaiting Max's approval. Session 5 stays blocked until S2 exists.
+
+**Gate check:** the Status table showed Session 3 approved (commit `c48947c`). `analysis/S1.json`, `analysis/schema.json`, the protocol and the theory file were not modified. The validator still reports 0 errors and 0 warnings on S1.
+
+**Files created**
+- `scripts/verify_session4.mjs`: Playwright checks for the Session 4 done-when criteria. Usage: `node scripts/verify_session4.mjs [--keep <dir>]`. Needs `pip install openpyxl jsonschema rfc3339-validator`. It runs a LibreOffice check only if LibreOffice Calc can open a reference workbook.
+- `scripts/check_xlsx_export.py`: compares a viewer .xlsx export cell by cell with the matching JSON export. It applies the overrides itself, separately from the viewer's code. Usage: `python3 scripts/check_xlsx_export.py <x.xlsx> <x.json>`.
+
+**Files modified**
+- `index.html`: added override, export, loading and the snapshot selector (details below). `analysis/schema.json` is now embedded in `<script type="application/json" id="embedded-schema">`.
+- `scripts/embed_analysis.py`: embeds and round-trip checks both the analysis block and the schema block. Re-run it after any change to `analysis/schema.json`.
+- `scripts/verify_viewer.mjs`: tab expectations only. The new instructor-only Overrides tab makes four tabs (three edits: the tab list, the arrow-key wrap test and the tab count after toggling back).
+- `claim-wall-spec.md`: Status table only.
+
+**What was built**
+- *Instructor override.* In instructor view, the Oldenburg mapping and each of the six strength criteria in the entry detail has an Override button. The form takes the score (with the anchor text), the quotes and rationale, and the criterion's own fields: better-fits claim, not an explanation, coded lens, testable implication and note, stated scope, Bodø question. It also requires a reason (live word count, minimum in `CONFIG.reasonMinWords`) and a name. Saving is refused if any of these apply: the reason is too short; a quote is not verbatim card text or contains brackets; the Oldenburg engagement and characteristics disagree; nothing changed; the document with overrides applied fails the schema. Each changed field becomes one `overrides` record: pointer, the analyst's `original_value`, `override_value`, reason, name and time (schema `$defs/override`). Setting a field back to the analyst's value removes its override. "Revert to analyst code" asks for confirmation, then removes the block's overrides.
+- *Marks.* In the grid, an overridden score cell gets a red border and an asterisk, and its accessible name includes the analyst's score. Cards get an "Overridden: N fields" chip, and a "Gate now passed/failed (synthesis not recomputed)" chip when an override changes the protocol 9.1 gate result. In the detail, each overridden block is outlined and each overridden field is labelled "Overridden". An override box shows Field | Analyst original | Override, with the reason, name and time. In coverage, entries with an overridden Oldenburg mapping are marked "*". Synthesis panels list the overridden entries they discuss. The header shows the override count, and the Overrides tab lists every override.
+- *Export.* "Export JSON" writes `claim-wall-<ID>[-with-overrides]-<date>.json`, which is validated before download. "Export .xlsx" uses an inline stored-zip SpreadsheetML writer, with no library. Its sheets are `Entries_Reconciled` (overrides applied, plus an `Overridden_Fields` column), `Entries_Analyst`, `Overrides` (original and new values as readable text and as JSON) and `Snapshot`. Scores and claim numbers are numeric cells.
+- *Loading.* "Load analysis JSON" opens a file picker. The loader checks, in this order:
+  1. It parses the JSON.
+  2. It validates against the embedded schema. The in-browser validator implements exactly the keywords the schema uses, and refuses to run if the schema gains one it does not implement.
+  3. It runs checks the schema cannot express: unique entry IDs, IDs matching the snapshot, entry and uncertain counts, claims 1–4 present once each, synthesis references resolving, and rationale and cluster quotes being verbatim card text.
+  4. It checks each override against the file: pointer shape, target, unique IDs and pointers, and `original_value` equal to the file's analyst value.
+  5. It applies the overrides and runs the schema and semantic checks again on the result.
+
+  If any check fails, the file is rejected. The viewer lists up to 15 problems, naming entries by ID, in a `role="alert"` box, and changes nothing. A protocol version or theory-file hash that differs from S1's is accepted with a warning.
+- *Snapshot selector.* Lists the built-in snapshot and each loaded file, with override counts in instructor view. Loading the same file name again replaces that copy. "Compare snapshots" is a disabled button, with a visible note that it waits for S2.
+- *Persistence.* Overrides, loaded files and the last name used are kept in `localStorage` (`claim-wall-viewer:v1`). On reload they are validated again, and anything that no longer validates is dropped with a notice. "Reset" asks for confirmation, then clears them. Student view hides load, export and reset, and keeps the selector.
+
+**Judgement calls for Max**
+1. *What "export reconciled data" means in each format.* The JSON export leaves every analyst code in place and adds the `overrides` array; the reconciled values are derived by applying it. This follows protocol Section 312 ("An override never edits the analyst's code in place") and keeps `validate_analysis.py` passing on exports, with 0 errors and 1 warning that overrides are present. The .xlsx export holds the reconciled values (`Entries_Reconciled`) next to the originals. A JSON with reconciled values written in place would need a schema change: the root has `additionalProperties: false`, and the validator would then check overridden codes as if they were the analyst's.
+2. *Which codes can be overridden.* The rubric 4.1 and 4.2 codes: the Oldenburg mapping, and every field of the six strength criteria. The transcription caveat, the analyst note, the claim synthesis and the snapshot gaps cannot be overridden. The schema allows `claim_synthesis` and `snapshot_gaps` override targets; the loader rejects them with a message, because nothing writes them.
+3. *Oldenburg mapping is overridden as a single unit* (pointer `/entries/<i>/oldenburg`). `none_rationale` is present or absent depending on engagement, and an override pointer cannot represent an absent original. The whole mapping is therefore marked, and the box shows the original and new mappings in full.
+4. *The claim synthesis is not recomputed.* Its `why` texts are written analysis. Panels say which overridden entries they discuss, synthesis sub-scores stay the analyst's, and the grid flags gate changes.
+5. *Constraints on overrides:* the schema, plus verbatim, bracket-free quotes (spec 4: a code needs a quoted basis). Protocol rules that the schema does not encode, such as "lens fit 2 only when the primary lens is the filed lens", are not enforced on overrides.
+6. *Student view* shows reconciled values for what it already showed (the Oldenburg mapping, the testable implication and note, and the Bodø question), marked "Revised by instructor". It does not show originals, reasons or names. Overrides on fields that student view hides leave no trace there.
+7. *The reason minimum is 25 words,* the repo's default for required free text (`CONFIG.reasonMinWords`). This may be heavy for quick corrections. Lower it in `CONFIG` if wanted.
+8. *Persistence in `localStorage`* is not named in spec Section 5. I added it so overrides survive a reload. The JSON export remains the durable record.
+9. *An instructor-only Overrides tab* was added to list all overrides. This changed three expectations in the Session 3 harness (listed above).
+
+**Verification**
+- `node scripts/verify_session4.mjs`: 228 checks, 0 failures, on two consecutive runs.
+  - *Override* (47 checks). A short reason, a quote that is not on the card, engaged with no characteristic, and an unchanged save are each refused, with focus moved to the errors and nothing saved. Three overrides were saved: S1-003 mechanism 2→0, the S1-001 Oldenburg mapping (none → Accessibility and Accommodation, barrier, quoting "crowded spaces"), and the S1-014 testable implication. They are marked in the grid (exactly one marked score cell), the detail, coverage, the claim 1 and 2 synthesis panels and the Overrides tab. The S1-003 gate chip reads "Gate now failed". Student view marks exactly S1-001 and S1-014. It shows no scores, reason, name, original implication or override controls, and hides load, export and reset. Escape inside a form cancels the form, not the dialog. Overrides survive a reload.
+  - *Export* (14 checks). The exported JSON, minus `overrides`, is identical to `analysis/S1.json`. Each override's original equals the analyst value. Python `jsonschema` (with format checking) accepts the export, and `validate_analysis.py` reports 0 errors and 1 warning ("3 override(s) present"). `check_xlsx_export.py` ran 2,649 cell checks with 0 failures. LibreOffice Calc opened the .xlsx and converted it. Calc was not installed in the container, so I installed `libreoffice-calc` for this check.
+  - *Round trip* (21 checks). In a fresh browser with empty storage, the exported JSON was loaded through the file picker. All three overrides came back with the same originals, values, reasons and marks. Re-exporting gave a byte-identical file. Switching to the built-in snapshot and back keeps both. Revert asks for confirmation, and the next export then has 2 overrides. Reset asks for confirmation and clears overrides, loaded files and storage.
+  - *Malformed files* (98 checks, 19 files). All 19 were rejected with a specific message, a `role="alert"` region and "Nothing was changed". The selector, the cards and the current snapshot's 3 overrides stayed as they were, with no console errors. The files were: truncated JSON; an empty file; a top-level array; a `.txt` file; a score of 3; a missing `strength`; an unknown root field; a testability of 0 with an implication; a malformed entry ID; "The Leveller" for "The Leveler"; three claims; a quote not on the card; an `entry_count` of 40; a duplicate entry; an override with a tampered original; an override pointing to `/snapshot/analyst`; an override value of 5; a target/pointer mismatch; and an override with an empty reason.
+  - *Schema parity* (2 checks). The in-browser validator and Python `jsonschema` agree on all 401 documents: S1 plus 400 seeded random mutations, of which 332 are invalid and 69 valid.
+  - *Layout* (46 checks). At 360 and 1280 px there is no horizontal scroll, text contrast meets WCAG AA, and every control, including form fields and radio/checkbox labels, is at least 44 px. This was checked on the data bar, the reset confirmation, the Oldenburg and claim-fit forms (with errors), the override box, the Overrides tab, the load-error box and student view with a revision.
+- `node scripts/verify_viewer.mjs` (Session 3 criteria): 10,512 checks, 0 failures, with the 317-string student-view leak check clean.
+- Defects found and fixed during verification:
+  - The export buttons used `--char-3`, which gives 4.49:1 with white text; they now use `--char-5`.
+  - The loader called every rejection "does not match the analysis schema", including semantic and override failures. It now says "is not a valid analysis file".
+  - Harness bugs: fixture file names, section bookkeeping, and contrast measured mid hover transition.
+
+**Not done (out of scope or constrained)**
+- The diff view is a disabled placeholder (Session 5).
+- No "Copy as text" button. The repo's build conventions ask for one; no session in the spec does. Max to decide.
+- The print stylesheet hides the new controls and keeps override marks in colour, but A4 output was not checked.
+- `../index.html`, `../CLAUDE.md` and `../test.html` were not touched (spec Section 3).
+
+**Notes for Session 5**
+- The selector already holds several snapshots (`SLOTS`). A diff view can read `SLOTS[i].base` and `.overrides`, and should decide whether to compare analyst codes or reconciled codes.
+- Enable `#diff-btn` and replace `CONFIG.diffNote` once `analysis/diff_S1_S2.json` exists. Embedding S2 needs a second embedded block, or the embed script needs extending.
+- After any change to `analysis/*.json` or `schema.json`, run `python3 scripts/embed_analysis.py`, then the validator, `node scripts/verify_viewer.mjs` and `node scripts/verify_session4.mjs`.

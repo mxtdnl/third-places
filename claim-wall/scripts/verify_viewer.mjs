@@ -1,5 +1,7 @@
 // Browser checks for the claim-wall viewer (index.html) against the Session 3
 // done-when criteria in claim-wall-spec.md. Read-only: it never edits files.
+// Session 4 added an instructor-only Overrides tab; the tab expectations below
+// include it. Session 4's own checks are in scripts/verify_session4.mjs.
 //
 // Usage, from claim-wall/:
 //   node scripts/verify_viewer.mjs [--shots <dir>]
@@ -331,7 +333,7 @@ async function run() {
       const pressed = await page.getAttribute('#view-toggle', 'aria-pressed');
       ok(pressed === String(student), `${label}: toggle aria-pressed ${pressed}`);
       const tabs = await page.$$eval('[role="tab"]', (t) => t.map((x) => x.dataset.tab));
-      ok(JSON.stringify(tabs) === JSON.stringify(student ? ['grid', 'coverage'] : ['grid', 'coverage', 'synthesis']), `${label}: tabs ${JSON.stringify(tabs)}`);
+      ok(JSON.stringify(tabs) === JSON.stringify(student ? ['grid', 'coverage'] : ['grid', 'coverage', 'synthesis', 'overrides']), `${label}: tabs ${JSON.stringify(tabs)}`);
 
       await checkGrid(page, student, label + ' grid');
       await noOverflow(page, label + ' grid');
@@ -382,7 +384,8 @@ async function run() {
         ok(await page.$eval('dialog#detail', (d) => d.open), `${label}: synthesis entry button did not open detail`);
         await closeDialog(page);
         // Keyboard: arrow keys move between tabs.
-        await page.focus('#tab-synthesis');
+        await page.click('#tab-overrides');
+        await page.focus('#tab-overrides');
         await page.keyboard.press('ArrowRight');
         ok(await page.evaluate(() => document.activeElement.id) === 'tab-grid', `${label}: ArrowRight from last tab did not wrap to grid`);
         // Grid row link jumps to the claim's synthesis panel.
@@ -404,7 +407,7 @@ async function run() {
         // Toggle off restores instructor content.
         await page.click('#view-toggle');
         const back = await page.evaluate(() => ({ tabs: document.querySelectorAll('[role=tab]').length, url: location.search }));
-        ok(back.tabs === 3 && back.url === '', `${label}: toggling off gave ${JSON.stringify(back)}`);
+        ok(back.tabs === 4 && back.url === '', `${label}: toggling off gave ${JSON.stringify(back)}`);
       }
 
       ok(errors.length === 0, `${label}: console/page errors: ${JSON.stringify(errors)}`);

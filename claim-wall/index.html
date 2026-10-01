@@ -4,29 +4,55 @@
 <title>Claim Wall Analyser</title>
 <link rel="icon" href="data:,">
 <!--
-  CLAIM WALL ANALYSER - VIEWER (read-only, Session 3)
+  CLAIM WALL ANALYSER - VIEWER (Sessions 3 and 4)
   Social Phenomena Challenge. Build spec: claim-wall-spec.md. Coding rules:
   ANALYSIS_PROTOCOL.md. Data: analysis/S1.json, embedded below.
 
   What this file does
-    Shows one coded snapshot of the claim wall in four places:
+    Shows one coded snapshot of the claim wall in five places:
       - Grid: claims x lenses, mirroring the board, with compact sub-scores
       - Oldenburg coverage: characteristics x claims
       - Entry detail: everything coded for one card (opens from any card or ID)
       - Claim synthesis: one panel per claim
+      - Overrides: every instructor override on the current snapshot
     A Student view toggle hides scores and synthesis and keeps the grid, the
     Oldenburg mapping and the testable implications (spec Section 5). Hidden
     content is not rendered at all in student view, not merely hidden by CSS.
     Open with ?view=student to start in student view.
 
-  What this file does NOT do (later sessions)
-    No overrides, no export, no file loading, no snapshot diff. Read-only.
+  Instructor override (Session 4)
+    In instructor view, each code block in the entry detail (the Oldenburg
+    mapping and the six strength criteria) has an Override button. An override
+    never edits the analyst's code: it is stored in the document's `overrides`
+    array as a JSON Pointer, the analyst's original value, the new value, a
+    reason, a name and a time (schema.json, $defs/override). The viewer shows
+    the reconciled value (original with overrides applied), marks it
+    "Overridden" and shows the original beside it. The claim synthesis is the
+    analyst's and is not recomputed; panels say so when an override touches
+    them. Student view shows reconciled values marked "Revised by instructor",
+    with no originals or reasons.
+
+  Export, loading and snapshots (Session 4)
+    Export JSON: the analyst's document unchanged, plus the `overrides` array.
+    It validates against schema.json and loads back into this viewer.
+    Export .xlsx: reconciled entries, the analyst's entries, every override
+    with its original value, and snapshot metadata, written by the inline
+    zip/SpreadsheetML writer below (no library).
+    Load analysis JSON: any analysis/*.json, validated in the browser against
+    the embedded schema (embedded-schema block) and the checks in
+    `semanticErrors` and `overrideErrors`. A file that fails is rejected with
+    the reasons listed and nothing in the viewer changes.
+    The snapshot selector switches between the built-in snapshot and loaded
+    files. Overrides and loaded files are kept in this browser's localStorage
+    (key in CONFIG.storageKey) until Reset. The diff view is a disabled
+    placeholder until a second snapshot is coded (spec Session 5).
 
   Embedded data
-    The <script type="application/json" id="embedded-analysis"> block holds
-    analysis/S1.json verbatim. Do not edit it by hand. After S1.json changes,
-    run from claim-wall/:  python3 scripts/embed_analysis.py
-    which rewrites the block and checks the result parses back equal.
+    The embedded-analysis block holds analysis/S1.json verbatim and the
+    embedded-schema block holds analysis/schema.json verbatim. Do not edit
+    either by hand. After either file changes, run from claim-wall/:
+      python3 scripts/embed_analysis.py
+    which rewrites both blocks and checks they parse back equal.
 
   No external dependencies; works from file:// and GitHub Pages.
 -->
@@ -451,6 +477,91 @@
 
   .noscript { padding: 2rem; font-weight: 700; }
 
+  /* ── Data bar: snapshot selector, load, export, reset ── */
+  .data-bar {
+    position: relative; overflow: hidden;
+    background: var(--bg-card); border: 2px solid var(--border); border-top: 6px solid var(--char-4);
+    padding: 0.9rem 1.1rem; margin-bottom: 1.25rem;
+  }
+  .data-bar::after {
+    content: ''; position: absolute; width: 54px; height: 54px; border-radius: 50%;
+    background: var(--char-2); opacity: 0.1; right: -16px; bottom: -20px; pointer-events: none;
+  }
+  .data-bar > * { position: relative; z-index: 1; }
+  .data-row { display: flex; flex-wrap: wrap; gap: 0.6rem 0.75rem; align-items: center; }
+  .data-row + .data-row { margin-top: 0.75rem; }
+  .data-row label.eyebrow { color: var(--text); }
+  .data-row .quiet { flex: 1 1 260px; margin: 0; }
+  select, .ovf-field input[type="text"], .ovf-field textarea, .ovf-field select {
+    font-family: inherit; font-size: 0.95rem; color: var(--text); background: #fff;
+    border: 2px solid var(--text); border-radius: 0; padding: 0.45rem 0.6rem; min-height: 44px; max-width: 100%;
+  }
+  #snap-select { min-width: min(320px, 100%); font-weight: 700; }
+  .btn.ghost { background: transparent; color: var(--text); border: 2px solid var(--text); }
+  .btn.ghost:hover { background: var(--text); color: #fff; }
+  .btn.alt { background: var(--char-5); }
+  .btn.alt:hover { background: var(--char-2); }
+  .btn.warn { background: var(--incorrect); }
+  .btn.warn:hover { background: var(--text); }
+  .btn.ghost:disabled:hover { background: transparent; color: var(--text); }
+  .msg {
+    margin-top: 0.75rem; padding: 0.75rem 1rem; border-left: 5px solid var(--correct);
+    background: var(--correct-bg); font-size: 0.9rem;
+  }
+  .msg.warn { border-left-color: var(--ambiguous); background: var(--ambiguous-bg); }
+  .msg.err { border-left-color: var(--incorrect); background: var(--incorrect-bg); }
+  .msg h4 { margin-bottom: 0.3rem; }
+  .msg ul { margin: 0.35rem 0 0.25rem 1.2rem; }
+  .msg li { margin-bottom: 0.2rem; overflow-wrap: anywhere; }
+  .msg p:last-child { margin-bottom: 0; }
+  .confirm-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.6rem; }
+
+  /* ── Override marks ── */
+  .ov-mark {
+    display: inline-block; padding: 1px 7px; vertical-align: middle;
+    font-size: 0.66rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    color: #fff; background: var(--char-2); border: 1.5px solid var(--char-2);
+  }
+  .ov-mark.rev { background: var(--char-1); border-color: var(--char-1); }
+  .chip.ov { color: #fff; border-color: var(--char-2); background: var(--char-2); }
+  .chip.rev { color: #fff; border-color: var(--char-1); background: var(--char-1); }
+  .ss.ov { border: 2px solid var(--char-2); background: rgba(181,40,56,0.08); }
+  .ss.ov .val::after { content: '*'; color: var(--char-2); }
+  .score-badge.ov { border-color: var(--char-2); }
+  .code-block.is-ov { border: 2px solid var(--char-2); border-left-width: 6px; }
+  .eref .ovm { font-weight: 800; color: var(--char-2); }
+  .eref:hover .ovm { color: inherit; }
+  .ov-controls { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.7rem; }
+  .ov-box {
+    margin-top: 0.75rem; padding: 0.75rem 0.9rem; border-left: 5px solid var(--char-2);
+    background: rgba(181,40,56,0.06); font-size: 0.88rem;
+  }
+  .ov-box table.plain td, .ov-box table.plain th { background: transparent; }
+  .ov-box .ov-why { margin-top: 0.5rem; }
+
+  /* ── Override form ── */
+  .ov-form { border: 2px solid var(--char-2); border-left: 8px solid var(--char-2); background: #fff; padding: 0.9rem 1rem 1rem; margin-top: 0.55rem; }
+  .ov-form > h4 { font-size: 0.9rem; }
+  .ovf-field { border: none; border-top: 3px solid var(--border); padding: 0.7rem 0 0.2rem; margin-top: 0.6rem; min-width: 0; }
+  .ovf-field legend { font-size: 0.75rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; padding-right: 0.5rem; }
+  .ovf-field label { display: block; font-size: 0.82rem; font-weight: 700; margin: 0.45rem 0 0.2rem; }
+  .ovf-field textarea, .ovf-field input[type="text"], .ovf-field select { width: 100%; }
+  .ovf-field textarea { resize: vertical; line-height: 1.45; }
+  .ovf-field .hint { font-size: 0.8rem; color: var(--text-muted); margin: 0.2rem 0 0; }
+  label.ovf-radio, label.ovf-check {
+    display: flex; gap: 0.6rem; align-items: flex-start; font-weight: 400; font-size: 0.86rem;
+    min-height: 44px; padding: 0.35rem 0; margin: 0; cursor: pointer;
+  }
+  label.ovf-radio input, label.ovf-check input { width: 22px; height: 22px; flex: none; margin-top: 1px; accent-color: var(--char-2); }
+  .ovf-checks { display: flex; flex-wrap: wrap; gap: 0 1.25rem; }
+  .ovf-row { border: 2px solid var(--border); border-left: 6px solid var(--char-1); padding: 0.5rem 0.7rem 0.7rem; margin-top: 0.6rem; }
+  .ovf-row-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+  .ovf-row-head b { font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; }
+  .ovf-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 0.75rem; }
+  .wordcount { font-size: 0.8rem; font-weight: 700; margin-top: 0.25rem; color: var(--incorrect); }
+  .wordcount.met { color: var(--correct); }
+  .ovf-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+
   /* ── Responsive ── */
   @media (max-width: 1000px) {
     .wall { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -475,6 +586,11 @@
     .dlg-body { padding: 1rem; }
     .toolbar { align-items: stretch; }
     .view-toggle { width: 100%; justify-content: space-between; }
+    .data-bar { padding: 0.8rem 0.8rem; }
+    #snap-select { width: 100%; min-width: 0; }
+    .data-row .btn { flex: 1 1 140px; }
+    .ovf-grid2 { grid-template-columns: minmax(0, 1fr); }
+    .ov-form { padding: 0.75rem 0.7rem 0.9rem; }
 
     .cov-table, .cov-table tbody, .cov-table tr, .cov-table td, .cov-table tbody th { display: block; width: auto; }
     .cov-table { border-spacing: 0; }
@@ -512,7 +628,9 @@
     @page { size: A4; margin: 12mm; }
     body { background: #fff; color: #000; font-size: 11pt; }
     .app-wrap { max-width: none; padding: 0; }
-    .toolbar, .claim-jump, .link-btn, .dlg-nav, .dlg-close, .page-header .deco-bar, .page-header .deco-ring { display: none !important; }
+    .toolbar, .claim-jump, .link-btn, .dlg-nav, .dlg-close, .page-header .deco-bar, .page-header .deco-ring,
+    .data-bar, .ov-controls, .ov-form { display: none !important; }
+    .ov-mark, .chip.ov, .chip.rev, .ss.ov, .ov-box { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
     .page-header::before, .page-header::after, .panel::before, .syn::after, .syn-banner::after, .mode-banner::after { display: none; }
     .wcard, .panel, .syn, .syn-item, .code-block { box-shadow: none; break-inside: avoid; }
     .wcard:hover { transform: none; }
@@ -538,6 +656,25 @@
     <details class="snapshot-notes" id="hdr-notes"></details>
   </header>
 
+  <section class="data-bar" id="data-bar" aria-label="Snapshot and data">
+    <div class="data-row">
+      <label class="eyebrow" for="snap-select">Snapshot</label>
+      <select id="snap-select"></select>
+      <button type="button" class="btn ghost" id="diff-btn" disabled aria-describedby="diff-note">Compare snapshots</button>
+      <p class="quiet" id="diff-note"></p>
+    </div>
+    <div class="data-row" id="data-actions">
+      <button type="button" class="btn" data-action="load">Load analysis JSON</button>
+      <input type="file" id="file-input" accept=".json,application/json" hidden>
+      <button type="button" class="btn alt" data-action="export-json">Export JSON</button>
+      <button type="button" class="btn alt" data-action="export-xlsx">Export .xlsx</button>
+      <button type="button" class="btn ghost" data-action="reset">Reset</button>
+    </div>
+    <div id="data-confirm"></div>
+    <div id="data-status" role="status" aria-live="polite"></div>
+    <div id="data-error" role="alert"></div>
+  </section>
+
   <div class="toolbar">
     <div class="tabs" role="tablist" aria-label="Views" id="tabs"></div>
     <button type="button" class="view-toggle" id="view-toggle" aria-pressed="false">
@@ -552,6 +689,458 @@
 </div>
 
 <dialog id="detail" aria-labelledby="detail-title"></dialog>
+
+<script type="application/json" id="embedded-schema">
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claim-wall/analysis/schema.json",
+  "title": "Claim Wall Analysis",
+  "description": "One snapshot of the claim wall coded per ANALYSIS_PROTOCOL.md. Sub-scores are reported separately; there is no total.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "protocol_version", "theory_file", "snapshot", "entries", "claim_synthesis", "snapshot_gaps", "overrides"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "protocol_version": { "type": "string", "minLength": 1 },
+    "theory_file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "const": "../third-place-content.md" },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "snapshot": { "$ref": "#/$defs/snapshot" },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/entry" }
+    },
+    "claim_synthesis": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": { "$ref": "#/$defs/claim_synthesis" }
+    },
+    "snapshot_gaps": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["characteristics_unengaged_anywhere"],
+      "properties": {
+        "characteristics_unengaged_anywhere": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/characteristic_name" }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "overrides": {
+      "description": "Written by the viewer (Session 4) only; [] when written by the analyst. The analyst's original code is never edited in place.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/override" }
+    }
+  },
+
+  "$defs": {
+    "entry_id": { "type": "string", "pattern": "^S[0-9]+-[0-9]{3}$" },
+    "snapshot_id": { "type": "string", "pattern": "^S[0-9]+$" },
+    "claim_no": { "type": "integer", "minimum": 1, "maximum": 4 },
+    "claim_label": { "enum": ["Quantity", "Usage", "Outcomes", "Quality"] },
+    "lens": { "enum": ["Psychology", "Economics", "Politics"] },
+    "score": { "type": "integer", "enum": [0, 1, 2] },
+    "criterion": { "enum": ["claim_fit", "mechanism", "explains_change", "lens_fit", "testability", "scope", "oldenburg"] },
+
+    "characteristic_name": {
+      "description": "Exact names from the Section A headings of the theory file (ANALYSIS_PROTOCOL.md Section 2).",
+      "enum": [
+        "Neutral Ground",
+        "The Leveler",
+        "Conversation is the Main Activity",
+        "Accessibility and Accommodation",
+        "The Regulars",
+        "A Low Profile",
+        "The Mood is Playful",
+        "A Home Away from Home"
+      ]
+    },
+
+    "rationale": {
+      "description": "Every code carries one. Each quote must appear verbatim in Card_Text and contain no square brackets (checked by the validator).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["quotes", "text"],
+      "properties": {
+        "quotes": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1, "pattern": "^[^\\[\\]]+$" }
+        },
+        "text": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["snapshot_id", "snapshot_date", "source_workbook", "entry_count", "uncertain_count", "analyst", "generated_at"],
+      "properties": {
+        "snapshot_id": { "$ref": "#/$defs/snapshot_id" },
+        "snapshot_date": {
+          "description": "From Entries!Snapshot_Date; null when blank in the workbook.",
+          "type": ["string", "null"],
+          "format": "date"
+        },
+        "source_workbook": { "type": "string", "minLength": 1 },
+        "entry_count": { "type": "integer", "minimum": 1 },
+        "uncertain_count": { "type": "integer", "minimum": 0 },
+        "analyst": { "type": "string", "minLength": 1 },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "notes": {
+          "description": "Snapshot-level transcription notes, e.g. cards visible on the board but not captured.",
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry_id", "claim_no", "discipline", "card_text", "transcription_confidence", "transcription_caveat", "caveat_affects", "oldenburg", "strength"],
+      "properties": {
+        "entry_id": { "$ref": "#/$defs/entry_id" },
+        "claim_no": { "$ref": "#/$defs/claim_no" },
+        "discipline": { "$ref": "#/$defs/lens" },
+        "card_text": { "description": "Copied verbatim from the workbook; the validator checks equality.", "type": "string", "minLength": 1 },
+        "transcription_confidence": { "enum": ["High", "Uncertain"] },
+        "transcription_caveat": { "type": ["string", "null"] },
+        "caveat_affects": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/criterion" }
+        },
+        "oldenburg": { "$ref": "#/$defs/oldenburg" },
+        "strength": { "$ref": "#/$defs/strength" },
+        "analyst_note": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "transcription_confidence": { "const": "Uncertain" } } },
+          "then": { "properties": { "transcription_caveat": { "type": "string", "minLength": 1 } } }
+        }
+      ]
+    },
+
+    "oldenburg": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["engagement", "characteristics", "vocabulary_flags"],
+      "properties": {
+        "engagement": { "enum": ["engaged", "none"] },
+        "characteristics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "relation", "rationale"],
+            "properties": {
+              "name": { "$ref": "#/$defs/characteristic_name" },
+              "relation": { "enum": ["erodes", "barrier", "invokes"] },
+              "rationale": { "$ref": "#/$defs/rationale" }
+            }
+          }
+        },
+        "none_rationale": { "$ref": "#/$defs/rationale" },
+        "vocabulary_flags": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["term_as_written", "maps_to", "usage_matches_definition", "rationale"],
+            "properties": {
+              "term_as_written": { "type": "string", "minLength": 1 },
+              "maps_to": { "$ref": "#/$defs/characteristic_name" },
+              "usage_matches_definition": { "enum": ["matches", "partial", "does_not_match", "undeterminable"] },
+              "rationale": { "$ref": "#/$defs/rationale" }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "engagement": { "const": "none" } } },
+          "then": {
+            "required": ["none_rationale"],
+            "properties": { "characteristics": { "maxItems": 0 } }
+          },
+          "else": {
+            "properties": { "characteristics": { "minItems": 1 } }
+          }
+        }
+      ]
+    },
+
+    "strength": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_fit", "mechanism", "explains_change", "lens_fit", "testability", "scope"],
+      "properties": {
+        "claim_fit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["score", "rationale", "misfiled_to", "not_an_explanation"],
+          "properties": {
+            "score": { "$ref": "#/$defs/score" },
+            "rationale": { "$ref": "#/$defs/rationale" },
+            "misfiled_to": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/claim_no" }] },
+            "not_an_explanation": {
+              "oneOf": [
+                { "type": "null" },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["type", "rationale"],
+                  "properties": {
+                    "type": { "enum": ["restates_claim", "describes_outcome", "proposes_intervention"] },
+                    "rationale": { "$ref": "#/$defs/rationale" }
+                  }
+                }
+              ]
+            }
+          },
+          "allOf": [
+            {
+              "if": { "properties": { "not_an_explanation": { "type": "object" } } },
+              "then": { "properties": { "score": { "const": 0 } } }
+            }
+          ]
+        },
+        "mechanism": { "$ref": "#/$defs/simple_subscore" },
+        "explains_change": { "$ref": "#/$defs/simple_subscore" },
+        "lens_fit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["score", "rationale", "actual_lens"],
+          "properties": {
+            "score": { "$ref": "#/$defs/score" },
+            "rationale": { "$ref": "#/$defs/rationale" },
+            "actual_lens": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["primary", "secondary"],
+              "properties": {
+                "primary": { "enum": ["Psychology", "Economics", "Politics", "Undeterminable"] },
+                "secondary": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/lens" } }
+              }
+            }
+          }
+        },
+        "testability": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["score", "rationale", "testable_implication", "implication_note"],
+          "properties": {
+            "score": { "$ref": "#/$defs/score" },
+            "rationale": { "$ref": "#/$defs/rationale" },
+            "testable_implication": { "type": ["string", "null"] },
+            "implication_note": {
+              "description": "Score 1: the element the analyst supplied. Score 0: why no implication can be derived. Score 2: may be empty.",
+              "type": "string"
+            }
+          },
+          "allOf": [
+            {
+              "if": { "properties": { "score": { "const": 0 } } },
+              "then": { "properties": { "testable_implication": { "type": "null" }, "implication_note": { "minLength": 1 } } },
+              "else": { "properties": { "testable_implication": { "type": "string", "minLength": 1 } } }
+            },
+            {
+              "if": { "properties": { "score": { "const": 1 } } },
+              "then": { "properties": { "implication_note": { "minLength": 1 } } }
+            }
+          ]
+        },
+        "scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["score", "rationale", "stated_scope", "bodo_question"],
+          "properties": {
+            "score": { "$ref": "#/$defs/score" },
+            "rationale": { "$ref": "#/$defs/rationale" },
+            "stated_scope": { "type": ["string", "null"] },
+            "bodo_question": { "type": "string", "pattern": "\\?\\s*$" }
+          }
+        }
+      }
+    },
+
+    "simple_subscore": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["score", "rationale"],
+      "properties": {
+        "score": { "$ref": "#/$defs/score" },
+        "rationale": { "$ref": "#/$defs/rationale" }
+      }
+    },
+
+    "claim_synthesis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_no", "claim_label", "claim_text", "candidates", "imported_candidates", "nearest_misses", "clusters", "convergence", "tensions", "gaps"],
+      "properties": {
+        "claim_no": { "$ref": "#/$defs/claim_no" },
+        "claim_label": { "$ref": "#/$defs/claim_label" },
+        "claim_text": { "type": "string", "minLength": 1 },
+        "candidates": {
+          "description": "Entries filed here passing the gate in protocol 9.1, in the stated order.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/candidate" }
+        },
+        "imported_candidates": {
+          "description": "Entries filed elsewhere whose misfiled_to is this claim.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/candidate" }
+        },
+        "nearest_misses": {
+          "description": "Required in practice when candidates is empty: entries closest to the gate and the criterion each fails.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["entry_id", "fails"],
+            "properties": {
+              "entry_id": { "$ref": "#/$defs/entry_id" },
+              "fails": { "type": "array", "minItems": 1, "items": { "enum": ["claim_fit", "mechanism", "explains_change"] } }
+            }
+          }
+        },
+        "clusters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["cluster_id", "kind", "entry_ids", "shared_element", "quotes"],
+            "properties": {
+              "cluster_id": { "type": "string", "minLength": 1 },
+              "kind": { "enum": ["duplicate", "overlap"] },
+              "entry_ids": { "type": "array", "minItems": 2, "uniqueItems": true, "items": { "$ref": "#/$defs/entry_id" } },
+              "shared_element": { "type": "string", "minLength": 1 },
+              "quotes": {
+                "description": "Verbatim fragments from at least two of the clustered cards.",
+                "type": "array",
+                "minItems": 2,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["entry_id", "quote"],
+                  "properties": {
+                    "entry_id": { "$ref": "#/$defs/entry_id" },
+                    "quote": { "type": "string", "minLength": 1, "pattern": "^[^\\[\\]]+$" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "convergence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["entry_ids", "shared_mechanism", "lenses"],
+            "properties": {
+              "entry_ids": { "type": "array", "minItems": 2, "uniqueItems": true, "items": { "$ref": "#/$defs/entry_id" } },
+              "shared_mechanism": { "type": "string", "minLength": 1 },
+              "lenses": { "type": "array", "minItems": 2, "uniqueItems": true, "items": { "$ref": "#/$defs/lens" } }
+            }
+          }
+        },
+        "tensions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["entry_ids", "description"],
+            "properties": {
+              "entry_ids": { "type": "array", "minItems": 2, "uniqueItems": true, "items": { "$ref": "#/$defs/entry_id" } },
+              "description": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "gaps": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["characteristics_unengaged", "lenses_without_mechanism"],
+          "properties": {
+            "characteristics_unengaged": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/characteristic_name" } },
+            "lenses_without_mechanism": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/lens" } },
+            "notes": { "type": "string" }
+          }
+        }
+      }
+    },
+
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry_id", "subscores", "why"],
+      "properties": {
+        "entry_id": { "$ref": "#/$defs/entry_id" },
+        "subscores": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["claim_fit", "mechanism", "explains_change", "lens_fit", "testability", "scope"],
+          "properties": {
+            "claim_fit": { "$ref": "#/$defs/score" },
+            "mechanism": { "$ref": "#/$defs/score" },
+            "explains_change": { "$ref": "#/$defs/score" },
+            "lens_fit": { "$ref": "#/$defs/score" },
+            "testability": { "$ref": "#/$defs/score" },
+            "scope": { "$ref": "#/$defs/score" }
+          }
+        },
+        "why": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "override": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["override_id", "target", "pointer", "original_value", "override_value", "reason", "by", "at"],
+      "properties": {
+        "override_id": { "type": "string", "minLength": 1 },
+        "target": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": {
+            "kind": { "enum": ["entry", "claim_synthesis", "snapshot_gaps"] },
+            "entry_id": { "$ref": "#/$defs/entry_id" },
+            "claim_no": { "$ref": "#/$defs/claim_no" }
+          },
+          "allOf": [
+            { "if": { "properties": { "kind": { "const": "entry" } } }, "then": { "required": ["entry_id"] } },
+            { "if": { "properties": { "kind": { "const": "claim_synthesis" } } }, "then": { "required": ["claim_no"] } }
+          ]
+        },
+        "pointer": {
+          "description": "RFC 6901 JSON Pointer from the document root to the overridden field, e.g. /entries/4/strength/mechanism/score.",
+          "type": "string",
+          "pattern": "^(/[^/]*)+$"
+        },
+        "original_value": { "description": "The analyst's value at the pointer, preserved verbatim." },
+        "override_value": {},
+        "reason": { "type": "string", "minLength": 1 },
+        "by": { "type": "string", "minLength": 1 },
+        "at": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}
+</script>
 
 <script type="application/json" id="embedded-analysis">
 {
@@ -5383,7 +5972,8 @@
     tabs: [
       { id: 'grid',      label: 'Grid',               color: 'var(--char-6)' },
       { id: 'coverage',  label: 'Oldenburg coverage', color: 'var(--char-1)' },
-      { id: 'synthesis', label: 'Claim synthesis',    color: 'var(--char-3)', instructorOnly: true }
+      { id: 'synthesis', label: 'Claim synthesis',    color: 'var(--char-3)', instructorOnly: true },
+      { id: 'overrides', label: 'Overrides',          color: 'var(--char-2)', instructorOnly: true }
     ],
 
     // Claim colours follow the claim-type colours in week6b-adjudication-bench.html
@@ -5492,29 +6082,134 @@
       tensions:    { label: 'Tensions',                  color: 'var(--char-2)' },
       gaps:        { label: 'Gaps',                      color: 'var(--char-8)' }
     },
-    candidateGate: 'Gate (protocol 9.1): claim fit 2, mechanism at least 1, explains change at least 1. Order: mechanism, then explains change, then testability. No sub-scores are summed.'
+    candidateGate: 'Gate (protocol 9.1): claim fit 2, mechanism at least 1, explains change at least 1. Order: mechanism, then explains change, then testability. No sub-scores are summed.',
+
+    // ── Session 4: override, export, snapshot loading ──
+
+    // Shown at the top of every override form and on the Overrides tab.
+    overrideNote: 'An override never changes the analyst\'s code. It records the original value, the new value, your reason, your name and the time. Exports carry both.',
+
+    // Minimum number of words in an override reason (repo convention: 25).
+    reasonMinWords: 25,
+
+    // Shown on synthesis panels when an override touches an entry they discuss.
+    synthesisStaleNote: 'This synthesis was written from the analyst\'s codes and is not recomputed after an override. Sub-scores below are the analyst\'s. Overridden since:',
+
+    // Label for the snapshot embedded in this file.
+    builtInLabel: 'built in',
+
+    // Shown beside the disabled Compare snapshots button.
+    diffNote: 'Snapshot comparison is not built yet. It will be switched on once a second snapshot (S2) has been coded.',
+
+    // Shown when Reset is pressed, before the confirm button.
+    resetWarning: 'Reset removes every override and every loaded snapshot from this browser and returns to the built-in snapshot. Export JSON first if you want to keep them.',
+
+    // localStorage key. Change the version suffix if the stored shape changes.
+    storageKey: 'claim-wall-viewer:v1',
+
+    // A loaded file is accepted with a warning if these differ from S1's.
+    protocolVersion: '1.0',
+    theorySha256: '91fd689b30e0ccb4aae1a9ff092391b6d3993ffe1266a45e0f4f1e4e33b974ab',
+
+    // Largest file the loader will read, in megabytes.
+    maxFileMB: 10,
+
+    // How many validation problems to list when a file is rejected.
+    maxErrorsShown: 15,
+
+    // Names of overridable fields, as shown in override tables and exports.
+    fieldLabels: {
+      oldenburg: 'Oldenburg mapping',
+      score: 'Score',
+      rationale: 'Rationale',
+      misfiled_to: 'Better fits claim',
+      not_an_explanation: 'Not an explanation',
+      actual_lens: 'Coded lens',
+      testable_implication: 'Testable implication',
+      implication_note: 'Implication note',
+      stated_scope: 'Stated scope',
+      bodo_question: 'Bodø question'
+    }
   };
 
   // ==========================================================================
   // Data
+  //
+  // A "slot" is one snapshot available in the selector: the built-in one, or
+  // a loaded file. `base` is the analyst's document with `overrides: []`;
+  // `overrides` is the instructor's list. DATA is the reconciled document
+  // (base with every override applied) and drives all views. BASE keeps the
+  // analyst's values for originals and for the claim synthesis.
   // ==========================================================================
-  var DATA = JSON.parse(document.getElementById('embedded-analysis').textContent);
-  var ENTRIES = DATA.entries;
-  var BY_ID = {};
-  ENTRIES.forEach(function (e) { BY_ID[e.entry_id] = e; });
-  var SYN = {};
-  DATA.claim_synthesis.forEach(function (c) { SYN[c.claim_no] = c; });
+  var SCHEMA = JSON.parse(document.getElementById('embedded-schema').textContent);
+  var EMBEDDED = JSON.parse(document.getElementById('embedded-analysis').textContent);
   var CHAR_BY_NAME = {};
   CONFIG.characteristics.forEach(function (c) { CHAR_BY_NAME[c.name] = c; });
   var LENS_BY_ID = {};
   CONFIG.lenses.forEach(function (l) { LENS_BY_ID[l.id] = l; });
   var CLAIM_NOS = [1, 2, 3, 4];
+  var CRIT_KEYS = CONFIG.criteria.map(function (c) { return c.key; });
+  var CRIT_BY_KEY = {};
+  CONFIG.criteria.forEach(function (c) { CRIT_BY_KEY[c.key] = c; });
 
-  // Entries passing the candidate gate on their filed claim (from synthesis).
-  var CANDIDATE_IDS = {};
-  DATA.claim_synthesis.forEach(function (c) {
-    c.candidates.forEach(function (k) { CANDIDATE_IDS[k.entry_id] = c.claim_no; });
-  });
+  // The fields of each strength criterion an override may change. All are
+  // required by the schema, so a pointer to any of them always resolves.
+  var CRIT_FIELDS = {
+    claim_fit: ['score', 'rationale', 'misfiled_to', 'not_an_explanation'],
+    mechanism: ['score', 'rationale'],
+    explains_change: ['score', 'rationale'],
+    lens_fit: ['score', 'rationale', 'actual_lens'],
+    testability: ['score', 'rationale', 'testable_implication', 'implication_note'],
+    scope: ['score', 'rationale', 'stated_scope', 'bodo_question']
+  };
+  // Overridden fields that student view shows (as "Revised by instructor").
+  var STUDENT_VISIBLE_RELS = ['oldenburg', 'strength/testability/testable_implication',
+    'strength/testability/implication_note', 'strength/scope/bodo_question'];
+
+  var SLOTS = [];
+  var BASE, DATA, ENTRIES, BY_ID, BASE_BY_ID, ENTRY_INDEX, SYN, CANDIDATE_IDS, OV_BY_PTR, OV_BY_ENTRY;
+
+  function useSlot(slot) {
+    BASE = slot.base;
+    DATA = reconcile(BASE, slot.overrides);
+    ENTRIES = DATA.entries;
+    BY_ID = {}; BASE_BY_ID = {}; ENTRY_INDEX = {};
+    ENTRIES.forEach(function (e, i) { BY_ID[e.entry_id] = e; ENTRY_INDEX[e.entry_id] = i; });
+    BASE.entries.forEach(function (e) { BASE_BY_ID[e.entry_id] = e; });
+    SYN = {};
+    DATA.claim_synthesis.forEach(function (c) { SYN[c.claim_no] = c; });
+    // Entries passing the candidate gate on their filed claim (from synthesis).
+    CANDIDATE_IDS = {};
+    DATA.claim_synthesis.forEach(function (c) {
+      c.candidates.forEach(function (k) { CANDIDATE_IDS[k.entry_id] = c.claim_no; });
+    });
+    OV_BY_PTR = {}; OV_BY_ENTRY = {};
+    slot.overrides.forEach(function (ov) {
+      OV_BY_PTR[ov.pointer] = ov;
+      (OV_BY_ENTRY[ov.target.entry_id] = OV_BY_ENTRY[ov.target.entry_id] || []).push(ov);
+    });
+  }
+
+  function currentSlot() {
+    for (var i = 0; i < SLOTS.length; i++) if (SLOTS[i].key === state.slot) return SLOTS[i];
+    return SLOTS[0];
+  }
+
+  // Override lookups. `rel` is the path below /entries/<i>/, e.g.
+  // 'oldenburg' or 'strength/mechanism/score'.
+  function relOf(ptr) { return ptr.replace(/^\/entries\/\d+\//, ''); }
+  function ovAt(id, rel) { return OV_BY_PTR['/entries/' + ENTRY_INDEX[id] + '/' + rel] || null; }
+  function entryOvs(id) { return OV_BY_ENTRY[id] || []; }
+  function blockOvs(id, block) {
+    var pre = block === 'oldenburg' ? 'oldenburg' : 'strength/' + block + '/';
+    return entryOvs(id).filter(function (ov) {
+      var r = relOf(ov.pointer);
+      return block === 'oldenburg' ? r === pre : r.indexOf(pre) === 0;
+    });
+  }
+  function studentVisibleOv(id) {
+    return entryOvs(id).some(function (ov) { return STUDENT_VISIBLE_RELS.indexOf(relOf(ov.pointer)) > -1; });
+  }
 
   // ==========================================================================
   // State
@@ -5525,7 +6220,12 @@
     student: !!(params && params.get('view') === 'student'),
     tab: 'grid',
     detailId: null,
-    returnFocus: null
+    returnFocus: null,
+    slot: 'embedded',
+    by: '',              // name recorded on overrides; remembered between edits
+    edit: null,          // { entryId, block, draft, errors, reason, by } while an override form is open
+    revertArm: null,     // block whose "Revert to analyst code" awaits confirmation
+    resetArm: false      // Reset awaits confirmation
   };
 
   // ==========================================================================
@@ -5556,10 +6256,14 @@
     return '<span class="lens-tag' + (lensOnLight(id) ? ' on-light' : '') + '" style="--lens-color:' + lensColor(id) + '">' + esc(id) + '</span>';
   }
 
-  function eref(id, extra) {
+  // `ovRels` (optional): only overrides at these rels mark the button.
+  function eref(id, extra, ovRels) {
     var e = BY_ID[id];
-    var label = 'Open entry ' + id + (e ? ': ' + e.card_text : '');
-    return '<button type="button" class="eref" data-entry="' + esc(id) + '" aria-label="' + esc(label) + '">' + esc(id) + (extra || '') + '</button>';
+    var ovs = e ? entryOvs(id).filter(function (ov) { return !ovRels || ovRels.indexOf(relOf(ov.pointer)) > -1; }) : [];
+    var marked = state.student ? (e && studentVisibleOv(id) && (!ovRels || ovs.length)) : ovs.length > 0;
+    var label = 'Open entry ' + id + (e ? ': ' + e.card_text : '') + (marked ? (state.student ? ' (revised by instructor)' : ' (has instructor overrides)') : '');
+    return '<button type="button" class="eref" data-entry="' + esc(id) + '" aria-label="' + esc(label) + '">' + esc(id)
+      + (marked ? '<span class="ovm" aria-hidden="true">*</span>' : '') + (extra || '') + '</button>';
   }
 
   function rationaleHtml(r) {
@@ -5575,15 +6279,33 @@
   }
 
   // Compact six-cell sub-score display. `scores` maps criterion key -> 0/1/2.
-  function scoresHtml(scores, wide) {
-    var label = CONFIG.criteria.map(function (c) { return c.name + ' ' + scores[c.key]; }).join(', ');
+  // `orig` (optional) maps a criterion key to the analyst's score for each
+  // overridden score; those cells are marked with a border and an asterisk.
+  function scoresHtml(scores, wide, orig) {
+    orig = orig || {};
+    var label = CONFIG.criteria.map(function (c) {
+      return c.name + ' ' + scores[c.key] + (c.key in orig ? ' (overridden; analyst ' + orig[c.key] + ')' : '');
+    }).join(', ');
     var h = '<span class="scores' + (wide ? ' wide' : '') + '" role="img" aria-label="Sub-scores out of 2: ' + esc(label) + '">';
     CONFIG.criteria.forEach(function (c) {
-      var v = scores[c.key];
-      h += '<span class="ss" data-crit="' + c.key + '" data-score="' + v + '" title="' + esc(c.name + ': ' + v + ' of 2') + '">'
+      var v = scores[c.key], ov = c.key in orig;
+      h += '<span class="ss' + (ov ? ' ov' : '') + '" data-crit="' + c.key + '" data-score="' + v + '"' + (ov ? ' data-orig="' + orig[c.key] + '"' : '')
+        + ' title="' + esc(c.name + ': ' + v + ' of 2' + (ov ? ' (overridden; analyst ' + orig[c.key] + ')' : '')) + '">'
         + '<abbr>' + esc(c.abbr) + '</abbr><span class="val">' + v + '</span>' + scoreBars(v) + '</span>';
     });
     return h + '</span>';
+  }
+  // Analyst's scores for every overridden score of an entry.
+  function scoreOrigs(e) {
+    var o = {};
+    CRIT_KEYS.forEach(function (k) {
+      if (ovAt(e.entry_id, 'strength/' + k + '/score')) o[k] = BASE_BY_ID[e.entry_id].strength[k].score;
+    });
+    return o;
+  }
+  function gatePasses(e) {
+    var s = e.strength;
+    return s.claim_fit.score === 2 && s.mechanism.score >= 1 && s.explains_change.score >= 1;
   }
   function entryScores(e) {
     var s = {};
@@ -5598,6 +6320,12 @@
     if (st.claim_fit.misfiled_to != null) h += '<span class="chip move">Better fits claim ' + st.claim_fit.misfiled_to + '</span>';
     if (st.claim_fit.not_an_explanation) h += '<span class="chip flag">Not an explanation: ' + esc(CONFIG.notExplanationLabels[st.claim_fit.not_an_explanation.type]) + '</span>';
     if (st.lens_fit.actual_lens.primary !== e.discipline) h += '<span class="chip lens">Coded lens: ' + esc(st.lens_fit.actual_lens.primary) + '</span>';
+    var n = entryOvs(e.entry_id).length;
+    if (n) {
+      h += '<span class="chip ov">Overridden: ' + n + ' field' + (n === 1 ? '' : 's') + '</span>';
+      var was = gatePasses(BASE_BY_ID[e.entry_id]), now = gatePasses(e);
+      if (was !== now) h += '<span class="chip flag">Gate now ' + (now ? 'passed' : 'failed') + ' (synthesis not recomputed)</span>';
+    }
     return h;
   }
 
@@ -5624,14 +6352,18 @@
       + '<span><span class="pip" style="background:var(--char-1)"></span>' + s.entry_count + ' cards</span>'
       + '<span><span class="pip" style="background:var(--char-4)"></span>' + s.uncertain_count + ' uncertain transcriptions</span>'
       + '<span><span class="pip" style="background:var(--char-3)"></span>Board date: ' + esc(s.snapshot_date || 'not recorded') + '</span>'
-      + '<span><span class="pip" style="background:var(--char-5)"></span>Protocol v' + esc(DATA.protocol_version) + ' · coded ' + esc(gen) + '</span>';
+      + '<span><span class="pip" style="background:var(--char-5)"></span>Protocol v' + esc(DATA.protocol_version) + ' · coded ' + esc(gen) + '</span>'
+      + '<span><span class="pip" style="background:var(--char-8)"></span>Source: ' + esc(slotSource(currentSlot())) + '</span>'
+      + (state.student ? '' : '<span id="hdr-ov-count"><span class="pip" style="background:var(--char-2)"></span>' + currentSlot().overrides.length + ' instructor override' + (currentSlot().overrides.length === 1 ? '' : 's') + '</span>');
     var notes = s.notes || [];
     var det = document.getElementById('hdr-notes');
+    det.hidden = false;
     if (notes.length) {
       det.innerHTML = '<summary>Snapshot notes (' + notes.length + ')</summary><ul>'
         + notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>'
         + '<p class="quiet">Source: ' + esc(s.source_workbook) + '. Analyst: ' + esc(s.analyst) + '.</p>';
     } else {
+      det.innerHTML = '';
       det.hidden = true;
     }
   }
@@ -5645,7 +6377,8 @@
     if (!tabs.some(function (t) { return t.id === state.tab; })) state.tab = tabs[0].id;
     document.getElementById('tabs').innerHTML = tabs.map(function (t) {
       var sel = t.id === state.tab;
-      return '<button type="button" role="tab" class="tab" id="tab-' + t.id + '" aria-controls="view" aria-selected="' + sel + '" tabindex="' + (sel ? '0' : '-1') + '" data-tab="' + t.id + '" style="--tab-color:' + t.color + '"><span class="pip" aria-hidden="true"></span>' + esc(t.label) + '</button>';
+      var count = t.id === 'overrides' ? ' (' + currentSlot().overrides.length + ')' : '';
+      return '<button type="button" role="tab" class="tab" id="tab-' + t.id + '" aria-controls="view" aria-selected="' + sel + '" tabindex="' + (sel ? '0' : '-1') + '" data-tab="' + t.id + '" style="--tab-color:' + t.color + '"><span class="pip" aria-hidden="true"></span>' + esc(t.label + count) + '</button>';
     }).join('');
     document.getElementById('view').setAttribute('aria-labelledby', 'tab-' + state.tab);
 
@@ -5658,6 +6391,8 @@
     b.innerHTML = state.student
       ? '<div class="mode-banner"><strong>Student view</strong><span>' + esc(CONFIG.studentBanner) + '</span></div>'
       : '';
+    renderHeader();
+    renderDataBar();
   }
 
   // ==========================================================================
@@ -5673,6 +6408,8 @@
     }
     h += '<span><span class="ins">[ ]</span> transcriber insertion</span>';
     h += '<span><span class="chip uncertain">Uncertain transcription</span></span>';
+    if (!state.student) h += '<span><span class="chip ov">Overridden</span> <b>*</b> instructor override; original kept in the entry detail</span>';
+    else if (currentSlot().overrides.length) h += '<span><span class="chip rev">Revised by instructor</span></span>';
     h += '</div>';
     if (!state.student) h += '<p class="quiet">' + esc(CONFIG.instructorNote) + '</p>';
 
@@ -5706,7 +6443,8 @@
 
   function wallCard(e, l) {
     var h = '<button type="button" class="wcard" data-entry="' + e.entry_id + '" style="--lens-color:' + l.color + '">'
-      + '<span class="wcard-top"><span class="wcard-id">' + e.entry_id + '</span>' + uncertainChip(e) + '</span>'
+      + '<span class="wcard-top"><span class="wcard-id">' + e.entry_id + '</span>' + uncertainChip(e)
+      + (state.student && studentVisibleOv(e.entry_id) ? '<span class="chip rev">Revised by instructor</span>' : '') + '</span>'
       + '<span class="wcard-text">' + cardTextHtml(e.card_text) + '</span>';
     var chars = e.oldenburg.characteristics;
     if (chars.length) {
@@ -5717,7 +6455,7 @@
       h += '</span>';
     }
     if (!state.student) {
-      h += scoresHtml(entryScores(e));
+      h += scoresHtml(entryScores(e), false, scoreOrigs(e));
       var flags = flagChips(e);
       if (flags) h += '<span class="wcard-flags">' + flags + '</span>';
     }
@@ -5730,7 +6468,8 @@
   function renderCoverage() {
     var h = '<section class="panel" style="--panel-color:var(--char-1)">'
       + '<h2>Oldenburg coverage</h2>'
-      + '<p class="panel-intro">Which cards engage each characteristic, by the claim they are filed under. Definitions are quoted from the theory file (' + esc(CONFIG.theoryFileLabel) + ').</p>';
+      + '<p class="panel-intro">Which cards engage each characteristic, by the claim they are filed under. Definitions are quoted from the theory file (' + esc(CONFIG.theoryFileLabel) + ').</p>'
+      + (currentSlot().overrides.length ? '<p class="quiet">' + (state.student ? 'Mappings marked * were revised by the instructor.' : 'Mappings include instructor overrides; entries marked * have an overridden Oldenburg mapping.') + '</p>' : '');
     h += '<div class="legend" aria-label="Relations">';
     Object.keys(CONFIG.relations).forEach(function (k) {
       h += '<span><b>' + esc(CONFIG.relations[k].label) + '</b> ' + esc(CONFIG.relations[k].desc) + '</span>';
@@ -5757,7 +6496,7 @@
         } else {
           h += '<td class="cov-cell has" data-claim="' + n + '" data-label="' + esc(lbl) + '"><ul class="cov-list">';
           hits.forEach(function (x) {
-            h += '<li>' + eref(x.e.entry_id, '<span class="rel">' + esc(CONFIG.relations[x.c.relation].label) + '</span>') + '</li>';
+            h += '<li>' + eref(x.e.entry_id, '<span class="rel">' + esc(CONFIG.relations[x.c.relation].label) + '</span>', ['oldenburg']) + '</li>';
           });
           h += '</ul></td>';
         }
@@ -5784,7 +6523,7 @@
     } else {
       h += '<div class="table-wrap"><table class="plain stack" id="vocab-table"><thead><tr><th scope="col">Card</th><th scope="col">Term as written</th><th scope="col">Maps to</th><th scope="col">Usage</th><th scope="col">Rationale</th></tr></thead><tbody>';
       flags.forEach(function (x) {
-        h += '<tr><td data-label="Card">' + eref(x.e.entry_id) + ' <span class="quiet">Claim ' + x.e.claim_no + '</span></td>'
+        h += '<tr><td data-label="Card">' + eref(x.e.entry_id, '', ['oldenburg']) + ' <span class="quiet">Claim ' + x.e.claim_no + '</span></td>'
           + '<td data-label="Term as written"><span class="q">' + esc(x.f.term_as_written) + '</span></td>'
           + '<td data-label="Maps to">' + charPip(x.f.maps_to) + ' ' + esc(x.f.maps_to) + '</td>'
           + '<td data-label="Usage"><strong>' + esc(CONFIG.usageLabels[x.f.usage_matches_definition]) + '</strong></td>'
@@ -5797,6 +6536,7 @@
     if (!state.student) {
       var g = DATA.snapshot_gaps;
       h += '<div class="note-box info" id="snapshot-gaps"><h4>Snapshot gaps (synthesis)</h4>';
+      if (currentSlot().overrides.length) h += '<p class="quiet">From the analyst\'s codes; not recomputed after overrides.</p>';
       h += '<p><strong>Engaged by no card on any claim:</strong> ' + (g.characteristics_unengaged_anywhere.length ? g.characteristics_unengaged_anywhere.map(esc).join(', ') : 'none') + '.</p>';
       if (g.notes) h += '<p>' + esc(g.notes) + '</p>';
       h += '</div>';
@@ -5816,6 +6556,16 @@
     h += '</nav>';
     CLAIM_NOS.forEach(function (n) { h += synPanel(SYN[n]); });
     return h;
+  }
+
+  // Entries a synthesis panel discusses: those filed under the claim and
+  // every entry it references.
+  function synthesisEntryIds(c) {
+    var ids = ENTRIES.filter(function (e) { return e.claim_no === c.claim_no; }).map(function (e) { return e.entry_id; });
+    function add(id) { if (ids.indexOf(id) < 0) ids.push(id); }
+    c.candidates.concat(c.imported_candidates, c.nearest_misses).forEach(function (k) { add(k.entry_id); });
+    c.clusters.concat(c.convergence, c.tensions).forEach(function (k) { k.entry_ids.forEach(add); });
+    return ids;
   }
 
   // Where else a cluster id appears (clusters spanning claims are repeated).
@@ -5842,6 +6592,11 @@
     var n = c.claim_no;
     var h = '<section class="syn" id="syn-claim-' + n + '" data-claim="' + n + '" style="--claim-color:' + claimColor(n) + '" aria-labelledby="syn-h-' + n + '" tabindex="-1">'
       + '<div class="syn-banner"><h2 id="syn-h-' + n + '">Claim ' + n + ' · ' + esc(c.claim_label) + '</h2><p class="claim-text">' + esc(c.claim_text) + '</p></div><div class="syn-body">';
+    var touched = synthesisEntryIds(c).filter(function (id) { return entryOvs(id).length; });
+    if (touched.length) {
+      h += '<div class="note-box" data-part="stale"><h4>Instructor overrides</h4><p>' + esc(CONFIG.synthesisStaleNote) + '</p><div class="refs">'
+        + touched.map(function (id) { return eref(id); }).join('') + '</div></div>';
+    }
 
     h += secOpen('candidates', '<p class="quiet">' + esc(CONFIG.candidateGate) + '</p>');
     if (!c.candidates.length) h += '<p class="empty-line">No card filed under this claim passes the gate.</p>';
@@ -5860,7 +6615,7 @@
         var e = BY_ID[m.entry_id];
         h += '<div class="syn-item"><div class="syn-item-head">' + eref(m.entry_id) + lensTag(e.discipline)
           + '<span class="chip flag">Fails: ' + m.fails.map(function (f) { return esc(CONFIG.affectsLabels[f]); }).join(', ') + '</span></div>'
-          + '<p>' + cardTextHtml(e.card_text) + '</p>' + scoresHtml(entryScores(e), true) + '</div>';
+          + '<p>' + cardTextHtml(e.card_text) + '</p>' + scoresHtml(entryScores(BASE_BY_ID[m.entry_id]), true) + '</div>';
       });
       h += '</div>';
     }
@@ -5912,17 +6667,61 @@
   // ==========================================================================
   // Entry detail
   // ==========================================================================
+  function ovMark() {
+    return state.student ? ' <span class="ov-mark rev">Revised by instructor</span>' : ' <span class="ov-mark">Overridden</span>';
+  }
+
+  // Override controls under a code block (instructor view only).
+  function ovControls(e, block, ovs) {
+    var name = block === 'oldenburg' ? 'Oldenburg mapping' : CRIT_BY_KEY[block].name;
+    var h = '<div class="ov-controls">';
+    h += '<button type="button" class="btn ghost" data-ov-open="' + block + '">' + (ovs.length ? 'Edit override' : 'Override') + '<span class="sr-only">: ' + esc(name) + '</span></button>';
+    if (ovs.length) {
+      if (state.revertArm === block) {
+        h += '<button type="button" class="btn warn" data-ov-revert="' + block + '">Confirm: revert to analyst code</button>'
+          + '<button type="button" class="btn ghost" data-ov-revert-cancel>Keep override</button>';
+      } else {
+        h += '<button type="button" class="btn ghost" data-ov-revert-arm="' + block + '">Revert to analyst code<span class="sr-only">: ' + esc(name) + '</span></button>';
+      }
+    }
+    return h + '</div>';
+  }
+
+  // Analyst original beside the override, field by field, then the reasons.
+  function ovBox(ovs) {
+    var h = '<div class="ov-box" data-part="ov-box"><h4>Instructor override</h4><div class="table-wrap"><table class="plain stack"><thead><tr>'
+      + '<th scope="col">Field</th><th scope="col">Analyst original</th><th scope="col">Override</th></tr></thead><tbody>';
+    var groups = [];
+    ovs.forEach(function (ov) {
+      var f = fieldOf(ov.pointer);
+      h += '<tr data-pointer="' + esc(ov.pointer) + '"><td data-label="Field">' + esc(CONFIG.fieldLabels[f] || f) + '</td>'
+        + '<td data-label="Analyst original" data-role="original">' + fmtVal(f, ov.original_value) + '</td>'
+        + '<td data-label="Override" data-role="override">' + fmtVal(f, ov.override_value) + '</td></tr>';
+      var key = ov.reason + '\u0000' + ov.by + '\u0000' + ov.at;
+      if (groups.indexOf(key) < 0) groups.push(key);
+    });
+    h += '</tbody></table></div>';
+    groups.forEach(function (g) {
+      var p = g.split('\u0000');
+      h += '<div class="ov-why"><p class="kv"><b>Reason:</b> ' + esc(p[0]) + '</p><p class="quiet">By ' + esc(p[1]) + ' · ' + esc(fmtTime(p[2])) + '</p></div>';
+    });
+    return h + '</div>';
+  }
+
   function renderDetail(id) {
     var e = BY_ID[id];
     var idx = ENTRIES.indexOf(e);
     var st = e.strength;
+    var editing = !state.student && state.edit && state.edit.entryId === id ? state.edit.block : null;
     var h = '<div class="dlg-head"><div><p class="sub">Claim ' + e.claim_no + ' · ' + esc(claimLabel(e.claim_no)) + ' · filed under ' + esc(e.discipline) + '</p>'
       + '<h2 id="detail-title">Entry ' + esc(e.entry_id) + '</h2></div>'
       + '<button type="button" class="dlg-close" data-close>Close</button></div><div class="dlg-body">';
 
     // Card and transcription
     h += '<div class="card-meta">' + lensTag(e.discipline)
-      + (e.transcription_confidence === 'Uncertain' ? uncertainChip(e) : '<span class="chip lens">Transcription: High confidence</span>') + '</div>';
+      + (e.transcription_confidence === 'Uncertain' ? uncertainChip(e) : '<span class="chip lens">Transcription: High confidence</span>')
+      + (!state.student && entryOvs(id).length ? '<span class="chip ov">Overridden: ' + entryOvs(id).length + ' field' + (entryOvs(id).length === 1 ? '' : 's') + '</span>' : '')
+      + '</div>';
     h += '<blockquote class="card-face" style="--lens-color:' + lensColor(e.discipline) + '">' + cardTextHtml(e.card_text) + '</blockquote>';
     if (/\[/.test(e.card_text)) h += '<p class="quiet">Square brackets mark transcriber insertions or best-guess readings. They are not student text and are not coded.</p>';
     if (e.transcription_caveat) {
@@ -5937,7 +6736,94 @@
 
     // Oldenburg mapping
     var o = e.oldenburg;
-    h += '<div class="dsec" data-part="oldenburg" style="--sec-color:var(--char-1)"><h3><span class="pip" aria-hidden="true"></span>Oldenburg mapping</h3>';
+    var oOvs = blockOvs(id, 'oldenburg');
+    h += '<div class="dsec" data-part="oldenburg" style="--sec-color:var(--char-1)"><h3><span class="pip" aria-hidden="true"></span>Oldenburg mapping' + (oOvs.length ? ovMark() : '') + '</h3>';
+    if (editing === 'oldenburg') {
+      h += oldenburgForm(e);
+    } else {
+      h += oldenburgHtml(o);
+      if (!state.student) {
+        h += ovControls(e, 'oldenburg', oOvs);
+        if (oOvs.length) h += ovBox(oOvs);
+      }
+    }
+    h += '</div>';
+
+    // Explanation strength (instructor only)
+    if (!state.student) {
+      h += '<div class="dsec" data-part="strength" style="--sec-color:var(--char-3)"><h3><span class="pip" aria-hidden="true"></span>Explanation strength</h3>'
+        + '<p class="quiet">' + esc(CONFIG.instructorNote) + '</p>' + scoresHtml(entryScores(e), true, scoreOrigs(e));
+      CONFIG.criteria.forEach(function (c) {
+        var code = st[c.key];
+        var ovs = blockOvs(id, c.key);
+        var fo = function (f) { return ovAt(id, 'strength/' + c.key + '/' + f) ? ovMark() : ''; };
+        if (editing === c.key) {
+          h += '<div class="code-block is-ov" data-crit="' + c.key + '">' + critForm(e, c) + '</div>';
+          return;
+        }
+        h += '<div class="code-block' + (ovs.length ? ' is-ov' : '') + '" data-crit="' + c.key + '"><div class="code-head"><span class="name">' + esc(c.name) + '</span>'
+          + '<span class="score-badge' + (fo('score') ? ' ov' : '') + '" aria-label="' + esc(c.name + ' score ' + code.score + ' of 2' + (fo('score') ? ', overridden' : '')) + '">' + code.score + '<small>/ 2</small></span>' + fo('score')
+          + '<span class="quiet">' + esc(c.question) + '</span></div>'
+          + '<p class="anchor"><b>Anchor ' + code.score + ':</b> ' + codeSpans(c.anchors[code.score]) + '</p>'
+          + (fo('rationale') ? '<p class="kv"><b>Rationale</b>' + fo('rationale') + '</p>' : '') + rationaleHtml(code.rationale);
+        if (c.key === 'claim_fit') {
+          if (code.misfiled_to != null || fo('misfiled_to')) h += '<p class="kv"><b>Better fits:</b> ' + fmtVal('misfiled_to', code.misfiled_to) + fo('misfiled_to') + '</p>';
+          if (code.not_an_explanation) {
+            h += '<div class="kv"><b>Not an explanation:</b> ' + esc(CONFIG.notExplanationLabels[code.not_an_explanation.type]) + fo('not_an_explanation') + rationaleHtml(code.not_an_explanation.rationale) + '</div>';
+          } else if (fo('not_an_explanation')) {
+            h += '<p class="kv"><b>Not an explanation:</b> none' + fo('not_an_explanation') + '</p>';
+          }
+        }
+        if (c.key === 'lens_fit') {
+          var al = code.actual_lens;
+          h += '<p class="kv"><b>Coded lens:</b> ' + esc(al.primary) + (al.secondary.length ? ' (secondary: ' + al.secondary.map(esc).join(', ') + ')' : '') + fo('actual_lens') + ' · <b>Filed:</b> ' + esc(e.discipline) + '</p>';
+        }
+        if (c.key === 'testability' && (fo('testable_implication') || fo('implication_note'))) {
+          h += '<p class="kv"><b>Testable implication and note:</b> shown below' + ovMark() + '</p>';
+        }
+        if (c.key === 'scope') {
+          h += '<p class="kv"><b>Stated scope:</b> ' + esc(code.stated_scope || 'none stated') + fo('stated_scope') + '</p>';
+          if (fo('bodo_question')) h += '<p class="kv"><b>Bodø question:</b> shown below' + ovMark() + '</p>';
+        }
+        h += ovControls(e, c.key, ovs);
+        if (ovs.length) h += ovBox(ovs);
+        h += '</div>';
+      });
+      h += '</div>';
+    }
+
+    // Testable implication (both views)
+    var t = st.testability;
+    var tMark = ovAt(id, 'strength/testability/testable_implication') ? ovMark() : '';
+    var nMark = ovAt(id, 'strength/testability/implication_note') ? ovMark() : '';
+    h += '<div class="dsec" data-part="implication" style="--sec-color:var(--correct)"><h3><span class="pip" aria-hidden="true"></span>Testable implication' + tMark + '</h3>';
+    if (t.testable_implication) {
+      h += '<p class="implication">' + esc(t.testable_implication) + '</p>';
+      if (t.implication_note) h += '<p class="kv"><b>Added by the analyst:</b> ' + esc(t.implication_note) + nMark + '</p>';
+    } else {
+      h += '<p class="empty-line">No testable implication was written for this card.</p>';
+      if (!state.student && t.implication_note) h += '<p class="kv"><b>Why:</b> ' + esc(t.implication_note) + nMark + '</p>';
+    }
+    h += '<p class="quiet">An implication says what would be observed if the card were right. It does not say whether it is observed.</p></div>';
+
+    // Scope question (both views)
+    var bMark = ovAt(id, 'strength/scope/bodo_question') ? ovMark() : '';
+    h += '<div class="dsec" data-part="bodo" style="--sec-color:var(--char-6)"><h3><span class="pip" aria-hidden="true"></span>Scope question: Bodø' + bMark + '</h3>'
+      + '<p class="bodo">' + esc(st.scope.bodo_question) + '</p><p class="quiet">An open question, not a verdict.</p></div>';
+
+    var prev = ENTRIES[idx - 1], next = ENTRIES[idx + 1];
+    h += '<div class="dlg-nav"><button type="button" class="btn" data-entry-nav="' + (prev ? prev.entry_id : '') + '"' + (prev ? '' : ' disabled') + '>Previous' + (prev ? ': ' + prev.entry_id : '') + '</button>'
+      + '<button type="button" class="btn" data-entry-nav="' + (next ? next.entry_id : '') + '"' + (next ? '' : ' disabled') + '>Next' + (next ? ': ' + next.entry_id : '') + '</button></div>';
+    h += '</div>';
+
+    var dlg = document.getElementById('detail');
+    dlg.style.setProperty('--claim-color', claimColor(e.claim_no));
+    dlg.innerHTML = h;
+  }
+
+  // The Oldenburg mapping as shown in the detail (reconciled values).
+  function oldenburgHtml(o) {
+    var h = '';
     if (o.engagement === 'none') {
       h += '<div class="code-block"><div class="code-head"><span class="name">No characteristic engaged</span></div>' + rationaleHtml(o.none_rationale) + '</div>';
     }
@@ -5953,60 +6839,7 @@
           + '<span class="chip lens">' + esc(CONFIG.usageLabels[f.usage_matches_definition]) + '</span></div>' + rationaleHtml(f.rationale) + '</div>';
       });
     }
-    h += '</div>';
-
-    // Explanation strength (instructor only)
-    if (!state.student) {
-      h += '<div class="dsec" data-part="strength" style="--sec-color:var(--char-3)"><h3><span class="pip" aria-hidden="true"></span>Explanation strength</h3>'
-        + '<p class="quiet">' + esc(CONFIG.instructorNote) + '</p>' + scoresHtml(entryScores(e), true);
-      CONFIG.criteria.forEach(function (c) {
-        var code = st[c.key];
-        h += '<div class="code-block" data-crit="' + c.key + '"><div class="code-head"><span class="name">' + esc(c.name) + '</span>'
-          + '<span class="score-badge" aria-label="' + esc(c.name + ' score ' + code.score + ' of 2') + '">' + code.score + '<small>/ 2</small></span>'
-          + '<span class="quiet">' + esc(c.question) + '</span></div>'
-          + '<p class="anchor"><b>Anchor ' + code.score + ':</b> ' + codeSpans(c.anchors[code.score]) + '</p>' + rationaleHtml(code.rationale);
-        if (c.key === 'claim_fit') {
-          if (code.misfiled_to != null) h += '<p class="kv"><b>Better fits:</b> Claim ' + code.misfiled_to + ' · ' + esc(claimLabel(code.misfiled_to)) + '</p>';
-          if (code.not_an_explanation) {
-            h += '<div class="kv"><b>Not an explanation:</b> ' + esc(CONFIG.notExplanationLabels[code.not_an_explanation.type]) + rationaleHtml(code.not_an_explanation.rationale) + '</div>';
-          }
-        }
-        if (c.key === 'lens_fit') {
-          var al = code.actual_lens;
-          h += '<p class="kv"><b>Coded lens:</b> ' + esc(al.primary) + (al.secondary.length ? ' (secondary: ' + al.secondary.map(esc).join(', ') + ')' : '') + ' · <b>Filed:</b> ' + esc(e.discipline) + '</p>';
-        }
-        if (c.key === 'scope') {
-          h += '<p class="kv"><b>Stated scope:</b> ' + esc(code.stated_scope || 'none stated') + '</p>';
-        }
-        h += '</div>';
-      });
-      h += '</div>';
-    }
-
-    // Testable implication (both views)
-    var t = st.testability;
-    h += '<div class="dsec" data-part="implication" style="--sec-color:var(--correct)"><h3><span class="pip" aria-hidden="true"></span>Testable implication</h3>';
-    if (t.testable_implication) {
-      h += '<p class="implication">' + esc(t.testable_implication) + '</p>';
-      if (t.implication_note) h += '<p class="kv"><b>Added by the analyst:</b> ' + esc(t.implication_note) + '</p>';
-    } else {
-      h += '<p class="empty-line">No testable implication was written for this card.</p>';
-      if (!state.student && t.implication_note) h += '<p class="kv"><b>Why:</b> ' + esc(t.implication_note) + '</p>';
-    }
-    h += '<p class="quiet">An implication says what would be observed if the card were right. It does not say whether it is observed.</p></div>';
-
-    // Scope question (both views)
-    h += '<div class="dsec" data-part="bodo" style="--sec-color:var(--char-6)"><h3><span class="pip" aria-hidden="true"></span>Scope question: Bodø</h3>'
-      + '<p class="bodo">' + esc(st.scope.bodo_question) + '</p><p class="quiet">An open question, not a verdict.</p></div>';
-
-    var prev = ENTRIES[idx - 1], next = ENTRIES[idx + 1];
-    h += '<div class="dlg-nav"><button type="button" class="btn" data-entry-nav="' + (prev ? prev.entry_id : '') + '"' + (prev ? '' : ' disabled') + '>Previous' + (prev ? ': ' + prev.entry_id : '') + '</button>'
-      + '<button type="button" class="btn" data-entry-nav="' + (next ? next.entry_id : '') + '"' + (next ? '' : ' disabled') + '>Next' + (next ? ': ' + next.entry_id : '') + '</button></div>';
-    h += '</div>';
-
-    var dlg = document.getElementById('detail');
-    dlg.style.setProperty('--claim-color', claimColor(e.claim_no));
-    dlg.innerHTML = h;
+    return h;
   }
 
   function openDetail(id, opener) {
@@ -6030,12 +6863,1078 @@
   }
 
   // ==========================================================================
+  // JSON utilities: clone, deep equality, RFC 6901 pointers, reconciliation
+  // ==========================================================================
+  function clone(v) { return v === undefined ? undefined : JSON.parse(JSON.stringify(v)); }
+
+  function deq(a, b) {
+    if (a === b) return true;
+    if (typeof a !== typeof b || a === null || b === null || typeof a !== 'object') return false;
+    if (Array.isArray(a) !== Array.isArray(b)) return false;
+    if (Array.isArray(a)) {
+      if (a.length !== b.length) return false;
+      for (var i = 0; i < a.length; i++) if (!deq(a[i], b[i])) return false;
+      return true;
+    }
+    var ka = Object.keys(a), kb = Object.keys(b);
+    if (ka.length !== kb.length) return false;
+    for (var j = 0; j < ka.length; j++) {
+      if (!Object.prototype.hasOwnProperty.call(b, ka[j]) || !deq(a[ka[j]], b[ka[j]])) return false;
+    }
+    return true;
+  }
+
+  function ptrTokens(p) {
+    if (p === '') return [];
+    if (p.charAt(0) !== '/') return null;
+    return p.slice(1).split('/').map(function (t) { return t.replace(/~1/g, '/').replace(/~0/g, '~'); });
+  }
+  // Returns { found, value }.
+  function ptrGet(doc, p) {
+    var toks = ptrTokens(p), cur = doc;
+    if (!toks) return { found: false };
+    for (var i = 0; i < toks.length; i++) {
+      var t = toks[i];
+      if (Array.isArray(cur)) {
+        if (!/^(0|[1-9][0-9]*)$/.test(t) || Number(t) >= cur.length) return { found: false };
+        cur = cur[Number(t)];
+      } else if (cur !== null && typeof cur === 'object' && Object.prototype.hasOwnProperty.call(cur, t)) {
+        cur = cur[t];
+      } else {
+        return { found: false };
+      }
+    }
+    return { found: true, value: cur };
+  }
+  // Replaces the value at an existing pointer (overrides only ever replace).
+  function ptrSet(doc, p, v) {
+    var toks = ptrTokens(p), cur = doc;
+    for (var i = 0; i < toks.length - 1; i++) cur = cur[Array.isArray(cur) ? Number(toks[i]) : toks[i]];
+    var last = toks[toks.length - 1];
+    cur[Array.isArray(cur) ? Number(last) : last] = v;
+  }
+
+  // The analyst's document with every override applied, in order.
+  function reconcile(base, overrides) {
+    var doc = clone(base);
+    overrides.forEach(function (ov) { ptrSet(doc, ov.pointer, clone(ov.override_value)); });
+    doc.overrides = clone(overrides);
+    return doc;
+  }
+
+  // The document an export writes: the analyst's codes untouched, plus overrides.
+  function exportDoc(slot) {
+    var doc = clone(slot.base);
+    doc.overrides = clone(slot.overrides);
+    return doc;
+  }
+
+  // ==========================================================================
+  // JSON Schema validation (draft 2020-12 subset)
+  //
+  // Implements exactly the keywords analysis/schema.json uses. If the schema
+  // gains a keyword this code does not implement, the viewer refuses to load
+  // files and says so, rather than silently skipping the check.
+  // ==========================================================================
+  var SCHEMA_ANNOTATIONS = { '$schema': 1, '$id': 1, '$defs': 1, title: 1, description: 1 };
+  var SCHEMA_KEYWORDS = {
+    '$ref': 1, type: 1, 'const': 1, 'enum': 1, required: 1, properties: 1, additionalProperties: 1,
+    items: 1, minItems: 1, maxItems: 1, uniqueItems: 1, minLength: 1, maxLength: 1, pattern: 1,
+    minimum: 1, maximum: 1, oneOf: 1, anyOf: 1, allOf: 1, 'if': 1, then: 1, 'else': 1, format: 1
+  };
+  function unsupportedKeywords(s, path, out) {
+    if (typeof s === 'boolean') return out;
+    Object.keys(s).forEach(function (k) {
+      if (!SCHEMA_KEYWORDS[k] && !SCHEMA_ANNOTATIONS[k]) out.push(path + '/' + k);
+    });
+    function sub(x, p) { if (x && typeof x === 'object' || typeof x === 'boolean') unsupportedKeywords(x, p, out); }
+    if (s.$defs) Object.keys(s.$defs).forEach(function (k) { sub(s.$defs[k], path + '/$defs/' + k); });
+    if (s.properties) Object.keys(s.properties).forEach(function (k) { sub(s.properties[k], path + '/properties/' + k); });
+    ['items', 'if', 'then', 'else'].forEach(function (k) { if (k in s) sub(s[k], path + '/' + k); });
+    if (s.additionalProperties && typeof s.additionalProperties === 'object') sub(s.additionalProperties, path + '/additionalProperties');
+    ['oneOf', 'anyOf', 'allOf'].forEach(function (k) { (s[k] || []).forEach(function (x, i) { sub(x, path + '/' + k + '/' + i); }); });
+    return out;
+  }
+  var SCHEMA_UNSUPPORTED = unsupportedKeywords(SCHEMA, '#', []);
+
+  function resolveRef(ref) {
+    if (ref.indexOf('#') !== 0) throw new Error('Only local $ref values are supported: ' + ref);
+    var r = ptrGet(SCHEMA, ref.slice(1));
+    if (!r.found) throw new Error('Unresolvable $ref: ' + ref);
+    return r.value;
+  }
+  function isType(v, t) {
+    switch (t) {
+      case 'null': return v === null;
+      case 'boolean': return typeof v === 'boolean';
+      case 'object': return v !== null && typeof v === 'object' && !Array.isArray(v);
+      case 'array': return Array.isArray(v);
+      case 'string': return typeof v === 'string';
+      case 'number': return typeof v === 'number' && isFinite(v);
+      case 'integer': return typeof v === 'number' && Number.isInteger(v);
+    }
+    return false;
+  }
+  function validDate(y, m, d) {
+    var dt = new Date(Date.UTC(+y, +m - 1, +d));
+    return dt.getUTCFullYear() === +y && dt.getUTCMonth() === +m - 1 && dt.getUTCDate() === +d;
+  }
+  function formatOk(fmt, v) {
+    var m;
+    if (fmt === 'date') {
+      m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
+      return !!m && validDate(m[1], m[2], m[3]);
+    }
+    if (fmt === 'date-time') {
+      m = /^(\d{4})-(\d{2})-(\d{2})[Tt]([01]\d|2[0-3]):([0-5]\d):([0-5]\d|60)(\.\d+)?([Zz]|[+-]([01]\d|2[0-3]):[0-5]\d)$/.exec(v);
+      return !!m && validDate(m[1], m[2], m[3]);
+    }
+    return true;
+  }
+  function showVal(v) {
+    var s = JSON.stringify(v);
+    return s && s.length > 60 ? s.slice(0, 57) + '...' : s;
+  }
+
+  // Pushes { path, msg } for every violation of schema `s` by value `v`.
+  function vNode(s, v, path, errs) {
+    if (s === true) return;
+    if (s === false) { errs.push({ path: path, msg: 'is not allowed here' }); return; }
+    if (s.$ref) vNode(resolveRef(s.$ref), v, path, errs);
+    if ('type' in s) {
+      var types = Array.isArray(s.type) ? s.type : [s.type];
+      if (!types.some(function (t) { return isType(v, t); })) {
+        errs.push({ path: path, msg: 'must be ' + types.join(' or ') + ', found ' + (v === null ? 'null' : Array.isArray(v) ? 'array' : typeof v) });
+        return;
+      }
+    }
+    if ('const' in s && !deq(v, s['const'])) errs.push({ path: path, msg: 'must equal ' + showVal(s['const']) + ', found ' + showVal(v) });
+    if (s['enum'] && !s['enum'].some(function (x) { return deq(x, v); })) {
+      errs.push({ path: path, msg: 'must be one of ' + s['enum'].map(showVal).join(', ') + '; found ' + showVal(v) });
+    }
+    if (typeof v === 'string') {
+      var len = Array.from(v).length;
+      if ('minLength' in s && len < s.minLength) errs.push({ path: path, msg: s.minLength === 1 ? 'must not be empty' : 'must be at least ' + s.minLength + ' characters' });
+      if ('maxLength' in s && len > s.maxLength) errs.push({ path: path, msg: 'must be at most ' + s.maxLength + ' characters' });
+      if ('pattern' in s && !new RegExp(s.pattern, 'u').test(v)) errs.push({ path: path, msg: 'does not match the required pattern ' + s.pattern + ' (found ' + showVal(v) + ')' });
+      if ('format' in s && !formatOk(s.format, v)) errs.push({ path: path, msg: 'is not a valid ' + s.format + ' (found ' + showVal(v) + ')' });
+    }
+    if (typeof v === 'number') {
+      if ('minimum' in s && v < s.minimum) errs.push({ path: path, msg: 'must be at least ' + s.minimum });
+      if ('maximum' in s && v > s.maximum) errs.push({ path: path, msg: 'must be at most ' + s.maximum });
+    }
+    if (Array.isArray(v)) {
+      if ('minItems' in s && v.length < s.minItems) errs.push({ path: path, msg: 'must have at least ' + s.minItems + ' item' + (s.minItems === 1 ? '' : 's') + ', found ' + v.length });
+      if ('maxItems' in s && v.length > s.maxItems) errs.push({ path: path, msg: 'must have at most ' + s.maxItems + ' item' + (s.maxItems === 1 ? '' : 's') + ', found ' + v.length });
+      if (s.uniqueItems) {
+        for (var i = 0; i < v.length; i++) for (var j = i + 1; j < v.length; j++) {
+          if (deq(v[i], v[j])) { errs.push({ path: path, msg: 'must not contain duplicates (items ' + i + ' and ' + j + ')' }); i = v.length; break; }
+        }
+      }
+      if ('items' in s) v.forEach(function (x, k) { vNode(s.items, x, path + '/' + k, errs); });
+    }
+    if (isType(v, 'object')) {
+      (s.required || []).forEach(function (k) {
+        if (!Object.prototype.hasOwnProperty.call(v, k)) errs.push({ path: path, msg: 'is missing required field "' + k + '"' });
+      });
+      var props = s.properties || {};
+      Object.keys(v).forEach(function (k) {
+        var p = path + '/' + k.replace(/~/g, '~0').replace(/\//g, '~1');
+        if (Object.prototype.hasOwnProperty.call(props, k)) vNode(props[k], v[k], p, errs);
+        else if (s.additionalProperties === false) errs.push({ path: path, msg: 'has a field the schema does not allow: "' + k + '"' });
+        else if (s.additionalProperties && typeof s.additionalProperties === 'object') vNode(s.additionalProperties, v[k], p, errs);
+      });
+    }
+    (s.allOf || []).forEach(function (x) { vNode(x, v, path, errs); });
+    if (s.anyOf && !s.anyOf.some(function (x) { var e = []; vNode(x, v, path, e); return !e.length; })) {
+      errs.push({ path: path, msg: 'does not match any allowed form' });
+    }
+    if (s.oneOf) {
+      var n = s.oneOf.filter(function (x) { var e = []; vNode(x, v, path, e); return !e.length; }).length;
+      if (n !== 1) errs.push({ path: path, msg: n === 0 ? 'does not match any allowed form (found ' + showVal(v) + ')' : 'matches more than one allowed form' });
+    }
+    if ('if' in s) {
+      var ie = [];
+      vNode(s['if'], v, path, ie);
+      if (!ie.length) { if ('then' in s) vNode(s.then, v, path, errs); }
+      else if ('else' in s) vNode(s['else'], v, path, errs);
+    }
+  }
+
+  function schemaErrors(doc) {
+    if (SCHEMA_UNSUPPORTED.length) {
+      return [{ path: '', msg: 'the embedded schema uses keywords this viewer does not implement (' + SCHEMA_UNSUPPORTED.join(', ') + '); update the viewer before loading files' }];
+    }
+    var errs = [];
+    vNode(SCHEMA, doc, '', errs);
+    return errs;
+  }
+
+  // Checks the schema cannot express (a subset of scripts/validate_analysis.py
+  // that needs no workbook or theory file).
+  function semanticErrors(doc) {
+    var errs = [], seen = {}, sid = doc.snapshot.snapshot_id;
+    doc.entries.forEach(function (e, i) {
+      var p = '/entries/' + i;
+      if (seen[e.entry_id]) errs.push({ path: p + '/entry_id', msg: 'duplicates entry ' + e.entry_id });
+      seen[e.entry_id] = true;
+      if (e.entry_id.split('-')[0] !== sid) errs.push({ path: p + '/entry_id', msg: 'does not belong to snapshot ' + sid });
+      rationalesOf(e).forEach(function (r) {
+        r.value.quotes.forEach(function (q, k) {
+          if (e.card_text.indexOf(q) < 0) errs.push({ path: p + '/' + r.rel + '/quotes/' + k, msg: 'quote "' + q + '" is not in the card text' });
+        });
+      });
+    });
+    if (doc.snapshot.entry_count !== doc.entries.length) {
+      errs.push({ path: '/snapshot/entry_count', msg: 'is ' + doc.snapshot.entry_count + ' but the file has ' + doc.entries.length + ' entries' });
+    }
+    var unc = doc.entries.filter(function (e) { return e.transcription_confidence === 'Uncertain'; }).length;
+    if (doc.snapshot.uncertain_count !== unc) {
+      errs.push({ path: '/snapshot/uncertain_count', msg: 'is ' + doc.snapshot.uncertain_count + ' but ' + unc + ' entries are Uncertain' });
+    }
+    var nos = doc.claim_synthesis.map(function (c) { return c.claim_no; }).sort();
+    if (!deq(nos, CLAIM_NOS)) errs.push({ path: '/claim_synthesis', msg: 'must hold claims 1, 2, 3 and 4 once each; found ' + nos.join(', ') });
+    doc.claim_synthesis.forEach(function (c, i) {
+      var p = '/claim_synthesis/' + i, refs = [];
+      c.candidates.concat(c.imported_candidates, c.nearest_misses).forEach(function (k) { refs.push(k.entry_id); });
+      c.clusters.concat(c.convergence, c.tensions).forEach(function (k) { refs = refs.concat(k.entry_ids); });
+      refs.forEach(function (id) { if (!seen[id]) errs.push({ path: p, msg: 'refers to entry ' + id + ', which is not in the file' }); });
+      c.clusters.forEach(function (k, j) {
+        k.quotes.forEach(function (q, m) {
+          var e = doc.entries.filter(function (x) { return x.entry_id === q.entry_id; })[0];
+          if (e && e.card_text.indexOf(q.quote) < 0) errs.push({ path: p + '/clusters/' + j + '/quotes/' + m, msg: 'quote "' + q.quote + '" is not in the card text of ' + q.entry_id });
+        });
+      });
+    });
+    return errs;
+  }
+
+  // Every rationale of an entry, with its path below the entry.
+  function rationalesOf(e) {
+    var out = [], o = e.oldenburg;
+    o.characteristics.forEach(function (c, i) { out.push({ rel: 'oldenburg/characteristics/' + i + '/rationale', value: c.rationale }); });
+    if (o.none_rationale) out.push({ rel: 'oldenburg/none_rationale', value: o.none_rationale });
+    o.vocabulary_flags.forEach(function (f, i) { out.push({ rel: 'oldenburg/vocabulary_flags/' + i + '/rationale', value: f.rationale }); });
+    CRIT_KEYS.forEach(function (k) { out.push({ rel: 'strength/' + k + '/rationale', value: e.strength[k].rationale }); });
+    var nae = e.strength.claim_fit.not_an_explanation;
+    if (nae) out.push({ rel: 'strength/claim_fit/not_an_explanation/rationale', value: nae.rationale });
+    return out;
+  }
+
+  // Pointer shapes this viewer writes, and so can apply and mark.
+  var OV_POINTER = /^\/entries\/(0|[1-9][0-9]*)\/(oldenburg|strength\/([a-z_]+)\/([a-z_]+))$/;
+  function fieldOf(ptr) {
+    var m = OV_POINTER.exec(ptr);
+    return m ? (m[2] === 'oldenburg' ? 'oldenburg' : m[4]) : ptr;
+  }
+
+  // Integrity of the overrides array against the analyst's codes in `doc`.
+  function overrideErrors(doc) {
+    var errs = [], ptrs = {}, ids = {};
+    doc.overrides.forEach(function (ov, i) {
+      var p = '/overrides/' + i, m = OV_POINTER.exec(ov.pointer);
+      if (ids[ov.override_id]) errs.push({ path: p + '/override_id', msg: 'repeats override_id "' + ov.override_id + '"' });
+      ids[ov.override_id] = true;
+      if (ov.target.kind !== 'entry') { errs.push({ path: p + '/target', msg: 'targets ' + ov.target.kind + '; this viewer applies overrides to entry codes only' }); return; }
+      if (!m || (m[3] && !(CRIT_FIELDS[m[3]] && CRIT_FIELDS[m[3]].indexOf(m[4]) > -1))) {
+        errs.push({ path: p + '/pointer', msg: '"' + ov.pointer + '" is not an overridable code (the Oldenburg mapping, or a field of a strength criterion)' });
+        return;
+      }
+      if (ptrs[ov.pointer]) errs.push({ path: p + '/pointer', msg: 'overrides "' + ov.pointer + '" a second time' });
+      ptrs[ov.pointer] = true;
+      var e = doc.entries[Number(m[1])];
+      if (!e) { errs.push({ path: p + '/pointer', msg: 'points to entry index ' + m[1] + ', which does not exist' }); return; }
+      if (e.entry_id !== ov.target.entry_id) errs.push({ path: p + '/target/entry_id', msg: 'is ' + ov.target.entry_id + ' but the pointer leads to ' + e.entry_id });
+      var cur = ptrGet(doc, ov.pointer);
+      if (!cur.found || !deq(cur.value, ov.original_value)) errs.push({ path: p + '/original_value', msg: 'does not equal the analyst\'s value at ' + ov.pointer + ' in this file' });
+    });
+    return errs;
+  }
+
+  // Full check of a document as loaded. Returns { errors, warnings }, each a
+  // list of { path, msg }. `errors` empty means the file can be shown.
+  function validateDocument(doc) {
+    var errors = schemaErrors(doc), warnings = [];
+    if (errors.length) return { errors: errors, warnings: warnings };
+    errors = semanticErrors(doc).concat(overrideErrors(doc));
+    if (!errors.length && doc.overrides.length) {
+      var rec = reconcile(doc, doc.overrides);
+      schemaErrors(rec).concat(semanticErrors(rec)).forEach(function (er) {
+        errors.push({ path: er.path, msg: er.msg + ' (after applying the overrides)' });
+      });
+    }
+    if (doc.protocol_version !== CONFIG.protocolVersion) {
+      warnings.push({ path: '/protocol_version', msg: 'is ' + doc.protocol_version + '; this viewer\'s anchor texts are protocol ' + CONFIG.protocolVersion });
+    }
+    if (doc.theory_file.sha256 !== CONFIG.theorySha256) {
+      warnings.push({ path: '/theory_file/sha256', msg: 'differs from the theory file version this viewer quotes; characteristic definitions shown may not match the file\'s coding' });
+    }
+    return { errors: errors, warnings: warnings };
+  }
+
+  // "Entry S1-004 > strength > mechanism > score" from a pointer, for messages.
+  function describePath(doc, path) {
+    var toks = ptrTokens(path) || [];
+    if (!toks.length) return 'File';
+    var m = /^\/entries\/(\d+)/.exec(path);
+    if (m && doc && Array.isArray(doc.entries) && doc.entries[+m[1]] && doc.entries[+m[1]].entry_id) {
+      return ['Entry ' + doc.entries[+m[1]].entry_id].concat(toks.slice(2)).join(' › ');
+    }
+    return toks.join(' › ');
+  }
+
+  // ==========================================================================
+  // Value formatting (detail, Overrides tab, .xlsx)
+  // ==========================================================================
+  function rationaleText(r) {
+    return r.quotes.map(function (q) { return '"' + q + '"'; }).join(' | ') + ' — ' + r.text;
+  }
+  function oldenburgText(o) {
+    var parts = ['Engagement: ' + o.engagement];
+    o.characteristics.forEach(function (c) { parts.push(c.name + ' (' + c.relation + '): ' + rationaleText(c.rationale)); });
+    if (o.none_rationale) parts.push('None: ' + rationaleText(o.none_rationale));
+    o.vocabulary_flags.forEach(function (f) {
+      parts.push('Vocabulary "' + f.term_as_written + '" maps to ' + f.maps_to + ' (' + f.usage_matches_definition + '): ' + rationaleText(f.rationale));
+    });
+    return parts.join('\n');
+  }
+  function fmtText(field, v) {
+    switch (field) {
+      case 'score': return String(v);
+      case 'rationale': return rationaleText(v);
+      case 'misfiled_to': return v == null ? 'None' : 'Claim ' + v;
+      case 'not_an_explanation': return v == null ? 'None' : v.type + ': ' + rationaleText(v.rationale);
+      case 'actual_lens': return v.primary + (v.secondary.length ? ' (secondary: ' + v.secondary.join(', ') + ')' : '');
+      case 'testable_implication': case 'stated_scope': return v == null ? 'None' : v;
+      case 'implication_note': return v === '' ? '(empty)' : v;
+      case 'bodo_question': return v;
+      case 'oldenburg': return oldenburgText(v);
+    }
+    return JSON.stringify(v);
+  }
+  function fmtVal(field, v) {
+    switch (field) {
+      case 'score': return '<b>' + v + '</b> / 2';
+      case 'rationale': return rationaleHtml(v);
+      case 'misfiled_to': return v == null ? 'None' : 'Claim ' + v + ' · ' + esc(SYN[v] ? SYN[v].claim_label : '');
+      case 'not_an_explanation': return v == null ? 'None' : esc(CONFIG.notExplanationLabels[v.type]) + rationaleHtml(v.rationale);
+      case 'oldenburg':
+        var h = '<p><b>' + (v.engagement === 'none' ? 'No characteristic engaged' : 'Engaged') + '</b></p>';
+        v.characteristics.forEach(function (c) { h += '<p>' + charPip(c.name) + ' ' + esc(c.name) + ' (' + esc(CONFIG.relations[c.relation].label.toLowerCase()) + ')</p>' + rationaleHtml(c.rationale); });
+        if (v.none_rationale) h += rationaleHtml(v.none_rationale);
+        v.vocabulary_flags.forEach(function (f) { h += '<p>Vocabulary: <span class="q">' + esc(f.term_as_written) + '</span> → ' + esc(f.maps_to) + ' (' + esc(CONFIG.usageLabels[f.usage_matches_definition]) + ')</p>'; });
+        return h;
+    }
+    return esc(fmtText(field, v));
+  }
+  function fmtTime(iso) {
+    var m = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/.exec(iso || '');
+    return m ? m[1] + ' ' + m[2] + ' UTC' : String(iso);
+  }
+  function fieldPath(ov) {
+    var m = OV_POINTER.exec(ov.pointer);
+    if (!m) return ov.pointer;
+    return m[2] === 'oldenburg' ? CONFIG.fieldLabels.oldenburg : CRIT_BY_KEY[m[3]].name + ' · ' + (CONFIG.fieldLabels[m[4]] || m[4]);
+  }
+
+  // ==========================================================================
+  // Override forms
+  // ==========================================================================
+  function wordCount(s) {
+    return String(s || '').trim().split(/\s+/).filter(function (w) { return /[\p{L}\p{N}]/u.test(w); }).length;
+  }
+  function errorList(errors) {
+    if (!errors || !errors.length) return '';
+    return '<div class="msg err" role="alert" tabindex="-1" data-form-errors><h4>Not saved</h4><ul>'
+      + errors.map(function (e) { return '<li>' + esc(e) + '</li>'; }).join('') + '</ul></div>';
+  }
+  function rationaleFields(prefix, legend, r, hint) {
+    r = r || { quotes: [], text: '' };
+    return '<fieldset class="ovf-field"><legend>' + esc(legend) + '</legend>' + (hint ? '<p class="hint">' + esc(hint) + '</p>' : '')
+      + '<label for="' + prefix + '-q">Quoted words from the card, one quote per line, copied exactly</label>'
+      + '<textarea id="' + prefix + '-q" rows="2">' + esc(r.quotes.join('\n')) + '</textarea>'
+      + '<label for="' + prefix + '-t">Rationale</label>'
+      + '<textarea id="' + prefix + '-t" rows="3">' + esc(r.text) + '</textarea></fieldset>';
+  }
+  function selectHtml(id, options, value) {
+    return '<select id="' + id + '">' + options.map(function (o) {
+      return '<option value="' + esc(o[0]) + '"' + (String(value) === String(o[0]) ? ' selected' : '') + '>' + esc(o[1]) + '</option>';
+    }).join('') + '</select>';
+  }
+  function reasonFields() {
+    var ed = state.edit, n = wordCount(ed.reason), min = CONFIG.reasonMinWords;
+    return '<fieldset class="ovf-field"><legend>Why override</legend>'
+      + '<label for="ed-reason">Reason (at least ' + min + ' words)</label>'
+      + '<textarea id="ed-reason" rows="3" aria-describedby="ed-reason-count">' + esc(ed.reason) + '</textarea>'
+      + '<p id="ed-reason-count" class="wordcount' + (n >= min ? ' met' : '') + '">' + n + ' of ' + min + ' words</p>'
+      + '<label for="ed-by">Your name</label><input type="text" id="ed-by" autocomplete="name" value="' + esc(ed.by) + '"></fieldset>';
+  }
+  function formActions() {
+    return '<div class="ovf-actions"><button type="submit" class="btn">Save override</button><button type="button" class="btn ghost" data-ov-cancel>Cancel</button></div>';
+  }
+
+  function critForm(e, c) {
+    var d = state.edit.draft;
+    var h = '<form class="ov-form" data-edit-form novalidate><h4>Override: ' + esc(c.name) + '</h4><p class="quiet">' + esc(CONFIG.overrideNote) + '</p>'
+      + errorList(state.edit.errors);
+    h += '<fieldset class="ovf-field"><legend>Score</legend>';
+    [0, 1, 2].forEach(function (s) {
+      h += '<label class="ovf-radio"><input type="radio" name="ed-score" value="' + s + '"' + (d.score === s ? ' checked' : '') + '><span><b>' + s + '</b> · ' + codeSpans(c.anchors[s]) + '</span></label>';
+    });
+    h += '</fieldset>';
+    h += rationaleFields('ed-r', 'Rationale', d.rationale);
+    if (c.key === 'claim_fit') {
+      var opts = [['', 'None']];
+      CLAIM_NOS.forEach(function (n) { if (n !== e.claim_no) opts.push([n, 'Claim ' + n + ' · ' + claimLabel(n)]); });
+      h += '<fieldset class="ovf-field"><legend>Flags</legend><label for="ed-misfiled">Better fits claim</label>' + selectHtml('ed-misfiled', opts, d.misfiled_to == null ? '' : d.misfiled_to);
+      var nopts = [['', 'No: it is an explanation']];
+      Object.keys(CONFIG.notExplanationLabels).forEach(function (k) { nopts.push([k, CONFIG.notExplanationLabels[k]]); });
+      h += '<label for="ed-nae">Not an explanation</label>' + selectHtml('ed-nae', nopts, d.not_an_explanation ? d.not_an_explanation.type : '') + '</fieldset>';
+      h += rationaleFields('ed-nae', 'Not-an-explanation rationale', d.not_an_explanation ? d.not_an_explanation.rationale : null, 'Used only when "Not an explanation" is set. The schema then requires claim fit 0.');
+    }
+    if (c.key === 'lens_fit') {
+      var al = d.actual_lens;
+      h += '<fieldset class="ovf-field"><legend>Coded lens</legend><label for="ed-primary">Primary lens</label>'
+        + selectHtml('ed-primary', ['Psychology', 'Economics', 'Politics', 'Undeterminable'].map(function (x) { return [x, x]; }), al.primary)
+        + '<p class="hint">Secondary lenses</p><div class="ovf-checks">';
+      CONFIG.lenses.forEach(function (l) {
+        h += '<label class="ovf-check"><input type="checkbox" id="ed-sec-' + l.id + '" value="' + l.id + '"' + (al.secondary.indexOf(l.id) > -1 ? ' checked' : '') + '><span>' + esc(l.id) + '</span></label>';
+      });
+      h += '</div></fieldset>';
+    }
+    if (c.key === 'testability') {
+      h += '<fieldset class="ovf-field"><legend>Implication</legend>'
+        + '<label for="ed-impl">Testable implication (leave empty for none; required unless the score is 0)</label><textarea id="ed-impl" rows="3">' + esc(d.testable_implication || '') + '</textarea>'
+        + '<label for="ed-implnote">Implication note (score 1: the element supplied; score 0: why there is none)</label><textarea id="ed-implnote" rows="2">' + esc(d.implication_note) + '</textarea></fieldset>';
+    }
+    if (c.key === 'scope') {
+      h += '<fieldset class="ovf-field"><legend>Scope</legend>'
+        + '<label for="ed-scope">Stated scope (leave empty for none)</label><input type="text" id="ed-scope" value="' + esc(d.stated_scope || '') + '">'
+        + '<label for="ed-bodo">Bodø question (an open question ending in "?")</label><textarea id="ed-bodo" rows="2">' + esc(d.bodo_question) + '</textarea></fieldset>';
+    }
+    return h + reasonFields() + formActions() + '</form>';
+  }
+
+  function oldenburgForm(e) {
+    var d = state.edit.draft;
+    var h = '<form class="ov-form" data-edit-form novalidate><h4>Override: Oldenburg mapping</h4><p class="quiet">' + esc(CONFIG.overrideNote) + '</p>'
+      + errorList(state.edit.errors);
+    h += '<fieldset class="ovf-field"><legend>Engagement</legend>'
+      + '<label class="ovf-radio"><input type="radio" name="ed-eng" value="engaged"' + (d.engagement === 'engaged' ? ' checked' : '') + '><span>Engages one or more characteristics</span></label>'
+      + '<label class="ovf-radio"><input type="radio" name="ed-eng" value="none"' + (d.engagement === 'none' ? ' checked' : '') + '><span>Engages no characteristic</span></label></fieldset>';
+    var names = CONFIG.characteristics.map(function (c) { return [c.name, c.name]; });
+    var rels = Object.keys(CONFIG.relations).map(function (k) { return [k, CONFIG.relations[k].label]; });
+    h += '<fieldset class="ovf-field"><legend>Characteristics</legend>';
+    if (!d.characteristics.length) h += '<p class="hint">None.</p>';
+    d.characteristics.forEach(function (c, i) {
+      h += '<div class="ovf-row" style="border-left-color:' + (CHAR_BY_NAME[c.name] ? CHAR_BY_NAME[c.name].color : 'var(--char-1)') + '"><div class="ovf-row-head"><b>Characteristic ' + (i + 1) + '</b>'
+        + '<button type="button" class="btn ghost" data-ed="remove-ch" data-i="' + i + '">Remove<span class="sr-only"> characteristic ' + (i + 1) + '</span></button></div>'
+        + '<div class="ovf-grid2"><div><label for="ed-ch-name-' + i + '">Characteristic</label>' + selectHtml('ed-ch-name-' + i, names, c.name) + '</div>'
+        + '<div><label for="ed-ch-rel-' + i + '">Relation</label>' + selectHtml('ed-ch-rel-' + i, rels, c.relation) + '</div></div>'
+        + rationaleFields('ed-ch-' + i, 'Rationale', c.rationale) + '</div>';
+    });
+    h += '<div class="ovf-actions"><button type="button" class="btn ghost" data-ed="add-ch">Add characteristic</button></div></fieldset>';
+    h += rationaleFields('ed-none', 'Rationale when no characteristic is engaged', d.none_rationale, 'Used only when engagement is "Engages no characteristic".');
+    var usage = Object.keys(CONFIG.usageLabels).map(function (k) { return [k, CONFIG.usageLabels[k]]; });
+    h += '<fieldset class="ovf-field"><legend>Oldenburg vocabulary on the card</legend>';
+    if (!d.vocabulary_flags.length) h += '<p class="hint">None.</p>';
+    d.vocabulary_flags.forEach(function (f, i) {
+      h += '<div class="ovf-row"><div class="ovf-row-head"><b>Vocabulary flag ' + (i + 1) + '</b>'
+        + '<button type="button" class="btn ghost" data-ed="remove-vf" data-i="' + i + '">Remove<span class="sr-only"> vocabulary flag ' + (i + 1) + '</span></button></div>'
+        + '<label for="ed-vf-term-' + i + '">Term as written on the card</label><input type="text" id="ed-vf-term-' + i + '" value="' + esc(f.term_as_written) + '">'
+        + '<div class="ovf-grid2"><div><label for="ed-vf-map-' + i + '">Maps to</label>' + selectHtml('ed-vf-map-' + i, names, f.maps_to) + '</div>'
+        + '<div><label for="ed-vf-use-' + i + '">Usage</label>' + selectHtml('ed-vf-use-' + i, usage, f.usage_matches_definition) + '</div></div>'
+        + rationaleFields('ed-vf-' + i, 'Rationale', f.rationale) + '</div>';
+    });
+    h += '<div class="ovf-actions"><button type="button" class="btn ghost" data-ed="add-vf">Add vocabulary flag</button></div></fieldset>';
+    return h + reasonFields() + formActions() + '</form>';
+  }
+
+  function fval(id) { var el = document.getElementById(id); return el ? el.value : ''; }
+  function readRationale(prefix) {
+    return {
+      quotes: fval(prefix + '-q').split('\n').map(function (q) { return q.trim(); }).filter(Boolean),
+      text: fval(prefix + '-t')
+    };
+  }
+  function radioVal(name) {
+    var el = document.querySelector('#detail input[name="' + name + '"]:checked');
+    return el ? el.value : null;
+  }
+
+  // Reads the open form into state.edit (draft, reason, name).
+  function readForm() {
+    var ed = state.edit, d = ed.draft;
+    ed.reason = fval('ed-reason');
+    ed.by = fval('ed-by');
+    if (ed.block === 'oldenburg') {
+      var eng = radioVal('ed-eng') || d.engagement;
+      var chars = d.characteristics.map(function (c, i) {
+        return { name: fval('ed-ch-name-' + i), relation: fval('ed-ch-rel-' + i), rationale: readRationale('ed-ch-' + i) };
+      });
+      var vfs = d.vocabulary_flags.map(function (f, i) {
+        return { term_as_written: fval('ed-vf-term-' + i), maps_to: fval('ed-vf-map-' + i), usage_matches_definition: fval('ed-vf-use-' + i), rationale: readRationale('ed-vf-' + i) };
+      });
+      ed.draft = { engagement: eng, characteristics: chars, none_rationale: readRationale('ed-none'), vocabulary_flags: vfs };
+      return;
+    }
+    var k = ed.block, nd = {};
+    var sc = radioVal('ed-score');
+    nd.score = sc === null ? d.score : Number(sc);
+    nd.rationale = readRationale('ed-r');
+    if (k === 'claim_fit') {
+      var mf = fval('ed-misfiled');
+      nd.misfiled_to = mf === '' ? null : Number(mf);
+      var nt = fval('ed-nae');
+      nd.not_an_explanation = nt === '' ? null : { type: nt, rationale: readRationale('ed-nae') };
+    }
+    if (k === 'lens_fit') {
+      nd.actual_lens = {
+        primary: fval('ed-primary'),
+        secondary: CONFIG.lenses.map(function (l) { return l.id; }).filter(function (id) { var el = document.getElementById('ed-sec-' + id); return el && el.checked; })
+      };
+    }
+    if (k === 'testability') {
+      var im = fval('ed-impl');
+      nd.testable_implication = im.trim() === '' ? null : im;
+      nd.implication_note = fval('ed-implnote');
+    }
+    if (k === 'scope') {
+      var ss = fval('ed-scope');
+      nd.stated_scope = ss.trim() === '' ? null : ss;
+      nd.bodo_question = fval('ed-bodo');
+    }
+    ed.draft = nd;
+  }
+
+  // The schema-shaped value for the Oldenburg block from the draft.
+  function oldenburgValue(d) {
+    var v = { engagement: d.engagement, characteristics: d.engagement === 'none' ? [] : d.characteristics };
+    if (d.engagement === 'none') v.none_rationale = d.none_rationale;
+    v.vocabulary_flags = d.vocabulary_flags;
+    return v;
+  }
+
+  function startEdit(block) {
+    var e = BY_ID[state.detailId];
+    var draft = block === 'oldenburg' ? clone(e.oldenburg) : clone(e.strength[block]);
+    if (block === 'oldenburg' && !draft.none_rationale) draft.none_rationale = { quotes: [], text: '' };
+    var prev = blockOvs(e.entry_id, block)[0];
+    state.edit = { entryId: e.entry_id, block: block, draft: draft, errors: null, reason: prev ? prev.reason : '', by: state.by };
+    state.revertArm = null;
+    rerenderDetail();
+    var first = document.querySelector('#detail form[data-edit-form] input, #detail form[data-edit-form] select, #detail form[data-edit-form] textarea');
+    if (first) first.focus();
+  }
+
+  function endEdit(block) {
+    state.edit = null;
+    rerenderDetail();
+    var b = document.querySelector('#detail [data-ov-open="' + block + '"]');
+    if (b) b.focus();
+  }
+
+  function rerenderDetail() {
+    var dlg = document.getElementById('detail');
+    var top = dlg.scrollTop;
+    renderDetail(state.detailId);
+    dlg.scrollTop = top;
+  }
+
+  // Validates the form and, if it passes, replaces this block's overrides.
+  function saveEdit() {
+    readForm();
+    var ed = state.edit, slot = currentSlot();
+    var e = BY_ID[ed.entryId], idx = ENTRY_INDEX[ed.entryId];
+    var errors = [];
+    if (wordCount(ed.reason) < CONFIG.reasonMinWords) errors.push('Reason: write at least ' + CONFIG.reasonMinWords + ' words (now ' + wordCount(ed.reason) + ').');
+    if (!ed.by.trim()) errors.push('Your name: required, so the override records who made it.');
+
+    // Field-level values and pointers for this block.
+    var fields;
+    if (ed.block === 'oldenburg') {
+      if (ed.draft.engagement === 'engaged' && !ed.draft.characteristics.length) errors.push('Characteristics: add at least one, or choose "Engages no characteristic".');
+      if (ed.draft.engagement === 'none' && ed.draft.characteristics.length) errors.push('Characteristics: remove them, or choose "Engages one or more characteristics".');
+      fields = [{ ptr: '/entries/' + idx + '/oldenburg', value: oldenburgValue(ed.draft), rationales: [] }];
+      var ov = fields[0].value;
+      ov.characteristics.forEach(function (c, i) { fields[0].rationales.push(['Characteristic ' + (i + 1), c.rationale]); });
+      if (ov.none_rationale) fields[0].rationales.push(['No-engagement rationale', ov.none_rationale]);
+      ov.vocabulary_flags.forEach(function (f, i) { fields[0].rationales.push(['Vocabulary flag ' + (i + 1), f.rationale]); });
+    } else {
+      fields = CRIT_FIELDS[ed.block].map(function (f) {
+        var r = [];
+        if (f === 'rationale') r.push(['Rationale', ed.draft.rationale]);
+        if (f === 'not_an_explanation' && ed.draft.not_an_explanation) r.push(['Not-an-explanation rationale', ed.draft.not_an_explanation.rationale]);
+        return { ptr: '/entries/' + idx + '/strength/' + ed.block + '/' + f, value: ed.draft[f], rationales: r };
+      });
+    }
+    // Every code needs a quoted basis that is verbatim card text (spec 4).
+    fields.forEach(function (f) {
+      f.rationales.forEach(function (r) {
+        if (!r[1].quotes.length) errors.push(r[0] + ': quote at least one fragment of the card.');
+        r[1].quotes.forEach(function (q) {
+          if (/[\[\]]/.test(q)) errors.push(r[0] + ': "' + q + '" contains square brackets, which mark transcriber text, not student text.');
+          else if (e.card_text.indexOf(q) < 0) errors.push(r[0] + ': "' + q + '" is not in the card text exactly as written.');
+        });
+        if (!r[1].text.trim()) errors.push(r[0] + ': the rationale text is empty.');
+      });
+    });
+
+    var list = slot.overrides.slice(), now = new Date().toISOString(), changed = 0, n = 0;
+    fields.forEach(function (f) {
+      var current = ptrGet(DATA, f.ptr).value;
+      if (deq(current, f.value)) return; // untouched: keep any existing override as it is
+      changed++;
+      list = list.filter(function (o) { return o.pointer !== f.ptr; });
+      var original = ptrGet(BASE, f.ptr).value;
+      if (deq(original, f.value)) return; // set back to the analyst's value: no override
+      list.push({
+        override_id: 'ov-' + Date.now().toString(36) + '-' + (n++) + '-' + Math.random().toString(36).slice(2, 6),
+        target: { kind: 'entry', entry_id: ed.entryId },
+        pointer: f.ptr,
+        original_value: clone(original),
+        override_value: clone(f.value),
+        reason: ed.reason.trim(),
+        by: ed.by.trim(),
+        at: now
+      });
+    });
+    if (!changed) errors.push('Nothing changed: edit at least one value, or cancel.');
+
+    if (!errors.length) {
+      var candidate = exportDoc(slot);
+      candidate.overrides = list;
+      validateDocument(candidate).errors.forEach(function (er) {
+        errors.push(describePath(candidate, er.path) + ': ' + er.msg.replace(' (after applying the overrides)', ''));
+      });
+    }
+    if (errors.length) {
+      ed.errors = errors;
+      rerenderDetail();
+      var box = document.querySelector('#detail [data-form-errors]');
+      if (box) box.focus();
+      return;
+    }
+    slot.overrides = list;
+    state.by = ed.by.trim();
+    var block = ed.block;
+    useSlot(slot);
+    persist();
+    setStatus('ok', 'Override saved on ' + ed.entryId + ' (' + (block === 'oldenburg' ? 'Oldenburg mapping' : CRIT_BY_KEY[block].name) + '). Export JSON to keep it outside this browser.');
+    state.edit = null;
+    renderChrome();
+    renderView();
+    endEdit(block);
+  }
+
+  function revertBlock(block) {
+    var slot = currentSlot(), id = state.detailId;
+    var drop = blockOvs(id, block).map(function (o) { return o.pointer; });
+    slot.overrides = slot.overrides.filter(function (o) { return drop.indexOf(o.pointer) < 0; });
+    state.revertArm = null;
+    useSlot(slot);
+    persist();
+    setStatus('ok', 'Reverted ' + id + ' (' + (block === 'oldenburg' ? 'Oldenburg mapping' : CRIT_BY_KEY[block].name) + ') to the analyst\'s code.');
+    renderChrome();
+    renderView();
+    rerenderDetail();
+    var b = document.querySelector('#detail [data-ov-open="' + block + '"]');
+    if (b) b.focus();
+  }
+
+  // ==========================================================================
+  // Overrides tab
+  // ==========================================================================
+  function renderOverrides() {
+    if (state.student) return '';
+    var slot = currentSlot();
+    var h = '<section class="panel" style="--panel-color:var(--char-2)"><h2>Overrides</h2>'
+      + '<p class="panel-intro">' + esc(CONFIG.overrideNote) + ' To add one, open an entry and use Override on the code you disagree with.</p>';
+    if (!slot.overrides.length) return h + '<p class="empty-line">No overrides on this snapshot.</p></section>';
+    h += '<div class="table-wrap"><table class="plain stack" id="ov-table"><thead><tr><th scope="col">Entry</th><th scope="col">Field</th><th scope="col">Analyst original</th><th scope="col">Override</th><th scope="col">Reason</th><th scope="col">By and when</th></tr></thead><tbody>';
+    slot.overrides.forEach(function (ov) {
+      var f = fieldOf(ov.pointer);
+      h += '<tr data-pointer="' + esc(ov.pointer) + '"><td data-label="Entry">' + eref(ov.target.entry_id) + '</td>'
+        + '<td data-label="Field">' + esc(fieldPath(ov)) + '</td>'
+        + '<td data-label="Analyst original">' + fmtVal(f, ov.original_value) + '</td>'
+        + '<td data-label="Override">' + fmtVal(f, ov.override_value) + '</td>'
+        + '<td data-label="Reason">' + esc(ov.reason) + '</td>'
+        + '<td data-label="By and when">' + esc(ov.by) + '<br><span class="quiet">' + esc(fmtTime(ov.at)) + '</span></td></tr>';
+    });
+    return h + '</tbody></table></div></section>';
+  }
+
+  // ==========================================================================
+  // Snapshots: data bar, persistence, loading, reset
+  // ==========================================================================
+  function slotSource(slot) { return slot.source === 'embedded' ? CONFIG.builtInLabel : slot.fileName; }
+  function slotLabel(slot) {
+    var s = slot.base.snapshot.snapshot_id + ' · ' + slotSource(slot);
+    if (!state.student) s += ' · ' + slot.overrides.length + ' override' + (slot.overrides.length === 1 ? '' : 's');
+    return s;
+  }
+
+  function renderDataBar() {
+    var sel = document.getElementById('snap-select');
+    sel.innerHTML = SLOTS.map(function (s) {
+      return '<option value="' + esc(s.key) + '"' + (s.key === state.slot ? ' selected' : '') + '>' + esc(slotLabel(s)) + '</option>';
+    }).join('');
+    document.getElementById('diff-note').textContent = CONFIG.diffNote;
+    document.getElementById('data-actions').hidden = state.student;
+    var c = document.getElementById('data-confirm');
+    if (state.student || !state.resetArm) { c.innerHTML = ''; return; }
+    var n = SLOTS.reduce(function (a, s) { return a + s.overrides.length; }, 0);
+    c.innerHTML = '<div class="msg warn"><p>' + esc(CONFIG.resetWarning) + '</p><p>Now held: ' + n + ' override' + (n === 1 ? '' : 's') + ', ' + (SLOTS.length - 1) + ' loaded snapshot' + (SLOTS.length === 2 ? '' : 's') + '.</p>'
+      + '<div class="confirm-row"><button type="button" class="btn warn" data-action="reset-confirm">Confirm reset</button><button type="button" class="btn ghost" data-action="reset-cancel">Cancel</button></div></div>';
+  }
+
+  function setStatus(kind, text) {
+    document.getElementById('data-status').innerHTML = text ? '<div class="msg' + (kind === 'warn' ? ' warn' : '') + '">' + esc(text) + '</div>' : '';
+    if (kind !== 'keep-error') document.getElementById('data-error').innerHTML = '';
+  }
+  function setError(title, items, more, doc) {
+    var h = '<div class="msg err" data-load-error><h4>' + esc(title) + '</h4>';
+    if (items.length) {
+      h += '<ul>' + items.map(function (er) { return '<li>' + esc(typeof er === 'string' ? er : describePath(doc, er.path) + ': ' + er.msg) + '</li>'; }).join('') + '</ul>';
+      if (more) h += '<p>…and ' + more + ' more.</p>';
+    }
+    h += '<p>Nothing was changed: the viewer still shows ' + esc(slotLabel(currentSlot())) + '.</p></div>';
+    document.getElementById('data-status').innerHTML = '';
+    document.getElementById('data-error').innerHTML = h;
+  }
+
+  function persist() {
+    var payload = {
+      version: 1, by: state.by, current: state.slot,
+      slots: SLOTS.map(function (s) {
+        return s.source === 'embedded'
+          ? { key: s.key, source: s.source, snapshot_id: s.base.snapshot.snapshot_id, overrides: s.overrides }
+          : { key: s.key, source: s.source, fileName: s.fileName, base: s.base, overrides: s.overrides };
+      })
+    };
+    try {
+      window.localStorage.setItem(CONFIG.storageKey, JSON.stringify(payload));
+      return true;
+    } catch (err) {
+      setStatus('warn', 'This browser would not save the overrides (storage is blocked or full). They stay until the page is closed; use Export JSON to keep them.');
+      return false;
+    }
+  }
+
+  // Restores overrides and loaded files saved earlier. Anything that no
+  // longer validates (for example after the embedded data changed) is dropped
+  // with a notice rather than applied.
+  function restore() {
+    var raw = null, dropped = [];
+    try { raw = window.localStorage.getItem(CONFIG.storageKey); } catch (err) { return; }
+    if (!raw) return;
+    var saved;
+    try { saved = JSON.parse(raw); } catch (err) { setStatus('warn', 'Saved viewer data in this browser could not be read and was ignored.'); return; }
+    if (!saved || !Array.isArray(saved.slots)) return;
+    if (typeof saved.by === 'string') state.by = saved.by;
+    saved.slots.forEach(function (s) {
+      try {
+        if (s.source === 'embedded') {
+          var doc = clone(SLOTS[0].base);
+          doc.overrides = s.overrides || [];
+          if (validateDocument(doc).errors.length) dropped.push('overrides on the built-in snapshot');
+          else SLOTS[0].overrides = doc.overrides;
+        } else if (s.source === 'file' && s.base) {
+          var d2 = clone(s.base);
+          d2.overrides = s.overrides || [];
+          if (validateDocument(d2).errors.length) dropped.push(s.fileName || 'a loaded file');
+          else SLOTS.push({ key: s.key, source: 'file', fileName: s.fileName, base: s.base, overrides: d2.overrides });
+        }
+      } catch (err) { dropped.push(s.fileName || 'saved data'); }
+    });
+    if (saved.current && SLOTS.some(function (x) { return x.key === saved.current; })) state.slot = saved.current;
+    if (dropped.length) setStatus('warn', 'Saved data no longer matches and was not restored: ' + dropped.join(', ') + '.');
+  }
+
+  function selectSlot(key) {
+    if (state.detailId) closeDetail();
+    state.slot = key;
+    state.edit = null;
+    state.revertArm = null;
+    useSlot(currentSlot());
+    persist();
+    render();
+  }
+
+  function loadFile(file) {
+    if (!file) return;
+    var name = file.name || 'file';
+    if (!/\.json$/i.test(name)) { setError('Could not load ' + name, ['Only analysis JSON files (.json) can be loaded.'], 0, null); return; }
+    if (file.size > CONFIG.maxFileMB * 1024 * 1024) { setError('Could not load ' + name, ['The file is larger than ' + CONFIG.maxFileMB + ' MB.'], 0, null); return; }
+    var reader = new FileReader();
+    reader.onerror = function () { setError('Could not load ' + name, ['The browser could not read the file.'], 0, null); };
+    reader.onload = function () { acceptText(name, String(reader.result)); };
+    reader.readAsText(file);
+  }
+
+  // Parses, validates and (if valid) adds a loaded document as a snapshot.
+  function acceptText(name, text) {
+    var doc;
+    try {
+      doc = JSON.parse(text.replace(/^﻿/, ''));
+    } catch (err) {
+      setError('Could not load ' + name + ': not valid JSON', [String(err.message || err)], 0, null);
+      return false;
+    }
+    var res;
+    try { res = validateDocument(doc); } catch (err) { res = { errors: [{ path: '', msg: 'could not be checked: ' + (err.message || err) }], warnings: [] }; }
+    if (res.errors.length) {
+      var shown = res.errors.slice(0, CONFIG.maxErrorsShown);
+      setError('Could not load ' + name + ': it is not a valid analysis file (' + res.errors.length + ' problem' + (res.errors.length === 1 ? '' : 's') + ')', shown, res.errors.length - shown.length, doc);
+      return false;
+    }
+    var base = clone(doc);
+    base.overrides = [];
+    var existing = SLOTS.filter(function (s) { return s.source === 'file' && s.fileName === name && s.base.snapshot.snapshot_id === doc.snapshot.snapshot_id; })[0];
+    var slot = existing || { key: 'file-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6), source: 'file', fileName: name };
+    slot.base = base;
+    slot.overrides = clone(doc.overrides);
+    if (!existing) SLOTS.push(slot);
+    selectSlot(slot.key);
+    var msg = 'Loaded ' + name + ': snapshot ' + doc.snapshot.snapshot_id + ', ' + doc.entries.length + ' entries, ' + doc.overrides.length + ' override' + (doc.overrides.length === 1 ? '' : 's') + (existing ? ' (replaced the earlier copy of this file).' : '.');
+    if (res.warnings.length) msg += ' Warning: ' + res.warnings.map(function (w) { return describePath(doc, w.path) + ' ' + w.msg; }).join('; ') + '.';
+    setStatus(res.warnings.length ? 'warn' : 'ok', msg);
+    return true;
+  }
+
+  function resetAll() {
+    try { window.localStorage.removeItem(CONFIG.storageKey); } catch (err) { /* nothing stored */ }
+    SLOTS.length = 1;
+    SLOTS[0].overrides = [];
+    state.resetArm = false;
+    state.by = '';
+    selectSlot('embedded');
+    try { window.localStorage.removeItem(CONFIG.storageKey); } catch (err) { /* nothing stored */ }
+    setStatus('ok', 'Reset: no overrides, built-in snapshot only.');
+  }
+
+  // ==========================================================================
+  // Export: JSON and .xlsx
+  // ==========================================================================
+  function stamp() { return new Date().toISOString().slice(0, 10); }
+  function exportName(ext) {
+    var slot = currentSlot();
+    return 'claim-wall-' + slot.base.snapshot.snapshot_id + '-' + (slot.overrides.length ? 'with-overrides-' : '') + stamp() + '.' + ext;
+  }
+  function download(name, blob) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = name; a.hidden = true;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 2000);
+  }
+  function exportJson() {
+    var doc = exportDoc(currentSlot());
+    var bad = validateDocument(doc).errors;
+    if (bad.length) { setError('Export stopped: the data does not validate', bad.slice(0, CONFIG.maxErrorsShown), 0, doc); return; }
+    download(exportName('json'), new Blob([JSON.stringify(doc, null, 2) + '\n'], { type: 'application/json' }));
+    setStatus('ok', 'Exported ' + exportName('json') + ': the analyst\'s codes unchanged, plus ' + doc.overrides.length + ' override' + (doc.overrides.length === 1 ? '' : 's') + '.');
+  }
+  function exportXlsx() {
+    download(exportName('xlsx'), new Blob([buildXlsx(currentSlot())], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+    setStatus('ok', 'Exported ' + exportName('xlsx') + ': reconciled entries, the analyst\'s entries, overrides and snapshot details.');
+  }
+
+  // Column definitions shared by the reconciled and analyst entry sheets.
+  // Scores and claim numbers are numbers; everything else is text.
+  var XLSX_ENTRY_COLS = (function () {
+    var cols = [
+      ['Entry_ID', function (e) { return e.entry_id; }],
+      ['Claim_No', function (e) { return e.claim_no; }],
+      ['Claim_Label', function (e, d) { return claimLabelIn(d, e.claim_no); }],
+      ['Discipline', function (e) { return e.discipline; }],
+      ['Card_Text', function (e) { return e.card_text; }],
+      ['Transcription_Confidence', function (e) { return e.transcription_confidence; }],
+      ['Transcription_Caveat', function (e) { return e.transcription_caveat; }],
+      ['Caveat_Affects', function (e) { return e.caveat_affects.join(', '); }],
+      ['Oldenburg_Engagement', function (e) { return e.oldenburg.engagement; }],
+      ['Oldenburg_Characteristics', function (e) { return e.oldenburg.characteristics.map(function (c) { return c.name + ' (' + c.relation + ')'; }).join('; '); }],
+      ['Oldenburg_Rationales', function (e) {
+        var o = e.oldenburg;
+        return o.characteristics.map(function (c) { return c.name + ': ' + rationaleText(c.rationale); })
+          .concat(o.none_rationale ? ['None: ' + rationaleText(o.none_rationale)] : []).join('\n');
+      }],
+      ['Vocabulary_Flags', function (e) {
+        return e.oldenburg.vocabulary_flags.map(function (f) { return '"' + f.term_as_written + '" -> ' + f.maps_to + ' (' + f.usage_matches_definition + '): ' + rationaleText(f.rationale); }).join('\n');
+      }]
+    ];
+    CONFIG.criteria.forEach(function (c) {
+      var t = c.name.replace(/ /g, '_');
+      cols.push([t + '_Score', function (e) { return e.strength[c.key].score; }]);
+      cols.push([t + '_Rationale', function (e) { return rationaleText(e.strength[c.key].rationale); }]);
+    });
+    return cols.concat([
+      ['Misfiled_To', function (e) { return e.strength.claim_fit.misfiled_to; }],
+      ['Not_An_Explanation', function (e) { var n = e.strength.claim_fit.not_an_explanation; return n ? n.type + ': ' + rationaleText(n.rationale) : null; }],
+      ['Actual_Lens_Primary', function (e) { return e.strength.lens_fit.actual_lens.primary; }],
+      ['Actual_Lens_Secondary', function (e) { return e.strength.lens_fit.actual_lens.secondary.join(', '); }],
+      ['Testable_Implication', function (e) { return e.strength.testability.testable_implication; }],
+      ['Implication_Note', function (e) { return e.strength.testability.implication_note; }],
+      ['Stated_Scope', function (e) { return e.strength.scope.stated_scope; }],
+      ['Bodo_Question', function (e) { return e.strength.scope.bodo_question; }],
+      ['Analyst_Note', function (e) { return e.analyst_note || null; }]
+    ]);
+  })();
+  function claimLabelIn(doc, n) {
+    var c = doc.claim_synthesis.filter(function (x) { return x.claim_no === n; })[0];
+    return c ? c.claim_label : '';
+  }
+
+  function xlsxSheets(slot) {
+    var rec = reconcile(slot.base, slot.overrides);
+    var ovByEntry = {};
+    slot.overrides.forEach(function (ov) { (ovByEntry[ov.target.entry_id] = ovByEntry[ov.target.entry_id] || []).push(fieldPath(ov)); });
+    function entryRows(doc, withOv) {
+      var head = XLSX_ENTRY_COLS.map(function (c) { return c[0]; });
+      if (withOv) head.push('Overridden_Fields');
+      var rows = [head];
+      doc.entries.forEach(function (e) {
+        var r = XLSX_ENTRY_COLS.map(function (c) { return c[1](e, doc); });
+        if (withOv) r.push((ovByEntry[e.entry_id] || []).join('; '));
+        rows.push(r);
+      });
+      return rows;
+    }
+    var ovRows = [['Override_ID', 'Entry_ID', 'Field', 'Pointer', 'Original_Value', 'Override_Value', 'Original_JSON', 'Override_JSON', 'Reason', 'By', 'At']];
+    slot.overrides.forEach(function (ov) {
+      var f = fieldOf(ov.pointer);
+      ovRows.push([ov.override_id, ov.target.entry_id, fieldPath(ov), ov.pointer, fmtText(f, ov.original_value), fmtText(f, ov.override_value),
+        JSON.stringify(ov.original_value), JSON.stringify(ov.override_value), ov.reason, ov.by, ov.at]);
+    });
+    var s = slot.base.snapshot;
+    var meta = [['Field', 'Value'],
+      ['Snapshot_ID', s.snapshot_id], ['Snapshot_Date', s.snapshot_date], ['Source_Workbook', s.source_workbook],
+      ['Entry_Count', s.entry_count], ['Uncertain_Count', s.uncertain_count], ['Analyst', s.analyst], ['Coded_At', s.generated_at],
+      ['Schema_Version', slot.base.schema_version], ['Protocol_Version', slot.base.protocol_version],
+      ['Theory_File', slot.base.theory_file.path], ['Theory_File_SHA256', slot.base.theory_file.sha256],
+      ['Loaded_From', slotSource(slot)], ['Override_Count', slot.overrides.length], ['Exported_At', new Date().toISOString()],
+      ['Note', 'Entries_Reconciled has every override applied. Entries_Analyst is the analyst\'s coding, unchanged. Overrides lists each change with its original value. The claim synthesis is not included; it is in the JSON export.']];
+    return [
+      { name: 'Entries_Reconciled', rows: entryRows(rec, true) },
+      { name: 'Entries_Analyst', rows: entryRows(slot.base, false) },
+      { name: 'Overrides', rows: ovRows },
+      { name: 'Snapshot', rows: meta }
+    ];
+  }
+
+  // Minimal .xlsx writer: SpreadsheetML parts in an uncompressed (stored) zip.
+  // Plain cells only: numbers as numbers, text as inline strings, no styling.
+  function xmlEsc(s) {
+    return String(s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F￾￿]/g, '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function colName(i) {
+    var s = '';
+    for (i += 1; i > 0; i = Math.floor((i - 1) / 26)) s = String.fromCharCode(65 + (i - 1) % 26) + s;
+    return s;
+  }
+  function sheetXml(rows) {
+    var x = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>';
+    rows.forEach(function (row, r) {
+      x += '<row r="' + (r + 1) + '">';
+      row.forEach(function (v, c) {
+        if (v === null || v === undefined || v === '') return;
+        var ref = colName(c) + (r + 1);
+        if (typeof v === 'number') x += '<c r="' + ref + '"><v>' + v + '</v></c>';
+        else x += '<c r="' + ref + '" t="inlineStr"><is><t xml:space="preserve">' + xmlEsc(v) + '</t></is></c>';
+      });
+      x += '</row>';
+    });
+    return x + '</sheetData></worksheet>';
+  }
+  function buildXlsx(slot) {
+    var sheets = xlsxSheets(slot);
+    var NS = 'http://schemas.openxmlformats.org/';
+    var head = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
+    var files = [
+      ['[Content_Types].xml', head + '<Types xmlns="' + NS + 'package/2006/content-types">'
+        + '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+        + '<Default Extension="xml" ContentType="application/xml"/>'
+        + '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+        + '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
+        + sheets.map(function (s, i) { return '<Override PartName="/xl/worksheets/sheet' + (i + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'; }).join('')
+        + '</Types>'],
+      ['_rels/.rels', head + '<Relationships xmlns="' + NS + 'package/2006/relationships">'
+        + '<Relationship Id="rId1" Type="' + NS + 'officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
+      ['xl/workbook.xml', head + '<workbook xmlns="' + NS + 'spreadsheetml/2006/main" xmlns:r="' + NS + 'officeDocument/2006/relationships"><sheets>'
+        + sheets.map(function (s, i) { return '<sheet name="' + xmlEsc(s.name) + '" sheetId="' + (i + 1) + '" r:id="rId' + (i + 1) + '"/>'; }).join('')
+        + '</sheets></workbook>'],
+      ['xl/_rels/workbook.xml.rels', head + '<Relationships xmlns="' + NS + 'package/2006/relationships">'
+        + sheets.map(function (s, i) { return '<Relationship Id="rId' + (i + 1) + '" Type="' + NS + 'officeDocument/2006/relationships/worksheet" Target="worksheets/sheet' + (i + 1) + '.xml"/>'; }).join('')
+        + '<Relationship Id="rId' + (sheets.length + 1) + '" Type="' + NS + 'officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'],
+      ['xl/styles.xml', head + '<styleSheet xmlns="' + NS + 'spreadsheetml/2006/main">'
+        + '<fonts count="1"><font><sz val="11"/><name val="Calibri"/></font></fonts>'
+        + '<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>'
+        + '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>'
+        + '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
+        + '<cellXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/></cellXfs>'
+        + '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>']
+    ];
+    sheets.forEach(function (s, i) { files.push(['xl/worksheets/sheet' + (i + 1) + '.xml', sheetXml(s.rows)]); });
+    return zipStore(files);
+  }
+
+  var CRC_TABLE = (function () {
+    var t = [];
+    for (var n = 0; n < 256; n++) {
+      var c = n;
+      for (var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
+      t[n] = c >>> 0;
+    }
+    return t;
+  })();
+  function crc32(b) {
+    var c = 0xFFFFFFFF;
+    for (var i = 0; i < b.length; i++) c = CRC_TABLE[(c ^ b[i]) & 0xFF] ^ (c >>> 8);
+    return (c ^ 0xFFFFFFFF) >>> 0;
+  }
+  // files: [[name, text]]. Returns a Uint8Array holding a zip with no compression.
+  function zipStore(files) {
+    var enc = new TextEncoder(), parts = [], central = [], offset = 0;
+    var d = new Date();
+    var dosTime = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
+    var dosDate = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+    files.forEach(function (f) {
+      var name = enc.encode(f[0]), data = enc.encode(f[1]), crc = crc32(data);
+      var lh = new DataView(new ArrayBuffer(30));
+      lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
+      lh.setUint16(10, dosTime, true); lh.setUint16(12, dosDate, true); lh.setUint32(14, crc, true);
+      lh.setUint32(18, data.length, true); lh.setUint32(22, data.length, true); lh.setUint16(26, name.length, true); lh.setUint16(28, 0, true);
+      var ch = new DataView(new ArrayBuffer(46));
+      ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true);
+      ch.setUint16(12, dosTime, true); ch.setUint16(14, dosDate, true); ch.setUint32(16, crc, true);
+      ch.setUint32(20, data.length, true); ch.setUint32(24, data.length, true); ch.setUint16(28, name.length, true);
+      ch.setUint16(30, 0, true); ch.setUint16(32, 0, true); ch.setUint16(34, 0, true); ch.setUint16(36, 0, true);
+      ch.setUint32(38, 0, true); ch.setUint32(42, offset, true);
+      parts.push(new Uint8Array(lh.buffer), name, data);
+      central.push(new Uint8Array(ch.buffer), name);
+      offset += 30 + name.length + data.length;
+    });
+    var cdSize = central.reduce(function (a, p) { return a + p.length; }, 0);
+    var end = new DataView(new ArrayBuffer(22));
+    end.setUint32(0, 0x06054b50, true); end.setUint16(4, 0, true); end.setUint16(6, 0, true);
+    end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+    end.setUint32(12, cdSize, true); end.setUint32(16, offset, true); end.setUint16(20, 0, true);
+    var all = parts.concat(central, [new Uint8Array(end.buffer)]);
+    var out = new Uint8Array(all.reduce(function (a, p) { return a + p.length; }, 0)), pos = 0;
+    all.forEach(function (p) { out.set(p, pos); pos += p.length; });
+    return out;
+  }
+
+  // ==========================================================================
   // Render + events
   // ==========================================================================
   function renderView() {
     var v = document.getElementById('view');
     if (state.tab === 'grid') v.innerHTML = renderGrid();
     else if (state.tab === 'coverage') v.innerHTML = renderCoverage();
+    else if (state.tab === 'overrides') v.innerHTML = renderOverrides();
     else v.innerHTML = renderSynthesis();
   }
 
@@ -6056,6 +7955,9 @@
 
   function setStudent(on) {
     state.student = on;
+    state.edit = null;
+    state.revertArm = null;
+    state.resetArm = false;
     try {
       var url = new URL(window.location.href);
       if (on) url.searchParams.set('view', 'student'); else url.searchParams.delete('view');
@@ -6070,7 +7972,61 @@
     if (t.hasAttribute('data-tab')) { setTab(t.getAttribute('data-tab'), false); return; }
     if (t.id === 'view-toggle') { setStudent(!state.student); return; }
     if (t.hasAttribute('data-entry')) { openDetail(t.getAttribute('data-entry'), t); return; }
-    if (t.hasAttribute('data-entry-nav')) { var nid = t.getAttribute('data-entry-nav'); if (nid) openDetail(nid); return; }
+    if (t.hasAttribute('data-entry-nav')) { var nid = t.getAttribute('data-entry-nav'); state.edit = null; state.revertArm = null; if (nid) openDetail(nid); return; }
+    // Override controls inside the entry detail.
+    if (t.hasAttribute('data-ov-open')) { startEdit(t.getAttribute('data-ov-open')); return; }
+    if (t.hasAttribute('data-ov-cancel')) { endEdit(state.edit.block); return; }
+    if (t.hasAttribute('data-ov-revert-arm')) {
+      state.revertArm = t.getAttribute('data-ov-revert-arm');
+      rerenderDetail();
+      var cf = document.querySelector('#detail [data-ov-revert]');
+      if (cf) cf.focus();
+      return;
+    }
+    if (t.hasAttribute('data-ov-revert-cancel')) {
+      var blk = state.revertArm;
+      state.revertArm = null;
+      rerenderDetail();
+      var ra = document.querySelector('#detail [data-ov-revert-arm="' + blk + '"]');
+      if (ra) ra.focus();
+      return;
+    }
+    if (t.hasAttribute('data-ov-revert')) { revertBlock(t.getAttribute('data-ov-revert')); return; }
+    if (t.hasAttribute('data-ed')) {
+      readForm();
+      var act = t.getAttribute('data-ed'), i = Number(t.getAttribute('data-i')), d = state.edit.draft;
+      var blank = { quotes: [], text: '' };
+      if (act === 'add-ch') d.characteristics.push({ name: CONFIG.characteristics[0].name, relation: 'invokes', rationale: clone(blank) });
+      if (act === 'remove-ch') d.characteristics.splice(i, 1);
+      if (act === 'add-vf') d.vocabulary_flags.push({ term_as_written: '', maps_to: CONFIG.characteristics[0].name, usage_matches_definition: 'undeterminable', rationale: clone(blank) });
+      if (act === 'remove-vf') d.vocabulary_flags.splice(i, 1);
+      state.edit.errors = null;
+      rerenderDetail();
+      var focusSel = act === 'add-ch' ? '#ed-ch-name-' + (d.characteristics.length - 1)
+        : act === 'add-vf' ? '#ed-vf-term-' + (d.vocabulary_flags.length - 1)
+        : act === 'remove-ch' ? '[data-ed="add-ch"]' : '[data-ed="add-vf"]';
+      var fe = document.querySelector('#detail ' + focusSel);
+      if (fe) fe.focus();
+      return;
+    }
+    // Data bar.
+    var action = t.getAttribute('data-action');
+    if (action === 'load') { document.getElementById('file-input').click(); return; }
+    if (action === 'export-json') { exportJson(); return; }
+    if (action === 'export-xlsx') { exportXlsx(); return; }
+    if (action === 'reset') {
+      state.resetArm = true;
+      renderDataBar();
+      document.querySelector('[data-action="reset-confirm"]').focus();
+      return;
+    }
+    if (action === 'reset-cancel') {
+      state.resetArm = false;
+      renderDataBar();
+      document.querySelector('[data-action="reset"]').focus();
+      return;
+    }
+    if (action === 'reset-confirm') { resetAll(); document.querySelector('[data-action="reset"]').focus(); return; }
     if (t.hasAttribute('data-close')) { closeDetail(); return; }
     if (t.hasAttribute('data-goto-synthesis')) {
       var n = t.getAttribute('data-goto-synthesis');
@@ -6084,6 +8040,26 @@
       var target = document.getElementById(t.getAttribute('href').slice(1));
       if (target) { target.scrollIntoView(); target.focus({ preventScroll: true }); }
     }
+  });
+
+  document.addEventListener('submit', function (ev) {
+    if (ev.target.hasAttribute && ev.target.hasAttribute('data-edit-form')) { ev.preventDefault(); saveEdit(); }
+  });
+  // Live word count for the override reason.
+  document.addEventListener('input', function (ev) {
+    if (ev.target.id !== 'ed-reason') return;
+    var n = wordCount(ev.target.value), min = CONFIG.reasonMinWords, out = document.getElementById('ed-reason-count');
+    out.textContent = n + ' of ' + min + ' words';
+    out.classList.toggle('met', n >= min);
+  });
+  document.getElementById('snap-select').addEventListener('change', function (ev) {
+    selectSlot(ev.target.value);
+    setStatus('ok', 'Showing ' + slotLabel(currentSlot()) + '.');
+  });
+  document.getElementById('file-input').addEventListener('change', function (ev) {
+    var f = ev.target.files && ev.target.files[0];
+    loadFile(f);
+    ev.target.value = '';
   });
 
   // Arrow-key navigation between tabs (WAI-ARIA tabs pattern).
@@ -6105,6 +8081,8 @@
     state.detailId = null;
     // Clear content so a closed dialog never holds instructor-only text.
     dlgEl.innerHTML = '';
+    state.edit = null;
+    state.revertArm = null;
     document.body.classList.remove('dialog-open');
     var rf = state.returnFocus;
     state.returnFocus = null;
@@ -6112,8 +8090,20 @@
   });
   // Click on the backdrop closes the dialog.
   dlgEl.addEventListener('click', function (ev) { if (ev.target === dlgEl) closeDetail(); });
+  // Escape while an override form is open cancels the form, not the dialog.
+  dlgEl.addEventListener('cancel', function (ev) {
+    if (state.edit) { ev.preventDefault(); endEdit(state.edit.block); }
+  });
 
-  renderHeader();
+  // Start: the built-in snapshot, then anything saved in this browser.
+  var embeddedBase = clone(EMBEDDED);
+  embeddedBase.overrides = [];
+  SLOTS.push({ key: 'embedded', source: 'embedded', fileName: null, base: embeddedBase, overrides: clone(EMBEDDED.overrides) });
+  restore();
+  useSlot(currentSlot());
   render();
+
+  // Test hook for scripts/verify_session4.mjs (read-only helpers).
+  window.ClaimWallViewer = { validateDocument: validateDocument, schemaErrors: schemaErrors, reconcile: reconcile };
 })();
 </script>
