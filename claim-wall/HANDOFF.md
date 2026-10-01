@@ -210,3 +210,15 @@ Max approved Session 3 without amendments. Student-view boundary calls 1–5 abo
 - The selector already holds several snapshots (`SLOTS`). A diff view can read `SLOTS[i].base` and `.overrides`, and should decide whether to compare analyst codes or reconciled codes.
 - Enable `#diff-btn` and replace `CONFIG.diffNote` once `analysis/diff_S1_S2.json` exists. Embedding S2 needs a second embedded block, or the embed script needs extending.
 - After any change to `analysis/*.json` or `schema.json`, run `python3 scripts/embed_analysis.py`, then the validator, `node scripts/verify_viewer.mjs` and `node scripts/verify_session4.mjs`.
+
+### Session 4 approval (2026-10-01)
+
+Max approved Session 4, conditional on one change. Judgement calls 1–4, 6, 8 and 9 are adopted as written.
+
+**Call 7 reversed: no word minimum on the override reason.** The reason is still required, because the schema's `override.reason` has `minLength: 1`. An empty or whitespace-only reason is refused with "Reason: required". There is no longer a minimum length or a word count. `CONFIG.reasonMinWords`, `wordCount`, the live counter and its CSS were removed from `index.html`. This supersedes the references above to `CONFIG.reasonMinWords`, the live word count and the short-reason check.
+
+**Verification after the change:**
+- `node scripts/verify_session4.mjs`: 229 checks, 0 failures. The override section now checks three things: no counter is shown, an empty reason is refused, and a 4-word reason is accepted.
+- `node scripts/verify_viewer.mjs`: 10,512 checks, 0 failures.
+
+Session 5 stays blocked until S2 exists.

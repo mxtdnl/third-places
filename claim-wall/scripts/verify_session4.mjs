@@ -219,21 +219,22 @@ async function overrideFlow(browser) {
   await startOverride(page, 'mechanism');
   ok(await page.evaluate(() => !!document.activeElement.closest('form[data-edit-form]')), 'focus moves into the override form');
   await page.locator(`#detail input[name="ed-score"][value="${MECH_TO}"]`).check();
-  await page.fill('#ed-reason', SHORT);
+  await page.fill('#ed-reason', '   ');
   await page.fill('#ed-by', NAME);
-  const wc = await page.textContent('#ed-reason-count');
-  ok(/^4 of 25 words$/.test(wc), `live word count shows "${wc}"`);
+  ok(!(await page.$('#ed-reason-count')), 'no word count is shown for the reason');
   await save(page);
   let err = await page.textContent('#detail [data-form-errors]');
-  ok(/Reason: write at least 25 words/.test(err), `short reason rejected: ${norm(err)}`);
+  ok(/Reason: required/.test(err), `empty reason rejected: ${norm(err)}`);
   ok(await page.evaluate(() => document.activeElement.hasAttribute('data-form-errors')), 'focus moves to the form errors');
-  ok(await overrideCount(page) === 0, 'nothing saved after a short reason');
-  // A quote that is not on the card.
+  ok(await overrideCount(page) === 0, 'nothing saved after an empty reason');
+  // A short reason is accepted; here only the bad quote is reported.
   await page.fill('#ed-r-q', 'not words from this card');
-  await fillReason(page, REASON);
+  await page.fill('#ed-reason', SHORT);
   await save(page);
   err = await page.textContent('#detail [data-form-errors]');
   ok(/is not in the card text exactly as written/.test(err), `quote check: ${norm(err)}`);
+  ok(!/Reason/.test(err), `a ${SHORT.split(' ').length}-word reason is not rejected: ${norm(err)}`);
+  await fillReason(page, REASON);
   ok(await overrideCount(page) === 0, 'nothing saved after a bad quote');
   await page.fill('#ed-r-q', B['S1-003'].strength.mechanism.rationale.quotes.join('\n'));
   await save(page);

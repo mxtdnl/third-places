@@ -558,8 +558,6 @@
   .ovf-row-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
   .ovf-row-head b { font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; }
   .ovf-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 0.75rem; }
-  .wordcount { font-size: 0.8rem; font-weight: 700; margin-top: 0.25rem; color: var(--incorrect); }
-  .wordcount.met { color: var(--correct); }
   .ovf-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
 
   /* ── Responsive ── */
@@ -6089,9 +6087,6 @@
     // Shown at the top of every override form and on the Overrides tab.
     overrideNote: 'An override never changes the analyst\'s code. It records the original value, the new value, your reason, your name and the time. Exports carry both.',
 
-    // Minimum number of words in an override reason (repo convention: 25).
-    reasonMinWords: 25,
-
     // Shown on synthesis panels when an override touches an entry they discuss.
     synthesisStaleNote: 'This synthesis was written from the analyst\'s codes and is not recomputed after an override. Sub-scores below are the analyst\'s. Overridden since:',
 
@@ -7240,9 +7235,6 @@
   // ==========================================================================
   // Override forms
   // ==========================================================================
-  function wordCount(s) {
-    return String(s || '').trim().split(/\s+/).filter(function (w) { return /[\p{L}\p{N}]/u.test(w); }).length;
-  }
   function errorList(errors) {
     if (!errors || !errors.length) return '';
     return '<div class="msg err" role="alert" tabindex="-1" data-form-errors><h4>Not saved</h4><ul>'
@@ -7262,11 +7254,10 @@
     }).join('') + '</select>';
   }
   function reasonFields() {
-    var ed = state.edit, n = wordCount(ed.reason), min = CONFIG.reasonMinWords;
+    var ed = state.edit;
     return '<fieldset class="ovf-field"><legend>Why override</legend>'
-      + '<label for="ed-reason">Reason (at least ' + min + ' words)</label>'
-      + '<textarea id="ed-reason" rows="3" aria-describedby="ed-reason-count">' + esc(ed.reason) + '</textarea>'
-      + '<p id="ed-reason-count" class="wordcount' + (n >= min ? ' met' : '') + '">' + n + ' of ' + min + ' words</p>'
+      + '<label for="ed-reason">Reason (required)</label>'
+      + '<textarea id="ed-reason" rows="3">' + esc(ed.reason) + '</textarea>'
       + '<label for="ed-by">Your name</label><input type="text" id="ed-by" autocomplete="name" value="' + esc(ed.by) + '"></fieldset>';
   }
   function formActions() {
@@ -7447,7 +7438,7 @@
     var ed = state.edit, slot = currentSlot();
     var e = BY_ID[ed.entryId], idx = ENTRY_INDEX[ed.entryId];
     var errors = [];
-    if (wordCount(ed.reason) < CONFIG.reasonMinWords) errors.push('Reason: write at least ' + CONFIG.reasonMinWords + ' words (now ' + wordCount(ed.reason) + ').');
+    if (!ed.reason.trim()) errors.push('Reason: required, so the override records why it was made.');
     if (!ed.by.trim()) errors.push('Your name: required, so the override records who made it.');
 
     // Field-level values and pointers for this block.
@@ -8044,13 +8035,6 @@
 
   document.addEventListener('submit', function (ev) {
     if (ev.target.hasAttribute && ev.target.hasAttribute('data-edit-form')) { ev.preventDefault(); saveEdit(); }
-  });
-  // Live word count for the override reason.
-  document.addEventListener('input', function (ev) {
-    if (ev.target.id !== 'ed-reason') return;
-    var n = wordCount(ev.target.value), min = CONFIG.reasonMinWords, out = document.getElementById('ed-reason-count');
-    out.textContent = n + ' of ' + min + ' words';
-    out.classList.toggle('met', n >= min);
   });
   document.getElementById('snap-select').addEventListener('change', function (ev) {
     selectSlot(ev.target.value);
