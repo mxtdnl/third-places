@@ -135,3 +135,9 @@ Max approved Session 2 without amendments. `analysis/S1.json` stands as coded, a
 - Once overrides exist, the student view needs a rule for overridden fields. The current rule is render-time exclusion in `wallCard`, `renderCoverage`, `renderDetail` and `renderSynthesis`, each guarded by `state.student`.
 - Loaded snapshots can reuse the render functions: they read only the module-level `DATA`, `ENTRIES`, `BY_ID`, `SYN` and `CANDIDATE_IDS`.
 - After any change to `analysis/S1.json`, run `python3 scripts/embed_analysis.py`, then the validator, then `node scripts/verify_viewer.mjs`.
+
+### Session 3 approval (2026-10-01)
+
+Max approved Session 3 without amendments. Student-view boundary calls 1–5 above are adopted as written. The viewer was not added to `../index.html` or to the `../CLAUDE.md` file list, because spec Section 3 keeps changes inside `claim-wall/`. Session 4 may begin.
+
+**Decision for Session 4: .xlsx export without SheetJS.** The viewer writes .xlsx itself, using a minimal inline writer: a zip archive of the required XML parts (content types, relationships, workbook, worksheets) and plain flat sheets, with no formulas or styling. No library is loaded from a CDN or vendored into the file. This keeps the viewer consistent with the repo's no-external-dependencies rule, and it keeps working offline from `file://`. This decision supersedes the "(SheetJS)" note in spec Section 5 and the CDN clause in Section 3 for this build. No .xlsx import is needed: Session 4 loads analysis JSON only, and its round-trip test uses the JSON export. Session 4 should check that the exported .xlsx opens with `openpyxl` and that its cell values equal the reconciled JSON.
