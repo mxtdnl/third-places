@@ -83,3 +83,55 @@ Max approved Session 1. No amendments were given for open decisions A2, A5, A8 a
 ### Session 2 approval (2026-10-01)
 
 Max approved Session 2 without amendments. `analysis/S1.json` stands as coded, and the eight judgement calls listed above are adopted as written. Session 3 may begin.
+
+---
+
+## Session 3: Viewer, read-only views (2026-10-01)
+
+**Status:** complete, awaiting Max's approval. Session 4 should not start until the Status table shows Session 3 approved.
+
+**Gate check:** the Status table showed Session 2 approved (commit `884a00b`). `analysis/S1.json` was not modified; the validator still reports 0 errors and 0 warnings. Protocol, schema and theory file were not modified.
+
+**Files created**
+- `index.html`: the viewer, served at `/claim-wall/`. It is one self-contained file with inline CSS and JS and no external requests, and it works from `file://` and over HTTP. `analysis/S1.json` is embedded verbatim in `<script type="application/json" id="embedded-analysis">`. Editable wording, colours, the verbatim characteristic definitions (protocol Section 2), the verbatim anchors (protocol 8) and the relation definitions (protocol 7.2) are in `CONFIG`. A script check confirmed that all 8 definitions appear verbatim in `../third-place-content.md` and that all 18 anchors and 3 relation definitions appear verbatim in the protocol. The visual language follows the root tools: tokens, the header geometry, the lens colours from `week6b-adjudication-bench.html` (Psychology `--char-1`, Economics `--char-4`, Politics `--char-2`), and the claim colours from week6b's claim types (1 `--char-3`, 2 `--char-5`, 3 `--char-8`, 4 `--char-6`).
+- `scripts/embed_analysis.py`: re-embeds an analysis JSON into `index.html` (default `analysis/S1.json`) and checks that the result parses back equal to the source. It escapes `</` as `<\/`. Standard library only.
+- `scripts/verify_viewer.mjs`: Playwright checks against the done-when criteria. Usage: `node scripts/verify_viewer.mjs [--shots <dir>]`. It needs Playwright with Chromium; set `PLAYWRIGHT_MODULE` if the module is not resolvable.
+
+**Files modified:** `claim-wall-spec.md` (Status table only).
+
+**Components**
+- *Grid:* claims × lenses, as on the board, with the claim text verbatim from `claim_text`. Each card shows its ID, its verbatim text with `[ ]` insertions set in muted italics, an uncertain-transcription marker, and its characteristics with relations. Instructor view adds the six sub-scores (abbreviation, digit and two-box bar, never colour alone, no total) and flag chips: Candidate, "Better fits claim N", "Not an explanation: …" and "Coded lens: …". It collapses to lens-headed cells under each claim at 1000px and below, and to one column at 700px and below.
+- *Oldenburg coverage:* characteristics × claims. Each cell lists its entry IDs with the relation in text, and each row has an expandable verbatim definition with its source line. A footer gives the number of cards engaging any characteristic per claim. Below it is a vocabulary-flag table. The snapshot-gaps note appears in instructor view only.
+- *Entry detail:* a modal `<dialog>`, opened from any card or entry ID. Focus moves to Close; Escape and backdrop clicks close it, and focus returns to the opener. It has Previous and Next buttons. It shows the card text, the transcription caveat with the codes it affects, the analyst note, and the Oldenburg mapping with quoted rationales and vocabulary flags. It then shows all six criteria, each with its score, the anchor text for that score, the quoted rationale, and its extras (`misfiled_to`, `not_an_explanation`, coded lens, stated scope). Last come the testable implication and the Bodø scope question.
+- *Claim synthesis:* one panel per claim with these sections: candidates (sub-scores and `why`), imported candidates, nearest misses, clusters (each marked when it is also listed under another claim), convergence, tensions, and gaps. Entry IDs open the detail view, and each grid row links to its claim's panel.
+- *Student view toggle:* the header button sets `aria-pressed`; `?view=student` opens in student view, and the toggle keeps the URL in step. Hidden content is not rendered at all, and the dialog is emptied on close, so no instructor text stays in the DOM.
+
+**Student-view boundary: judgement calls for Max.** Spec Section 5 says the student view hides scores and synthesis and keeps the grid, the Oldenburg mapping and the testable implications. Applied as follows:
+1. *Hidden:* all six sub-scores and their rationales and anchors; `misfiled_to`, `not_an_explanation`, `actual_lens` and `stated_scope` (these are codes of the scored criteria); the Candidate chip; the synthesis tab, the grid links to it, and the snapshot-gaps note; and the "why no implication" note on entries with a null implication.
+2. *Hidden, though not a score:* the `analyst_note`. Several notes discuss scores or flags (e.g. S1-019, S1-021).
+3. *Kept, though not in the "keeps" list:* the transcription caveat and the codes it affects. The caveat names criteria that could change but never states a score; S1-017's caveat says "a datable event would score 2", which is hypothetical. The Bodø scope question is also kept: it is neither a score nor synthesis, and the protocol defines it as an open question.
+4. *Kept, though it reveals testability 1 vs 2:* the analyst's supplied-element note under a testable implication, labelled "Added by the analyst". Without it, students would read analyst-supplied content as the card's own claim. Vocabulary-flag verdicts (matches, partial, …) are also kept, as part of the Oldenburg mapping (rubric 4.1).
+5. The toggle is a display mode, not access control: the embedded JSON, including every score, is in the page source.
+
+**Verification** (`node scripts/verify_viewer.mjs`, Chromium; widths 360, 390, 768, 1280 and 1440, each in instructor and student view): 10,512 checks, 0 failures, on three consecutive runs.
+- No console errors, warnings or page errors, and no horizontal page scroll, in any view at any width. Also checked over HTTP at 360 and 1440, in both views, with no errors.
+- Grid: 39 cards, each in the correct claim × lens cell, with card text equal to the JSON. The uncertain marker appears on exactly the 7 Uncertain entries. Characteristic chips equal the JSON. Instructor view: every sub-score digit equals the JSON, and the flag chips equal those derived from it. Student view: no sub-scores, flags or synthesis links.
+- Coverage: all 32 characteristic × claim cells equal the JSON, entry by entry and relation by relation; the footer counts are correct; all 6 vocabulary flags are present.
+- Entry detail: all 39 entries are checked at 360 and 1440, and a sample (including all Uncertain entries) at the other widths. Each shows the card text and caveat, every characteristic and vocabulary rationale and quote, the testable implication and the Bodø question. Instructor view also shows all six score badges, rationales, quotes and extras. Focus moves to Close and returns to the card on Escape.
+- Synthesis: 4 panels. Candidates, imported candidates and nearest misses match the JSON in order. Cluster IDs, the convergence and tension counts, and every `why`, shared element, cluster quote, mechanism, tension, gap list and gap note are present.
+- Student view: 317 instructor-only strings (strength rationales, `not_an_explanation` rationales, analyst notes, null-implication notes and synthesis texts) were checked against the rendered text of every view and every opened dialog; none appear. The synthesis tab is absent. Toggling on from the synthesis tab falls back to the grid, and toggling off restores all three tabs.
+- Accessibility: text contrast is at least WCAG AA for every visible text element in every view and in one dialog per claim. Every visible control is at least 44 × 44 px. Tabs use arrow, Home and End keys. Focus outlines are visible. `prefers-reduced-motion` turns transitions off.
+- Defects found and fixed during verification: claim 1's colour (`--char-3`) gives 4.49:1 against white, so small white text on it failed AA in the coverage headers and the dialog header (the coverage headers are now large text, and the dialog header is dark); the definition toggles were 32px tall; a closed dialog kept instructor content in the DOM after switching to student view.
+
+**Not done (out of scope or constrained)**
+- No override, export, file loading, snapshot selector or diff (Session 4 and 5).
+- `../index.html` (the activity card) and `../CLAUDE.md` (the Files list) were not updated. The repo's CLAUDE.md asks for both when an activity is added, but spec Section 3 forbids changes outside `claim-wall/`. Max to decide.
+- `../test.html` was not run, because no file outside `claim-wall/` changed.
+- The print stylesheet (current view only, controls hidden) is basic and was not verified against A4 output.
+- The file starts with `<!doctype html>` before `<meta charset="utf-8">`. The root tools have no doctype and render in quirks mode.
+
+**Notes for Session 4**
+- The spec allows SheetJS "via pinned CDN script tags", but the repo's CLAUDE.md says "No external dependencies — everything is inline", and the build instructions say "no CDN dependencies". This needs Max's decision before the .xlsx export is built.
+- Once overrides exist, the student view needs a rule for overridden fields. The current rule is render-time exclusion in `wallCard`, `renderCoverage`, `renderDetail` and `renderSynthesis`, each guarded by `state.student`.
+- Loaded snapshots can reuse the render functions: they read only the module-level `DATA`, `ENTRIES`, `BY_ID`, `SYN` and `CANDIDATE_IDS`.
+- After any change to `analysis/S1.json`, run `python3 scripts/embed_analysis.py`, then the validator, then `node scripts/verify_viewer.mjs`.
