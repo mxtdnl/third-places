@@ -31,3 +31,7 @@ Append one section per session. Read `claim-wall-spec.md` in full, then `../thir
 - A pink card outside the grid was not captured (workbook `Notes` sheet); record in `snapshot.notes`, do not code.
 - The schema enforces bracket-free quotes but cannot check that quotes are substrings of `Card_Text`, that `card_text` equals the workbook, or that the theory file hash matches; the validator must do those.
 - Worked-example scores are not binding; if full application of the protocol yields a different score for any of the 18, report the divergence.
+
+### Session 1 approval (2026-10-01)
+
+Max approved Session 1. No amendments were given for open decisions A2, A5, A8 and A9, so the proposed defaults stand: Section A heading names; multi-mapping of cost/payment cards; the Section 3.2 lens definitions; Claim 3 read as worse social or community consequences associated with third places (Section 3.1). Protocol bumped from 1.0-draft to 1.0; use `"protocol_version": "1.0"` in analysis JSON. Session 2 may begin.

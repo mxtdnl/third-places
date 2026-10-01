@@ -6,7 +6,7 @@ This spec is built across several Claude Code sessions. **Every session starts b
 
 | Session | Scope | Status | Approved by Max |
 |---|---|---|---|
-| 1 | Theory extraction, protocol, schema | Complete; awaiting approval (decisions A2, A5, A8, A9 open) | — |
+| 1 | Theory extraction, protocol, schema | Approved (proposed defaults for A2, A5, A8, A9 adopted) | Yes, 2026-10-01 |
 | 2 | Code S1 entries, validator | Not started | — |
 | 3 | Viewer: read-only views | Not started | — |
 | 4 | Viewer: override, export, snapshot loading | Not started | — |
