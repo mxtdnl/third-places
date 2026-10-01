@@ -100,11 +100,11 @@
 
   function loadScripts(callback) {
     var loaded = 0;
-    var labCode, decoderCode, builderCode, benchCode;
+    var labCode, decoderCode, builderCode, benchCode, w5Code;
 
     function done() {
       loaded++;
-      if (loaded < 4) return;
+      if (loaded < 5) return;
 
       // Execute decoder in a namespace
       try {
@@ -221,8 +221,23 @@
         assert('week6b-adjudication-bench.html parses without syntax errors', function() { throw e; });
       }
 
+      // Execute week 5 field visit (its init is guarded on #w5-app, absent here; it exposes window.W5)
+      try {
+        var w5Fn = new Function(w5Code);
+        w5Fn();
+      } catch(e) {
+        suite('LOAD ERRORS');
+        assert('week5-field-trip-planner.html parses without syntax errors', function() { throw e; });
+      }
+
       callback();
     }
+
+    var xhr5 = new XMLHttpRequest();
+    xhr5.open('GET', 'week5-field-trip-planner.html');
+    xhr5.onload = function() { w5Code = extractAndRun(xhr5.responseText, 'week5'); done(); };
+    xhr5.onerror = function() { w5Code = ''; done(); };
+    xhr5.send();
 
     var xhr4 = new XMLHttpRequest();
     xhr4.open('GET', 'week6b-adjudication-bench.html');
@@ -1092,6 +1107,287 @@
       xhr.send();
       var m = xhr.responseText.match(/<script>([\s\S]*?)<\/script>/);
       ok(m && !/[\u2018\u2019\u201C\u201D]/.test(m[1]), 'curly quotes found');
+    });
+
+    // =====================================================
+    // FIELD VISIT (week 5)
+    // =====================================================
+
+    suite('Field Visit — Config integrity');
+
+    assert('W5 test hook is exposed and CONFIG validates', function() {
+      ok(window.W5 && W5.CONFIG, 'missing W5');
+      eq(W5.validateConfig().length, 0, W5.validateConfig().join('; '));
+    });
+
+    assert('Nine sites, eight characteristics, four claims, six factors', function() {
+      eq(W5.CONFIG.sites.length, 9);
+      eq(W5.CONFIG.characteristics.length, 8);
+      eq(W5.CONFIG.claims.map(function(c) { return c.id; }).join(','), 'supply,use,quality,outcome');
+      eq(W5.CONFIG.factors.length, 6);
+    });
+
+    assert('Every route note and walking time is flagged as a placeholder', function() {
+      W5.CONFIG.routes.forEach(function(r) { ok(r.note.indexOf('PLACEHOLDER:') === 0, r.sites.join('+')); });
+    });
+
+    suite('Field Visit — Join codes');
+
+    assert('encode/decode round-trips every group and route', function() {
+      for (var g = 1; g <= 30; g++) for (var r = 0; r < W5.CONFIG.routes.length; r++) {
+        var c = W5.encodeJoinCode(g, r);
+        eq(c.length, 4);
+        var d = W5.decodeJoinCode(c);
+        ok(d.ok && d.group === g && d.routeIndex === r, c);
+      }
+    });
+
+    assert('decode tolerates lower case, spaces and hyphens', function() {
+      var c = W5.encodeJoinCode(3, 2);
+      ok(W5.decodeJoinCode(' ' + c.slice(0, 2).toLowerCase() + '-' + c.slice(2) + ' ').ok);
+    });
+
+    assert('check character rejects every single-character typo', function() {
+      var c = W5.encodeJoinCode(4, 1), A = W5.ALPHABET;
+      for (var i = 0; i < 4; i++) for (var k = 0; k < A.length; k++) {
+        if (A[k] === c[i]) continue;
+        ok(!W5.decodeJoinCode(c.slice(0, i) + A[k] + c.slice(i + 1)).ok, 'accepted typo at ' + i);
+      }
+    });
+
+    assert('check character rejects swapped neighbouring characters', function() {
+      for (var g = 1; g <= 12; g++) {
+        var c = W5.encodeJoinCode(g, 0);
+        for (var i = 0; i < 3; i++) {
+          if (c[i] === c[i + 1]) continue;
+          ok(!W5.decodeJoinCode(c.slice(0, i) + c[i + 1] + c[i] + c.slice(i + 2)).ok, c + ' swap ' + i);
+        }
+      }
+    });
+
+    assert('decode rejects wrong length, ambiguous characters and an edited route list', function() {
+      ok(!W5.decodeJoinCode('ABC').ok);
+      ok(!W5.decodeJoinCode('B0X9').ok);
+      var c = W5.encodeJoinCode(1, 0);
+      var edited = [{ sites: ['granary', 'library'], walkOut: 1, walkBetween: 1, walkBack: 1 }];
+      ok(!W5.decodeJoinCode(c, edited).ok, 'accepted a code against a different route list');
+    });
+
+    suite('Field Visit — Route conflicts');
+
+    assert('routesShareSite detects a shared site', function() {
+      ok(W5.routesShareSite({ sites: ['a', 'b'] }, { sites: ['c', 'b'] }));
+      ok(!W5.routesShareSite({ sites: ['a', 'b'] }, { sites: ['c'] }));
+    });
+
+    assert('routeConflicts lists other groups holding a route with a shared site', function() {
+      var routes = [{ sites: ['a', 'b'] }, { sites: ['b', 'c'] }, { sites: ['d'] }];
+      var alloc = { 1: 0, 2: 2 };
+      eq(W5.routeConflicts(alloc, routes, 3, 1).join(','), '1');
+      eq(W5.routeConflicts(alloc, routes, 3, 0).join(','), '1');
+      eq(W5.routeConflicts(alloc, routes, 1, 0).length, 0, 'a group never conflicts with itself');
+      eq(W5.routeConflicts(alloc, routes, 3, 2).join(','), '2');
+    });
+
+    assert('the seeded routes share no sites', function() {
+      var R = W5.CONFIG.routes;
+      for (var i = 0; i < R.length; i++) for (var j = i + 1; j < R.length; j++) ok(!W5.routesShareSite(R[i], R[j]), i + '/' + j);
+    });
+
+    suite('Field Visit — Timings');
+
+    var SESSION = { start: '12:15', returnBy: '13:05', minObsMinutes: 10 };
+
+    assert('two-site route splits observation time and derives clocks', function() {
+      var t = W5.routeTimes({ sites: ['a', 'b'], walkOut: 10, walkBetween: 5, walkBack: 10 }, SESSION);
+      eq(t.observe, 25);
+      eq(t.sites[0].minutes, 12); eq(t.sites[1].minutes, 13);
+      eq(W5.minToTime(t.moveBy), '12:37');
+      eq(W5.minToTime(t.leaveBy), '12:55');
+      ok(!t.short && t.warning === '');
+    });
+
+    assert('single-site route ignores walkBetween', function() {
+      var t = W5.routeTimes({ sites: ['a'], walkOut: 8, walkBetween: 99, walkBack: 12 }, SESSION);
+      eq(t.sites.length, 1); eq(t.sites[0].minutes, 30); eq(t.moveBy, null);
+    });
+
+    assert('short time on site produces a warning', function() {
+      var t = W5.routeTimes({ sites: ['a', 'b'], walkOut: 15, walkBetween: 10, walkBack: 15 }, SESSION);
+      eq(t.shortest, 5); ok(t.short); ok(t.warning.length > 0);
+      var u = W5.routeTimes({ sites: ['a'], walkOut: 30, walkBetween: 0, walkBack: 30 }, SESSION);
+      ok(u.short && /no time/.test(u.warning));
+    });
+
+    suite('Field Visit — Roles');
+
+    assert('size 3: A Space, B Talk, C People', function() {
+      eq(W5.lettersForSize(3).join(''), 'ABC');
+      eq(W5.roleFor(3, 'A').chars.join(','), 'ng,ac,lp');
+      eq(W5.roleFor(3, 'B').chars.join(','), 'cv,pm');
+      eq(W5.roleFor(3, 'C').chars.join(','), 'lv,rg,ha');
+      eq(W5.roleFor(3, 'D'), null);
+    });
+
+    assert('size 4 adds D cross-check on regulars and home away from home', function() {
+      eq(W5.lettersForSize(4).join(''), 'ABCD');
+      eq(W5.roleFor(4, 'A').chars.join(','), 'ng,ac,lp');
+      eq(W5.roleFor(4, 'D').chars.join(','), 'rg,ha');
+      eq(W5.roleFor(4, 'E'), null);
+    });
+
+    assert('size 5 adds E cross-check on leveller and low profile', function() {
+      eq(W5.lettersForSize(5).join(''), 'ABCDE');
+      eq(W5.roleFor(5, 'E').chars.join(','), 'lv,lp');
+      eq(W5.roleFor(5, 'C').chars.join(','), 'lv,rg,ha');
+    });
+
+    assert('every characteristic is covered at every size; no role shows all eight', function() {
+      [3, 4, 5].forEach(function(n) {
+        var seen = {};
+        W5.lettersForSize(n).forEach(function(l) { W5.roleFor(n, l).chars.forEach(function(c) { seen[c] = 1; }); });
+        eq(Object.keys(seen).length, 8, 'size ' + n);
+      });
+      eq(W5.charsForObserver({ size: null, letter: '' }).length, 8, 'no role shows all eight');
+    });
+
+    suite('Field Visit — Share codes and merging');
+
+    function w5Observer(letter, group, route, name) {
+      var o = W5.blankObserver();
+      o.join = { code: '', group: group, routeIndex: route, size: 4, letter: letter, name: name || letter, ethicsAt: '12:10' };
+      return o;
+    }
+
+    assert('share code round-trips, including Unicode text', function() {
+      var o = w5Observer('B', 1, 0, 'Zoë Ñúñez');
+      o.ratings['0'].cv = 'present';
+      o.notes.push({ i: 'n1', s: 0, c: 'cv', x: 'Café — “loud” 😀 talk', t: '12:30', f: 'design' });
+      var code = W5.encodeShareCode(W5.buildShareRecord(o, 1234));
+      ok(/^TP5\.1\.[A-Za-z0-9_-]+\.[0-9a-f]{8}$/.test(code), 'format');
+      var p = W5.parseShareCode(code);
+      ok(p.ok, p.error);
+      eq(p.record.n, 'Zoë Ñúñez');
+      eq(p.record.no[0].x, 'Café — “loud” 😀 talk');
+      eq(p.record.ra['0'].cv, 'present');
+      eq(p.record.at, 1234);
+    });
+
+    assert('damaged codes are rejected and codes are found inside chat text', function() {
+      var code = W5.encodeShareCode(W5.buildShareRecord(w5Observer('A', 1, 0), 1));
+      var broken = code.slice(0, 12) + (code[12] === 'A' ? 'B' : 'A') + code.slice(13);
+      ok(!W5.parseShareCode(broken).ok);
+      ok(!W5.parseShareCode('hello').ok);
+      eq(W5.extractShareCodes('Here you go:\n' + code.slice(0, 20) + '\n' + code.slice(20) + ' thanks').length, 1);
+    });
+
+    assert('share code records skipped join steps', function() {
+      var o = W5.blankObserver();
+      eq(W5.buildShareRecord(o).sk.join(','), 'code,size,letter,name,ethics');
+    });
+
+    assert('perimeter-only sites default people-dependent characteristics to not observable', function() {
+      var ri = -1;
+      W5.CONFIG.routes.forEach(function(r, i) { if (r.sites.length === 1 && r.sites[0] === 'corams') ri = i; });
+      ok(ri >= 0, 'no Coram\'s Fields route');
+      var o = w5Observer('C', 1, ri);
+      eq(W5.effectiveRating(o, 0, 'rg'), 'na');
+      eq(W5.effectiveRating(o, 0, 'ng'), '');
+    });
+
+    assert('merge adds, de-duplicates by letter and keeps the newer code', function() {
+      var expect = { group: 1, routeIndex: 0, own: 'A' };
+      var d1 = W5.buildShareRecord(w5Observer('D', 1, 0, 'Dev'), 100);
+      var d2 = W5.buildShareRecord(w5Observer('D', 1, 0, 'Dev'), 200);
+      var m = W5.mergeRecords({}, [d1, d1, d2], expect);
+      eq(Object.keys(m.records).join(','), 'D');
+      eq(m.records.D.at, 200);
+      eq(m.report.added.length, 1); eq(m.report.duplicate.length, 1); eq(m.report.replaced.length, 1);
+      var again = W5.mergeRecords(m.records, [d1], expect);
+      eq(again.records.D.at, 200, 'an older code never replaces a newer one');
+    });
+
+    assert('merge rejects codes from another group or route, and the receiver\'s own letter', function() {
+      var expect = { group: 1, routeIndex: 0, own: 'A', ownName: 'Ana' };
+      var other = W5.buildShareRecord(w5Observer('B', 2, 3), 1);
+      var otherRoute = W5.buildShareRecord(w5Observer('B', 1, 1), 1);
+      var clash = W5.buildShareRecord(w5Observer('A', 1, 0, 'Someone else'), 1);
+      var m = W5.mergeRecords({}, [other, otherRoute, clash], expect);
+      eq(Object.keys(m.records).length, 0);
+      eq(m.report.rejected.length, 3);
+    });
+
+    assert('merged grid marks double ratings and agreement', function() {
+      var a = W5.buildShareRecord(w5Observer('C', 1, 0), 1); a.ra['0'] = { rg: 'present' };
+      var d = W5.buildShareRecord(w5Observer('D', 1, 0), 1); d.ra['0'] = { rg: 'partial', ha: 'present' };
+      var g = W5.mergedGrid({ C: a, D: d }, 2);
+      ok(g[0].rg.double && g[0].rg.agree === false);
+      ok(!g[0].ha.double && g[0].ha.agree === null);
+    });
+
+    suite('Field Visit — Homework');
+
+    var LONG = 'word '.repeat(25);
+
+    assert('claim-wall card eligibility: cannot-speak claims produce no card', function() {
+      var good = { scope: 'speaks', why: LONG, needed: LONG, finding: 'The cafe works as a meeting place for some regulars today.' };
+      ok(W5.claimCardEligible(good));
+      ok(W5.claimCardEligible({ scope: 'partly', why: LONG, needed: LONG, finding: good.finding }));
+      ok(!W5.claimCardEligible({ scope: 'cannot', why: LONG, needed: LONG, finding: good.finding }));
+      ok(!W5.claimCardEligible({ scope: 'speaks', why: LONG, needed: LONG, finding: 'Too short.' }));
+      ok(!W5.claimCardEligible({}));
+      ok(!W5.claimCardEligible(undefined));
+    });
+
+    assert('cards are built only for eligible claims', function() {
+      var hw = W5.blankHomework();
+      hw.group = 1; hw.routeIndex = 0; hw.me = { name: 'Ana', letter: 'A' };
+      var f = 'The cafe works as a meeting place for some regulars today.';
+      hw.claims = { supply: { scope: 'cannot', why: LONG, needed: LONG, finding: f }, quality: { scope: 'partly', why: LONG, needed: LONG, finding: f } };
+      var c = W5.buildCards(hw);
+      eq(c.claims.length, 1);
+      ok(c.claims[0].indexOf('Quality') >= 0);
+    });
+
+    assert('no decline-claim words on observer or instructor screens', function() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'week5-field-trip-planner.html', false);
+      xhr.send();
+      var m = xhr.responseText.match(/function renderInstructor\(\)[\s\S]*?\/\/ Homework\n/);
+      ok(m, 'could not find observer and instructor renderers');
+      ok(!/claims|snapshotNote|supports|undermines/i.test(m[0]), 'decline-claim content found');
+    });
+
+    assert('wordCount counts tokens with letters or digits only', function() {
+      eq(W5.wordCount('  one two\nthree  '), 3);
+      eq(W5.wordCount(''), 0);
+      eq(W5.wordCount('a - . , ! b'), 2);
+      eq(W5.wordCount('café über 42'), 3);
+    });
+
+    assert('wordStatus enforces minimum and maximum', function() {
+      ok(!W5.wordStatus('x', 25).ok);
+      ok(W5.wordStatus(LONG, 25).ok);
+      ok(!W5.wordStatus('word '.repeat(31), 8, 30).ok);
+      ok(W5.wordStatus('word '.repeat(10), 8, 30).ok);
+    });
+
+    suite('Field Visit — Encoding');
+
+    assert('week5-field-trip-planner.html declares charset=utf-8 first in head', function() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'week5-field-trip-planner.html', false);
+      xhr.send();
+      var t = xhr.responseText;
+      ok(t.indexOf('<meta charset="utf-8">') !== -1 && t.indexOf('<meta charset="utf-8">') < t.indexOf('<title>'), 'missing or late charset');
+    });
+
+    assert('week5-field-trip-planner.html uses no curly quotes in its script', function() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'week5-field-trip-planner.html', false);
+      xhr.send();
+      var m = xhr.responseText.match(/<script>([\s\S]*?)<\/script>/);
+      ok(m && !/[‘’“”]/.test(m[1]), 'curly quotes found');
     });
 
     // =====================================================
