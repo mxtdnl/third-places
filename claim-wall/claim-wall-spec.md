@@ -7,7 +7,7 @@ This spec is built across several Claude Code sessions. **Every session starts b
 | Session | Scope | Status | Approved by Max |
 |---|---|---|---|
 | 1 | Theory extraction, protocol, schema | Approved (proposed defaults for A2, A5, A8, A9 adopted) | Yes, 2026-10-01 |
-| 2 | Code S1 entries, validator | Complete; validator passes; awaiting Max's spot-check | — |
+| 2 | Code S1 entries, validator | Approved (codes and the eight judgement calls in HANDOFF.md adopted as written) | Yes, 2026-10-01 |
 | 3 | Viewer: read-only views | Not started | — |
 | 4 | Viewer: override, export, snapshot loading | Not started | — |
 | 5 | Snapshot comparison (runs once S2 exists) | Blocked: no S2 | — |

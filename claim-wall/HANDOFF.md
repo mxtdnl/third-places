@@ -79,3 +79,7 @@ Max approved Session 1. No amendments were given for open decisions A2, A5, A8 a
 **Notes for Session 3**
 - `analysis/S1.json` is the data to embed. Clusters and convergences that span claims are repeated under each claim with a member and share a `cluster_id`.
 - The builder used to write S1.json was a session-local script and is not committed. The JSON is the record, and the validator is the check.
+
+### Session 2 approval (2026-10-01)
+
+Max approved Session 2 without amendments. `analysis/S1.json` stands as coded, and the eight judgement calls listed above are adopted as written. Session 3 may begin.
