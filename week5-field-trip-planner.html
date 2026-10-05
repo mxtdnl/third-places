@@ -13,14 +13,17 @@
   screen or by URL hash:
     #instructor  laptop console: allocate routes, briefing crib, debrief guide
     #observer    each student's phone: join, role, field log, huddle, share-out
-    #homework    per student, any device: sort, agreement, explain, overall,
-                 decline claims, outputs (A4 report, A6 cards)
+    #homework    per student, any device: compare the sites, explain three
+                 characteristics (why, what would have to be different, link to
+                 a decline claim), outputs (A4 report, A6 cards)
 
   All editable content is in CONFIG at the top of the script.
   No network calls: phones exchange data only as pasted share codes.
 
   Storage keys (localStorage, one per entry point):
-    tp-w5-instructor-v1, tp-w5-observer-v1, tp-w5-homework-v1
+    tp-w5-instructor-v1, tp-w5-observer-v1, tp-w5-homework-v2
+  (tp-w5-homework-v1 from the earlier seven-step homework is read once and
+  migrated when v2 is empty)
 
   Join code: 4 characters from a 31-character alphabet (no 0, O, 1, I, L).
     char 1 = group number, char 2 = route index,
@@ -387,18 +390,6 @@ input.code-input { font-size: 1.8rem; font-weight: 800; letter-spacing: 0.4em; t
   padding: 0.5rem 0.9rem; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.04em;
   margin: 0 0 1rem; border-bottom: 4px solid var(--char-4);
 }
-.lens-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.4rem; }
-.lens-tag {
-  display: inline-flex; align-items: center; gap: 0.45rem; min-height: 36px; padding: 0.3rem 0.75rem;
-  border: 2px solid var(--accent); background: var(--bg-card); color: var(--text);
-  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-.lens-tag .pip { width: 10px; height: 10px; background: var(--accent); display: inline-block; }
-.lens-tag.filled { background: var(--accent); color: #fff; }
-.lens-tag.filled .pip { background: #fff; }
-.lens-tag.filled.dark-ink { color: var(--text); }
-.lens-tag.filled.dark-ink .pip { background: var(--text); }
 .spot-reminder {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem;
   border-left: 6px solid var(--char-7); background: rgba(204,104,48,0.10); padding: 0.5rem 0.75rem;
@@ -514,13 +505,20 @@ th[scope="row"] { font-size: 0.88rem; letter-spacing: 0.01em; text-transform: no
 .readaloud { font-size: 1.05rem; line-height: 1.6; }
 
 /* ---------- Homework ---------- */
-.hw-note { border: 2px solid var(--border); border-left: 6px solid var(--accent); background: var(--bg-card); padding: 0.9rem 1rem; margin-bottom: 1rem; }
-.hw-note.ok { border-left-color: var(--correct); }
-.hw-note blockquote { font-size: 1.02rem; font-weight: 600; margin: 0.2rem 0 0.6rem; overflow-wrap: anywhere; }
-.tag-row { margin-bottom: 0.6rem; }
-.claim-head { padding: 0.9rem 1.25rem; color: #fff; background: var(--accent); margin: -1.25rem -1.5rem 1rem; }
-.claim-head .ch-name { font-size: 1.3rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
-.claim-head .ch-def { font-size: 1.2rem; font-weight: 700; line-height: 1.35; }
+.banner .goal { font-size: 1.15rem; font-weight: 700; line-height: 1.4; margin: 0; }
+.merged td.need { background: var(--incorrect-bg); }
+.merged td.need .agree-tag { letter-spacing: 0; padding: 1px 3px; }
+.hw-notes { border: 2px solid var(--border); border-left: 6px solid var(--accent); background: var(--bg-card); margin-top: 0.6rem; padding: 0 0.9rem; }
+.hw-notes > summary {
+  cursor: pointer; min-height: 44px; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;
+  font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.85rem;
+}
+.hw-notes[open] { padding-bottom: 0.75rem; }
+.hw-notes h4 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.3rem; }
+.site-ratings { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; margin: 0.5rem 0 1rem; }
+.site-ratings .sr-item { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; }
+.decline-block { border: 2px solid var(--border); border-top: 6px solid var(--char-2); padding: 0.9rem 1rem; margin: 1rem 0; background: rgba(181,40,56,0.06); }
+.decline-block h3 { margin-bottom: 0.3rem; }
 .check-list { list-style: none; }
 .check-list li { padding: 0.35rem 0 0.35rem 1.9rem; position: relative; border-top: 2px solid var(--border); }
 .check-list li::before { content: ''; position: absolute; left: 0; top: 0.55rem; width: 16px; height: 16px; border: 3px solid var(--incorrect); }
@@ -569,7 +567,6 @@ th[scope="row"] { font-size: 0.88rem; letter-spacing: 0.01em; text-transform: no
   .page-header .deco-tri { display: none; }
   .panel { padding: 1rem 1rem; }
   .banner { padding: 1rem; }
-  .claim-head { margin: -1rem -1rem 1rem; }
   .tabs { grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); }
   .tab { font-size: 0.66rem; letter-spacing: 0.04em; padding: 0.5rem 0.2rem; }
   .chips.grid2 { grid-template-columns: 1fr; }
@@ -872,14 +869,12 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
 
     // ----- Word limits (homework only) -----
     words: {
-      min: 25,           // minimum words in every required homework text field
-      sentenceMin: 8,    // minimum words in a one-sentence explanation or finding
-      sentenceMax: 30,   // maximum words in a one-sentence explanation or finding
+      min: 25,           // minimum words in "what would have to be different" and the link to decline
+      whyMin: 40,        // minimum words in the main "why" answer of each explanation
+      sentenceMin: 8,    // minimum words in the one-sentence card explanation
+      sentenceMax: 30,   // maximum words in the one-sentence card explanation
       shareSentenceMax: 35, // maximum words in the share-out contrast sentence (field day, no minimum)
-      explainCount: 4,   // characteristics each student must explain in full
-      declineCount: 2,   // candidate explanations of decline each student must complete
-      declineMax: 4,     // most candidate explanations a student can add
-      declineLenses: 2   // complete explanations must cover at least this many lenses (1 switches it off)
+      explainCount: 3    // characteristics each student must explain in full
     },
 
     // ----- Sites -----
@@ -1171,28 +1166,16 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       { id: 'outcome', name: 'Outcome', colour: 'var(--claim-outcome)', def: 'Social consequences such as belonging and trust have worsened.' }
     ],
     // ----- Homework only: the three disciplinary lenses -----
-    // ids match the week 6b Adjudication Bench export. colour matches the
-    // lens colours used in the Evidence Compass and week 6b.
+    // An optional tag on each explanation. ids match the week 6b Adjudication
+    // Bench export. colour matches the lens colours used in the Evidence
+    // Compass and week 6b.
     lenses: [
       { id: 'psychological', name: 'Psychological', colour: 'var(--char-1)', focus: 'Behaviour, cognition, wellbeing' },
       { id: 'political', name: 'Political', colour: 'var(--char-2)', focus: 'Policy, power, institutions' },
       { id: 'economic', name: 'Economic', colour: 'var(--char-4)', focus: 'Markets, costs, incentives' }
     ],
-    snapshotNote: 'One visit is a snapshot. It shows these places on one day, at one time, and change over time cannot be observed in it. For each claim, judge for yourself what kind of evidence your visit produced and whether that evidence bears on the claim.',
-    scopeOptions: [
-      { id: 'speaks', label: 'The visit speaks to this claim' },
-      { id: 'partly', label: 'The visit partly speaks to this claim' },
-      { id: 'cannot', label: 'The visit cannot speak to this claim' }
-    ],
-
-    // ----- Homework step 4: overall judgement scale -----
-    overallLevels: [
-      { id: 'fully', label: 'Fully' },
-      { id: 'largely', label: 'Largely' },
-      { id: 'partly', label: 'Partly' },
-      { id: 'barely', label: 'Barely' },
-      { id: 'not', label: 'Not at all' }
-    ],
+    // Shown beside the link to decline, and printed in the report.
+    snapshotNote: 'One visit shows how these places work today, not how they have changed. So this link is a candidate explanation to test in weeks 6 and 7, not a finding.',
 
     // ----- Interface copy -----
     text: {
@@ -1200,7 +1183,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         heading: 'Choose your part',
         instructor: { title: 'Instructor', desc: 'Allocate routes, read join codes aloud, brief the groups and run the spoken debrief.', who: 'Laptop · instructor only' },
         observer: { title: 'Observer', desc: 'Join your group, get your role, log what you see at each site and share it with your group.', who: 'Your own phone · in the field' },
-        homework: { title: 'Homework', desc: 'Sort the group\'s notes, explain the characteristics across your sites, turn what you saw into candidate explanations of decline, judge what one visit can tell you, and print your outputs.', who: 'Any device · per student' }
+        homework: { title: 'Homework', desc: 'Compare what your group saw at each site, explain why the places are the way they are, link each explanation to a decline claim, and print your outputs.', who: 'Any device · per student' }
       },
       modeNames: { instructor: 'Instructor console', observer: 'Observer', homework: 'Homework' },
       switchMode: 'Change part',
@@ -1337,7 +1320,9 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         spotCount: 'places spotted'
       },
       homework: {
-        tabs: { load: 'Load', sort: '1 Sort', agree: '2 Agree', explain: '3 Explain', overall: '4 Overall', decline: '5 Decline', claims: '6 Claims', outputs: '7 Outputs' },
+        tabs: { load: 'Load', compare: '1 Compare', explain: '2 Explain', outputs: '3 Outputs' },
+        goalTitle: 'Your task',
+        goal: 'Compare what your group saw at each site, then explain why the places are the way they are: what produces or blocks each characteristic, what would have to be different, and which decline claim that could help explain.',
         loadTitle: 'Load your group\'s data',
         loadHelp: 'Use the observer data on this phone, or paste every share code from your group chat, or import an exported JSON file.',
         fromDevice: 'Use this device\'s observer data',
@@ -1349,78 +1334,40 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         nameLabel: 'Your name (printed on your outputs)',
         letterLabel: 'Which observer were you?',
         loaded: 'Loaded observers',
-        sortTitle: 'Step 1 · Sort the notes',
-        sortHelp: 'For every note, confirm or change the characteristic(s), the site and what produces or blocks it. Tagging a note to a decline claim is optional.',
-        charsLabel: 'Characteristic(s)',
-        siteLabel: 'Site',
-        factorLabel: 'Produces or blocks it',
-        noFactor: 'None',
-        claimsLabel: 'Decline claims (optional)',
-        confirm: 'Confirm',
-        confirmed: 'Confirmed',
-        noNotes: 'No notes loaded yet. Load your group\'s codes first.',
-        agreeTitle: 'Step 2 · Agreement',
-        agreeHelp: 'Where two observers rated the same characteristic at the same site, record your own resolution and why.',
-        noDouble: 'Nobody in your group rated the same characteristic twice at the same site, so there is nothing to resolve.',
-        resolution: 'Your resolution',
-        reason: 'Why: what in the notes or the place settles it for you?',
-        explainTitle: 'Step 3 · Explain',
-        explainHelp: 'Explanation, not description: say what about each place produces or blocks the characteristic.',
-        overviewTitle: 'Overview',
-        overviewHelp: 'Your final rating for every characteristic at every site. It starts from the group\'s ratings and your step 2 resolutions; change it where you disagree.',
+        compareTitle: 'Step 1 · Compare the sites',
+        compareHelp: 'Your group\'s ratings, merged into one grid. Change any rating you disagree with. Where two observers disagreed, you choose: open the notes below to see what each of them saw.',
+        disputed: 'Choose',
+        disputedLeft: 'ratings still to choose where observers differ (marked in red).',
         differs: 'Sites differ',
-        chooseTitle: 'Choose what to explain',
-        explainOne: 'Explain this characteristic',
-        perSite: 'How it shows up (or fails to) here, and what about this place produces or blocks it',
-        factorsAt: 'What accounts for it here',
-        contrastField: 'The contrast: what explains the differences (or the similarities) between the sites?',
-        notesField: 'Notes that support this explanation',
-        showAll: 'Show all notes',
-        showTagged: 'Show tagged notes only',
-        noTagged: 'No notes are tagged to this characteristic in step 1.',
-        lineField: 'One sentence for your claim-wall card',
-        overallTitle: 'Step 4 · Overall',
-        overallHelp: 'Your own judgement: how fully does each site work as a third place? Ground it in your step 3 explanations.',
-        levelLabel: 'How fully it works as a third place',
-        justify: 'Why: what from your explanations supports this judgement?',
-        basedOn: 'Explanations this rests on',
-        noExplained: 'Complete at least one explanation in step 3 first.',
-        declineTitle: 'Step 5 · From what you saw to decline',
-        declineHelp: 'Steps 3 and 4 explain why your sites differ today. Decline is a change over time, which one visit cannot show. Here you turn what you saw into candidate explanations of decline: if something you saw producing or blocking a characteristic has changed over time, which decline claim would that change explain, and how? These are explanations to test in weeks 6 and 7, not conclusions.',
-        declineRule: 'Complete at least {n} candidate explanations, covering at least {l} different lenses.',
-        declineAdd: '+ Add a candidate explanation',
-        declineItem: 'Candidate explanation',
-        declineRemove: 'Remove',
-        declineRemoveConfirm: 'Confirm remove',
-        declineCancel: 'Cancel',
-        declineClaim: 'The decline claim it would explain',
-        declineLens: 'Lens',
-        declineFactor: 'What you saw at work: what produced or blocked a characteristic',
-        declineGround: 'What it rests on: your step 3 explanations or places spotted on the walk',
-        declineNoGround: 'Complete an explanation in step 3, or load places spotted on the walk, to link them here.',
-        declineMechanism: 'The mechanism: what would have changed over time (the cause), how that change works on people or places (the pathway), and how it produces this kind of decline (the outcome)?',
-        declineEvidence: 'What evidence would show whether that change really happened, and whether it had this effect?',
-        declineLine: 'One sentence for your claim-wall card',
-        declineNone: 'No candidate explanations yet.',
-        lensCoverage: 'Lenses covered by complete explanations',
-        claimsTitle: 'Step 6 · Decline claims',
-        claimsHelp: 'For each claim: can your visit speak to it at all? You decide.',
-        scopeLabel: 'Scope',
-        whyField: 'Why: what kind of evidence did a single visit to these sites produce, and why does it bear (or not bear) on this claim?',
-        suggestsField: 'What the visit does suggest about this claim, if anything',
-        suggestsLinks: 'Linked notes, explanations, candidate explanations and places spotted on the walk',
-        neededField: 'What evidence would be needed to test this claim properly? (For example: repeated observation over time, records of openings and closures, survey data.)',
-        findingField: 'One-sentence finding for the claim-wall card',
-        outputsTitle: 'Step 7 · Outputs',
+        notesTitle: 'Ratings and notes by characteristic',
+        notesHelp: 'Open a characteristic to see every observer\'s rating and note at each site.',
+        noNotesFor: 'No notes here.',
+        explainTitle: 'Step 2 · Explain',
+        explainHelp: 'Choose {n} characteristics, including at least one where your sites differ. For each one, explain why the places are the way they are, not just what you saw.',
+        chooseTitle: 'Choose characteristics to explain',
+        whyField: 'Why are the sites the way they are? What about each place produces or blocks this characteristic, and what explains the difference (or the similarity) between them?',
+        factorsField: 'What accounts for it',
+        evidenceField: 'Evidence: notes or places spotted on the walk that support your explanation',
+        showAll: 'Show notes on every characteristic',
+        showTagged: 'Show notes on this characteristic only',
+        noTagged: 'No notes on this characteristic. Show notes on every characteristic, or load more codes.',
+        changeField: 'What would have to be different at {sites} for this characteristic to be stronger there? If your explanation is right, that change should change the rating.',
+        changeAll: 'your sites',
+        changePresent: 'It is present at every site you rated. What would have to be different for it to weaken or disappear? If your explanation is right, that change should change the rating.',
+        declineHead: 'Link to decline',
+        claimField: 'Which decline claim could this help explain?',
+        howField: 'How: if what you identified has changed over time, how would that change produce this kind of decline?',
+        lensField: 'Lens (optional)',
+        noLens: 'No lens',
+        lineField: 'One sentence for your claim-wall card: why the places are the way they are',
+        outputsTitle: 'Step 3 · Outputs',
         checklist: 'What is complete',
         printReport: 'Print A4 report',
         printCards: 'Print A6 cards',
         cardsTitle: 'Card preview',
-        noClaimCards: 'No claim-wall cards: a card is made only for a claim you marked "speaks to" or "partly speaks to", with a finding and the evidence still needed.',
-        noCharCards: 'No characteristic cards yet: complete an explanation in step 3.',
-        noDeclineCards: 'No candidate explanation cards yet: complete one in step 5.',
+        noCards: 'No cards yet: each complete explanation in step 2 makes one claim-wall card.',
         spotTitle: 'Places spotted on the walk',
-        spotHelp: 'Other possible third places your group passed between the sites. You can use them in step 5 and link them to a decline claim in step 6: for example, former premises or a busy place passed at lunchtime.'
+        spotHelp: 'Other possible third places your group passed between the sites. You can cite them as evidence in step 2: for example, former premises, or a busy place passed at lunchtime.'
       }
     }
   };
@@ -1429,7 +1376,9 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
   // Constants
   // =====================================================================
   var ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // 31 characters, no 0 O 1 I L
-  var KEYS = { instructor: 'tp-w5-instructor-v1', observer: 'tp-w5-observer-v1', homework: 'tp-w5-homework-v1' };
+  var KEYS = { instructor: 'tp-w5-instructor-v1', observer: 'tp-w5-observer-v1', homework: 'tp-w5-homework-v2' };
+  // Read once if the current key is empty, then migrated (see migrateHomework).
+  var LEGACY_KEYS = { homework: 'tp-w5-homework-v1' };
   var SCHEMAS = { instructor: 'tp-w5-instructor', observer: 'tp-w5-observer', homework: 'tp-w5-homework' };
   var SHARE_PREFIX = 'TP5';
   var SHARE_VERSION = 1;
@@ -1925,31 +1874,21 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
   }
   function spotLabel(x) { return x.x + (x.k && SPOT_STATUS[x.k] ? ' (' + SPOT_STATUS[x.k].label.toLowerCase() + ')' : ''); }
 
-  function noteTags(hw, note) {
-    var t = hw.sort[note.key];
-    return {
-      chars: t && Array.isArray(t.chars) ? t.chars : [note.c],
-      site: t && t.site != null ? +t.site : note.s,
-      factor: t && t.factor != null ? t.factor : (note.f || ''),
-      claims: t && Array.isArray(t.claims) ? t.claims : [],
-      ok: !!(t && t.ok)
-    };
-  }
-
   function hwGrid(hw) { return mergedGrid(hw.records, hwSiteCount(hw) || 2); }
 
-  function doubleRatedList(hw) {
+  // Cells where two observers gave different ratings: the student decides.
+  function disputedCells(hw) {
     var grid = hwGrid(hw), out = [];
     for (var si = 0; si < hwSiteCount(hw); si++) {
-      CHAR_IDS.forEach(function (c) { if (grid[si][c].double) out.push({ si: si, c: c, cell: grid[si][c] }); });
+      CHAR_IDS.forEach(function (c) { var cell = grid[si][c]; if (cell.double && !cell.agree) out.push({ si: si, c: c, cell: cell }); });
     }
     return out;
   }
 
+  // The student's rating wins; otherwise a single or agreed group rating.
   function finalRating(hw, si, c) {
     var k = si + '|' + c;
     if (hw.final[k]) return hw.final[k];
-    if (hw.agree[k] && hw.agree[k].rating) return hw.agree[k].rating;
     var cell = hwGrid(hw)[si] && hwGrid(hw)[si][c];
     if (cell && cell.ratings.length && (cell.ratings.length === 1 || cell.agree)) return cell.ratings[0].rating;
     return '';
@@ -1965,71 +1904,52 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     }
     return false;
   }
+  // Sites where the characteristic is weakest ("Not observable here" ignored).
+  var STRENGTH = { present: 3, partial: 2, absent: 1 };
+  function weakestSites(hw, c) {
+    var low = 99, out = [];
+    for (var si = 0; si < hwSiteCount(hw); si++) {
+      var s = STRENGTH[finalRating(hw, si, c)];
+      if (!s) continue;
+      if (s < low) { low = s; out = []; }
+      if (s === low) out.push(si);
+    }
+    return { sites: out, rating: low === 3 ? 'present' : low === 2 ? 'partial' : low === 1 ? 'absent' : '' };
+  }
+
+  function noteByKey(hw, key) { var all = hwNotes(hw); for (var i = 0; i < all.length; i++) if (all[i].key === key) return all[i]; return null; }
+  function spotByKey(hw, key) { var all = hwSpots(hw); for (var i = 0; i < all.length; i++) if (all[i].key === key) return all[i]; return null; }
+  // Evidence references: 'n:<note key>' or 'p:<spotted place key>'.
+  function refItem(hw, r) {
+    r = String(r || '');
+    if (r.indexOf('n:') === 0) return noteByKey(hw, r.slice(2));
+    if (r.indexOf('p:') === 0) return spotByKey(hw, r.slice(2));
+    return null;
+  }
+  function refLabel(hw, r) {
+    var x = refItem(hw, r);
+    if (!x) return '';
+    if (r.indexOf('p:') === 0) return 'Spotted on the walk: ' + spotLabel(x) + (x.y ? ': ' + x.y : '');
+    return hwSiteName(hw, x.s) + ': ' + x.x + ' (observer ' + x.letter + ')';
+  }
 
   function blankExplanation() {
-    var sites = {};
-    SITE_KEYS.forEach(function (k) { sites[k] = { text: '', factors: [] }; });
-    return { on: false, sites: sites, contrast: '', refs: [], line: '' };
+    return { on: false, why: '', factors: [], refs: [], change: '', claim: '', how: '', lens: '', line: '' };
   }
   function explanationIssues(hw, c) {
     var e = hw.explain[c];
     var issues = [];
     if (!e || !e.on) return ['Not chosen.'];
-    var n = hwSiteCount(hw);
-    for (var si = 0; si < n; si++) {
-      var s = (e.sites && e.sites[si]) || {};
-      if (!longOk(s.text)) issues.push(hwSiteName(hw, si) + ': write at least ' + CONFIG.words.min + ' words.');
-      if (!s.factors || !s.factors.length) issues.push(hwSiteName(hw, si) + ': tag at least one feature that accounts for it.');
-    }
-    if (n > 1 && !longOk(e.contrast)) issues.push('Contrast: write at least ' + CONFIG.words.min + ' words.');
-    if (!e.refs || !e.refs.length) issues.push('Link at least one supporting note.');
+    if (wordCount(e.why) < CONFIG.words.whyMin) issues.push('Why: write at least ' + CONFIG.words.whyMin + ' words.');
+    if (!e.factors || !e.factors.length) issues.push('Tag at least one thing that accounts for it.');
+    if (!(e.refs || []).some(function (r) { return refItem(hw, r); })) issues.push('Link at least one note or spotted place as evidence.');
+    if (!longOk(e.change)) issues.push('What would have to be different: at least ' + CONFIG.words.min + ' words.');
+    if (!CLAIM[e.claim]) issues.push('Choose the decline claim it could help explain.');
+    if (!longOk(e.how)) issues.push('Link to decline: at least ' + CONFIG.words.min + ' words.');
     if (!sentenceOk(e.line)) issues.push('Card sentence: ' + CONFIG.words.sentenceMin + ' to ' + CONFIG.words.sentenceMax + ' words.');
     return issues;
   }
   function validExplanations(hw) { return CHAR_IDS.filter(function (c) { return explanationIssues(hw, c).length === 0; }); }
-
-  // ---- Step 5: candidate explanations of decline
-  function blankDecline(id) { return { id: id, claim: '', lens: '', factor: '', refs: [], mechanism: '', evidence: '', line: '' }; }
-  function nextDeclineId(hw) {
-    var n = 0;
-    (hw.decline || []).forEach(function (d) { var m = /^d(\d+)$/.exec(d.id || ''); if (m) n = Math.max(n, +m[1]); });
-    return 'd' + (n + 1);
-  }
-  function declineIssues(d) {
-    var issues = [];
-    if (!d) return ['Missing.'];
-    if (!CLAIM[d.claim]) issues.push('Choose the decline claim.');
-    if (!LENS[d.lens]) issues.push('Choose a lens.');
-    if (!FACTOR[d.factor]) issues.push('Choose what you saw at work.');
-    if (!d.refs || !d.refs.length) issues.push('Link at least one explanation or spotted place it rests on.');
-    if (!longOk(d.mechanism)) issues.push('Mechanism: at least ' + CONFIG.words.min + ' words.');
-    if (!longOk(d.evidence)) issues.push('Evidence: at least ' + CONFIG.words.min + ' words.');
-    if (!sentenceOk(d.line)) issues.push('Card sentence: ' + CONFIG.words.sentenceMin + ' to ' + CONFIG.words.sentenceMax + ' words.');
-    return issues;
-  }
-  function validDeclines(hw) { return (hw.decline || []).filter(function (d) { return declineIssues(d).length === 0; }); }
-  function declineLensCount(hw) {
-    var seen = {};
-    validDeclines(hw).forEach(function (d) { seen[d.lens] = true; });
-    return Object.keys(seen).length;
-  }
-  function declineLensTarget() { return Math.max(1, Math.min(CONFIG.words.declineLenses || 1, CONFIG.lenses.length, CONFIG.words.declineCount)); }
-  function declineLabel(d) { return (CLAIM[d.claim] ? CLAIM[d.claim].name : 'No claim') + ', ' + (LENS[d.lens] ? LENS[d.lens].name.toLowerCase() : 'no lens') + (d.line ? ': ' + d.line : ''); }
-
-  function claimIssues(entry) {
-    var issues = [];
-    if (!entry || !entry.scope) return ['Choose a scope.'];
-    if (!longOk(entry.why)) issues.push('Why: at least ' + CONFIG.words.min + ' words.');
-    if (!longOk(entry.needed)) issues.push('Evidence needed: at least ' + CONFIG.words.min + ' words.');
-    if ((entry.scope === 'speaks' || entry.scope === 'partly') && !sentenceOk(entry.finding)) issues.push('Finding: ' + CONFIG.words.sentenceMin + ' to ' + CONFIG.words.sentenceMax + ' words.');
-    return issues;
-  }
-  // A claim-wall card is produced only for a claim marked "speaks to" or
-  // "partly speaks to", with a valid finding and the evidence still needed.
-  function claimCardEligible(entry) {
-    if (!entry || (entry.scope !== 'speaks' && entry.scope !== 'partly')) return false;
-    return sentenceOk(entry.finding) && longOk(entry.needed);
-  }
 
   function stepIssues(hw, step) {
     var issues = [];
@@ -2038,44 +1958,52 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       if (!n) issues.push('Load your group\'s codes (the route is not known yet).');
       if (!String(hw.me.name || '').trim()) issues.push('Enter your name.');
       if (!hw.me.letter) issues.push('Say which observer you were.');
-    } else if (step === 'sort') {
-      hwNotes(hw).forEach(function (note) {
-        var t = noteTags(hw, note);
-        if (!t.ok) issues.push('Note "' + note.x.slice(0, 40) + '" not confirmed.');
-        else if (!t.chars.length) issues.push('Note "' + note.x.slice(0, 40) + '" has no characteristic.');
-      });
-    } else if (step === 'agree') {
-      doubleRatedList(hw).forEach(function (d) {
-        var a = hw.agree[d.si + '|' + d.c] || {};
-        if (!a.rating || !longOk(a.reason)) issues.push(hwSiteName(hw, d.si) + ', ' + CHAR[d.c].name + ': resolution and reason needed.');
+    } else if (step === 'compare') {
+      disputedCells(hw).forEach(function (d) {
+        if (!hw.final[d.si + '|' + d.c]) issues.push(hwSiteName(hw, d.si) + ', ' + CHAR[d.c].name + ': observers differ, choose a final rating.');
       });
     } else if (step === 'explain') {
       var valid = validExplanations(hw);
       if (valid.length < CONFIG.words.explainCount) issues.push(valid.length + ' of ' + CONFIG.words.explainCount + ' explanations complete.');
       var anyDiffer = CHAR_IDS.some(function (c) { return sitesDiffer(hw, c); });
       if (n > 1 && anyDiffer && !valid.some(function (c) { return sitesDiffer(hw, c); })) issues.push('At least one complete explanation must be a characteristic where the sites differ.');
-    } else if (step === 'overall') {
-      for (var si = 0; si < n; si++) {
-        var o = hw.overall[si] || {};
-        if (!o.level) issues.push(hwSiteName(hw, si) + ': choose a judgement.');
-        if (!longOk(o.text)) issues.push(hwSiteName(hw, si) + ': justification needs ' + CONFIG.words.min + ' words.');
-        if (!o.refs || !o.refs.length) issues.push(hwSiteName(hw, si) + ': link at least one explanation.');
-      }
-    } else if (step === 'decline') {
-      var vd = validDeclines(hw).length;
-      if (vd < CONFIG.words.declineCount) issues.push(vd + ' of ' + CONFIG.words.declineCount + ' candidate explanations complete.');
-      var lt = declineLensTarget();
-      if (declineLensCount(hw) < lt) issues.push('Complete explanations cover ' + declineLensCount(hw) + ' of the ' + lt + ' lenses needed.');
-      (hw.decline || []).forEach(function (d, i) {
-        var di = declineIssues(d);
-        if (di.length) issues.push('Candidate explanation ' + (i + 1) + ': ' + di[0]);
-      });
-    } else if (step === 'claims') {
-      CONFIG.claims.forEach(function (cl) {
-        claimIssues(hw.claims[cl.id]).forEach(function (x) { issues.push(cl.name + ': ' + x); });
-      });
     }
     return issues;
+  }
+
+  // Version 1 homework (seven steps) to version 2. Keeps the loaded codes,
+  // the final ratings (including old step 2 resolutions) and the text of
+  // each explanation, so nobody has to start again.
+  function migrateHomework(s) {
+    var out = blankHomework();
+    if (s.me && typeof s.me === 'object') out.me = { name: String(s.me.name || ''), letter: String(s.me.letter || '') };
+    out.code = String(s.code || '');
+    out.group = s.group != null ? s.group : null;
+    out.routeIndex = s.routeIndex != null ? s.routeIndex : null;
+    out.records = s.records && typeof s.records === 'object' ? s.records : {};
+    out.step = s.step === 'load' ? 'load' : s.step === 'outputs' ? 'outputs' : 'compare';
+    var agree = s.agree || {}, fin = s.final || {};
+    Object.keys(agree).forEach(function (k) { if (agree[k] && RATING[agree[k].rating]) out.final[k] = agree[k].rating; });
+    Object.keys(fin).forEach(function (k) { if (RATING[fin[k]]) out.final[k] = fin[k]; });
+    Object.keys(s.explain || {}).forEach(function (c) {
+      var e = s.explain[c];
+      if (!CHAR[c] || !e || typeof e !== 'object') return;
+      var x = blankExplanation(), parts = [], f = {};
+      x.on = !!e.on;
+      SITE_KEYS.forEach(function (k) {
+        var sd = e.sites && e.sites[k];
+        if (!sd) return;
+        if (String(sd.text || '').trim()) parts.push(hwSiteName(out, +k) + ': ' + String(sd.text).trim());
+        (sd.factors || []).forEach(function (id) { if (FACTOR[id]) f[id] = true; });
+      });
+      if (String(e.contrast || '').trim()) parts.push(String(e.contrast).trim());
+      x.why = parts.join('\n\n');
+      x.factors = Object.keys(f);
+      x.refs = (e.refs || []).map(function (r) { return 'n:' + r; });
+      x.line = String(e.line || '');
+      out.explain[c] = x;
+    });
+    return out;
   }
 
   // =====================================================================
@@ -2091,8 +2019,8 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       siteIdx: 0, ratings: { '0': {}, '1': {}, '2': {} }, notes: [], noteSeq: 0, spots: [], spotSeq: 0, spotDraft: { x: '', y: '', k: '' }, peers: {}, contrast: { ch: '', text: '' }, updated: '' };
   }
   function blankHomework() {
-    return { schema: SCHEMAS.homework, v: 1, step: 'load', me: { name: '', letter: '' }, code: '', group: null, routeIndex: null,
-      records: {}, sort: {}, agree: {}, final: {}, explain: {}, overall: {}, decline: [], claims: {}, updated: '' };
+    return { schema: SCHEMAS.homework, v: 2, step: 'load', me: { name: '', letter: '' }, code: '', group: null, routeIndex: null,
+      records: {}, final: {}, explain: {}, updated: '' };
   }
   var BLANK = { instructor: blankInstructor, observer: blankObserver, homework: blankHomework };
 
@@ -2100,6 +2028,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
   function normalise(which, s) {
     var b = BLANK[which]();
     if (!s || typeof s !== 'object' || s.schema !== SCHEMAS[which]) return b;
+    if (which === 'homework' && s.v !== 2) s = migrateHomework(s);
     Object.keys(b).forEach(function (k) {
       if (!has(s, k) || s[k] === undefined) s[k] = b[k];
       else if (b[k] && typeof b[k] === 'object' && !Array.isArray(b[k]) && typeof s[k] === 'object' && s[k] !== null) {
@@ -2111,13 +2040,14 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
 
   var S = { instructor: null, observer: null, homework: null };
   var mode = null;
-  var ui = { toolsOpen: false, confirmReset: false, status: '', storageOk: true, editNote: null, delNote: null, delSpot: null, delDecline: null,
+  var ui = { toolsOpen: false, confirmReset: false, status: '', storageOk: true, editNote: null, delNote: null, delSpot: null,
     obsReport: null, hwReport: null, showAll: {}, pasteObs: '', pasteHw: '' };
 
   function loadState(which) {
     var s = null;
     try {
       var raw = localStorage.getItem(KEYS[which]);
+      if (!raw && LEGACY_KEYS[which]) raw = localStorage.getItem(LEGACY_KEYS[which]);
       if (raw) s = JSON.parse(raw);
     } catch (e) { s = null; }
     return normalise(which, s);
@@ -2233,8 +2163,6 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     return h + '</div></section>';
   }
 
-  // Accent per site position on a route (overall judgement panels).
-  var SITE_ACCENT = ['var(--char-3)', 'var(--char-6)', 'var(--char-1)'];
   var MODE_ACCENT = { instructor: 'var(--char-1)', observer: 'var(--char-2)', homework: 'var(--char-5)' };
 
   function renderModeBar() {
@@ -3139,22 +3067,19 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
   // =====================================================================
   // Homework
   // =====================================================================
-  var HW_STEPS = ['load', 'sort', 'agree', 'explain', 'overall', 'decline', 'claims', 'outputs'];
+  var HW_STEPS = ['load', 'compare', 'explain', 'outputs'];
 
   function renderHomework() {
     var hw = S.homework, t = CONFIG.text.homework;
+    if (HW_STEPS.indexOf(hw.step) < 0) hw.step = 'load';
     var tabs = HW_STEPS.map(function (id) { return { id: id, label: t.tabs[id] }; });
     var states = {};
     HW_STEPS.forEach(function (s) { if (s !== 'outputs' && hwSiteCount(hw)) states[s] = stepIssues(hw, s).length ? 'to do' : 'done'; });
     var h = tabsHtml(tabs, hw.step, 'htab', 'var(--char-5)', states);
     if (hw.step !== 'load' && !hwSiteCount(hw)) return h + '<div class="notice">' + esc(stepIssues(hw, 'load')[0]) + '</div>' + renderLoad();
     switch (hw.step) {
-      case 'sort': h += renderSort(); break;
-      case 'agree': h += renderAgree(); break;
+      case 'compare': h += renderCompare(); break;
       case 'explain': h += renderExplain(); break;
-      case 'overall': h += renderOverall(); break;
-      case 'decline': h += renderDecline(); break;
-      case 'claims': h += renderClaims(); break;
       case 'outputs': h += renderOutputs(); break;
       default: h += renderLoad();
     }
@@ -3171,7 +3096,8 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
 
   function renderLoad() {
     var hw = S.homework, t = CONFIG.text.homework;
-    var h = '<section class="panel" style="--accent:var(--char-5)"><span class="deco-dot"></span><h2>' + esc(t.loadTitle) + '</h2><p>' + esc(t.loadHelp) + '</p>';
+    var h = '<section class="banner" style="--accent:var(--char-5)"><span class="eyebrow">' + esc(t.goalTitle) + '</span><p class="goal">' + esc(t.goal) + '</p></section>';
+    h += '<section class="panel" style="--accent:var(--char-5)"><span class="deco-dot"></span><h2>' + esc(t.loadTitle) + '</h2><p>' + esc(t.loadHelp) + '</p>';
     h += '<div class="btn-row">' + (hasObserverData() ? '<button type="button" class="btn" data-action="hw-from-device">' + esc(t.fromDevice) + '</button>' : '<span class="quiet">' + esc(t.noDevice) + '</span>') +
       '<button type="button" class="btn btn-ghost" data-action="import">' + esc(CONFIG.text.tools.importJson) + '</button></div>';
     h += '<div class="field" style="margin-top:1rem"><label for="paste-hw">' + esc(t.pasteLabel) + '</label><textarea id="paste-hw" class="code-box" rows="5" data-ui="pasteHw">' + esc(ui.pasteHw) + '</textarea></div>' +
@@ -3203,7 +3129,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     return h;
   }
 
-  // To-do list under an explanation or claim; refreshed while typing.
+  // To-do list under an explanation; refreshed while typing.
   function issuesHtml(key, iss) {
     return '<ul class="check-list" data-issues="' + esc(key) + '" aria-live="off">' + issuesInner(iss) + '</ul>';
   }
@@ -3213,37 +3139,50 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
   function refreshIssues() {
     if (mode !== 'homework') return;
     Array.prototype.forEach.call(document.querySelectorAll('[data-issues]'), function (el) {
-      var k = el.getAttribute('data-issues').split(':');
-      el.innerHTML = issuesInner(k[0] === 'explain' ? explanationIssues(S.homework, k[1]) :
-        k[0] === 'decline' ? declineIssues(S.homework.decline[+k[1]]) : claimIssues(S.homework.claims[k[1]]));
+      el.innerHTML = issuesInner(explanationIssues(S.homework, el.getAttribute('data-issues')));
     });
   }
 
   function noteLabel(note) { return 'Observer ' + note.letter + (note.who ? ' (' + note.who + ')' : '') + (note.t ? ' · ' + note.t : ''); }
 
-  function renderSort() {
+  function renderCompare() {
     var hw = S.homework, t = CONFIG.text.homework;
-    var notes = hwNotes(hw);
-    var h = '<section class="panel" style="--accent:var(--char-3)"><span class="deco-dot"></span><h2>' + esc(t.sortTitle) + '</h2><p>' + esc(t.sortHelp) + '</p>';
-    if (notes.length) h += '<p><strong>' + notes.filter(function (x) { return noteTags(hw, x).ok; }).length + ' / ' + notes.length + '</strong> confirmed.</p>';
-    h += '</section>';
-    if (!notes.length) return h + '<div class="notice">' + esc(t.noNotes) + '</div>' + hwSpotsPanel(hw);
-    var n = hwSiteCount(hw);
-    notes.forEach(function (note) {
-      var tags = noteTags(hw, note);
-      var base = 'sort.' + note.key;
-      var accent = CHAR[tags.chars[0]] ? CHAR[tags.chars[0]].colour : 'var(--border)';
-      h += '<article class="hw-note' + (tags.ok ? ' ok' : '') + '" style="--accent:' + accent + '"><div class="note-meta">' + esc(noteLabel(note)) + '</div><blockquote>' + esc(note.x) + '</blockquote>';
-      h += '<div class="tag-row">' + chipGroup(t.charsLabel, CONFIG.characteristics.map(function (c) {
-        return chip('checkbox', base + '.chars', c.id, c.name, tags.chars.indexOf(c.id) >= 0, { style: charStyle(c.id) });
-      }).join('')) + '</div>';
-      if (n > 1) h += '<div class="tag-row">' + chipGroup(t.siteLabel, siteRange(n).map(function (si) { return chip('radio', base + '.site', si, hwSiteName(hw, si), tags.site === si, { num: true }); }).join('')) + '</div>';
-      h += '<div class="tag-row">' + chipGroup(t.factorLabel, [chip('radio', base + '.factor', '', t.noFactor, !tags.factor)].concat(CONFIG.factors.map(function (f) { return chip('radio', base + '.factor', f.id, f.label, tags.factor === f.id); })).join('')) + '</div>';
-      h += '<div class="tag-row">' + chipGroup(t.claimsLabel, CONFIG.claims.map(function (cl) { return chip('checkbox', base + '.claims', cl.id, cl.name, tags.claims.indexOf(cl.id) >= 0, { style: '--accent:' + cl.colour }); }).join('')) + '</div>';
-      h += '<button type="button" class="btn ' + (tags.ok ? 'btn-ghost' : '') + '" id="conf-' + fid(note.key) + '" data-action="sort-confirm" data-key="' + esc(note.key) + '" aria-pressed="' + tags.ok + '">' + esc(tags.ok ? '✓ ' + t.confirmed : t.confirm) + '</button></article>';
+    var n = hwSiteCount(hw), grid = hwGrid(hw), notes = hwNotes(hw);
+    var left = stepIssues(hw, 'compare').length;
+    var h = '<section class="panel" style="--accent:var(--char-4)"><span class="deco-dot"></span><h2>' + esc(t.compareTitle) + '</h2><p>' + esc(t.compareHelp) + '</p>' +
+      (left ? '<p><strong>' + left + '</strong> ' + esc(t.disputedLeft) + '</p>' : '');
+    h += '<div class="table-wrap"><table class="merged"><thead><tr><th scope="col">Characteristic</th>';
+    for (var si = 0; si < n; si++) h += '<th scope="col">' + esc(hwSiteName(hw, si)) + '</th>';
+    h += '</tr></thead><tbody>';
+    CONFIG.characteristics.forEach(function (c) {
+      h += '<tr><th scope="row" class="char-cell" style="' + charStyle(c.id) + '">' + esc(c.name) + (sitesDiffer(hw, c.id) ? '<br><span class="agree-tag differ">' + esc(t.differs) + '</span>' : '') + '</th>';
+      for (var s = 0; s < n; s++) {
+        var path = 'final.' + s + '|' + c.id, id = fid(path), v = finalRating(hw, s, c.id);
+        var cell = grid[s][c.id], open = cell.double && !cell.agree && !hw.final[s + '|' + c.id];
+        h += '<td' + (open ? ' class="need"' : '') + '>' + markHtml(v, c.id) + ' <label class="sr-only" for="' + id + '">' + esc(c.name + ' at ' + hwSiteName(hw, s)) + '</label><select id="' + id + '" data-bind="' + esc(path) + '">' +
+          '<option value="">—</option>' + CONFIG.ratings.map(function (r) { return '<option value="' + r.id + '"' + (v === r.id ? ' selected' : '') + '>' + esc(r.label) + '</option>'; }).join('') + '</select>' +
+          (open ? '<br><span class="agree-tag differ">' + esc(t.disputed) + '</span>' : '') + '</td>';
+      }
+      h += '</tr>';
     });
-    h += hwSpotsPanel(hw);
-    return h;
+    h += '</tbody></table></div></section>';
+
+    h += '<section class="panel" style="--accent:var(--char-3)"><h3>' + esc(t.notesTitle) + '</h3><p class="small quiet">' + esc(t.notesHelp) + '</p>';
+    CONFIG.characteristics.forEach(function (c) {
+      var mine = notes.filter(function (x) { return x.c === c.id; });
+      h += '<details class="hw-notes" style="' + charStyle(c.id) + '"><summary>' + esc(c.name) + ' <span class="quiet small">(' + mine.length + (mine.length === 1 ? ' note' : ' notes') + ')</span></summary>';
+      for (var s = 0; s < n; s++) {
+        var cell = grid[s][c.id];
+        var here = mine.filter(function (x) { return x.s === s; });
+        h += '<div class="disc-item" style="' + charStyle(c.id) + '"><h4>' + esc(hwSiteName(hw, s)) + '</h4><p class="disc-line">' +
+          (cell.ratings.length ? cell.ratings.map(function (x) { return ratingPill(x.rating, c.id, x.l); }).join(' ') : '<span class="quiet small">' + esc(CONFIG.text.observer.notRated) + '</span>') + '</p>' +
+          (here.length ? '<ul class="lookfor">' + here.map(function (x) { return '<li class="small">' + esc(x.x) + (x.f && FACTOR[x.f] ? ' <em>[' + esc(FACTOR[x.f].label) + ']</em>' : '') + ' <span class="quiet">· ' + esc(noteLabel(x)) + '</span></li>'; }).join('') + '</ul>' :
+            '<p class="small quiet">' + esc(t.noNotesFor) + '</p>') + '</div>';
+      }
+      h += '</details>';
+    });
+    h += '</section>';
+    return h + hwSpotsPanel(hw);
   }
 
   function hwSpotsPanel(hw) {
@@ -3257,169 +3196,54 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     return h + '</section>';
   }
 
-  function renderAgree() {
-    var hw = S.homework, t = CONFIG.text.homework;
-    var list = doubleRatedList(hw);
-    var h = '<section class="panel" style="--accent:var(--char-6)"><span class="deco-dot"></span><h2>' + esc(t.agreeTitle) + '</h2><p>' + esc(t.agreeHelp) + '</p></section>';
-    if (!list.length) return h + '<div class="notice plain">' + esc(t.noDouble) + '</div>';
-    var notes = hwNotes(hw);
-    list.forEach(function (d) {
-      var k = d.si + '|' + d.c;
-      var a = hw.agree[k] || {};
-      h += '<section class="panel" style="' + charStyle(d.c) + '"><span class="eyebrow">' + esc(hwSiteName(hw, d.si)) + '</span><h3>' + esc(CHAR[d.c].name) + '</h3>';
-      d.cell.ratings.forEach(function (x) {
-        var own = notes.filter(function (n) { return n.letter === x.l && n.s === d.si && n.c === d.c; });
-        h += '<div class="disc-item" style="' + charStyle(d.c) + '"><p class="disc-line"><strong>Observer ' + esc(x.l) + ':</strong> ' + ratingPill(x.rating, d.c) + '</p>' +
-          (own.length ? '<ul class="lookfor">' + own.map(function (n) { return '<li class="small">' + esc(n.x) + '</li>'; }).join('') + '</ul>' : '<p class="small quiet">No notes.</p>') + '</div>';
-      });
-      h += '<span class="agree-tag' + (d.cell.agree ? '' : ' differ') + '">' + esc(d.cell.agree ? CONFIG.text.observer.doubleAgree : CONFIG.text.observer.doubleDiffer) + '</span>';
-      h += '<div style="margin-top:0.75rem">' + chipGroup(t.resolution, CONFIG.ratings.map(function (r) { return chip('radio', 'agree.' + k + '.rating', r.id, r.label, a.rating === r.id); }).join(''), { cls: 'grid2' }) + '</div>';
-      h += textArea('agree.' + k + '.reason', t.reason, a.reason, { min: CONFIG.words.min });
-      h += '</section>';
-    });
-    return h;
+  // The "what would have to be different" question, aimed at the weakest site.
+  function changeLabel(hw, c) {
+    var t = CONFIG.text.homework, w = weakestSites(hw, c);
+    if (!w.sites.length) return t.changeField.replace('{sites}', t.changeAll);
+    if (w.rating === 'present') return t.changePresent;
+    return t.changeField.replace('{sites}', w.sites.map(function (si) { return hwSiteName(hw, si); }).join(' and '));
+  }
+
+  function siteRatingsHtml(hw, c) {
+    var parts = [];
+    for (var si = 0; si < hwSiteCount(hw); si++) parts.push('<span class="sr-item"><strong>' + esc(hwSiteName(hw, si)) + '</strong> ' + ratingPill(finalRating(hw, si, c), c) + '</span>');
+    return '<p class="site-ratings">' + parts.join('') + '</p>';
   }
 
   function renderExplain() {
     var hw = S.homework, t = CONFIG.text.homework;
-    var n = hwSiteCount(hw);
-    var h = '<section class="panel" style="--accent:var(--char-1)"><span class="deco-dot"></span><h2>' + esc(t.explainTitle) + '</h2><p>' + esc(t.explainHelp) + '</p>';
+    var h = '<section class="panel" style="--accent:var(--char-1)"><span class="deco-dot"></span><h2>' + esc(t.explainTitle) + '</h2><p>' + esc(t.explainHelp.replace('{n}', CONFIG.words.explainCount)) + '</p>';
     var issues = stepIssues(hw, 'explain');
-    h += '<p><strong>' + validExplanations(hw).length + ' / ' + CONFIG.words.explainCount + '</strong> complete.' + (issues.length ? ' ' + esc(issues.slice(1).join(' ')) : '') + '</p></section>';
-
-    // Overview grid
-    h += '<section class="panel" style="--accent:var(--char-4)"><h3>' + esc(t.overviewTitle) + '</h3><p class="small quiet">' + esc(t.overviewHelp) + '</p><div class="table-wrap"><table class="merged"><thead><tr><th scope="col">Characteristic</th>';
-    for (var si = 0; si < n; si++) h += '<th scope="col">' + esc(hwSiteName(hw, si)) + '</th>';
-    h += '</tr></thead><tbody>';
-    CONFIG.characteristics.forEach(function (c) {
-      h += '<tr><th scope="row" class="char-cell" style="' + charStyle(c.id) + '">' + esc(c.name) + (sitesDiffer(hw, c.id) ? '<br><span class="agree-tag differ">' + esc(t.differs) + '</span>' : '') + '</th>';
-      for (var s = 0; s < n; s++) {
-        var path = 'final.' + s + '|' + c.id, id = fid(path), v = finalRating(hw, s, c.id);
-        h += '<td>' + markHtml(v, c.id) + ' <label class="sr-only" for="' + id + '">' + esc(c.name + ' at ' + hwSiteName(hw, s)) + '</label><select id="' + id + '" data-bind="' + esc(path) + '">' +
-          '<option value="">—</option>' + CONFIG.ratings.map(function (r) { return '<option value="' + r.id + '"' + (v === r.id ? ' selected' : '') + '>' + esc(r.label) + '</option>'; }).join('') + '</select></td>';
-      }
-      h += '</tr>';
-    });
-    h += '</tbody></table></div></section>';
-
-    // Choose
-    h += '<section class="panel" style="--accent:var(--char-2)"><h3>' + esc(t.chooseTitle) + '</h3><div class="chips">' + CONFIG.characteristics.map(function (c) {
+    h += '<p><strong>' + validExplanations(hw).length + ' / ' + CONFIG.words.explainCount + '</strong> complete.' + (issues.length ? ' ' + esc(issues.slice(1).join(' ')) : '') + '</p>';
+    h += '<fieldset><legend>' + esc(t.chooseTitle) + '</legend><div class="chips">' + CONFIG.characteristics.map(function (c) {
       var e = hw.explain[c.id];
       return '<button type="button" class="chip-btn" style="' + charStyle(c.id) + '" id="pick-' + c.id + '" data-action="explain-toggle" data-ch="' + c.id + '" aria-pressed="' + !!(e && e.on) + '">' + esc(c.name) + (sitesDiffer(hw, c.id) ? ' · ' + esc(t.differs) : '') + '</button>';
-    }).join('') + '</div></section>';
+    }).join('') + '</div></fieldset></section>';
 
-    var notes = hwNotes(hw);
+    var notes = hwNotes(hw), spots = hwSpots(hw);
     CONFIG.characteristics.forEach(function (c) {
       var e = hw.explain[c.id];
       if (!e || !e.on) return;
       var base = 'explain.' + c.id;
       var iss = explanationIssues(hw, c.id);
       h += '<section class="panel" style="' + charStyle(c.id) + '"><span class="eyebrow">' + (iss.length ? 'In progress' : '✓ Complete') + '</span><h2>' + esc(c.name) + '</h2><p class="small quiet">' + esc(c.def) + '</p>';
-      for (var s = 0; s < n; s++) {
-        var sd = (e.sites && e.sites[s]) || {};
-        h += '<div class="disc-item" style="' + charStyle(c.id) + '"><h3>' + esc(hwSiteName(hw, s)) + ' ' + ratingPill(finalRating(hw, s, c.id), c.id) + '</h3>';
-        h += textArea(base + '.sites.' + s + '.text', t.perSite, sd.text, { min: CONFIG.words.min, rows: 5 });
-        h += chipGroup(t.factorsAt, CONFIG.factors.map(function (f) { return chip('checkbox', base + '.sites.' + s + '.factors', f.id, f.label, (sd.factors || []).indexOf(f.id) >= 0); }).join(''));
-        h += '</div>';
-      }
-      if (n > 1) h += textArea(base + '.contrast', t.contrastField, e.contrast, { min: CONFIG.words.min, rows: 5 });
-      var tagged = notes.filter(function (x) { return noteTags(hw, x).chars.indexOf(c.id) >= 0; });
+      h += siteRatingsHtml(hw, c.id);
+      h += textArea(base + '.why', t.whyField, e.why, { min: CONFIG.words.whyMin, rows: 6 });
+      h += chipGroup(t.factorsField, CONFIG.factors.map(function (f) { return chip('checkbox', base + '.factors', f.id, f.label, (e.factors || []).indexOf(f.id) >= 0); }).join(''));
       var showAll = !!ui.showAll[c.id];
-      var list = showAll ? notes : tagged;
-      var inner = list.map(function (x) { return chip('checkbox', base + '.refs', x.key, hwSiteName(hw, noteTags(hw, x).site) + ': ' + x.x, (e.refs || []).indexOf(x.key) >= 0); }).join('');
-      h += chipGroup(t.notesField, inner || '<span class="quiet small">' + esc(t.noTagged) + '</span>');
-      h += '<button type="button" class="btn btn-ghost btn-small" data-action="show-all" data-ch="' + c.id + '" id="sa-' + c.id + '">' + esc(showAll ? t.showTagged : t.showAll) + '</button>';
-      h += '<div style="margin-top:1rem">' + textInput(base + '.line', t.lineField, e.line, { min: CONFIG.words.sentenceMin, max: CONFIG.words.sentenceMax }) + '</div>';
-      h += issuesHtml('explain:' + c.id, iss);
-      h += '</section>';
-    });
-    return h;
-  }
-
-  function renderOverall() {
-    var hw = S.homework, t = CONFIG.text.homework;
-    var n = hwSiteCount(hw);
-    var valid = validExplanations(hw);
-    var h = '<section class="panel" style="--accent:var(--char-8)"><span class="deco-dot"></span><h2>' + esc(t.overallTitle) + '</h2><p>' + esc(t.overallHelp) + '</p></section>';
-    for (var si = 0; si < n; si++) {
-      var o = hw.overall[si] || {};
-      var base = 'overall.' + si;
-      h += '<section class="panel" style="--accent:' + SITE_ACCENT[si % SITE_ACCENT.length] + '"><h2>' + esc(hwSiteName(hw, si)) + '</h2>';
-      h += chipGroup(t.levelLabel, CONFIG.overallLevels.map(function (l) { return chip('radio', base + '.level', l.id, l.label, o.level === l.id); }).join(''));
-      h += textArea(base + '.text', t.justify, o.text, { min: CONFIG.words.min, rows: 5 });
-      h += valid.length ? chipGroup(t.basedOn, valid.map(function (c) { return chip('checkbox', base + '.refs', c, CHAR[c].name, (o.refs || []).indexOf(c) >= 0, { style: charStyle(c) }); }).join('')) :
-        '<div class="notice">' + esc(t.noExplained) + '</div>';
-      h += '</section>';
-    }
-    return h;
-  }
-
-  function renderDecline() {
-    var hw = S.homework, t = CONFIG.text.homework;
-    var valid = validExplanations(hw), spots = hwSpots(hw);
-    var rule = t.declineRule.replace('{n}', CONFIG.words.declineCount).replace('{l}', declineLensTarget());
-    var h = '<section class="panel" style="--accent:var(--char-3)"><span class="deco-dot"></span><h2>' + esc(t.declineTitle) + '</h2><p>' + esc(t.declineHelp) + '</p>' +
-      '<p><strong>' + esc(rule) + '</strong></p>';
-    var covered = {};
-    validDeclines(hw).forEach(function (d) { covered[d.lens] = true; });
-    h += '<span class="field-label">' + esc(t.lensCoverage) + '</span><div class="lens-row">' + CONFIG.lenses.map(function (l) {
-      return '<span class="lens-tag' + (covered[l.id] ? ' filled' : '') + (l.colour === 'var(--char-4)' ? ' dark-ink' : '') + '" style="--accent:' + l.colour + '"><span class="pip" aria-hidden="true"></span>' + esc(l.name) +
-        '<span class="sr-only">' + (covered[l.id] ? ': covered' : ': not yet covered') + '</span></span>';
-    }).join('') + '</div></section>';
-
-    if (!hw.decline.length) h += '<div class="notice">' + esc(t.declineNone) + '</div>';
-    hw.decline.forEach(function (d, i) {
-      var base = 'decline.' + i;
-      var iss = declineIssues(d);
-      var accent = LENS[d.lens] ? LENS[d.lens].colour : 'var(--char-3)';
-      h += '<section class="panel" style="--accent:' + accent + '"><span class="eyebrow">' + (iss.length ? 'In progress' : '✓ Complete') + '</span><h2>' + esc(t.declineItem) + ' ' + (i + 1) + '</h2>';
-      h += chipGroup(t.declineClaim, CONFIG.claims.map(function (cl) { return chip('radio', base + '.claim', cl.id, cl.name + ': ' + cl.def, d.claim === cl.id, { style: '--accent:' + cl.colour }); }).join(''), { cls: 'grid2' });
-      h += chipGroup(t.declineLens, CONFIG.lenses.map(function (l) { return chip('radio', base + '.lens', l.id, l.name + ' · ' + l.focus, d.lens === l.id, { style: '--accent:' + l.colour }); }).join(''));
-      h += chipGroup(t.declineFactor, CONFIG.factors.map(function (f) { return chip('radio', base + '.factor', f.id, f.label, d.factor === f.id); }).join(''));
-      var ground = valid.map(function (c) { return chip('checkbox', base + '.refs', 'x:' + c, 'Explanation: ' + CHAR[c].name, (d.refs || []).indexOf('x:' + c) >= 0, { style: charStyle(c) }); })
-        .concat(spots.map(function (x) { return chip('checkbox', base + '.refs', 'p:' + x.key, 'Spotted: ' + spotLabel(x), (d.refs || []).indexOf('p:' + x.key) >= 0, { style: '--accent:var(--char-7)' }); })).join('');
-      h += chipGroup(t.declineGround, ground || '<span class="quiet small">' + esc(t.declineNoGround) + '</span>');
-      h += textArea(base + '.mechanism', t.declineMechanism, d.mechanism, { min: CONFIG.words.min, rows: 6 });
-      h += textArea(base + '.evidence', t.declineEvidence, d.evidence, { min: CONFIG.words.min, rows: 5 });
-      h += textInput(base + '.line', t.declineLine, d.line, { min: CONFIG.words.sentenceMin, max: CONFIG.words.sentenceMax });
-      h += issuesHtml('decline:' + i, iss);
-      h += '<div class="btn-row" style="margin-top:0.75rem">';
-      if (ui.delDecline === d.id) {
-        h += '<button type="button" class="btn btn-red btn-small" id="dd2-' + esc(d.id) + '" data-action="decline-del-yes" data-id="' + esc(d.id) + '">' + esc(t.declineRemoveConfirm) + '</button>' +
-          '<button type="button" class="btn btn-ghost btn-small" data-action="decline-del-no">' + esc(t.declineCancel) + '</button>';
-      } else {
-        h += '<button type="button" class="btn btn-ghost btn-small" id="dd-' + esc(d.id) + '" data-action="decline-del" data-id="' + esc(d.id) + '">' + esc(t.declineRemove) + '</button>';
-      }
-      h += '</div></section>';
-    });
-    if (hw.decline.length < CONFIG.words.declineMax) h += '<div class="btn-row"><button type="button" class="btn btn-red" id="decline-add" data-action="decline-add">' + esc(t.declineAdd) + '</button></div>';
-    return h;
-  }
-
-  function renderClaims() {
-    var hw = S.homework, t = CONFIG.text.homework;
-    var h = '<section class="panel" style="--accent:var(--char-2)"><span class="deco-dot"></span><h2>' + esc(t.claimsTitle) + '</h2><p>' + esc(t.claimsHelp) + '</p></section>';
-    h += '<section class="banner" style="--accent:var(--char-1)"><span class="eyebrow">Snapshot</span><p style="font-size:1.1rem;font-weight:600">' + esc(CONFIG.snapshotNote) + '</p></section>';
-    var notes = hwNotes(hw);
-    var spots = hwSpots(hw);
-    var valid = validExplanations(hw);
-    var declines = validDeclines(hw);
-    CONFIG.claims.forEach(function (cl) {
-      var e = hw.claims[cl.id] || {};
-      var base = 'claims.' + cl.id;
-      h += '<section class="panel" style="--accent:' + cl.colour + '"><div class="claim-head"><div class="ch-name">' + esc(cl.name) + '</div><div class="ch-def">' + esc(cl.def) + '</div></div>';
-      h += chipGroup(t.scopeLabel, CONFIG.scopeOptions.map(function (o) { return chip('radio', base + '.scope', o.id, o.label, e.scope === o.id); }).join(''));
-      h += textArea(base + '.why', t.whyField, e.why, { min: CONFIG.words.min, rows: 5 });
-      h += textArea(base + '.suggests', t.suggestsField, e.suggests, { rows: 4 });
-      var tagged = notes.filter(function (x) { return noteTags(hw, x).claims.indexOf(cl.id) >= 0; });
-      var refChips = tagged.map(function (x) { return chip('checkbox', base + '.refs', 'n:' + x.key, hwSiteName(hw, noteTags(hw, x).site) + ': ' + x.x, (e.refs || []).indexOf('n:' + x.key) >= 0); })
-        .concat(valid.map(function (c) { return chip('checkbox', base + '.refs', 'x:' + c, 'Explanation: ' + CHAR[c].name, (e.refs || []).indexOf('x:' + c) >= 0, { style: charStyle(c) }); }))
-        .concat(declines.filter(function (d) { return d.claim === cl.id; }).map(function (d) { return chip('checkbox', base + '.refs', 'd:' + d.id, 'Candidate explanation: ' + declineLabel(d), (e.refs || []).indexOf('d:' + d.id) >= 0, { style: '--accent:' + LENS[d.lens].colour }); }))
+      var list = showAll ? notes : notes.filter(function (x) { return x.c === c.id; });
+      var inner = list.map(function (x) { return chip('checkbox', base + '.refs', 'n:' + x.key, hwSiteName(hw, x.s) + ': ' + x.x, (e.refs || []).indexOf('n:' + x.key) >= 0); })
         .concat(spots.map(function (x) { return chip('checkbox', base + '.refs', 'p:' + x.key, 'Spotted: ' + spotLabel(x), (e.refs || []).indexOf('p:' + x.key) >= 0, { style: '--accent:var(--char-7)' }); })).join('');
-      h += chipGroup(t.suggestsLinks, refChips || '<span class="quiet small">Tag notes to this claim in step 1, complete explanations in step 3, or load places spotted on the walk, to link them here.</span>');
-      h += textArea(base + '.needed', t.neededField, e.needed, { min: CONFIG.words.min, rows: 5 });
-      if (e.scope === 'speaks' || e.scope === 'partly') h += textInput(base + '.finding', t.findingField, e.finding, { min: CONFIG.words.sentenceMin, max: CONFIG.words.sentenceMax });
-      h += issuesHtml('claim:' + cl.id, claimIssues(e));
+      h += chipGroup(t.evidenceField, inner || '<span class="quiet small">' + esc(t.noTagged) + '</span>');
+      h += '<button type="button" class="btn btn-ghost btn-small" data-action="show-all" data-ch="' + c.id + '" id="sa-' + c.id + '">' + esc(showAll ? t.showTagged : t.showAll) + '</button>';
+      h += '<div style="margin-top:1rem">' + textArea(base + '.change', changeLabel(hw, c.id), e.change, { min: CONFIG.words.min, rows: 4 }) + '</div>';
+      h += '<div class="decline-block"><h3>' + esc(t.declineHead) + '</h3><p class="small">' + esc(CONFIG.snapshotNote) + '</p>';
+      h += chipGroup(t.claimField, CONFIG.claims.map(function (cl) { return chip('radio', base + '.claim', cl.id, cl.name + ': ' + cl.def, e.claim === cl.id, { style: '--accent:' + cl.colour }); }).join(''), { cls: 'grid2' });
+      h += textArea(base + '.how', t.howField, e.how, { min: CONFIG.words.min, rows: 4 });
+      h += chipGroup(t.lensField, [chip('radio', base + '.lens', '', t.noLens, !e.lens)].concat(CONFIG.lenses.map(function (l) { return chip('radio', base + '.lens', l.id, l.name + ' · ' + l.focus, e.lens === l.id, { style: '--accent:' + l.colour }); })).join(''));
+      h += '</div>';
+      h += textInput(base + '.line', t.lineField, e.line, { min: CONFIG.words.sentenceMin, max: CONFIG.words.sentenceMax });
+      h += issuesHtml(c.id, iss);
       h += '</section>';
     });
     return h;
@@ -3439,56 +3263,47 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       '<button type="button" class="btn btn-ghost" data-action="export">' + esc(CONFIG.text.tools.exportJson) + '</button></div></section>';
     var cards = buildCards(hw);
     h += '<section class="panel" style="--accent:var(--char-1)"><h3>' + esc(t.cardsTitle) + '</h3>';
-    if (!cards.chars.length) h += '<p class="notice">' + esc(t.noCharCards) + '</p>';
-    if (!cards.declines.length) h += '<p class="notice">' + esc(t.noDeclineCards) + '</p>';
-    if (!cards.claims.length) h += '<p class="notice">' + esc(t.noClaimCards) + '</p>';
-    h += '<div class="preview-cards">' + cards.chars.concat(cards.declines, cards.claims).join('') + '</div></section>';
+    if (!cards.length) h += '<p class="notice">' + esc(t.noCards) + '</p>';
+    h += '<div class="preview-cards">' + cards.join('') + '</div></section>';
     return h;
   }
 
   // =====================================================================
   // Homework outputs: cards, report, text
   // =====================================================================
-  function hwSitesLabel(hw) { var out = []; for (var i = 0; i < hwSiteCount(hw); i++) out.push(hwSiteName(hw, i)); return out.join(' · '); }
-  function scopeLabel(id) { for (var i = 0; i < CONFIG.scopeOptions.length; i++) if (CONFIG.scopeOptions[i].id === id) return CONFIG.scopeOptions[i].label; return ''; }
-  function levelLabel(id) { for (var i = 0; i < CONFIG.overallLevels.length; i++) if (CONFIG.overallLevels[i].id === id) return CONFIG.overallLevels[i].label; return ''; }
+  function ratingsLine(hw, c) {
+    var parts = [];
+    for (var si = 0; si < hwSiteCount(hw); si++) { var r = finalRating(hw, si, c); parts.push(hwSiteName(hw, si) + ': ' + (r ? RATING[r].label : 'not rated')); }
+    return parts.join(' · ');
+  }
+  function claimLine(e) {
+    return (CLAIM[e.claim] ? CLAIM[e.claim].name + ': ' + CLAIM[e.claim].def : 'No claim chosen') + (LENS[e.lens] ? ' (' + LENS[e.lens].name.toLowerCase() + ' lens)' : '');
+  }
 
+  // One A6 claim-wall card per complete explanation.
   function buildCards(hw) {
     var name = String(hw.me.name || '').trim() || 'Name not given';
     var eyebrow = 'Week 5 · Field visit · Group ' + (hw.group == null ? '?' : hw.group);
-    var chars = validExplanations(hw).map(function (c) {
+    return validExplanations(hw).map(function (c) {
       var e = hw.explain[c];
-      return '<div class="a6" style="' + charStyle(c) + '"><div class="a6-eyebrow">' + esc(eyebrow) + ' · Characteristic</div><div class="a6-bar"></div>' +
-        '<div class="a6-title">' + esc(CHAR[c].name) + '</div><div class="a6-label">Sites</div><div class="a6-text">' + esc(hwSitesLabel(hw)) + '</div>' +
-        '<div class="a6-label">Explanation</div><div class="a6-text">' + esc(e.line) + '</div><div class="a6-foot">' + esc(name) + '</div></div>';
+      return '<div class="a6" style="' + charStyle(c) + '"><div class="a6-eyebrow">' + esc(eyebrow) + '</div><div class="a6-bar"></div>' +
+        '<div class="a6-title">' + esc(CHAR[c].name) + '</div><div class="a6-label">At our sites</div><div class="a6-text">' + esc(ratingsLine(hw, c)) + '</div>' +
+        '<div class="a6-label">Why</div><div class="a6-text">' + esc(e.line) + '</div>' +
+        '<div class="a6-label">Could help explain</div><div class="a6-text">' + esc(claimLine(e)) + '</div><div class="a6-foot">' + esc(name) + '</div></div>';
     });
-    var declines = validDeclines(hw).map(function (d) {
-      var cl = CLAIM[d.claim], lens = LENS[d.lens];
-      return '<div class="a6" style="--accent:' + lens.colour + '"><div class="a6-eyebrow">' + esc(eyebrow) + ' · Candidate explanation</div><div class="a6-bar"></div>' +
-        '<div class="a6-title">' + esc(cl.name) + ': ' + esc(cl.def) + '</div><div class="a6-label">Lens</div><div class="a6-text">' + esc(lens.name) + ' · ' + esc(FACTOR[d.factor].label) + '</div>' +
-        '<div class="a6-label">Explanation</div><div class="a6-text">' + esc(d.line) + '</div>' +
-        '<div class="a6-label">Evidence that would test it</div><div class="a6-text">' + esc(d.evidence) + '</div><div class="a6-foot">' + esc(name) + '</div></div>';
-    });
-    var claims = CONFIG.claims.filter(function (cl) { return claimCardEligible(hw.claims[cl.id]); }).map(function (cl) {
-      var e = hw.claims[cl.id];
-      return '<div class="a6" style="--accent:' + cl.colour + '"><div class="a6-eyebrow">' + esc(eyebrow) + ' · Claim wall</div><div class="a6-bar"></div>' +
-        '<div class="a6-title">' + esc(cl.name) + ': ' + esc(cl.def) + '</div><div class="a6-label">Sites</div><div class="a6-text">' + esc(hwSitesLabel(hw)) + '</div>' +
-        '<div class="a6-label">Scope</div><div class="a6-text">' + esc(scopeLabel(e.scope)) + '</div>' +
-        '<div class="a6-label">Finding</div><div class="a6-text">' + esc(e.finding) + '</div>' +
-        '<div class="a6-label">Evidence still needed</div><div class="a6-text">' + esc(e.needed) + '</div><div class="a6-foot">' + esc(name) + '</div></div>';
-    });
-    return { chars: chars, declines: declines, claims: claims };
   }
   function buildCardsHtml(hw) {
-    var all = buildCards(hw);
-    var cards = all.chars.concat(all.declines, all.claims);
+    var cards = buildCards(hw);
     if (!cards.length) return '<div class="p-doc"><p>No cards to print yet.</p></div>';
     var h = '';
     for (var i = 0; i < cards.length; i += 4) h += '<section class="card-sheet">' + cards.slice(i, i + 4).join('') + '</section>';
     return h;
   }
 
-  function noteByKey(hw, key) { var all = hwNotes(hw); for (var i = 0; i < all.length; i++) if (all[i].key === key) return all[i]; return null; }
+  function disputeLine(hw, d) {
+    var f = finalRating(hw, d.si, d.c);
+    return CHAR[d.c].name + ' at ' + hwSiteName(hw, d.si) + ': ' + d.cell.ratings.map(function (x) { return x.l + ' ' + RATING[x.rating].label; }).join(', ') + ' → ' + (f ? RATING[f].label : 'unresolved');
+  }
 
   function buildReportHtml(hw) {
     var n = hwSiteCount(hw);
@@ -3499,7 +3314,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       var site = SITE[hwRoute(hw).sites[si]];
       h += '<p class="p-meta"><strong>' + esc(site.name) + '</strong> · ' + esc(site.type) + '</p>';
     }
-    h += '<h2 style="--accent:var(--char-4)">Overview</h2><table><thead><tr><th>Characteristic</th>';
+    h += '<h2 style="--accent:var(--char-4)">Comparison</h2><table><thead><tr><th>Characteristic</th>';
     for (var s = 0; s < n; s++) h += '<th>' + esc(hwSiteName(hw, s)) + '</th>';
     h += '</tr></thead><tbody>';
     CONFIG.characteristics.forEach(function (c) {
@@ -3508,16 +3323,8 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       h += '</tr>';
     });
     h += '</tbody></table>';
-
-    var dl = doubleRatedList(hw);
-    if (dl.length) {
-      h += '<h2 style="--accent:var(--char-6)">Agreement</h2>';
-      dl.forEach(function (d) {
-        var a = hw.agree[d.si + '|' + d.c] || {};
-        h += '<div class="p-block" style="' + charStyle(d.c) + '"><h3>' + esc(CHAR[d.c].name) + ' · ' + esc(hwSiteName(hw, d.si)) + '</h3><p>' +
-          esc(d.cell.ratings.map(function (x) { return x.l + ': ' + RATING[x.rating].label; }).join('; ')) + ' → <strong>' + esc(a.rating ? RATING[a.rating].label : 'unresolved') + '</strong></p><p>' + esc(a.reason || '') + '</p></div>';
-      });
-    }
+    var dl = disputedCells(hw);
+    if (dl.length) h += '<p><strong>Where observers differed:</strong></p><ul>' + dl.map(function (d) { return '<li>' + esc(disputeLine(hw, d)) + '</li>'; }).join('') + '</ul>';
 
     h += '<h2 style="--accent:var(--char-1)">Explanations</h2>';
     var any = false;
@@ -3525,54 +3332,23 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       var e = hw.explain[c.id];
       if (!e || !e.on) return;
       any = true;
-      h += '<div class="p-block" style="' + charStyle(c.id) + '"><h3>' + esc(c.name) + '</h3>';
-      for (var s3 = 0; s3 < n; s3++) {
-        var sd = (e.sites && e.sites[s3]) || {};
-        h += '<p><strong>' + esc(hwSiteName(hw, s3)) + ' (' + esc(finalRating(hw, s3, c.id) ? RATING[finalRating(hw, s3, c.id)].label : 'not rated') + '):</strong> ' + esc(sd.text || '') +
-          (sd.factors && sd.factors.length ? ' <em>[' + esc(sd.factors.map(function (f) { return FACTOR[f].label; }).join(', ')) + ']</em>' : '') + '</p>';
-      }
-      if (n > 1) h += '<p><strong>Contrast:</strong> ' + esc(e.contrast || '') + '</p>';
-      var refs = (e.refs || []).map(function (k) { return noteByKey(hw, k); }).filter(Boolean);
-      if (refs.length) h += '<p><strong>Supporting notes:</strong></p><ul>' + refs.map(function (x) { return '<li>' + esc(x.x) + ' (' + esc(noteLabel(x)) + ')</li>'; }).join('') + '</ul>';
-      h += '<p><strong>In one sentence:</strong> ' + esc(e.line || '') + '</p></div>';
+      var refs = (e.refs || []).map(function (r) { return refLabel(hw, r); }).filter(Boolean);
+      h += '<div class="p-block" style="' + charStyle(c.id) + '"><h3>' + esc(c.name) + '</h3><p class="p-meta">' + esc(ratingsLine(hw, c.id)) + '</p>' +
+        '<p><strong>Why:</strong> ' + esc(e.why || '') + '</p>' +
+        (e.factors && e.factors.length ? '<p><strong>What accounts for it:</strong> ' + esc(e.factors.map(function (f) { return FACTOR[f] ? FACTOR[f].label : f; }).join(', ')) + '</p>' : '') +
+        (refs.length ? '<p><strong>Evidence:</strong></p><ul>' + refs.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' : '') +
+        '<p><strong>What would have to be different:</strong> ' + esc(e.change || '') + '</p>' +
+        '<p><strong>Could help explain:</strong> ' + esc(claimLine(e)) + '</p><p><strong>How:</strong> ' + esc(e.how || '') + '</p>' +
+        '<p><strong>In one sentence:</strong> ' + esc(e.line || '') + '</p></div>';
     });
     if (!any) h += '<p>No explanations yet.</p>';
-
-    h += '<h2 style="--accent:var(--char-8)">Overall</h2>';
-    for (var s4 = 0; s4 < n; s4++) {
-      var o = hw.overall[s4] || {};
-      h += '<div class="p-block" style="--accent:' + SITE_ACCENT[s4 % SITE_ACCENT.length] + '"><h3>' + esc(hwSiteName(hw, s4)) + ': ' + esc(o.level ? levelLabel(o.level) : 'not judged') + '</h3><p>' + esc(o.text || '') + '</p>' +
-        (o.refs && o.refs.length ? '<p><em>Based on: ' + esc(o.refs.map(function (c) { return CHAR[c] ? CHAR[c].name : c; }).join(', ')) + '</em></p>' : '') + '</div>';
-    }
-
-    h += '<h2 style="--accent:var(--char-3)">Candidate explanations of decline</h2>';
-    if (!hw.decline.length) h += '<p>None yet.</p>';
-    hw.decline.forEach(function (d, i) {
-      var lens = LENS[d.lens];
-      h += '<div class="p-block" style="--accent:' + (lens ? lens.colour : 'var(--char-3)') + '"><h3>' + (i + 1) + '. ' + esc(CLAIM[d.claim] ? CLAIM[d.claim].name + ': ' + CLAIM[d.claim].def : 'No claim chosen') + '</h3>' +
-        '<p><strong>Lens:</strong> ' + esc(lens ? lens.name : 'not chosen') + ' · <strong>What was seen at work:</strong> ' + esc(FACTOR[d.factor] ? FACTOR[d.factor].label : 'not chosen') + '</p>' +
-        (d.refs && d.refs.length ? '<p><em>Rests on: ' + esc(d.refs.map(function (r) { return refLabel(hw, r); }).join('; ')) + '</em></p>' : '') +
-        '<p><strong>Mechanism:</strong> ' + esc(d.mechanism || '') + '</p><p><strong>Evidence that would test it:</strong> ' + esc(d.evidence || '') + '</p>' +
-        '<p><strong>In one sentence:</strong> ' + esc(d.line || '') + '</p></div>';
-    });
-
-    h += '<h2 style="--accent:var(--char-2)">Decline claims</h2><p><em>' + esc(CONFIG.snapshotNote) + '</em></p>';
-    CONFIG.claims.forEach(function (cl) {
-      var e = hw.claims[cl.id] || {};
-      h += '<div class="p-block" style="--accent:' + cl.colour + '"><h3>' + esc(cl.name) + ': ' + esc(cl.def) + '</h3><p><strong>Scope:</strong> ' + esc(scopeLabel(e.scope) || 'not judged') + '</p>' +
-        '<p><strong>Why:</strong> ' + esc(e.why || '') + '</p>' +
-        (e.suggests ? '<p><strong>What the visit suggests:</strong> ' + esc(e.suggests) + '</p>' : '') +
-        (e.refs && e.refs.length ? '<p><em>Linked: ' + esc(e.refs.map(function (r) { return refLabel(hw, r); }).join('; ')) + '</em></p>' : '') +
-        '<p><strong>Evidence needed:</strong> ' + esc(e.needed || '') + '</p>' +
-        ((e.scope === 'speaks' || e.scope === 'partly') ? '<p><strong>Finding:</strong> ' + esc(e.finding || '') + '</p>' : '') + '</div>';
-    });
+    h += '<p><em>' + esc(CONFIG.snapshotNote) + '</em></p>';
 
     var notes = hwNotes(hw);
     if (notes.length) {
-      h += '<h2 style="--accent:var(--char-5)">Field notes</h2><table><thead><tr><th>Note</th><th>Site</th><th>Characteristic(s)</th><th>Produces or blocks</th></tr></thead><tbody>';
+      h += '<h2 style="--accent:var(--char-5)">Field notes</h2><table><thead><tr><th>Note</th><th>Site</th><th>Characteristic</th><th>Produces or blocks</th></tr></thead><tbody>';
       notes.forEach(function (x) {
-        var tg = noteTags(hw, x);
-        h += '<tr><td>' + esc(x.x) + '<br><span class="p-meta">' + esc(noteLabel(x)) + '</span></td><td>' + esc(hwSiteName(hw, tg.site)) + '</td><td>' + esc(tg.chars.map(function (c) { return CHAR[c] ? CHAR[c].name : c; }).join(', ')) + '</td><td>' + esc(tg.factor ? FACTOR[tg.factor].label : '') + '</td></tr>';
+        h += '<tr><td>' + esc(x.x) + '<br><span class="p-meta">' + esc(noteLabel(x)) + '</span></td><td>' + esc(hwSiteName(hw, x.s)) + '</td><td>' + esc(CHAR[x.c] ? CHAR[x.c].name : x.c) + '</td><td>' + esc(x.f && FACTOR[x.f] ? FACTOR[x.f].label : '') + '</td></tr>';
       });
       h += '</tbody></table>';
     }
@@ -3586,15 +3362,6 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     }
     return h + '</div>';
   }
-  function declineById(hw, id) { var all = hw.decline || []; for (var i = 0; i < all.length; i++) if (all[i].id === id) return all[i]; return null; }
-  function spotByKey(hw, key) { var all = hwSpots(hw); for (var i = 0; i < all.length; i++) if (all[i].key === key) return all[i]; return null; }
-  function refLabel(hw, r) {
-    if (r.indexOf('x:') === 0) return 'Explanation: ' + (CHAR[r.slice(2)] ? CHAR[r.slice(2)].name : r);
-    if (r.indexOf('p:') === 0) { var sp = spotByKey(hw, r.slice(2)); return sp ? 'Spotted: ' + spotLabel(sp) : r; }
-    if (r.indexOf('d:') === 0) { var dd = declineById(hw, r.slice(2)); return dd ? 'Candidate explanation: ' + declineLabel(dd) : r; }
-    var n = noteByKey(hw, r.slice(2));
-    return n ? 'Note: ' + n.x : r;
-  }
 
   function buildReportText(hw) {
     var n = hwSiteCount(hw);
@@ -3604,62 +3371,31 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     line((hw.me.name || 'Name not given') + ' | Observer ' + (hw.me.letter || '?') + ' | Group ' + (hw.group == null ? '?' : hw.group));
     if (hw.routeIndex != null) line('Route ' + (hw.routeIndex + 1) + ': ' + routeLabel(hw.routeIndex));
     line('');
-    line('OVERVIEW');
+    line('COMPARISON');
     CONFIG.characteristics.forEach(function (c) {
       var parts = [];
       for (var s = 0; s < n; s++) { var r = finalRating(hw, s, c.id); parts.push(hwSiteName(hw, s) + ': ' + (r ? RATING[r].label : 'not rated')); }
       line('- ' + c.name + ' | ' + parts.join(' | '));
     });
-    var dl = doubleRatedList(hw);
+    var dl = disputedCells(hw);
     if (dl.length) {
-      line(''); line('AGREEMENT');
-      dl.forEach(function (d) {
-        var a = hw.agree[d.si + '|' + d.c] || {};
-        line('- ' + CHAR[d.c].name + ', ' + hwSiteName(hw, d.si) + ': ' + d.cell.ratings.map(function (x) { return x.l + ' ' + RATING[x.rating].label; }).join(', ') + ' -> ' + (a.rating ? RATING[a.rating].label : 'unresolved'));
-        if (a.reason) line('  ' + a.reason);
-      });
+      line('Where observers differed:');
+      dl.forEach(function (d) { line('- ' + disputeLine(hw, d).replace('→', '->')); });
     }
     line(''); line('EXPLANATIONS');
     CONFIG.characteristics.forEach(function (c) {
       var e = hw.explain[c.id];
       if (!e || !e.on) return;
-      line('* ' + c.name.toUpperCase());
-      for (var s = 0; s < n; s++) {
-        var sd = (e.sites && e.sites[s]) || {};
-        line('  ' + hwSiteName(hw, s) + ': ' + (sd.text || '') + (sd.factors && sd.factors.length ? ' [' + sd.factors.map(function (f) { return FACTOR[f].label; }).join(', ') + ']' : ''));
-      }
-      if (n > 1) line('  Contrast: ' + (e.contrast || ''));
-      (e.refs || []).forEach(function (k) { var x = noteByKey(hw, k); if (x) line('  Note: ' + x.x + ' (' + noteLabel(x) + ')'); });
+      line('* ' + c.name.toUpperCase() + ' (' + ratingsLine(hw, c.id) + ')');
+      line('  Why: ' + (e.why || ''));
+      if (e.factors && e.factors.length) line('  What accounts for it: ' + e.factors.map(function (f) { return FACTOR[f] ? FACTOR[f].label : f; }).join(', '));
+      (e.refs || []).forEach(function (r) { var x = refLabel(hw, r); if (x) line('  Evidence: ' + x); });
+      line('  What would have to be different: ' + (e.change || ''));
+      line('  Could help explain: ' + claimLine(e));
+      line('  How: ' + (e.how || ''));
       line('  In one sentence: ' + (e.line || ''));
     });
-    line(''); line('OVERALL');
-    for (var s5 = 0; s5 < n; s5++) {
-      var o = hw.overall[s5] || {};
-      line('- ' + hwSiteName(hw, s5) + ': ' + (o.level ? levelLabel(o.level) : 'not judged'));
-      if (o.text) line('  ' + o.text);
-    }
-    line(''); line('CANDIDATE EXPLANATIONS OF DECLINE');
-    if (!hw.decline.length) line('- none');
-    hw.decline.forEach(function (d, i) {
-      line('* ' + (i + 1) + '. ' + (CLAIM[d.claim] ? CLAIM[d.claim].name.toUpperCase() + ': ' + CLAIM[d.claim].def : 'No claim chosen'));
-      line('  Lens: ' + (LENS[d.lens] ? LENS[d.lens].name : 'not chosen') + ' | What was seen at work: ' + (FACTOR[d.factor] ? FACTOR[d.factor].label : 'not chosen'));
-      (d.refs || []).forEach(function (r) { line('  Rests on: ' + refLabel(hw, r)); });
-      line('  Mechanism: ' + (d.mechanism || ''));
-      line('  Evidence that would test it: ' + (d.evidence || ''));
-      line('  In one sentence: ' + (d.line || ''));
-    });
-    line(''); line('DECLINE CLAIMS');
     line(CONFIG.snapshotNote);
-    CONFIG.claims.forEach(function (cl) {
-      var e = hw.claims[cl.id] || {};
-      line('* ' + cl.name.toUpperCase() + ': ' + cl.def);
-      line('  Scope: ' + (scopeLabel(e.scope) || 'not judged'));
-      line('  Why: ' + (e.why || ''));
-      if (e.suggests) line('  What the visit suggests: ' + e.suggests);
-      (e.refs || []).forEach(function (r) { line('  Linked: ' + refLabel(hw, r)); });
-      line('  Evidence needed: ' + (e.needed || ''));
-      if (e.scope === 'speaks' || e.scope === 'partly') line('  Finding: ' + (e.finding || ''));
-    });
     var spots = hwSpots(hw);
     if (spots.length) {
       line(''); line(CONFIG.text.homework.spotTitle.toUpperCase());
@@ -3895,7 +3631,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       case 'reset': ui.confirmReset = true; ui.toolsOpen = true; render(); focusId('reset-yes'); return;
       case 'reset-no': ui.confirmReset = false; break;
       case 'reset-yes':
-        try { localStorage.removeItem(KEYS[mode]); } catch (err) {}
+        try { localStorage.removeItem(KEYS[mode]); if (LEGACY_KEYS[mode]) localStorage.removeItem(LEGACY_KEYS[mode]); } catch (err) {}
         S[mode] = BLANK[mode]();
         ui.confirmReset = false; ui.obsReport = null; ui.hwReport = null; ui.pasteObs = ''; ui.pasteHw = '';
         setStatus('Reset.'); keepStatus = true;
@@ -3984,7 +3720,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       }
       case 'remove-peer': delete st.peers[el.getAttribute('data-letter')]; break;
       // ---- homework
-      case 'htab': st.step = el.getAttribute('data-tab'); ui.delDecline = null; save(); render(); window.scrollTo(0, 0); return;
+      case 'htab': st.step = el.getAttribute('data-tab'); save(); render(); window.scrollTo(0, 0); return;
       case 'hw-from-device': {
         var raw = null;
         try { raw = JSON.parse(localStorage.getItem(KEYS.observer)); } catch (err) { raw = null; }
@@ -3999,31 +3735,10 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         if (rep.added.length || rep.replaced.length) ui.pasteHw = '';
         break;
       }
-      case 'sort-confirm': {
-        var key = el.getAttribute('data-key');
-        ensureSort(key);
-        st.sort[key].ok = !st.sort[key].ok;
-        break;
-      }
       case 'explain-toggle': {
         var c = el.getAttribute('data-ch');
         if (!st.explain[c]) st.explain[c] = blankExplanation();
         st.explain[c].on = !st.explain[c].on;
-        break;
-      }
-      case 'decline-add':
-        if (st.decline.length < CONFIG.words.declineMax) st.decline.push(blankDecline(nextDeclineId(st)));
-        save(); render(); focusId(fid('decline.' + (st.decline.length - 1) + '.claim', CONFIG.claims[0].id)); return;
-      case 'decline-del': ui.delDecline = el.getAttribute('data-id'); render(); focusId('dd2-' + ui.delDecline); return;
-      case 'decline-del-no': { var dk = ui.delDecline; ui.delDecline = null; render(); focusId('dd-' + dk); return; }
-      case 'decline-del-yes': {
-        var did = el.getAttribute('data-id');
-        st.decline = st.decline.filter(function (d) { return d.id !== did; });
-        Object.keys(st.claims).forEach(function (k) {
-          var c = st.claims[k];
-          if (c && Array.isArray(c.refs)) c.refs = c.refs.filter(function (r) { return r !== 'd:' + did; });
-        });
-        ui.delDecline = null;
         break;
       }
       case 'show-all': { var ch = el.getAttribute('data-ch'); ui.showAll[ch] = !ui.showAll[ch]; render(); return; }
@@ -4032,20 +3747,6 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     if (!keepStatus) ui.status = '';
     save();
     render();
-  }
-
-  // Creates the sort entry for a note from its current (default) tags.
-  function ensureSort(key) {
-    var hw = S.homework;
-    if (hw.sort[key]) return;
-    var notes = hwNotes(hw);
-    for (var i = 0; i < notes.length; i++) {
-      if (notes[i].key === key) {
-        var t = noteTags(hw, notes[i]);
-        hw.sort[key] = { chars: t.chars.slice(), site: t.site, factor: t.factor, claims: t.claims.slice(), ok: t.ok };
-        return;
-      }
-    }
   }
 
   // Side effects after a bound value changes.
@@ -4118,7 +3819,6 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     var path = t.getAttribute('data-bind');
     if (!path) return;
     var st = cur();
-    if (mode === 'homework' && path.indexOf('sort.') === 0) ensureSort(path.split('.')[1]);
     if (t.type === 'checkbox' && t.getAttribute('data-multi')) {
       var arr = getPath(st, path);
       arr = Array.isArray(arr) ? arr.slice() : [];
@@ -4262,9 +3962,12 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     extractShareCodes: extractShareCodes,
     mergeRecords: mergeRecords,
     mergedGrid: mergedGrid,
-    claimCardEligible: claimCardEligible,
-    claimIssues: claimIssues,
     explanationIssues: explanationIssues,
+    validExplanations: validExplanations,
+    disputedCells: disputedCells,
+    weakestSites: weakestSites,
+    migrateHomework: migrateHomework,
+    normalise: normalise,
     stepIssues: stepIssues,
     finalRating: finalRating,
     sitesDiffer: sitesDiffer,
@@ -4276,9 +3979,6 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     blankHomework: blankHomework,
     blankInstructor: blankInstructor,
     blankExplanation: blankExplanation,
-    blankDecline: blankDecline,
-    declineIssues: declineIssues,
-    validDeclines: validDeclines,
     esc: esc
   };
 
