@@ -1215,7 +1215,7 @@
 
     suite('Field Visit — Timings');
 
-    var SESSION = { start: '12:15', returnBy: '13:05', minObsMinutes: 10 };
+    var SESSION = { start: '12:15', returnBy: '13:15', minObsMinutes: 10 };
 
     assert('two-site route splits observation time and derives clocks', function() {
       var t = W5.routeTimes({ sites: ['a', 'b'], walkOut: 10, walkBetween: 5, walkBack: 10 }, SESSION);
