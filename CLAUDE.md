@@ -44,6 +44,7 @@ npx playwright test --headed  # or open http://localhost:8080/test.html
 - All HTML files must declare `<meta charset="utf-8">` before any content
 - JavaScript strings use straight quotes (`'` or `"`), never Unicode smart/curly quotes
 - No external dependencies — everything is inline
+- Every HTML file carries the house favicon as an inline `<link rel="icon" type="image/png" href="data:image/png;base64,...">` directly after `<title>`, preceded by a credit comment (no URL in the comment: `mondi.html` tests forbid absolute URLs). Copy it from `index.html` into new files. The icon requires attribution, which is shown in the `index.html` footer: "Home icons created by Good Ware - Flaticon"
 
 ## Visual Style
 
