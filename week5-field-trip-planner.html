@@ -33,7 +33,10 @@
     JSON keys: v version, g group, r route index, h route hash, s group size,
     l observer letter, n name, sk skipped join steps, ra ratings by site
     index then characteristic id, no notes [{i id, s site index,
-    c characteristic id, x text, t time, f factor id}], at created (ms).
+    c characteristic id, x text, t time, f factor id}], sp places spotted on
+    the walk [{i id, x what and where, y why, k status id, t time}]
+    (optional: codes without sp still load), at created (ms).
+    Site indices run 0-2: a route has one to three sites.
 -->
 <style>
 :root {
@@ -384,9 +387,15 @@ input.code-input { font-size: 1.8rem; font-weight: 800; letter-spacing: 0.4em; t
   padding: 0.5rem 0.9rem; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.04em;
   margin: 0 0 1rem; border-bottom: 4px solid var(--char-4);
 }
+.spot-reminder {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem;
+  border-left: 6px solid var(--char-7); background: rgba(204,104,48,0.10); padding: 0.5rem 0.75rem;
+  margin-bottom: 1rem; font-size: 0.9rem; font-weight: 600;
+}
 .ethics-strip .es-extra { display: block; font-weight: 600; margin-top: 0.2rem; }
 .site-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.9rem; }
 .site-switch.single { grid-template-columns: 1fr; }
+.site-switch.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .site-btn {
   font-family: inherit; text-align: left; border: 2px solid var(--border); background: var(--bg-card);
   padding: 0.6rem 0.8rem; min-height: 60px; cursor: pointer; color: var(--text);
@@ -824,7 +833,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     // Shown in the page header.
     eyebrow: 'Activity 8 · Week 5 · Explain',
     title: 'Field Visit',
-    lede: 'A London field visit in three parts. In the field, each observer looks for different Oldenburg characteristics at two sites. In the debrief and the homework, you explain what about each place produces or blocks each characteristic.',
+    lede: 'A London field visit in three parts. In the field, each observer looks for different Oldenburg characteristics at two or three sites, and notes any other possible third places passed on the way. In the debrief and the homework, you explain what about each place produces or blocks each characteristic.',
 
     // ----- Session times (24-hour clock, HH:MM) -----
     // start: groups leave the briefing room. returnBy: groups are back
@@ -845,7 +854,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
 
     // ----- Groups -----
     groups: {
-      defaultCount: 5, // groups shown when the console is first opened
+      defaultCount: 4, // groups shown when the console is first opened (one per route)
       max: 12          // join codes support up to 30
     },
 
@@ -879,28 +888,28 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         perimeterOnly: false, restrictionNote: '',
         smallVenue: true,
         venueNote: 'PLACEHOLDER: house rules for observers at Valencia Cafe (how many at once, purchases, maximum stay).',
-        facilitatorNote: 'Pairs with the Brunswick Centre. The route\'s most traditional candidate, so observers may rate it generously on atmosphere alone: ask them to name what produces each characteristic (cost of staying, staff behaviour, layout) rather than describe the mood. Small premises: split the group so the house rules on numbers are kept.' },
+        facilitatorNote: 'Shares a route with Coram\'s Fields and the Brunswick Centre. The route\'s most traditional candidate, so observers may rate it generously on atmosphere alone: ask them to name what produces each characteristic (cost of staying, staff behaviour, layout) rather than describe the mood. Small premises: split the group so the house rules on numbers are kept.' },
       { id: 'brunswick', name: 'The Brunswick Centre',
         lat: 51.5240, lon: -0.1240,
         type: 'Mixed-use residential and retail complex with open concourse',
         address: 'Bernard Street, London WC1N 1BS',
         perimeterOnly: false, restrictionNote: '',
         smallVenue: false, venueNote: '',
-        facilitatorNote: 'Pairs with Valencia Cafe, a few minutes apart. Steer observers to the difference between space people pass through and space people stay in: where can someone sit, and does staying depend on buying? For ownership and governance, ask who sets the rules on the concourse and how an observer could tell from signage alone.' },
-      { id: 'kimpton', name: 'Kimpton Fitzroy coffee lounge',
+        facilitatorNote: 'Shares a route with Valencia Cafe and Coram\'s Fields. Steer observers to the difference between space people pass through and space people stay in: where can someone sit, and does staying depend on buying? For ownership and governance, ask who sets the rules on the concourse and how an observer could tell from signage alone.' },
+      { id: 'kimpton', name: 'Kimpton Fitzroy lobby and bar',
         lat: 51.5227, lon: -0.1250,
-        type: 'Hotel lobby coffee lounge (commercial, semi-public)',
+        type: 'Hotel lobby and bar (commercial, semi-public)',
         address: '1-8 Russell Square, London WC1B 5BE',
         perimeterOnly: false, restrictionNote: '',
         smallVenue: false, venueNote: '',
-        facilitatorNote: 'Pairs with the British Museum: both can be walked into, but one is a commercial hotel lounge and the other a free national institution. Neutral ground and low profile are the key characteristics: what signals whether the lounge is meant for guests or paying customers? Observers go in as ordinary users, a few at a time, and must not test staff by sitting without buying.' },
+        facilitatorNote: 'Pairs with the British Museum: both can be walked into, but one is a commercial hotel lobby and bar and the other a free national institution. Neutral ground and low profile are the key characteristics: what signals whether the lobby and the bar are meant for hotel guests, paying customers or anyone? Ask observers to compare the two spaces: where does staying start to depend on buying? Observers go in as ordinary users, a few at a time, and must not test staff by sitting without buying.' },
       { id: 'museum', name: 'British Museum',
         lat: 51.5193, lon: -0.1280,
         type: 'National public institution (museum, Great Court and forecourt)',
         address: 'Great Russell Street, London WC1B 3DG',
         perimeterOnly: false, restrictionNote: '',
         smallVenue: false, venueNote: '',
-        facilitatorNote: 'Suggested areas: the forecourt and the Great Court, not the galleries. The task is the space people share, not the exhibits. Allow time for the entrance security check. Contrast with the Kimpton lounge: probe what scale, visitor turnover and the purpose of a visit do to conversation and to the regulars. Do not give observers expected ratings.' },
+        facilitatorNote: 'Suggested areas: the forecourt and the Great Court, not the galleries. The task is the space people share, not the exhibits. Allow time for the entrance security check. Contrast with the Kimpton lobby and bar: probe what scale, visitor turnover and the purpose of a visit do to conversation and to the regulars. Do not give observers expected ratings.' },
       { id: 'library', name: 'British Library',
         lat: 51.5300, lon: -0.1277,
         type: 'National public institution (library building and forecourt)',
@@ -937,7 +946,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         perimeterOnly: true,
         restrictionNote: 'Perimeter only: stay outside the boundary. Record access rules, signage and design. Do not observe, count, photograph or describe children.',
         smallVenue: false, venueNote: '',
-        facilitatorNote: "Single-site route, perimeter only. Adults are admitted only with a child, so an explicit entry rule shapes neutral ground and accessibility: the clearest case on the visit of a rule that excludes on purpose and for a reason. Observers record gates, signage and boundary design, and do not observe, count, photograph or describe children. In the debrief, compare with other groups' sites." }
+        facilitatorNote: "Middle stop on the Valencia Cafe and Brunswick Centre route, perimeter only. Adults are admitted only with a child, so an explicit entry rule shapes neutral ground and accessibility: the clearest case on the visit of a rule that excludes on purpose and for a reason. Observers record gates, signage and boundary design, and do not observe, count, photograph or describe children. Contrast with the route's other two sites: a cafe where staying depends on buying, and a concourse where it depends on the owner's rules." }
     ],
 
     // ----- Map image -----
@@ -952,29 +961,30 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     },
 
     // ----- Routes -----
-    // Pairing principle: the two sites on a route should be close
+    // Pairing principle: the sites on a route should be close
     // together AND contrast in type, so that the difference between them
     // is something students can explain. Use one site only where no close
     // contrasting pair exists. No site may appear on two routes that are
     // given to different groups (the console enforces this).
     //
-    // sites: 1 or 2 site ids, in visiting order.
+    // sites: 1 to 3 site ids, in visiting order.
     // Timings are in minutes: walkOut = base to site 1, walkBetween =
-    // site 1 to site 2 (ignored for single-site routes), walkBack = last
-    // site to base. ALL TIMINGS BELOW ARE PLACEHOLDER VALUES.
+    // the walk from each site to the next (one number for every such
+    // walk, or a list with one number per walk, e.g. [6, 4] for three
+    // sites; ignored for single-site routes), walkBack = last site to
+    // base. Time on site is split equally between the sites.
+    // ALL TIMINGS BELOW ARE PLACEHOLDER VALUES.
     //
     // Changing a route's sites changes its join codes, so finish editing
     // routes before the session and give students the same file.
     routes: [
-      { sites: ['valencia', 'brunswick'], walkOut: 10, walkBetween: 5, walkBack: 10,
+      { sites: ['valencia', 'corams', 'brunswick'], walkOut: 10, walkBetween: [5, 5], walkBack: 10,
         note: 'PLACEHOLDER: verify proximity and walking times' },
       { sites: ['kimpton', 'museum'], walkOut: 10, walkBetween: 5, walkBack: 10,
         note: 'PLACEHOLDER: verify proximity and walking times' },
       { sites: ['library', 'granary'], walkOut: 10, walkBetween: 5, walkBack: 10,
         note: 'PLACEHOLDER: verify proximity and walking times' },
       { sites: ['regents', 'marylebone'], walkOut: 10, walkBetween: 5, walkBack: 10,
-        note: 'PLACEHOLDER: verify proximity and walking times' },
-      { sites: ['corams'], walkOut: 10, walkBetween: 0, walkBack: 10,
         note: 'PLACEHOLDER: verify proximity and walking times' }
     ],
 
@@ -1099,7 +1109,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     // ----- Roles -----
     // Each observer gets a role from group size + letter. A role applies
     // only when the group has at least minSize members. The same role is
-    // used at both sites. D and E are independent second looks.
+    // used at every site. D and E are independent second looks.
     groupSizes: [3, 4, 5],
     roles: [
       { letter: 'A', title: 'Space', minSize: 3, chars: ['ng', 'ac', 'lp'],
@@ -1112,6 +1122,18 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         brief: 'An independent second look at the regulars and home away from home. Do not compare notes with C until the huddle.' },
       { letter: 'E', title: 'Cross-check', minSize: 5, chars: ['lv', 'lp'],
         brief: 'An independent second look at the leveller and low profile. Do not compare notes with A or C until the huddle.' }
+    ],
+
+    // ----- Spotted on the walk -----
+    // On every walk (out, between sites and back) observers note other
+    // places they pass that might work as third places, including premises
+    // that used to be one. status: what could be seen while passing.
+    // Keep the ids unchanged once codes are in use.
+    spotStatuses: [
+      { id: 'busy', label: 'Open, people staying' },
+      { id: 'quiet', label: 'Open, few people' },
+      { id: 'closed', label: 'Closed when we passed' },
+      { id: 'former', label: 'Former or vacant premises' }
     ],
 
     // ----- Ethics statements (confirmed once by each observer) -----
@@ -1213,10 +1235,12 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         allSame: 'All rated sites the same',
         noRatings: 'No ratings recorded yet.',
         classNotes: 'Class notes',
+        spotTitle: 'Spotted on the walk',
+        spotPrompt: 'Ask each group for one place they spotted on the way. What about it might produce or block the characteristics? Did anyone pass premises that used to be a third place, and what could explain the change?',
         noSites: 'Allocate routes first: the debrief grid shows the allocated sites.'
       },
       observer: {
-        tabs: { join: 'Join', role: 'Role', map: 'Map', field: 'Field', huddle: 'Huddle', share: 'Share-out' },
+        tabs: { join: 'Join', role: 'Role', map: 'Map', field: 'Field', spotted: 'Spotted', huddle: 'Huddle', share: 'Share-out' },
         joinTitle: 'Join your group',
         joinHelp: 'About a minute. You can skip any step and start logging, but your share code will record what you skipped.',
         codeLabel: 'Join code (4 characters, from your instructor)',
@@ -1229,11 +1253,11 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         ethicsDone: 'Confirmed at',
         startField: 'Go to my role',
         roleTitle: 'Your role',
-        roleSame: 'Same role at both sites.',
+        roleSame: 'Same role at every site.',
         noRole: 'Choose your group size and letter on the Join tab to get a role. Until then, all eight characteristics are shown.',
         groupRoles: 'Who covers what in your group',
         siteLabel: 'Site',
-        moveBy: 'Move to site 2 by',
+        moveBy: 'Move to site {n} by', // {n} becomes the next site's number
         leaveBy: 'Leave by',
         minLeft: 'min left',
         overdue: 'min over',
@@ -1270,13 +1294,24 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         contrastTitle: 'Our strongest contrast',
         contrastTitleSingle: 'Our clearest finding',
         contrastChar: 'Characteristic',
-        contrastText: 'One sentence: what about the two places explains the difference?',
+        contrastText: 'One sentence: what about these places explains the difference?',
         contrastTextSingle: 'One sentence: what about this place produces or blocks it?',
         gridTitle: 'Group grid',
         doubleAgree: 'Two looks: agree',
         doubleDiffer: 'Two looks: differ',
         notRated: 'not rated',
-        chooseChar: 'Choose a characteristic'
+        chooseChar: 'Choose a characteristic',
+        spotTitle: 'Spotted on the walk',
+        spotHelp: 'On every walk (out, between sites and back), note any other place you pass that you think could be a third place: a cafe, pub, bench area, library, launderette or community centre, or premises that look as if they used to be one. Do not detour or go in: note it as you pass and keep to your timings. The ethics statements apply here too.',
+        spotReminder: 'Walking between places? Note any other possible third place you pass.',
+        spotWhat: 'What and where (e.g. "corner pub on the street after the cafe")',
+        spotWhy: 'Why it might be a third place (optional)',
+        spotStatus: 'What you could see as you passed',
+        spotAdd: '+ Add place',
+        spotMine: 'My places',
+        spotGroup: 'Spotted by the group',
+        spotNone: 'Nothing noted yet.',
+        spotCount: 'places spotted'
       },
       homework: {
         tabs: { load: 'Load', sort: '1 Sort', agree: '2 Agree', explain: '3 Explain', overall: '4 Overall', claims: '5 Claims', outputs: '6 Outputs' },
@@ -1315,7 +1350,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         explainOne: 'Explain this characteristic',
         perSite: 'How it shows up (or fails to) here, and what about this place produces or blocks it',
         factorsAt: 'What accounts for it here',
-        contrastField: 'The contrast: what explains the difference (or the similarity) between the two sites?',
+        contrastField: 'The contrast: what explains the differences (or the similarities) between the sites?',
         notesField: 'Notes that support this explanation',
         showAll: 'Show all notes',
         showTagged: 'Show tagged notes only',
@@ -1332,7 +1367,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         scopeLabel: 'Scope',
         whyField: 'Why: what kind of evidence did a single visit to these sites produce, and why does it bear (or not bear) on this claim?',
         suggestsField: 'What the visit does suggest about this claim, if anything',
-        suggestsLinks: 'Linked notes and explanations',
+        suggestsLinks: 'Linked notes, explanations and places spotted on the walk',
         neededField: 'What evidence would be needed to test this claim properly? (For example: repeated observation over time, records of openings and closures, survey data.)',
         findingField: 'One-sentence finding for the claim-wall card',
         outputsTitle: 'Step 6 · Outputs',
@@ -1341,7 +1376,9 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         printCards: 'Print A6 cards',
         cardsTitle: 'Card preview',
         noClaimCards: 'No claim-wall cards: a card is made only for a claim you marked "speaks to" or "partly speaks to", with a finding and the evidence still needed.',
-        noCharCards: 'No characteristic cards yet: complete an explanation in step 3.'
+        noCharCards: 'No characteristic cards yet: complete an explanation in step 3.',
+        spotTitle: 'Places spotted on the walk',
+        spotHelp: 'Other possible third places your group passed between the sites. You can link them to a decline claim in step 5: for example, former premises or a busy place passed at lunchtime.'
       }
     }
   };
@@ -1355,6 +1392,8 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
   var SHARE_PREFIX = 'TP5';
   var SHARE_VERSION = 1;
   var LETTERS = ['A', 'B', 'C', 'D', 'E'];
+  var MAX_SITES = 3; // most sites on one route (share codes and saved work hold this many)
+  var SITE_KEYS = ['0', '1', '2'];
 
   // =====================================================================
   // Small helpers
@@ -1374,6 +1413,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
   var RATING = byId(CONFIG.ratings);
   var FACTOR = byId(CONFIG.factors);
   var CLAIM = byId(CONFIG.claims);
+  var SPOT_STATUS = byId(CONFIG.spotStatuses);
   var CHAR_IDS = CONFIG.characteristics.map(function (c) { return c.id; });
 
   // Counts words: whitespace-separated tokens that contain at least one
@@ -1507,31 +1547,45 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     return out.sort(function (a, b) { return a - b; });
   }
 
+  // Minutes for each walk between consecutive sites. walkBetween may be
+  // one number (used for every such walk) or a list, one per walk.
+  function betweenWalks(route) {
+    var n = route.sites.length, out = [];
+    for (var i = 0; i < n - 1; i++) {
+      var w = Array.isArray(route.walkBetween) ? route.walkBetween[i] : route.walkBetween;
+      out.push(+w || 0);
+    }
+    return out;
+  }
+
   // Time on site per site, derived from session start/return and walks.
+  // Observation time is split equally; the last site takes any remainder.
+  // moves: time to leave each site except the last; moveBy: the first.
   function routeTimes(route, session) {
     session = session || CONFIG.session;
     var start = timeToMin(session.start), ret = timeToMin(session.returnBy);
     var n = route.sites.length;
-    var out = +route.walkOut || 0, between = n > 1 ? (+route.walkBetween || 0) : 0, back = +route.walkBack || 0;
+    var walks = betweenWalks(route);
+    var out = +route.walkOut || 0, back = +route.walkBack || 0;
+    var between = walks.reduce(function (a, b) { return a + b; }, 0);
     var observe = (ret - start) - out - between - back;
     var leaveBy = ret - back;
-    var a1 = start + out;
-    var sites, moveBy = null;
-    if (n === 1) {
-      sites = [{ arrive: a1, leave: leaveBy, minutes: leaveBy - a1 }];
-    } else {
-      var per = Math.floor(observe / 2);
-      moveBy = a1 + per;
-      var a2 = moveBy + between;
-      sites = [{ arrive: a1, leave: moveBy, minutes: per }, { arrive: a2, leave: leaveBy, minutes: leaveBy - a2 }];
+    var per = Math.floor(observe / n);
+    var sites = [], moves = [];
+    var t = start + out;
+    for (var i = 0; i < n; i++) {
+      var leave = i === n - 1 ? leaveBy : t + per;
+      sites.push({ arrive: t, leave: leave, minutes: leave - t });
+      if (i < n - 1) { moves.push(leave); t = leave + walks[i]; }
     }
+    var moveBy = moves.length ? moves[0] : null;
     var shortest = Math.min.apply(null, sites.map(function (s) { return s.minutes; }));
     var minObs = session.minObsMinutes;
     var short = shortest < minObs;
     var warning = '';
     if (shortest <= 0) warning = 'The walks take up all the time available: no time on site.';
     else if (short) warning = 'Only ' + shortest + ' minutes at a site (minimum ' + minObs + ').';
-    return { sites: sites, observe: observe, moveBy: moveBy, leaveBy: leaveBy, shortest: shortest, short: short, warning: warning };
+    return { sites: sites, observe: observe, moveBy: moveBy, moves: moves, leaveBy: leaveBy, shortest: shortest, short: short, warning: warning };
   }
 
   function validateConfig(cfg) {
@@ -1554,12 +1608,18 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     if (cfg.routes.length > 31) errs.push('Join codes support at most 31 routes.');
     cfg.routes.forEach(function (r, i) {
       var label = 'Route ' + (i + 1);
-      if (!r.sites || r.sites.length < 1 || r.sites.length > 2) errs.push(label + ' must have one or two sites.');
+      if (!r.sites || r.sites.length < 1 || r.sites.length > MAX_SITES) errs.push(label + ' must have one to ' + MAX_SITES + ' sites.');
       (r.sites || []).forEach(function (id) { if (!siteIds[id]) errs.push(label + ' names an unknown site "' + id + '".'); });
-      if (r.sites && r.sites.length === 2 && r.sites[0] === r.sites[1]) errs.push(label + ' lists the same site twice.');
-      ['walkOut', 'walkBack'].concat(r.sites && r.sites.length > 1 ? ['walkBetween'] : []).forEach(function (k) {
-        if (!(typeof r[k] === 'number' && r[k] >= 0)) errs.push(label + ': ' + k + ' must be a number of minutes.');
+      if (r.sites && r.sites.some(function (id, i) { return r.sites.indexOf(id) !== i; })) errs.push(label + ' lists the same site twice.');
+      function isMin(v) { return typeof v === 'number' && v >= 0; }
+      ['walkOut', 'walkBack'].forEach(function (k) {
+        if (!isMin(r[k])) errs.push(label + ': ' + k + ' must be a number of minutes.');
       });
+      if (r.sites && r.sites.length > 1) {
+        var wb = r.walkBetween;
+        var okWb = Array.isArray(wb) ? wb.length === r.sites.length - 1 && wb.every(isMin) : isMin(wb);
+        if (!okWb) errs.push(label + ': walkBetween must be a number of minutes, or a list of ' + (r.sites.length - 1) + ' numbers (one per walk between sites).');
+      }
     });
     if (!isFinite(timeToMin(cfg.session.start)) || !isFinite(timeToMin(cfg.session.returnBy))) errs.push('Session start and returnBy must be HH:MM times.');
     var charIds = byId(cfg.characteristics);
@@ -1662,6 +1722,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       sk: skippedSteps(join),
       ra: ra,
       no: (obs.notes || []).map(function (x) { return { i: x.i, s: x.s, c: x.c, x: x.x, t: x.t, f: x.f || '' }; }),
+      sp: (obs.spots || []).map(function (x) { return { i: x.i, x: x.x, y: x.y || '', k: x.k || '', t: x.t }; }),
       at: at || Date.now()
     };
   }
@@ -1686,11 +1747,12 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       sk: Array.isArray(o.sk) ? o.sk.filter(function (x) { return typeof x === 'string'; }).slice(0, 10) : [],
       ra: {},
       no: [],
+      sp: [],
       at: typeof o.at === 'number' ? o.at : 0
     };
     if (rec.r != null && rec.h != null && routeHash(CONFIG.routes[rec.r]) !== rec.h) return null;
     var ra = o.ra && typeof o.ra === 'object' ? o.ra : {};
-    ['0', '1'].forEach(function (si) {
+    SITE_KEYS.forEach(function (si) {
       if (!ra[si] || typeof ra[si] !== 'object') return;
       rec.ra[si] = {};
       Object.keys(ra[si]).forEach(function (c) { if (CHAR[c] && RATING[ra[si][c]]) rec.ra[si][c] = ra[si][c]; });
@@ -1698,15 +1760,27 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     if (Array.isArray(o.no)) {
       o.no.slice(0, 400).forEach(function (x) {
         if (!x || typeof x !== 'object') return;
-        if (typeof x.x !== 'string' || !CHAR[x.c] || (x.s !== 0 && x.s !== 1)) return;
+        if (typeof x.x !== 'string' || !CHAR[x.c] || !validSiteIndex(x.s)) return;
         rec.no.push({
           i: String(x.i || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 20), s: x.s, c: x.c, x: x.x.slice(0, 600),
           t: typeof x.t === 'string' ? x.t.slice(0, 5) : '', f: FACTOR[x.f] ? x.f : ''
         });
       });
     }
+    if (Array.isArray(o.sp)) {
+      o.sp.slice(0, 100).forEach(function (x) {
+        if (!x || typeof x !== 'object' || typeof x.x !== 'string' || !x.x.trim()) return;
+        rec.sp.push({
+          i: String(x.i || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 20), x: x.x.slice(0, 300),
+          y: typeof x.y === 'string' ? x.y.slice(0, 300) : '', k: SPOT_STATUS[x.k] ? x.k : '',
+          t: typeof x.t === 'string' ? x.t.slice(0, 5) : ''
+        });
+      });
+    }
     return rec;
   }
+
+  function validSiteIndex(si) { return typeof si === 'number' && si % 1 === 0 && si >= 0 && si < MAX_SITES; }
 
   function parseShareCode(str) {
     var s = String(str || '').replace(/\s+/g, '');
@@ -1780,6 +1854,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
   // =====================================================================
   // Homework (pure, given a homework state object)
   // =====================================================================
+  function siteRange(n) { var out = []; for (var i = 0; i < n; i++) out.push(i); return out; }
   function hwRoute(hw) { return hw.routeIndex != null ? CONFIG.routes[hw.routeIndex] || null : null; }
   function hwSiteCount(hw) { var r = hwRoute(hw); return r ? r.sites.length : 0; }
   function hwSiteName(hw, si) { var r = hwRoute(hw); return r && SITE[r.sites[si]] ? SITE[r.sites[si]].name : 'Site ' + (+si + 1); }
@@ -1794,6 +1869,19 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     });
     return out;
   }
+  // Places spotted on the walk, from every loaded observer.
+  function hwSpots(hw) {
+    var out = [];
+    Object.keys(hw.records).sort().forEach(function (k) {
+      var rec = hw.records[k];
+      (rec.sp || []).forEach(function (x) {
+        out.push({ key: k + ':' + x.i, letter: rec.l || k, who: rec.n, x: x.x, y: x.y, k: x.k, t: x.t });
+      });
+    });
+    return out;
+  }
+  function spotLabel(x) { return x.x + (x.k && SPOT_STATUS[x.k] ? ' (' + SPOT_STATUS[x.k].label.toLowerCase() + ')' : ''); }
+
   function noteTags(hw, note) {
     var t = hw.sort[note.key];
     return {
@@ -1823,13 +1911,23 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     if (cell && cell.ratings.length && (cell.ratings.length === 1 || cell.agree)) return cell.ratings[0].rating;
     return '';
   }
+  // True when at least two sites have different final ratings.
   function sitesDiffer(hw, c) {
-    if (hwSiteCount(hw) < 2) return false;
-    var a = finalRating(hw, 0, c), b = finalRating(hw, 1, c);
-    return !!(a && b && a !== b);
+    var seen = '';
+    for (var si = 0; si < hwSiteCount(hw); si++) {
+      var r = finalRating(hw, si, c);
+      if (!r) continue;
+      if (seen && r !== seen) return true;
+      seen = r;
+    }
+    return false;
   }
 
-  function blankExplanation() { return { on: false, sites: { '0': { text: '', factors: [] }, '1': { text: '', factors: [] } }, contrast: '', refs: [], line: '' }; }
+  function blankExplanation() {
+    var sites = {};
+    SITE_KEYS.forEach(function (k) { sites[k] = { text: '', factors: [] }; });
+    return { on: false, sites: sites, contrast: '', refs: [], line: '' };
+  }
   function explanationIssues(hw, c) {
     var e = hw.explain[c];
     var issues = [];
@@ -1840,7 +1938,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       if (!longOk(s.text)) issues.push(hwSiteName(hw, si) + ': write at least ' + CONFIG.words.min + ' words.');
       if (!s.factors || !s.factors.length) issues.push(hwSiteName(hw, si) + ': tag at least one feature that accounts for it.');
     }
-    if (n === 2 && !longOk(e.contrast)) issues.push('Contrast: write at least ' + CONFIG.words.min + ' words.');
+    if (n > 1 && !longOk(e.contrast)) issues.push('Contrast: write at least ' + CONFIG.words.min + ' words.');
     if (!e.refs || !e.refs.length) issues.push('Link at least one supporting note.');
     if (!sentenceOk(e.line)) issues.push('Card sentence: ' + CONFIG.words.sentenceMin + ' to ' + CONFIG.words.sentenceMax + ' words.');
     return issues;
@@ -1884,7 +1982,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       var valid = validExplanations(hw);
       if (valid.length < CONFIG.words.explainCount) issues.push(valid.length + ' of ' + CONFIG.words.explainCount + ' explanations complete.');
       var anyDiffer = CHAR_IDS.some(function (c) { return sitesDiffer(hw, c); });
-      if (n === 2 && anyDiffer && !valid.some(function (c) { return sitesDiffer(hw, c); })) issues.push('At least one complete explanation must be a characteristic where the sites differ.');
+      if (n > 1 && anyDiffer && !valid.some(function (c) { return sitesDiffer(hw, c); })) issues.push('At least one complete explanation must be a characteristic where the sites differ.');
     } else if (step === 'overall') {
       for (var si = 0; si < n; si++) {
         var o = hw.overall[si] || {};
@@ -1910,7 +2008,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
   function blankObserver() {
     return { schema: SCHEMAS.observer, v: 1, tab: 'join',
       join: { code: '', group: null, routeIndex: null, size: null, letter: '', name: '', ethicsAt: '' },
-      siteIdx: 0, ratings: { '0': {}, '1': {} }, notes: [], noteSeq: 0, peers: {}, contrast: { ch: '', text: '' }, updated: '' };
+      siteIdx: 0, ratings: { '0': {}, '1': {}, '2': {} }, notes: [], noteSeq: 0, spots: [], spotSeq: 0, spotDraft: { x: '', y: '', k: '' }, peers: {}, contrast: { ch: '', text: '' }, updated: '' };
   }
   function blankHomework() {
     return { schema: SCHEMAS.homework, v: 1, step: 'load', me: { name: '', letter: '' }, code: '', group: null, routeIndex: null,
@@ -1933,7 +2031,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
 
   var S = { instructor: null, observer: null, homework: null };
   var mode = null;
-  var ui = { toolsOpen: false, confirmReset: false, status: '', storageOk: true, editNote: null, delNote: null,
+  var ui = { toolsOpen: false, confirmReset: false, status: '', storageOk: true, editNote: null, delNote: null, delSpot: null,
     obsReport: null, hwReport: null, showAll: {}, pasteObs: '', pasteHw: '' };
 
   function loadState(which) {
@@ -2055,6 +2153,8 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     return h + '</div></section>';
   }
 
+  // Accent per site position on a route (overall judgement panels).
+  var SITE_ACCENT = ['var(--char-3)', 'var(--char-6)', 'var(--char-1)'];
   var MODE_ACCENT = { instructor: 'var(--char-1)', observer: 'var(--char-2)', homework: 'var(--char-5)' };
 
   function renderModeBar() {
@@ -2095,6 +2195,8 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     var r = CONFIG.routes[ri];
     return r.sites.map(function (id) { return SITE[id] ? SITE[id].name : id; }).join(' → ');
   }
+  // Move-by times, in order, e.g. "12:28, 12:39".
+  function movesText(tm) { return tm.moves.map(minToTime).join(', '); }
   function routeTimesLine(ri) {
     var tm = routeTimes(CONFIG.routes[ri]);
     var parts = tm.sites.map(function (s, i) { return 'Site ' + (i + 1) + ': ' + minToTime(s.arrive) + '–' + minToTime(s.leave) + ' (' + s.minutes + ' min)'; });
@@ -2375,7 +2477,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     var rows = CONFIG.routes.map(function (r, ri) {
       var legs = routeLegs(r).map(function (l) { return distanceM(l[0], l[1]); });
       var total = legs.reduce(function (a, b) { return a + b; }, 0);
-      var mins = [r.walkOut].concat(r.sites.length > 1 ? [r.walkBetween] : []).concat([r.walkBack]);
+      var mins = [r.walkOut].concat(betweenWalks(r)).concat([r.walkBack]);
       return '<tr><th scope="row" style="border-left:6px solid ' + routeColour(ri) + '">Route ' + (ri + 1) + '</th><td>' + esc(routeLabel(ri)) + '</td><td>' +
         legs.map(function (m, i) { return fmtM(m) + ' (' + mins[i] + ' min set)'; }).join('<br>') + '</td><td>' + fmtM(total) + '</td></tr>';
     }).join('');
@@ -2401,6 +2503,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     h += '<p class="small">' + esc(tm.help) + ' ' + esc(tm.perimeterKey) + '</p>';
     h += '<div class="map-wrap">' + mapSvg(routes, mine ? { width: 360, labels: true, textScale: 2.2, minAspect: 0.75 } : { width: 360, textScale: 1.8, minAspect: 0.75 }) + '</div>';
     h += mapLegend(routes, false) + '</section>';
+    h += spotReminderHtml();
     h += '<div class="btn-row"><button type="button" class="btn" data-action="otab" data-tab="field">' + esc(CONFIG.text.observer.tabs.field) + ' →</button></div>';
     return h;
   }
@@ -2472,7 +2575,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       var tm = routeTimes(CONFIG.routes[ri]);
       rows += '<tr><td>Group ' + g + '</td><td>' + esc(routeLabel(ri)) + '</td><td><span class="joincode small">' + esc(encodeJoinCode(g, ri)) + '</span></td>' +
         '<td>' + tm.sites.map(function (s) { return s.minutes + ' min'; }).join(' + ') + '</td>' +
-        '<td>' + (tm.moveBy != null ? minToTime(tm.moveBy) + ' / ' : '') + minToTime(tm.leaveBy) + '</td>' +
+        '<td>' + (tm.moves.length ? movesText(tm) + ' / ' : '') + minToTime(tm.leaveBy) + '</td>' +
         '<td>' + (tm.warning ? '<span class="alert">' + esc(tm.warning) + '</span>' : '—') + '</td></tr>';
     }
     return '<div class="table-wrap"><table><thead><tr><th scope="col">Group</th><th scope="col">Route</th><th scope="col">Join code</th><th scope="col">Time on site</th><th scope="col">Move by / leave by</th><th scope="col">Warnings</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
@@ -2487,7 +2590,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       CONFIG.ethics.map(function (e) { return '<li>' + esc(e) + '</li>'; }).join('') + '</ol>' +
       '<p class="small" style="margin-top:0.75rem">Perimeter-only sites: ' + esc(firstRestriction()) + '</p></section>';
 
-    h += '<section class="panel" style="--accent:var(--char-4)"><h2>2. Roles</h2><p>Each observer covers different characteristics, on their own phone, at both sites. Roles come from group size and letter; no syncing is needed.</p>' + roleTable() + '</section>';
+    h += '<section class="panel" style="--accent:var(--char-4)"><h2>2. Roles</h2><p>Each observer covers different characteristics, on their own phone, at every site on the route. Roles come from group size and letter; no syncing is needed.</p>' + roleTable() + '</section>';
 
     h += '<section class="panel" style="--accent:var(--char-1)"><h2>3. The eight characteristics</h2><div class="crib-grid">';
     CONFIG.characteristics.forEach(function (c) {
@@ -2498,14 +2601,17 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
 
     h += '<section class="panel" style="--accent:var(--char-3)"><h2>4. Produces or blocks</h2><p>For every characteristic, observers note what about the place produces it or blocks it:</p><div class="chips">' +
       CONFIG.factors.map(function (f) { return '<span class="chip-btn" style="cursor:default">' + esc(f.label) + '</span>'; }).join('') +
-      '</div><p style="margin-top:0.75rem">Explanation, not description: the difference between the two sites is what groups will explain.</p></section>';
+      '</div><p style="margin-top:0.75rem">Explanation, not description: the differences between the sites on a route are what groups will explain.</p></section>';
 
-    h += '<section class="panel" style="--accent:var(--char-6)"><h2>5. Routes and timings</h2>';
+    h += '<section class="panel" style="--accent:var(--char-7)"><h2>5. ' + esc(CONFIG.text.observer.spotTitle) + '</h2><p>' + esc(CONFIG.text.observer.spotHelp) + '</p><p class="small">Observers log each place on the Spotted tab, with what could be seen as they passed:</p><div class="chips">' +
+      CONFIG.spotStatuses.map(function (k) { return '<span class="chip-btn" style="cursor:default">' + esc(k.label) + '</span>'; }).join('') + '</div></section>';
+
+    h += '<section class="panel" style="--accent:var(--char-6)"><h2>6. Routes and timings</h2>';
     CONFIG.routes.forEach(function (r, i) {
       var tm = routeTimes(r);
       h += '<div class="disc-item" style="--accent:var(--char-' + ((i % 8) + 1) + ')"><h3>Route ' + (i + 1) + ': ' + esc(routeLabel(i)) + '</h3>' +
-        '<p class="small">Walk out ' + r.walkOut + ' min' + (r.sites.length > 1 ? ' · between ' + r.walkBetween + ' min' : '') + ' · back ' + r.walkBack + ' min · ' + phText(r.note) + '</p>' +
-        '<p class="small">' + esc(routeTimesLine(i)) + (tm.moveBy != null ? ' · move by ' + minToTime(tm.moveBy) : '') + ' · leave by ' + minToTime(tm.leaveBy) + '</p>' +
+        '<p class="small">Walk out ' + r.walkOut + ' min' + (r.sites.length > 1 ? ' · between ' + betweenWalks(r).join(' + ') + ' min' : '') + ' · back ' + r.walkBack + ' min · ' + phText(r.note) + '</p>' +
+        '<p class="small">' + esc(routeTimesLine(i)) + (tm.moves.length ? ' · move by ' + movesText(tm) : '') + ' · leave by ' + minToTime(tm.leaveBy) + '</p>' +
         (tm.warning ? '<p class="alert small">' + esc(tm.warning) + '</p>' : '');
       r.sites.forEach(function (id) {
         var site = SITE[id];
@@ -2595,6 +2701,8 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       h += '</div>';
     });
     h += '</section>';
+    h += '<section class="panel" style="--accent:var(--char-7)"><h2>' + esc(t.spotTitle) + '</h2><p>' + esc(t.spotPrompt) + '</p>' +
+      textArea('debrief.notes._spotted', t.classNotes + ': ' + t.spotTitle, st.debrief.notes._spotted, { rows: 3 }) + '</section>';
     return h;
   }
 
@@ -2613,11 +2721,12 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
 
   function renderObserver() {
     var obs = S.observer, t = CONFIG.text.observer;
-    var tabs = ['join', 'role', 'map', 'field', 'huddle', 'share'].map(function (id) { return { id: id, label: t.tabs[id] }; });
+    var tabs = ['join', 'role', 'map', 'field', 'spotted', 'huddle', 'share'].map(function (id) { return { id: id, label: t.tabs[id] }; });
     var h = tabsHtml(tabs, obs.tab, 'otab', 'var(--char-2)', obsTabStates(obs));
     if (obs.tab === 'role') h += renderRole();
     else if (obs.tab === 'map') h += renderObserverMap();
     else if (obs.tab === 'field') h += renderField();
+    else if (obs.tab === 'spotted') h += renderSpotted();
     else if (obs.tab === 'huddle') h += renderHuddle();
     else if (obs.tab === 'share') h += renderShare();
     else h += renderJoin();
@@ -2699,7 +2808,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     var site = sites[si];
     var h = '<div class="ethics-strip" role="note">' + esc(CONFIG.ethicsStrip) +
       (site && site.perimeterOnly ? '<span class="es-extra">' + esc(site.restrictionNote) + '</span>' : '') + '</div>';
-    h += '<div class="site-switch' + (n === 1 ? ' single' : '') + '" role="group" aria-label="Site">';
+    h += '<div class="site-switch' + (n === 1 ? ' single' : n === 3 ? ' three' : '') + '" role="group" aria-label="Site">';
     sites.forEach(function (s, i) {
       h += '<button type="button" class="site-btn" id="site-btn-' + i + '" data-action="site" data-site="' + i + '" aria-pressed="' + (i === si) + '"><span class="sb-num">' + esc(t.siteLabel) + ' ' + (i + 1) + '</span>' +
         '<span class="sb-name">' + esc(s ? s.name : '—') + '</span></button>';
@@ -2707,10 +2816,12 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     h += '</div>';
     if (route) {
       var tm = routeTimes(route);
-      h += '<div class="clocks">' + (tm.moveBy != null ? clockHtml('move', t.moveBy, tm.moveBy) : '') + clockHtml('leave', t.leaveBy, tm.leaveBy) + '</div>';
+      h += '<div class="clocks">' + tm.moves.map(function (m, i) { return clockHtml('move', t.moveBy.replace('{n}', i + 2), m); }).join('') +
+        clockHtml('leave', t.leaveBy, tm.leaveBy) + '</div>';
     } else {
       h += '<div class="notice">' + esc(t.noRoute) + '</div>';
     }
+    h += spotReminderHtml();
     if (site) {
       h += '<p class="site-info">' + siteLines(site, true) + '</p>';
       if (site.smallVenue && site.venueNote && !isPlaceholder(site.venueNote)) h += '<div class="notice">' + esc(site.venueNote) + '</div>';
@@ -2775,6 +2886,62 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     return all;
   }
 
+  // Prompt with a link to the Spotted tab, shown on the map and field tabs.
+  function spotReminderHtml() {
+    var t = CONFIG.text.observer, n = (S.observer.spots || []).length;
+    return '<div class="spot-reminder"><span>' + esc(t.spotReminder) + (n ? ' (' + n + ' ' + esc(t.spotCount) + ')' : '') + '</span>' +
+      '<button type="button" class="btn btn-small" data-action="otab" data-tab="spotted">' + esc(t.tabs.spotted) + ' →</button></div>';
+  }
+
+  function spotStatusLabel(k) { return SPOT_STATUS[k] ? SPOT_STATUS[k].label : ''; }
+
+  function renderSpotted() {
+    var obs = S.observer, t = CONFIG.text.observer, d = obs.spotDraft;
+    var h = '<div class="ethics-strip" role="note">' + esc(CONFIG.ethicsStrip) + '</div>';
+    h += '<section class="panel" style="--accent:var(--char-7)"><span class="deco-dot"></span><h2>' + esc(t.spotTitle) + '</h2><p>' + esc(t.spotHelp) + '</p>';
+    h += textInput('spotDraft.x', t.spotWhat, d.x, { attrs: ' maxlength="300" autocomplete="off"' });
+    h += textInput('spotDraft.y', t.spotWhy, d.y, { attrs: ' maxlength="300" autocomplete="off"' });
+    h += chipGroup(t.spotStatus, CONFIG.spotStatuses.map(function (k) { return chip('radio', 'spotDraft.k', k.id, k.label, d.k === k.id); }).join(''), { cls: 'grid2' });
+    h += '<div class="btn-row" style="margin-top:0.75rem"><button type="button" class="btn" id="spot-add" data-action="add-spot">' + esc(t.spotAdd) + '</button></div></section>';
+    h += '<section class="panel" style="--accent:var(--char-4)"><h3>' + esc(t.spotMine) + ' (' + obs.spots.length + ')</h3>';
+    if (!obs.spots.length) h += '<p class="quiet">' + esc(t.spotNone) + '</p>';
+    else {
+      h += '<ul class="note-list">';
+      obs.spots.forEach(function (x) {
+        h += '<li class="note"><div class="note-meta">' + esc(x.t) + '</div><p class="note-text">' + esc(x.x) + '</p>' +
+          (x.y ? '<p class="small">' + esc(x.y) + '</p>' : '') +
+          '<span class="factor-label">' + esc(t.spotStatus) + '</span><div class="chips">' + CONFIG.spotStatuses.map(function (k) {
+            return '<button type="button" class="chip-btn" id="sk-' + esc(x.i) + '-' + k.id + '" data-action="spot-status" data-spot="' + esc(x.i) + '" data-status="' + k.id + '" aria-pressed="' + (x.k === k.id) + '">' + esc(k.label) + '</button>';
+          }).join('') + '</div><div class="btn-row">';
+        if (ui.delSpot === x.i) {
+          h += '<button type="button" class="btn btn-red btn-small" id="sd2-' + esc(x.i) + '" data-action="del-spot-yes" data-spot="' + esc(x.i) + '">' + esc(t.delConfirm) + '</button>' +
+            '<button type="button" class="btn btn-ghost btn-small" data-action="del-spot-no">' + esc(t.cancel) + '</button>';
+        } else {
+          h += '<button type="button" class="btn btn-ghost btn-small" id="sd-' + esc(x.i) + '" data-action="del-spot" data-spot="' + esc(x.i) + '">' + esc(t.del) + '</button>';
+        }
+        h += '</div></li>';
+      });
+      h += '</ul>';
+    }
+    h += '</section>';
+    h += '<div class="btn-row"><button type="button" class="btn" data-action="otab" data-tab="field">← ' + esc(t.tabs.field) + '</button>' +
+      '<button type="button" class="btn" data-action="otab" data-tab="huddle">' + esc(t.tabs.huddle) + ' →</button></div>';
+    return h;
+  }
+
+  // Every place spotted by the group (own record plus collected codes).
+  function groupSpotsHtml(records) {
+    var t = CONFIG.text.observer, items = [];
+    Object.keys(records).sort().forEach(function (k) {
+      (records[k].sp || []).forEach(function (x) { items.push({ l: records[k].l || '?', x: x }); });
+    });
+    if (!items.length) return '<p class="quiet">' + esc(t.spotNone) + '</p>';
+    return '<ul class="lookfor">' + items.map(function (it) {
+      return '<li><strong>' + esc(it.x.x) + '</strong>' + (it.x.k ? ' · ' + esc(spotStatusLabel(it.x.k)) : '') + (it.x.y ? '<br><span class="small">' + esc(it.x.y) + '</span>' : '') +
+        '<br><span class="small quiet">' + esc('Observer ' + it.l + (it.x.t ? ' · ' + it.x.t : '')) + '</span></li>';
+    }).join('') + '</ul>';
+  }
+
   function renderHuddle() {
     var obs = S.observer, j = obs.join, t = CONFIG.text.observer;
     var h = '<section class="panel" style="--accent:var(--char-6)"><span class="deco-dot"></span><h2>' + esc(t.huddleTitle) + '</h2><p>' + esc(t.huddleHelp) + '</p></section>';
@@ -2818,7 +2985,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     if (peers.length) {
       h += '<ul class="report-list">' + peers.map(function (l) {
         var p = obs.peers[l];
-        return '<li>' + esc(l + ' · ' + (p.n || 'no name') + ' · ' + p.no.length + ' notes') +
+        return '<li>' + esc(l + ' · ' + (p.n || 'no name') + ' · ' + p.no.length + ' notes · ' + (p.sp || []).length + ' ' + t.spotCount) +
           ' <button type="button" class="btn btn-ghost btn-small" data-action="remove-peer" data-letter="' + l + '">' + esc(t.removePeer) + ' ' + l + '</button></li>';
       }).join('') + '</ul>';
     }
@@ -2847,6 +3014,11 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         return esc(CHAR[c].name + ': ' + (r ? RATING[r].label : 'not rated')) + (notes.length ? ' (' + esc(notes.slice(0, 2).map(function (x) { return x.x; }).join('; ')) + ')' : '') + '.';
       }).join(' ') + '</p>';
     });
+    if (obs.spots.length) {
+      h += '<p><strong>' + esc(CONFIG.text.observer.spotTitle) + '.</strong> ' + obs.spots.map(function (x) {
+        return esc(x.x + (x.k ? ' (' + spotStatusLabel(x.k).toLowerCase() + ')' : '')) + '.';
+      }).join(' ') + '</p>';
+    }
     return h;
   }
 
@@ -2880,6 +3052,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     h += textArea('contrast.text', single ? t.contrastTextSingle : t.contrastText, obs.contrast.text, { rows: 3, max: CONFIG.words.shareSentenceMax });
     h += '</section>';
     h += '<section class="panel" style="--accent:var(--char-4)"><h3>' + esc(t.gridTitle) + '</h3>' + mergedGridHtml(obsAllRecords(obs), sites) + '</section>';
+    h += '<section class="panel" style="--accent:var(--char-7)"><h3>' + esc(t.spotGroup) + '</h3>' + groupSpotsHtml(obsAllRecords(obs)) + '</section>';
     return h;
   }
 
@@ -2938,7 +3111,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     if (keys.length) {
       h += '<ul class="loaded-list">' + keys.map(function (k) {
         var r = hw.records[k];
-        return '<li>' + esc((r.l || 'No letter') + ' · ' + (r.n || 'no name') + ' · ' + r.no.length + ' notes' + (r.sk && r.sk.length ? ' · skipped: ' + r.sk.join(', ') : '')) + '</li>';
+        return '<li>' + esc((r.l || 'No letter') + ' · ' + (r.n || 'no name') + ' · ' + r.no.length + ' notes · ' + (r.sp || []).length + ' ' + CONFIG.text.observer.spotCount + (r.sk && r.sk.length ? ' · skipped: ' + r.sk.join(', ') : '')) + '</li>';
       }).join('') + '</ul>';
     } else h += '<p class="quiet">None yet.</p>';
     h += '</section>';
@@ -2972,7 +3145,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     var h = '<section class="panel" style="--accent:var(--char-3)"><span class="deco-dot"></span><h2>' + esc(t.sortTitle) + '</h2><p>' + esc(t.sortHelp) + '</p>';
     if (notes.length) h += '<p><strong>' + notes.filter(function (x) { return noteTags(hw, x).ok; }).length + ' / ' + notes.length + '</strong> confirmed.</p>';
     h += '</section>';
-    if (!notes.length) return h + '<div class="notice">' + esc(t.noNotes) + '</div>';
+    if (!notes.length) return h + '<div class="notice">' + esc(t.noNotes) + '</div>' + hwSpotsPanel(hw);
     var n = hwSiteCount(hw);
     notes.forEach(function (note) {
       var tags = noteTags(hw, note);
@@ -2982,12 +3155,24 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       h += '<div class="tag-row">' + chipGroup(t.charsLabel, CONFIG.characteristics.map(function (c) {
         return chip('checkbox', base + '.chars', c.id, c.name, tags.chars.indexOf(c.id) >= 0, { style: charStyle(c.id) });
       }).join('')) + '</div>';
-      if (n > 1) h += '<div class="tag-row">' + chipGroup(t.siteLabel, [0, 1].map(function (si) { return chip('radio', base + '.site', si, hwSiteName(hw, si), tags.site === si, { num: true }); }).join('')) + '</div>';
+      if (n > 1) h += '<div class="tag-row">' + chipGroup(t.siteLabel, siteRange(n).map(function (si) { return chip('radio', base + '.site', si, hwSiteName(hw, si), tags.site === si, { num: true }); }).join('')) + '</div>';
       h += '<div class="tag-row">' + chipGroup(t.factorLabel, [chip('radio', base + '.factor', '', t.noFactor, !tags.factor)].concat(CONFIG.factors.map(function (f) { return chip('radio', base + '.factor', f.id, f.label, tags.factor === f.id); })).join('')) + '</div>';
       h += '<div class="tag-row">' + chipGroup(t.claimsLabel, CONFIG.claims.map(function (cl) { return chip('checkbox', base + '.claims', cl.id, cl.name, tags.claims.indexOf(cl.id) >= 0, { style: '--accent:' + cl.colour }); }).join('')) + '</div>';
       h += '<button type="button" class="btn ' + (tags.ok ? 'btn-ghost' : '') + '" id="conf-' + fid(note.key) + '" data-action="sort-confirm" data-key="' + esc(note.key) + '" aria-pressed="' + tags.ok + '">' + esc(tags.ok ? '✓ ' + t.confirmed : t.confirm) + '</button></article>';
     });
+    h += hwSpotsPanel(hw);
     return h;
+  }
+
+  function hwSpotsPanel(hw) {
+    var t = CONFIG.text.homework, spots = hwSpots(hw);
+    var h = '<section class="panel" style="--accent:var(--char-7)"><h3>' + esc(t.spotTitle) + ' (' + spots.length + ')</h3><p class="small quiet">' + esc(t.spotHelp) + '</p>';
+    if (!spots.length) return h + '<p class="quiet">' + esc(CONFIG.text.observer.spotNone) + '</p></section>';
+    h += '<ul class="lookfor">' + spots.map(function (x) {
+      return '<li><strong>' + esc(x.x) + '</strong>' + (x.k ? ' · ' + esc(SPOT_STATUS[x.k].label) : '') + (x.y ? '<br><span class="small">' + esc(x.y) + '</span>' : '') +
+        '<br><span class="small quiet">' + esc(noteLabel(x)) + '</span></li>';
+    }).join('') + '</ul>';
+    return h + '</section>';
   }
 
   function renderAgree() {
@@ -3055,7 +3240,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         h += chipGroup(t.factorsAt, CONFIG.factors.map(function (f) { return chip('checkbox', base + '.sites.' + s + '.factors', f.id, f.label, (sd.factors || []).indexOf(f.id) >= 0); }).join(''));
         h += '</div>';
       }
-      if (n === 2) h += textArea(base + '.contrast', t.contrastField, e.contrast, { min: CONFIG.words.min, rows: 5 });
+      if (n > 1) h += textArea(base + '.contrast', t.contrastField, e.contrast, { min: CONFIG.words.min, rows: 5 });
       var tagged = notes.filter(function (x) { return noteTags(hw, x).chars.indexOf(c.id) >= 0; });
       var showAll = !!ui.showAll[c.id];
       var list = showAll ? notes : tagged;
@@ -3077,7 +3262,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     for (var si = 0; si < n; si++) {
       var o = hw.overall[si] || {};
       var base = 'overall.' + si;
-      h += '<section class="panel" style="--accent:var(--char-' + (si ? 6 : 3) + ')"><h2>' + esc(hwSiteName(hw, si)) + '</h2>';
+      h += '<section class="panel" style="--accent:' + SITE_ACCENT[si % SITE_ACCENT.length] + '"><h2>' + esc(hwSiteName(hw, si)) + '</h2>';
       h += chipGroup(t.levelLabel, CONFIG.overallLevels.map(function (l) { return chip('radio', base + '.level', l.id, l.label, o.level === l.id); }).join(''));
       h += textArea(base + '.text', t.justify, o.text, { min: CONFIG.words.min, rows: 5 });
       h += valid.length ? chipGroup(t.basedOn, valid.map(function (c) { return chip('checkbox', base + '.refs', c, CHAR[c].name, (o.refs || []).indexOf(c) >= 0, { style: charStyle(c) }); }).join('')) :
@@ -3092,6 +3277,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     var h = '<section class="panel" style="--accent:var(--char-2)"><span class="deco-dot"></span><h2>' + esc(t.claimsTitle) + '</h2><p>' + esc(t.claimsHelp) + '</p></section>';
     h += '<section class="banner" style="--accent:var(--char-1)"><span class="eyebrow">Snapshot</span><p style="font-size:1.1rem;font-weight:600">' + esc(CONFIG.snapshotNote) + '</p></section>';
     var notes = hwNotes(hw);
+    var spots = hwSpots(hw);
     var valid = validExplanations(hw);
     CONFIG.claims.forEach(function (cl) {
       var e = hw.claims[cl.id] || {};
@@ -3102,8 +3288,9 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       h += textArea(base + '.suggests', t.suggestsField, e.suggests, { rows: 4 });
       var tagged = notes.filter(function (x) { return noteTags(hw, x).claims.indexOf(cl.id) >= 0; });
       var refChips = tagged.map(function (x) { return chip('checkbox', base + '.refs', 'n:' + x.key, hwSiteName(hw, noteTags(hw, x).site) + ': ' + x.x, (e.refs || []).indexOf('n:' + x.key) >= 0); })
-        .concat(valid.map(function (c) { return chip('checkbox', base + '.refs', 'x:' + c, 'Explanation: ' + CHAR[c].name, (e.refs || []).indexOf('x:' + c) >= 0, { style: charStyle(c) }); })).join('');
-      h += chipGroup(t.suggestsLinks, refChips || '<span class="quiet small">Tag notes to this claim in step 1, or complete explanations in step 3, to link them here.</span>');
+        .concat(valid.map(function (c) { return chip('checkbox', base + '.refs', 'x:' + c, 'Explanation: ' + CHAR[c].name, (e.refs || []).indexOf('x:' + c) >= 0, { style: charStyle(c) }); }))
+        .concat(spots.map(function (x) { return chip('checkbox', base + '.refs', 'p:' + x.key, 'Spotted: ' + spotLabel(x), (e.refs || []).indexOf('p:' + x.key) >= 0, { style: '--accent:var(--char-7)' }); })).join('');
+      h += chipGroup(t.suggestsLinks, refChips || '<span class="quiet small">Tag notes to this claim in step 1, complete explanations in step 3, or load places spotted on the walk, to link them here.</span>');
       h += textArea(base + '.needed', t.neededField, e.needed, { min: CONFIG.words.min, rows: 5 });
       if (e.scope === 'speaks' || e.scope === 'partly') h += textInput(base + '.finding', t.findingField, e.finding, { min: CONFIG.words.sentenceMin, max: CONFIG.words.sentenceMax });
       h += issuesHtml('claim:' + cl.id, claimIssues(e));
@@ -3210,7 +3397,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         h += '<p><strong>' + esc(hwSiteName(hw, s3)) + ' (' + esc(finalRating(hw, s3, c.id) ? RATING[finalRating(hw, s3, c.id)].label : 'not rated') + '):</strong> ' + esc(sd.text || '') +
           (sd.factors && sd.factors.length ? ' <em>[' + esc(sd.factors.map(function (f) { return FACTOR[f].label; }).join(', ')) + ']</em>' : '') + '</p>';
       }
-      if (n === 2) h += '<p><strong>Contrast:</strong> ' + esc(e.contrast || '') + '</p>';
+      if (n > 1) h += '<p><strong>Contrast:</strong> ' + esc(e.contrast || '') + '</p>';
       var refs = (e.refs || []).map(function (k) { return noteByKey(hw, k); }).filter(Boolean);
       if (refs.length) h += '<p><strong>Supporting notes:</strong></p><ul>' + refs.map(function (x) { return '<li>' + esc(x.x) + ' (' + esc(noteLabel(x)) + ')</li>'; }).join('') + '</ul>';
       h += '<p><strong>In one sentence:</strong> ' + esc(e.line || '') + '</p></div>';
@@ -3220,7 +3407,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     h += '<h2 style="--accent:var(--char-8)">Overall</h2>';
     for (var s4 = 0; s4 < n; s4++) {
       var o = hw.overall[s4] || {};
-      h += '<div class="p-block" style="--accent:var(--char-' + (s4 ? 6 : 3) + ')"><h3>' + esc(hwSiteName(hw, s4)) + ': ' + esc(o.level ? levelLabel(o.level) : 'not judged') + '</h3><p>' + esc(o.text || '') + '</p>' +
+      h += '<div class="p-block" style="--accent:' + SITE_ACCENT[s4 % SITE_ACCENT.length] + '"><h3>' + esc(hwSiteName(hw, s4)) + ': ' + esc(o.level ? levelLabel(o.level) : 'not judged') + '</h3><p>' + esc(o.text || '') + '</p>' +
         (o.refs && o.refs.length ? '<p><em>Based on: ' + esc(o.refs.map(function (c) { return CHAR[c] ? CHAR[c].name : c; }).join(', ')) + '</em></p>' : '') + '</div>';
     }
 
@@ -3244,10 +3431,20 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       });
       h += '</tbody></table>';
     }
+    var spots = hwSpots(hw);
+    if (spots.length) {
+      h += '<h2 style="--accent:var(--char-7)">' + esc(CONFIG.text.homework.spotTitle) + '</h2><table><thead><tr><th>Place</th><th>What could be seen</th><th>Why it might be a third place</th></tr></thead><tbody>';
+      spots.forEach(function (x) {
+        h += '<tr><td>' + esc(x.x) + '<br><span class="p-meta">' + esc(noteLabel(x)) + '</span></td><td>' + esc(x.k ? SPOT_STATUS[x.k].label : '') + '</td><td>' + esc(x.y || '') + '</td></tr>';
+      });
+      h += '</tbody></table>';
+    }
     return h + '</div>';
   }
+  function spotByKey(hw, key) { var all = hwSpots(hw); for (var i = 0; i < all.length; i++) if (all[i].key === key) return all[i]; return null; }
   function refLabel(hw, r) {
     if (r.indexOf('x:') === 0) return 'Explanation: ' + (CHAR[r.slice(2)] ? CHAR[r.slice(2)].name : r);
+    if (r.indexOf('p:') === 0) { var sp = spotByKey(hw, r.slice(2)); return sp ? 'Spotted: ' + spotLabel(sp) : r; }
     var n = noteByKey(hw, r.slice(2));
     return n ? 'Note: ' + n.x : r;
   }
@@ -3284,7 +3481,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         var sd = (e.sites && e.sites[s]) || {};
         line('  ' + hwSiteName(hw, s) + ': ' + (sd.text || '') + (sd.factors && sd.factors.length ? ' [' + sd.factors.map(function (f) { return FACTOR[f].label; }).join(', ') + ']' : ''));
       }
-      if (n === 2) line('  Contrast: ' + (e.contrast || ''));
+      if (n > 1) line('  Contrast: ' + (e.contrast || ''));
       (e.refs || []).forEach(function (k) { var x = noteByKey(hw, k); if (x) line('  Note: ' + x.x + ' (' + noteLabel(x) + ')'); });
       line('  In one sentence: ' + (e.line || ''));
     });
@@ -3306,6 +3503,11 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       line('  Evidence needed: ' + (e.needed || ''));
       if (e.scope === 'speaks' || e.scope === 'partly') line('  Finding: ' + (e.finding || ''));
     });
+    var spots = hwSpots(hw);
+    if (spots.length) {
+      line(''); line(CONFIG.text.homework.spotTitle.toUpperCase());
+      spots.forEach(function (x) { line('- ' + spotLabel(x) + (x.y ? ': ' + x.y : '') + ' (' + noteLabel(x) + ')'); });
+    }
     return L.join('\n');
   }
 
@@ -3320,7 +3522,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       var ri = st.alloc[g];
       if (ri == null) { L.push('- Group ' + g + ': not allocated'); continue; }
       var tm = routeTimes(CONFIG.routes[ri]);
-      L.push('- Group ' + g + ': ' + routeLabel(ri) + ' | code ' + encodeJoinCode(g, ri) + ' | ' + (tm.moveBy != null ? 'move by ' + minToTime(tm.moveBy) + ', ' : '') + 'leave by ' + minToTime(tm.leaveBy) + (tm.warning ? ' | ' + tm.warning : ''));
+      L.push('- Group ' + g + ': ' + routeLabel(ri) + ' | code ' + encodeJoinCode(g, ri) + ' | ' + (tm.moves.length ? 'move by ' + movesText(tm) + ', ' : '') + 'leave by ' + minToTime(tm.leaveBy) + (tm.warning ? ' | ' + tm.warning : ''));
     }
     var sites = debriefSites();
     if (sites.length) {
@@ -3331,6 +3533,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         if (st.debrief.notes[c.id]) L.push('  Notes: ' + st.debrief.notes[c.id]);
       });
     }
+    if (st.debrief.notes._spotted) L.push('', CONFIG.text.instructor.spotTitle.toUpperCase(), st.debrief.notes._spotted);
     return L.join('\n');
   }
 
@@ -3354,6 +3557,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
           '<p>' + esc(st.debrief.notes[c.id] || '') + '</p></div>';
       });
     }
+    if (st.debrief.notes._spotted) h += '<h2 style="--accent:var(--char-7)">' + esc(CONFIG.text.instructor.spotTitle) + '</h2><p>' + esc(st.debrief.notes._spotted) + '</p>';
     return h + '</div>';
   }
 
@@ -3374,6 +3578,11 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     obs.notes.forEach(function (x) {
       L.push('- [' + x.t + '] ' + (sites[x.s] ? sites[x.s].name : 'Site ' + (x.s + 1)) + ', ' + CHAR[x.c].name + ': ' + x.x + (x.f ? ' (' + FACTOR[x.f].label + ')' : ''));
     });
+    L.push('', 'SPOTTED ON THE WALK');
+    obs.spots.forEach(function (x) {
+      L.push('- [' + x.t + '] ' + x.x + (x.k ? ' (' + spotStatusLabel(x.k) + ')' : '') + (x.y ? ': ' + x.y : ''));
+    });
+    if (!obs.spots.length) L.push('- none');
     return L.join('\n');
   }
 
@@ -3385,7 +3594,8 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     h += '<h2 style="--accent:var(--char-5)">My notes</h2><table><thead><tr><th>Time</th><th>Site</th><th>Characteristic</th><th>Note</th><th>Produces or blocks</th></tr></thead><tbody>' +
       obs.notes.map(function (x) {
         return '<tr><td>' + esc(x.t) + '</td><td>' + esc(sites[x.s] ? sites[x.s].name : 'Site ' + (x.s + 1)) + '</td><td>' + esc(CHAR[x.c].name) + '</td><td>' + esc(x.x) + '</td><td>' + esc(x.f ? FACTOR[x.f].label : '') + '</td></tr>';
-      }).join('') + '</tbody></table></div>';
+      }).join('') + '</tbody></table>';
+    h += '<h2 style="--accent:var(--char-7)">' + esc(CONFIG.text.observer.spotTitle) + '</h2>' + groupSpotsHtml(obsAllRecords(obs)) + '</div>';
     return h;
   }
 
@@ -3506,6 +3716,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     var again = document.getElementById('note-in-' + si + '-' + c);
     if (again) again.focus();
   }
+  function findSpot(id) { var n = S.observer.spots; for (var i = 0; i < n.length; i++) if (n[i].i === id) return n[i]; return null; }
   function findNote(id) { var n = S.observer.notes; for (var i = 0; i < n.length; i++) if (n[i].i === id) return n[i]; return null; }
 
   function onClick(e) {
@@ -3550,7 +3761,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       }
       case 'clear-route': delete st.alloc[st.selected]; break;
       // ---- observer
-      case 'otab': st.tab = el.getAttribute('data-tab'); ui.editNote = null; ui.delNote = null; save(); render(); window.scrollTo(0, 0); return;
+      case 'otab': st.tab = el.getAttribute('data-tab'); ui.editNote = null; ui.delNote = null; ui.delSpot = null; save(); render(); window.scrollTo(0, 0); return;
       case 'ethics': st.join.ethicsAt = nowHHMM(); break;
       case 'site': st.siteIdx = +el.getAttribute('data-site'); break;
       case 'add-note': addNote(el.getAttribute('data-site'), el.getAttribute('data-ch')); return;
@@ -3572,6 +3783,27 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         var id = el.getAttribute('data-note');
         st.notes = st.notes.filter(function (x) { return x.i !== id; });
         ui.delNote = null;
+        break;
+      }
+      case 'add-spot': {
+        var dr = st.spotDraft;
+        if (!String(dr.x || '').trim()) { focusId(fid('spotDraft.x')); return; }
+        st.spotSeq = (st.spotSeq || 0) + 1;
+        st.spots.push({ i: 's' + st.spotSeq.toString(36), x: dr.x.trim().slice(0, 300), y: String(dr.y || '').trim().slice(0, 300), k: dr.k || '', t: nowHHMM() });
+        st.spotDraft = { x: '', y: '', k: '' };
+        save(); render(); focusId(fid('spotDraft.x')); return;
+      }
+      case 'spot-status': {
+        var sp = findSpot(el.getAttribute('data-spot'));
+        if (sp) { var k = el.getAttribute('data-status'); sp.k = sp.k === k ? '' : k; }
+        break;
+      }
+      case 'del-spot': ui.delSpot = el.getAttribute('data-spot'); render(); focusId('sd2-' + ui.delSpot); return;
+      case 'del-spot-no': { var ds = ui.delSpot; ui.delSpot = null; render(); focusId('sd-' + ds); return; }
+      case 'del-spot-yes': {
+        var sid = el.getAttribute('data-spot');
+        st.spots = st.spots.filter(function (x) { return x.i !== sid; });
+        ui.delSpot = null;
         break;
       }
       case 'copy-code': {
