@@ -863,7 +863,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
 
     // ----- Groups -----
     groups: {
-      defaultCount: 4, // groups shown when the console is first opened (one per route)
+      defaultCount: 6, // groups shown when the console is first opened (one per route)
       max: 12          // join codes support up to 30
     },
 
@@ -959,7 +959,43 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         perimeterOnly: true,
         restrictionNote: 'Perimeter only: stay outside the boundary. Record access rules, signage and design. Do not observe, count, photograph or describe children.',
         smallVenue: false, venueNote: '',
-        facilitatorNote: "Middle stop on the Valencia Cafe and Brunswick Centre route, perimeter only. Adults are admitted only with a child, so an explicit entry rule shapes neutral ground and accessibility: the clearest case on the visit of a rule that excludes on purpose and for a reason. Observers record gates, signage and boundary design, and do not observe, count, photograph or describe children. Contrast with the route's other two sites: a cafe where staying depends on buying, and a concourse where it depends on the owner's rules." }
+        facilitatorNote: "Middle stop on the Valencia Cafe and Brunswick Centre route, perimeter only. Adults are admitted only with a child, so an explicit entry rule shapes neutral ground and accessibility: the clearest case on the visit of a rule that excludes on purpose and for a reason. Observers record gates, signage and boundary design, and do not observe, count, photograph or describe children. Contrast with the route's other two sites: a cafe where staying depends on buying, and a concourse where it depends on the owner's rules." },
+      { id: 'euston', name: 'Euston station concourse',
+        lat: 51.5284, lon: -0.1331,
+        type: 'Mainline railway terminus (station concourse, managed by Network Rail)',
+        address: 'Euston Road, London NW1 2RT',
+        perimeterOnly: false, restrictionNote: '',
+        smallVenue: false, venueNote: '',
+        facilitatorNote: 'Pairs with Camden Town Library: both are free to enter, but one is built for passing through and the other for staying. Ask observers where someone can sit without a ticket or a purchase, and whether the people present are waiting or lingering. Regulars and conversation are the key characteristics: can anyone become a regular of a place built for turnover? HS2 construction and station improvement works are under way around Euston, so check beforehand which entrances and areas are open. Observers stay in the public concourse and keep clear of the ticket gates.' },
+      { id: 'camdenlib', name: 'Camden Town Library',
+        lat: 51.5341, lon: -0.1378,
+        type: 'Public lending library (council-run, ground floor of the Crowndale Centre)',
+        address: 'Crowndale Centre, 218 Eversholt Street, London NW1 1BD',
+        perimeterOnly: false, restrictionNote: '',
+        smallVenue: false, venueNote: '',
+        facilitatorNote: 'Pairs with the Euston station concourse. A free public institution that can be used without buying anything: probe what the library\'s own rules (quiet, study, opening hours) do to conversation as the main activity and to a playful mood. Ask observers who the regulars appear to be and what brings them back. Closed on Sundays and opens at 11:00 on Fridays and Saturdays: check the current hours against the session date.' },
+      { id: 'waterstones', name: 'Waterstones Gower Street',
+        lat: 51.5225, lon: -0.1322,
+        type: 'Large chain bookshop with in-store cafe (commercial)',
+        address: '82 Gower Street, London WC1E 6EQ',
+        perimeterOnly: false, restrictionNote: '',
+        smallVenue: false, venueNote: '',
+        facilitatorNote: 'First stop before Bedford Square garden and Whitfield Gardens: a commercial shop where browsing is free but the cafe seats are tied to buying, against a locked keyholder garden and a free public garden. Neutral ground and low profile are the key characteristics: does staying among the books depend on buying, and who decides? Observers browse as any customer would, a few at a time, and do not test staff by sitting in the cafe without buying. Decide beforehand whether to tell the shop that a group will visit.' },
+      { id: 'bedford', name: 'Bedford Square garden',
+        lat: 51.5189, lon: -0.1300,
+        type: 'Private garden square (locked, open to paying keyholders only)',
+        address: 'Bedford Square, Bloomsbury, London WC1B',
+        perimeterOnly: true,
+        restrictionNote: 'Perimeter only: the garden is locked and open to keyholders only. Stay outside the railings and record access rules, signage and design. Do not observe, photograph or describe people in the garden.',
+        smallVenue: false, venueNote: '',
+        facilitatorNote: 'Middle stop on the Waterstones and Whitfield Gardens route, perimeter only. The Bedford Estates runs a paid keyholder scheme for Bloomsbury residents and businesses, so entry is bought and limited by postcode: the clearest case on the visit of a green space that excludes by ownership. Contrast with Whitfield Gardens, a free public garden a few minutes away, and with Waterstones, where staying depends on buying. Observers record railings, gates and signage, and do not watch people in the garden. The people-dependent characteristics default to "Not observable here": treat that as a finding.' },
+      { id: 'whitfield', name: 'Whitfield Gardens',
+        lat: 51.5205, lon: -0.1353,
+        type: 'Small public garden and paved square (open at all hours)',
+        address: 'Tottenham Court Road at Tottenham Street, London W1T',
+        perimeterOnly: false, restrictionNote: '',
+        smallVenue: false, venueNote: '',
+        facilitatorNote: 'Last stop after Waterstones Gower Street and Bedford Square garden. A free public garden on a busy shopping street, with seating and the Fitzrovia Mural. Probe accessibility and the regulars: who sits here at lunchtime, and does the street noise favour or block conversation? Ask what the seating layout invites: sitting alone, in pairs or in groups. Observers record what they see and do not approach or photograph people.' }
     ],
 
     // ----- Map image -----
@@ -995,7 +1031,11 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       { sites: ['valencia', 'corams', 'brunswick'], walkOut: 10, walkBetween: [5, 5], walkBack: 10 },
       { sites: ['kimpton', 'museum'], walkOut: 10, walkBetween: 5, walkBack: 10 },
       { sites: ['library', 'granary'], walkOut: 10, walkBetween: 5, walkBack: 10 },
-      { sites: ['regents', 'marylebone'], walkOut: 10, walkBetween: 5, walkBack: 10 }
+      { sites: ['regents', 'marylebone'], walkOut: 10, walkBetween: 5, walkBack: 10 },
+      { sites: ['euston', 'camdenlib'], walkOut: 5, walkBetween: 10, walkBack: 15,
+        note: 'North of the base. Walking times are estimates from straight-line distances: walk the route before the session and adjust.' },
+      { sites: ['waterstones', 'bedford', 'whitfield'], walkOut: 5, walkBetween: [5, 5], walkBack: 10,
+        note: 'South of the base. Walking times are estimates from straight-line distances: walk the route before the session and adjust.' }
     ],
 
     // ----- Oldenburg's eight characteristics -----
