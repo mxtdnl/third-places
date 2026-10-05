@@ -519,6 +519,22 @@ th[scope="row"] { font-size: 0.88rem; letter-spacing: 0.01em; text-transform: no
 .a6 .a6-text { font-size: 0.85rem; line-height: 1.4; overflow-wrap: anywhere; }
 .a6 .a6-foot { margin-top: auto; padding-top: 0.5rem; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; border-top: 2px solid var(--border); }
 
+/* ---------- Route map ---------- */
+.map-wrap { border: 2px solid var(--text); margin: 0.75rem 0 1rem; background: var(--bg-card); }
+.route-map { display: block; width: 100%; height: auto; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.map-legend { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1.25rem; }
+.ml-route { border-top: 4px solid var(--accent); padding-top: 0.5rem; }
+.ml-route h3 { margin-bottom: 0.35rem; }
+.ml-site { display: flex; gap: 0.6rem; align-items: flex-start; margin-bottom: 0.6rem; }
+.ml-code {
+  flex: none; width: 2.2rem; height: 2.2rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  background: var(--accent); color: var(--ink, #fff); font-weight: 800; font-size: 0.85rem;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.ml-code.ring { background: var(--bg-card); color: var(--text); border: 4px solid var(--accent); }
+.ml-code.base { border-radius: 0; background: var(--text); color: #fff; }
+.ml-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--char-1); font-weight: 700; }
+
 #print-area { display: none; }
 
 /* ---------- Responsive ---------- */
@@ -639,6 +655,8 @@ th[scope="row"] { font-size: 0.88rem; letter-spacing: 0.01em; text-transform: no
       returnBy: '13:05',
       debriefEnd: '13:20',
       base: 'Wellcome Collection library reading room',
+      // Map position of the base (decimal degrees, as on any online map).
+      baseLat: 51.5259, baseLon: -0.1339,
       // The instructor console warns when a route leaves less than this
       // many minutes at any one site.
       minObsMinutes: 10
@@ -669,64 +687,76 @@ th[scope="row"] { font-size: 0.88rem; letter-spacing: 0.01em; text-transform: no
     // restrictionNote: shown at perimeter-only sites (a course rule)
     // smallVenue / venueNote: house rules for small premises
     // facilitatorNote: instructor only
+    // lat, lon: map position in decimal degrees (copy from any online map).
+    //   Used only to draw the route map; the lines between sites are
+    //   straight, not walking paths.
     sites: [
       { id: 'valencia', name: 'Valencia Cafe',
+        lat: 51.5256, lon: -0.1254,
         type: 'Traditional independent cafe (greasy spoon)',
         address: '74 Marchmont St, London WC1N 1AB',
         perimeterOnly: false, restrictionNote: '',
         smallVenue: true,
         venueNote: 'PLACEHOLDER: house rules for observers at Valencia Cafe (how many at once, purchases, maximum stay).',
-        facilitatorNote: 'PLACEHOLDER: facilitator note for Valencia Cafe.' },
+        facilitatorNote: 'Pairs with the Brunswick Centre. The route\'s most traditional candidate, so observers may rate it generously on atmosphere alone: ask them to name what produces each characteristic (cost of staying, staff behaviour, layout) rather than describe the mood. Small premises: split the group so the house rules on numbers are kept.' },
       { id: 'brunswick', name: 'The Brunswick Centre',
+        lat: 51.5240, lon: -0.1240,
         type: 'Mixed-use residential and retail complex with open concourse',
         address: 'Bernard Street, London WC1N 1BS',
         perimeterOnly: false, restrictionNote: '',
         smallVenue: false, venueNote: '',
-        facilitatorNote: 'PLACEHOLDER: facilitator note for The Brunswick Centre.' },
+        facilitatorNote: 'Pairs with Valencia Cafe, a few minutes apart. Steer observers to the difference between space people pass through and space people stay in: where can someone sit, and does staying depend on buying? For ownership and governance, ask who sets the rules on the concourse and how an observer could tell from signage alone.' },
       { id: 'kimpton', name: 'Kimpton Fitzroy coffee lounge',
+        lat: 51.5227, lon: -0.1250,
         type: 'Hotel lobby coffee lounge (commercial, semi-public)',
         address: '1-8 Russell Square, London WC1B 5BE',
         perimeterOnly: false, restrictionNote: '',
         smallVenue: false, venueNote: '',
-        facilitatorNote: 'PLACEHOLDER: facilitator note for the Kimpton Fitzroy coffee lounge.' },
+        facilitatorNote: 'Pairs with the British Museum: both can be walked into, but one is a commercial hotel lounge and the other a free national institution. Neutral ground and low profile are the key characteristics: what signals whether the lounge is meant for guests or paying customers? Observers go in as ordinary users, a few at a time, and must not test staff by sitting without buying.' },
       { id: 'museum', name: 'British Museum',
+        lat: 51.5193, lon: -0.1280,
         type: 'National public institution (museum, Great Court and forecourt)',
         address: 'Great Russell Street, London WC1B 3DG',
         perimeterOnly: false, restrictionNote: '',
         smallVenue: false, venueNote: '',
-        facilitatorNote: 'PLACEHOLDER: facilitator note for the British Museum (which areas to use).' },
+        facilitatorNote: 'Suggested areas: the forecourt and the Great Court, not the galleries. The task is the space people share, not the exhibits. Allow time for the entrance security check. Contrast with the Kimpton lounge: probe what scale, visitor turnover and the purpose of a visit do to conversation and to the regulars. Do not give observers expected ratings.' },
       { id: 'library', name: 'British Library',
+        lat: 51.5300, lon: -0.1277,
         type: 'National public institution (library building and forecourt)',
         address: '96 Euston Road, London NW1 2DB',
         perimeterOnly: false, restrictionNote: '',
         smallVenue: false, venueNote: '',
-        facilitatorNote: 'PLACEHOLDER: facilitator note for the British Library (which areas to use).' },
+        facilitatorNote: 'Suggested areas: the piazza and the public spaces inside the entrance. The reading rooms need a Reader Pass and are out of scope. Contrast with Granary Square: a public institution built for one purpose against an open square with none stated. Probe conversation as the main activity: many people may be present but few talking. What produces that?' },
       { id: 'granary', name: 'Granary Square',
+        lat: 51.5351, lon: -0.1249,
         type: 'Privately owned public space (open square)',
         address: 'Granary Square, King\'s Cross, London N1C 4AA',
         perimeterOnly: false, restrictionNote: '',
         smallVenue: false, venueNote: '',
-        facilitatorNote: 'PLACEHOLDER: facilitator note for Granary Square.' },
+        facilitatorNote: 'A privately owned public space: it looks public, but the owner sets the rules. Ask observers to find out from signage who manages the square and what conduct is restricted. Contrast with the British Library. Ask whether the fountains and canal-side steps produce a playful mood or mainly passing through. Remind the group to keep clear of the canal edge.' },
       { id: 'regents', name: "Regent's Place Plaza",
+        lat: 51.5250, lon: -0.1409,
         type: 'Privately owned public space (office estate plaza)',
         address: "Regent's Place, north side of Euston Road (between Osnaburgh Street and Hampstead Road), London NW1",
         perimeterOnly: false, restrictionNote: '',
         smallVenue: false, venueNote: '',
-        facilitatorNote: "PLACEHOLDER: facilitator note for Regent's Place Plaza." },
+        facilitatorNote: "A privately owned office-estate plaza. Confirm beforehand which open space within Regent's Place groups should use. The visit falls in the lunch hour: ask whether the people present are regulars of the plaza or of the offices around it. Contrast with Marylebone Green, where observers stay outside the boundary, so this comparison rests on rules, signage and design." },
       { id: 'marylebone', name: 'Marylebone Green Playground',
+        lat: 51.5256, lon: -0.1483,
         type: 'Public playground within a Royal Park',
-        address: 'PLACEHOLDER: address of Marylebone Green Playground',
+        address: 'Chester Road, The Regent\'s Park, London NW1 4NR',
         perimeterOnly: true,
         restrictionNote: 'Perimeter only: stay outside the boundary. Record access rules, signage and design. Do not observe, count, photograph or describe children.',
         smallVenue: false, venueNote: '',
-        facilitatorNote: 'PLACEHOLDER: facilitator note for Marylebone Green Playground (perimeter route).' },
+        facilitatorNote: 'Perimeter only. Observers stay outside the boundary and record access rules, signage and design. They do not observe, count, photograph or describe children, and do not linger at the gates. The people-dependent characteristics default to "Not observable here": treat that as a finding and ask what an explanation can rest on when the people are out of view.' },
       { id: 'corams', name: "Coram's Fields",
+        lat: 51.5247, lon: -0.1197,
         type: "Children's park and playground (adults admitted only with a child)",
         address: "93 Guilford Street, London WC1N 1DN",
         perimeterOnly: true,
         restrictionNote: 'Perimeter only: stay outside the boundary. Record access rules, signage and design. Do not observe, count, photograph or describe children.',
         smallVenue: false, venueNote: '',
-        facilitatorNote: "PLACEHOLDER: facilitator note for Coram's Fields (perimeter route)." }
+        facilitatorNote: "Single-site route, perimeter only. Adults are admitted only with a child, so an explicit entry rule shapes neutral ground and accessibility: the clearest case on the visit of a rule that excludes on purpose and for a reason. Observers record gates, signage and boundary design, and do not observe, count, photograph or describe children. In the debrief, compare with other groups' sites." }
     ],
 
     // ----- Routes -----
@@ -954,8 +984,21 @@ th[scope="row"] { font-size: 0.88rem; letter-spacing: 0.01em; text-transform: no
         importFailed: 'That file could not be imported: ',
         storageFailed: 'This browser is not saving your work (private mode or storage blocked). Export JSON before you close the page.'
       },
+      // Route map (instructor and observer).
+      map: {
+        title: 'Route map',
+        observerTitle: 'Your route',
+        help: 'Each line runs from the base to the route\'s sites and back. Lines are straight, not walking paths: use the map links for directions.',
+        noRoute: 'Enter your join code on the Join tab to see your own route. Until then, every route is shown.',
+        baseLabel: 'Base',
+        perimeterKey: 'Ring marker: perimeter only, stay outside the boundary.',
+        openMap: 'Open in a map app',
+        distTitle: 'Straight-line distances',
+        distHelp: 'As the crow flies, so walking distances are longer. Use these to check the walking times set for each route.',
+        backBy: 'Back at base by'
+      },
       instructor: {
-        tabs: { allocate: 'Allocate', brief: 'Briefing crib', debrief: 'Debrief' },
+        tabs: { allocate: 'Allocate', map: 'Map', brief: 'Briefing crib', debrief: 'Debrief' },
         allocTitle: 'Groups and routes',
         allocHelp: 'Tap a group, then tap a route. A route that shares a site with another group\'s route is unavailable, so no site is visited twice. Read the join code aloud to the group.',
         groupCount: 'Number of groups',
@@ -981,7 +1024,7 @@ th[scope="row"] { font-size: 0.88rem; letter-spacing: 0.01em; text-transform: no
         noSites: 'Allocate routes first: the debrief grid shows the allocated sites.'
       },
       observer: {
-        tabs: { join: 'Join', role: 'Role', field: 'Field', huddle: 'Huddle', share: 'Share-out' },
+        tabs: { join: 'Join', role: 'Role', map: 'Map', field: 'Field', huddle: 'Huddle', share: 'Share-out' },
         joinTitle: 'Join your group',
         joinHelp: 'About a minute. You can skip any step and start logging, but your share code will record what you skipped.',
         codeLabel: 'Join code (4 characters, from your instructor)',
@@ -1307,6 +1350,10 @@ th[scope="row"] { font-size: 0.88rem; letter-spacing: 0.01em; text-transform: no
       if (siteIds[s.id]) errs.push('Site id "' + s.id + '" is used twice.');
       siteIds[s.id] = true;
     });
+    cfg.sites.forEach(function (s) {
+      if (!validLatLon(s.lat, s.lon)) errs.push('Site "' + s.id + '" needs a map position (lat and lon in decimal degrees).');
+    });
+    if (!validLatLon(cfg.session.baseLat, cfg.session.baseLon)) errs.push('session.baseLat and session.baseLon must give the base\'s map position.');
     if (cfg.routes.length > 31) errs.push('Join codes support at most 31 routes.');
     cfg.routes.forEach(function (r, i) {
       var label = 'Route ' + (i + 1);
@@ -1838,9 +1885,10 @@ th[scope="row"] { font-size: 0.88rem; letter-spacing: 0.01em; text-transform: no
   // =====================================================================
   function renderInstructor() {
     var st = S.instructor, t = CONFIG.text.instructor;
-    var tabs = [{ id: 'allocate', label: t.tabs.allocate }, { id: 'brief', label: t.tabs.brief }, { id: 'debrief', label: t.tabs.debrief }];
+    var tabs = ['allocate', 'map', 'brief', 'debrief'].map(function (id) { return { id: id, label: t.tabs[id] }; });
     var h = tabsHtml(tabs, st.tab, 'itab', 'var(--char-1)');
-    if (st.tab === 'brief') h += renderBrief();
+    if (st.tab === 'map') h += renderInstructorMap();
+    else if (st.tab === 'brief') h += renderBrief();
     else if (st.tab === 'debrief') h += renderDebrief();
     else h += renderAllocate();
     return h;
@@ -1854,6 +1902,224 @@ th[scope="row"] { font-size: 0.88rem; letter-spacing: 0.01em; text-transform: no
     var tm = routeTimes(CONFIG.routes[ri]);
     var parts = tm.sites.map(function (s, i) { return 'Site ' + (i + 1) + ': ' + minToTime(s.arrive) + '–' + minToTime(s.leave) + ' (' + s.minutes + ' min)'; });
     return parts.join(' · ');
+  }
+
+  // =====================================================================
+  // Route map (inline SVG, no map tiles, no network)
+  // =====================================================================
+  function validLatLon(lat, lon) {
+    return typeof lat === 'number' && typeof lon === 'number' && isFinite(lat) && isFinite(lon) &&
+      Math.abs(lat) <= 90 && Math.abs(lon) <= 180;
+  }
+  var M_PER_DEG = 111320;
+  // Straight-line distance in metres (equirectangular; accurate to well
+  // under 1% at the scale of a walking route).
+  function distanceM(a, b) {
+    var k = Math.cos((a.lat + b.lat) / 2 * Math.PI / 180);
+    var dx = (b.lon - a.lon) * k, dy = b.lat - a.lat;
+    return Math.sqrt(dx * dx + dy * dy) * M_PER_DEG;
+  }
+  function basePoint() { return { lat: CONFIG.session.baseLat, lon: CONFIG.session.baseLon }; }
+  function routeColour(i) { return 'var(--char-' + ((i % 8) + 1) + ')'; }
+  // Gold and orange need dark type; the other palette colours take white.
+  function routeInk(i) { return (i % 8) === 3 || (i % 8) === 6 ? 'var(--text)' : '#fff'; }
+  function siteCode(ri, si) { return (ri + 1) + 'ABCDEFGH'.charAt(si); }
+  // Route legs as [from, to] points: base, each site in order, base.
+  function routeLegs(r) {
+    var pts = [basePoint()].concat(r.sites.map(function (id) { return SITE[id]; }).filter(Boolean)).concat([basePoint()]);
+    var legs = [];
+    for (var i = 0; i < pts.length - 1; i++) legs.push([pts[i], pts[i + 1]]);
+    return legs;
+  }
+  function fmtM(m) { var t = Math.round(m / 10) * 10; return t >= 1000 ? (Math.round(m / 100) / 10) + ' km' : t + ' m'; }
+  function osmLink(p) {
+    return 'https://www.openstreetmap.org/?mlat=' + p.lat + '&mlon=' + p.lon + '#map=18/' + p.lat + '/' + p.lon;
+  }
+
+  // routes: indices to draw. o.width: viewBox width (smaller = larger
+  // markers on screen). o.labels: draw site names beside markers.
+  function mapSvg(routes, o) {
+    o = o || {};
+    var W = o.width || 900, pad = o.pad || Math.round(W * 0.09);
+    var base = basePoint();
+    var pts = [base];
+    routes.forEach(function (ri) { CONFIG.routes[ri].sites.forEach(function (id) { if (SITE[id]) pts.push(SITE[id]); }); });
+    var lat0 = base.lat * Math.PI / 180, kx = Math.cos(lat0);
+    var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    pts.forEach(function (p) {
+      var x = p.lon * kx, y = p.lat;
+      minX = Math.min(minX, x); maxX = Math.max(maxX, x); minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+    });
+    // At least 600 m across, so a short route is not over-zoomed.
+    var minSpan = 600 / M_PER_DEG;
+    if (maxX - minX < minSpan) { var cx = (minX + maxX) / 2; minX = cx - minSpan / 2; maxX = cx + minSpan / 2; }
+    var minH = Math.max(minSpan, maxX - minX) * (o.minAspect || 0.6);
+    if (maxY - minY < minH) { var cy = (minY + maxY) / 2; minY = cy - minH / 2; maxY = cy + minH / 2; }
+    var k = (W - 2 * pad) / (maxX - minX);
+    var H = Math.round((maxY - minY) * k + 2 * pad);
+    function xy(p) { return [Math.round((p.lon * kx - minX) * k + pad), Math.round((maxY - p.lat) * k + pad)]; }
+    var pxPerM = k / M_PER_DEG;
+    var u = W / 900; // size unit
+    var fs = Math.round(17 * u * (o.textScale || 1));
+    var r = Math.round(19 * u * (o.textScale || 1));
+
+    var g = '';
+    // Obstacles for label placement: every marker, plus labels as placed.
+    var boxes = [], x0 = 0, x1 = W;
+    var bp = xy(base), bs = Math.round(r * 1.7);
+    boxes.push([bp[0] - bs / 2, bp[1] - bs / 2, bp[0] + bs / 2, bp[1] + bs / 2]);
+    routes.forEach(function (ri) {
+      CONFIG.routes[ri].sites.forEach(function (id) {
+        if (!SITE[id]) return;
+        var p = xy(SITE[id]);
+        boxes.push([p[0] - r - 2, p[1] - r - 2, p[0] + r + 2, p[1] + r + 2]);
+      });
+    });
+    var lfs = Math.round(fs * 0.9);
+    function hits(b) {
+      for (var i = 0; i < boxes.length; i++) {
+        var c = boxes[i];
+        if (b[0] < c[2] && b[2] > c[0] && b[1] < c[3] && b[3] > c[1]) return true;
+      }
+      return false;
+    }
+    // Places a label beside a marker at p, on the first side that does
+    // not cover another marker or label; returns the SVG text.
+    function placeLabel(p, text, rad, sides) {
+      var w = text.length * lfs * 0.86, gap = 6 * u, best = null;
+      for (var i = 0; i < sides.length && !best; i++) {
+        var side = sides[i], cx, by, anchor;
+        if (side === 'right') { cx = p[0] + rad + gap; anchor = 'start'; by = p[1] + lfs * 0.36; }
+        else if (side === 'left') { cx = p[0] - rad - gap; anchor = 'end'; by = p[1] + lfs * 0.36; }
+        else if (side === 'above') { cx = p[0]; anchor = 'middle'; by = p[1] - rad - gap; }
+        else { cx = p[0]; anchor = 'middle'; by = p[1] + rad + gap + lfs * 0.8; }
+        var left = anchor === 'start' ? cx : anchor === 'end' ? cx - w : cx - w / 2;
+        var box = [left - 2, by - lfs * 0.8, left + w + 2, by + lfs * 0.25];
+        if (!hits(box) || i === sides.length - 1) best = { x: cx, y: by, anchor: anchor, box: box };
+      }
+      boxes.push(best.box);
+      x0 = Math.min(x0, best.box[0] - 4); x1 = Math.max(x1, best.box[2] + 4);
+      return mapLabel(best.x, best.y, text, best.anchor, fs, W);
+    }
+
+    // Route lines: out and between solid, back dashed.
+    routes.forEach(function (ri) {
+      var legs = routeLegs(CONFIG.routes[ri]);
+      legs.forEach(function (leg, li) {
+        var a = xy(leg[0]), b = xy(leg[1]);
+        var back = li === legs.length - 1;
+        g += '<line x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '" style="stroke:' + routeColour(ri) + ';stroke-width:' + (6 * u) + ';stroke-linecap:square' +
+          (back ? ';stroke-dasharray:' + (14 * u) + ' ' + (10 * u) : '') + '"/>';
+      });
+    });
+
+    // Base: solid square.
+    g += '<rect x="' + (bp[0] - bs / 2) + '" y="' + (bp[1] - bs / 2) + '" width="' + bs + '" height="' + bs + '" style="fill:var(--text)"/>' +
+      '<text x="' + bp[0] + '" y="' + (bp[1] + fs * 0.36) + '" text-anchor="middle" style="fill:#fff;font-weight:800;font-size:' + fs + 'px">B</text>';
+    g += placeLabel(bp, CONFIG.text.map.baseLabel, bs / 2, ['above', 'below', 'left', 'right']);
+
+    // Site markers: filled circle, or a ring for perimeter-only sites.
+    routes.forEach(function (ri) {
+      CONFIG.routes[ri].sites.forEach(function (id, si) {
+        var site = SITE[id];
+        if (!site) return;
+        var p = xy(site), code = siteCode(ri, si);
+        if (site.perimeterOnly) {
+          g += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + r + '" style="fill:var(--bg-card);stroke:' + routeColour(ri) + ';stroke-width:' + (6 * u) + '"/>' +
+            '<text x="' + p[0] + '" y="' + (p[1] + fs * 0.36) + '" text-anchor="middle" style="fill:var(--text);font-weight:800;font-size:' + fs + 'px">' + esc(code) + '</text>';
+        } else {
+          g += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + r + '" style="fill:' + routeColour(ri) + '"/>' +
+            '<text x="' + p[0] + '" y="' + (p[1] + fs * 0.36) + '" text-anchor="middle" style="fill:' + routeInk(ri) + ';font-weight:800;font-size:' + fs + 'px">' + esc(code) + '</text>';
+        }
+        if (o.labels) g += placeLabel(p, site.name, r, ['right', 'left', 'below', 'above']);
+      });
+    });
+
+    // North arrow (triangle) and scale bar (alternating blocks).
+    var na = 16 * u, nx = W - pad * 0.45, ny = pad * 0.35;
+    g += '<polygon points="' + nx + ',' + ny + ' ' + (nx - na * 0.7) + ',' + (ny + na * 1.6) + ' ' + (nx + na * 0.7) + ',' + (ny + na * 1.6) + '" style="fill:var(--char-2)"/>' +
+      '<text x="' + nx + '" y="' + (ny + na * 1.6 + fs) + '" text-anchor="middle" style="fill:var(--text);font-weight:800;font-size:' + fs + 'px">N</text>';
+    var sm = (W - 2 * pad) / pxPerM > 1500 ? 500 : 200;
+    var sw = sm * pxPerM, sx = pad * 0.45, sy = H - pad * 0.45, sh = 8 * u;
+    for (var i = 0; i < 4; i++) {
+      g += '<rect x="' + (sx + i * sw / 4) + '" y="' + sy + '" width="' + (sw / 4) + '" height="' + sh + '" style="fill:' + (i % 2 ? 'var(--bg-card)' : 'var(--text)') + ';stroke:var(--text);stroke-width:' + (1.5 * u) + '"/>';
+    }
+    g += '<text x="' + sx + '" y="' + (sy - 6 * u) + '" style="fill:var(--text);font-weight:700;font-size:' + Math.round(fs * 0.85) + 'px">0</text>' +
+      '<text x="' + (sx + sw) + '" y="' + (sy - 6 * u) + '" text-anchor="middle" style="fill:var(--text);font-weight:700;font-size:' + Math.round(fs * 0.85) + 'px">' + sm + ' m</text>';
+
+    var bg = '<rect x="' + Math.round(x0) + '" y="0" width="' + Math.round(x1 - x0) + '" height="' + H + '" style="fill:var(--bg-card)"/>';
+    // 250 m grid, aligned on the base
+    var step = 250 * pxPerM;
+    for (var gx = bp[0] - Math.floor((bp[0] - x0) / step) * step; gx < x1; gx += step) bg += '<line x1="' + Math.round(gx) + '" y1="0" x2="' + Math.round(gx) + '" y2="' + H + '" style="stroke:var(--bg-deep);stroke-width:' + (1.5 * u) + '"/>';
+    for (var gy = bp[1] % step; gy < H; gy += step) bg += '<line x1="' + Math.round(x0) + '" y1="' + Math.round(gy) + '" x2="' + Math.round(x1) + '" y2="' + Math.round(gy) + '" style="stroke:var(--bg-deep);stroke-width:' + (1.5 * u) + '"/>';
+    g = bg + g;
+    var names = routes.map(function (ri) { return 'Route ' + (ri + 1) + ': ' + routeLabel(ri); }).join('; ');
+    return '<svg class="route-map" viewBox="' + Math.round(x0) + ' 0 ' + Math.round(x1 - x0) + ' ' + H + '" role="img" aria-label="' + esc('Map of ' + names + '. Base: ' + CONFIG.session.base + '. Details are listed below the map.') + '" ' +
+      'style="font-family:system-ui,-apple-system,\'Segoe UI\',Roboto,Arial,sans-serif">' + g + '</svg>';
+  }
+  // Text with a card-coloured halo so it stays legible over lines.
+  function mapLabel(x, y, text, anchor, fs, W) {
+    var st = 'font-weight:700;font-size:' + Math.round(fs * 0.9) + 'px;text-transform:uppercase;letter-spacing:0.04em';
+    return '<text x="' + Math.round(x) + '" y="' + Math.round(y) + '" text-anchor="' + anchor + '" style="' + st + ';fill:none;stroke:var(--bg-card);stroke-width:' + Math.round(fs * 0.35) + 'px;stroke-linejoin:round">' + esc(text) + '</text>' +
+      '<text x="' + Math.round(x) + '" y="' + Math.round(y) + '" text-anchor="' + anchor + '" style="' + st + ';fill:var(--text)">' + esc(text) + '</text>';
+  }
+
+  // Legend: one block per route, with addresses and map links.
+  function mapLegend(routes, withTimes) {
+    var tm = CONFIG.text.map, h = '<div class="map-legend">';
+    routes.forEach(function (ri) {
+      var r = CONFIG.routes[ri];
+      h += '<div class="ml-route" style="--accent:' + routeColour(ri) + '"><h3>Route ' + (ri + 1) + '</h3>';
+      if (withTimes) h += '<p class="small quiet">' + esc(routeTimesLine(ri)) + '</p>';
+      r.sites.forEach(function (id, si) {
+        var site = SITE[id];
+        if (!site) return;
+        h += '<div class="ml-site"><span class="ml-code' + (site.perimeterOnly ? ' ring' : '') + '" style="--ink:' + routeInk(ri) + '">' + esc(siteCode(ri, si)) + '</span><div>' +
+          '<strong>' + esc(site.name) + '</strong><br><span class="small">' + phText(site.address) + '</span>' +
+          (site.perimeterOnly ? '<br><span class="small alert">' + esc(site.restrictionNote) + '</span>' : '') +
+          '<br><a class="small ml-link" href="' + esc(osmLink(site)) + '" target="_blank" rel="noopener">' + esc(tm.openMap) + '</a></div></div>';
+      });
+      h += '</div>';
+    });
+    var base = basePoint();
+    h += '<div class="ml-route" style="--accent:var(--text)"><h3>' + esc(tm.baseLabel) + '</h3><div class="ml-site"><span class="ml-code base" aria-hidden="true">B</span><div><strong>' + esc(CONFIG.session.base) + '</strong>' +
+      '<br><a class="small ml-link" href="' + esc(osmLink(base)) + '" target="_blank" rel="noopener">' + esc(tm.openMap) + '</a></div></div></div>';
+    return h + '</div>';
+  }
+
+  function distanceTable() {
+    var tm = CONFIG.text.map;
+    var rows = CONFIG.routes.map(function (r, ri) {
+      var legs = routeLegs(r).map(function (l) { return distanceM(l[0], l[1]); });
+      var total = legs.reduce(function (a, b) { return a + b; }, 0);
+      var mins = [r.walkOut].concat(r.sites.length > 1 ? [r.walkBetween] : []).concat([r.walkBack]);
+      return '<tr><th scope="row" style="border-left:6px solid ' + routeColour(ri) + '">Route ' + (ri + 1) + '</th><td>' + esc(routeLabel(ri)) + '</td><td>' +
+        legs.map(function (m, i) { return fmtM(m) + ' (' + mins[i] + ' min set)'; }).join('<br>') + '</td><td>' + fmtM(total) + '</td></tr>';
+    }).join('');
+    return '<h3>' + esc(tm.distTitle) + '</h3><p class="small">' + esc(tm.distHelp) + '</p><div class="table-wrap"><table><thead><tr><th scope="col">Route</th><th scope="col">Sites</th>' +
+      '<th scope="col">Legs: out, between, back</th><th scope="col">Total</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+
+  function renderInstructorMap() {
+    var tm = CONFIG.text.map;
+    var all = CONFIG.routes.map(function (r, i) { return i; });
+    return '<section class="panel" style="--accent:var(--char-4)"><span class="deco-dot"></span><span class="eyebrow">' + esc(CONFIG.session.base) + '</span><h2>' + esc(tm.title) + '</h2>' +
+      '<p class="small">' + esc(tm.help) + ' ' + esc(tm.perimeterKey) + '</p><div class="map-wrap">' + mapSvg(all, { width: 900, labels: true }) + '</div>' +
+      mapLegend(all, true) + distanceTable() + '</section>';
+  }
+
+  function renderObserverMap() {
+    var tm = CONFIG.text.map, j = S.observer.join;
+    var mine = j.routeIndex != null && CONFIG.routes[j.routeIndex] ? [j.routeIndex] : null;
+    var routes = mine || CONFIG.routes.map(function (r, i) { return i; });
+    var h = '<section class="panel" style="--accent:var(--char-4)"><span class="deco-dot"></span><h2>' + esc(mine ? tm.observerTitle + ': route ' + (mine[0] + 1) : tm.title) + '</h2>';
+    if (!mine) h += '<div class="notice">' + esc(tm.noRoute) + '</div>';
+    else h += '<p class="small"><strong>' + esc(tm.backBy) + ' ' + esc(CONFIG.session.returnBy) + '.</strong> ' + esc(routeTimesLine(mine[0])) + '</p>';
+    h += '<p class="small">' + esc(tm.help) + ' ' + esc(tm.perimeterKey) + '</p>';
+    h += '<div class="map-wrap">' + mapSvg(routes, mine ? { width: 360, labels: true, textScale: 2.2, minAspect: 0.75 } : { width: 360, textScale: 1.8, minAspect: 0.75 }) + '</div>';
+    h += mapLegend(routes, false) + '</section>';
+    h += '<div class="btn-row"><button type="button" class="btn" data-action="otab" data-tab="field">' + esc(CONFIG.text.observer.tabs.field) + ' →</button></div>';
+    return h;
   }
 
   function renderAllocate() {
@@ -2064,9 +2330,10 @@ th[scope="row"] { font-size: 0.88rem; letter-spacing: 0.01em; text-transform: no
 
   function renderObserver() {
     var obs = S.observer, t = CONFIG.text.observer;
-    var tabs = ['join', 'role', 'field', 'huddle', 'share'].map(function (id) { return { id: id, label: t.tabs[id] }; });
+    var tabs = ['join', 'role', 'map', 'field', 'huddle', 'share'].map(function (id) { return { id: id, label: t.tabs[id] }; });
     var h = tabsHtml(tabs, obs.tab, 'otab', 'var(--char-2)', obsTabStates(obs));
     if (obs.tab === 'role') h += renderRole();
+    else if (obs.tab === 'map') h += renderObserverMap();
     else if (obs.tab === 'field') h += renderField();
     else if (obs.tab === 'huddle') h += renderHuddle();
     else if (obs.tab === 'share') h += renderShare();
@@ -2787,6 +3054,7 @@ th[scope="row"] { font-size: 0.88rem; letter-spacing: 0.01em; text-transform: no
   function instructorPrintHtml() {
     var st = S.instructor;
     if (st.tab === 'brief') return '<div class="p-doc"><h1>Week 5 field visit: briefing crib</h1>' + renderBrief() + '</div>';
+    if (st.tab === 'map') return '<div class="p-doc"><h1>Week 5 field visit: route map</h1>' + renderInstructorMap() + '</div>';
     var h = '<div class="p-doc"><h1>Week 5 field visit: instructor record</h1><h2 style="--accent:var(--char-4)">Allocation</h2>' + allocationTable();
     var sites = debriefSites();
     if (sites.length) {
@@ -3292,6 +3560,8 @@ th[scope="row"] { font-size: 0.88rem; letter-spacing: 0.01em; text-transform: no
     routeConflicts: routeConflicts,
     routeTimes: routeTimes,
     validateConfig: validateConfig,
+    distanceM: distanceM,
+    mapSvg: mapSvg,
     listPlaceholders: listPlaceholders,
     lettersForSize: lettersForSize,
     roleFor: roleFor,
