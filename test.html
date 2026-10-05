@@ -1307,11 +1307,12 @@
 
     assert('perimeter-only sites default people-dependent characteristics to not observable', function() {
       var ri = -1;
-      W5.CONFIG.routes.forEach(function(r, i) { if (r.sites.length === 1 && r.sites[0] === 'corams') ri = i; });
+      var si = -1;
+      W5.CONFIG.routes.forEach(function(r, i) { if (r.sites.indexOf('corams') >= 0) { ri = i; si = r.sites.indexOf('corams'); } });
       ok(ri >= 0, 'no Coram\'s Fields route');
       var o = w5Observer('C', 1, ri);
-      eq(W5.effectiveRating(o, 0, 'rg'), 'na');
-      eq(W5.effectiveRating(o, 0, 'ng'), '');
+      eq(W5.effectiveRating(o, si, 'rg'), 'na');
+      eq(W5.effectiveRating(o, si, 'ng'), '');
     });
 
     assert('merge adds, de-duplicates by letter and keeps the newer code', function() {
@@ -1344,6 +1345,74 @@
       ok(!g[0].ha.double && g[0].ha.agree === null);
     });
 
+    assert('three-site route: equal split, two move-by times, per-walk timings', function() {
+      var SESSION = { start: '12:15', returnBy: '13:05', minObsMinutes: 5 };
+      var t = W5.routeTimes({ sites: ['a', 'b', 'c'], walkOut: 10, walkBetween: [6, 4], walkBack: 10 }, SESSION);
+      eq(t.sites.length, 3);
+      eq(t.sites.map(function(s) { return s.minutes; }).join(','), '6,6,8');
+      eq(t.moves.map(W5.minToTime).join(','), '12:31,12:43');
+      eq(W5.minToTime(t.moveBy), '12:31');
+      eq(W5.minToTime(t.sites[2].arrive), '12:47');
+      eq(W5.minToTime(t.leaveBy), '12:55');
+      var u = W5.routeTimes({ sites: ['a', 'b', 'c'], walkOut: 10, walkBetween: 5, walkBack: 10 }, SESSION);
+      eq(u.observe, 20, 'a single walkBetween applies to every walk');
+    });
+
+    assert('config validation: up to three distinct sites, walkBetween list matches walks', function() {
+      var cfg = JSON.parse(JSON.stringify(W5.CONFIG));
+      cfg.routes = [{ sites: ['valencia', 'corams', 'brunswick'], walkOut: 5, walkBetween: [5, 5], walkBack: 5 }];
+      eq(W5.validateConfig(cfg).length, 0, W5.validateConfig(cfg).join('; '));
+      cfg.routes = [{ sites: ['valencia', 'corams', 'brunswick'], walkOut: 5, walkBetween: [5], walkBack: 5 }];
+      ok(W5.validateConfig(cfg).length > 0, 'short walkBetween list accepted');
+      cfg.routes = [{ sites: ['valencia', 'corams', 'valencia'], walkOut: 5, walkBetween: 5, walkBack: 5 }];
+      ok(W5.validateConfig(cfg).length > 0, 'repeated site accepted');
+      cfg.routes = [{ sites: ['valencia', 'corams', 'brunswick', 'museum'], walkOut: 5, walkBetween: 5, walkBack: 5 }];
+      ok(W5.validateConfig(cfg).length > 0, 'four sites accepted');
+    });
+
+    assert('share code carries the third site and places spotted on the walk', function() {
+      var o = w5Observer('A', 1, 0, 'Ana');
+      o.ratings['2'] = { ng: 'absent' };
+      o.notes.push({ i: 'n1', s: 2, c: 'ng', x: 'Gate sign: adults only with a child', t: '12:45', f: 'rules' });
+      o.spots.push({ i: 's1', x: 'Corner pub, shutters down', y: 'Looks like a former local', k: 'former', t: '12:20' });
+      o.spots.push({ i: 's2', x: 'Benches by the bus stop', y: '', k: 'bogus', t: '12:50' });
+      var p = W5.parseShareCode(W5.encodeShareCode(W5.buildShareRecord(o, 5)));
+      ok(p.ok, p.error);
+      eq(p.record.ra['2'].ng, 'absent');
+      eq(p.record.no[0].s, 2);
+      eq(p.record.sp.length, 2);
+      eq(p.record.sp[0].k, 'former');
+      eq(p.record.sp[1].k, '', 'unknown status dropped');
+      var old = W5.buildShareRecord(w5Observer('B', 1, 0), 5);
+      delete old.sp;
+      var q = W5.parseShareCode(W5.encodeShareCode(old));
+      ok(q.ok && q.record.sp.length === 0, 'codes without spotted places still load');
+    });
+
+    assert('sitesDiffer compares every site on a three-site route', function() {
+      var hw = W5.blankHomework();
+      var ri = -1;
+      W5.CONFIG.routes.forEach(function(r, i) { if (r.sites.length === 3) ri = i; });
+      ok(ri >= 0, 'no three-site route');
+      hw.group = 1; hw.routeIndex = ri;
+      hw.final = { '0|cv': 'present', '1|cv': 'na', '2|cv': 'present' };
+      ok(W5.sitesDiffer(hw, 'cv'), 'na at one site differs from present');
+      hw.final = { '0|lv': 'partial', '2|lv': 'partial' };
+      ok(!W5.sitesDiffer(hw, 'lv'), 'unrated site ignored');
+      hw.final = { '0|rg': 'partial', '2|rg': 'absent' };
+      ok(W5.sitesDiffer(hw, 'rg'));
+    });
+
+    assert('report and text output list places spotted on the walk', function() {
+      var hw = W5.blankHomework();
+      hw.group = 1; hw.routeIndex = 0; hw.me = { name: 'Ana', letter: 'A' };
+      var o = w5Observer('A', 1, 0, 'Ana');
+      o.spots.push({ i: 's1', x: 'Launderette with chairs', y: 'People waiting together', k: 'busy', t: '12:20' });
+      hw.records = { A: W5.buildShareRecord(o, 1) };
+      ok(W5.buildReportHtml(hw).indexOf('Launderette with chairs') >= 0, 'missing from A4 report');
+      ok(W5.buildReportText(hw).indexOf('Launderette with chairs') >= 0, 'missing from text');
+    });
+
     suite('Field Visit — Homework');
 
     var LONG = 'word '.repeat(25);
@@ -1366,6 +1435,65 @@
       var c = W5.buildCards(hw);
       eq(c.claims.length, 1);
       ok(c.claims[0].indexOf('Quality') >= 0);
+    });
+
+    function w5Decline(id, claim, lens) {
+      var d = W5.blankDecline(id);
+      d.claim = claim; d.lens = lens; d.factor = 'cost'; d.refs = ['x:ng'];
+      d.mechanism = LONG; d.evidence = LONG;
+      d.line = 'If staying costs more over time, fewer people linger and talk.';
+      return d;
+    }
+
+    assert('candidate explanation: every field is required, a single character is not enough', function() {
+      ok(W5.declineIssues(W5.blankDecline('d1')).length >= 6, 'blank explanation passed');
+      var d = w5Decline('d1', 'use', 'economic');
+      eq(W5.declineIssues(d).length, 0, W5.declineIssues(d).join('; '));
+      d.mechanism = 'x';
+      ok(W5.declineIssues(d).length === 1, 'one-character mechanism accepted');
+      d = w5Decline('d1', 'use', 'economic'); d.refs = [];
+      ok(W5.declineIssues(d).length === 1, 'explanation with nothing to rest on accepted');
+      d = w5Decline('d1', 'nonsense', 'economic');
+      ok(W5.declineIssues(d).length === 1, 'unknown claim accepted');
+    });
+
+    assert('decline step needs the configured count and lens spread', function() {
+      var hw = W5.blankHomework();
+      hw.group = 1; hw.routeIndex = 0;
+      hw.decline = [w5Decline('d1', 'use', 'economic')];
+      ok(W5.stepIssues(hw, 'decline').length > 0, 'one explanation accepted');
+      hw.decline.push(w5Decline('d2', 'supply', 'economic'));
+      ok(W5.stepIssues(hw, 'decline').some(function(x) { return /lenses/.test(x); }), 'two explanations in one lens accepted');
+      hw.decline[1].lens = 'political';
+      eq(W5.stepIssues(hw, 'decline').length, 0, W5.stepIssues(hw, 'decline').join('; '));
+    });
+
+    assert('candidate explanations produce A6 cards and appear in the report', function() {
+      var hw = W5.blankHomework();
+      hw.group = 1; hw.routeIndex = 0; hw.me = { name: 'Ana', letter: 'A' };
+      hw.decline = [w5Decline('d1', 'use', 'economic'), W5.blankDecline('d2')];
+      var c = W5.buildCards(hw);
+      eq(c.declines.length, 1, 'only complete explanations make cards');
+      ok(c.declines[0].indexOf('Economic') >= 0 && c.declines[0].indexOf('Candidate explanation') >= 0);
+      ok(W5.buildCardsHtml(hw).indexOf('Candidate explanation') >= 0);
+      ok(W5.buildReportHtml(hw).indexOf('Candidate explanations of decline') >= 0);
+      ok(W5.buildReportText(hw).indexOf('fewer people linger and talk') >= 0);
+    });
+
+    assert('lens ids match the week 6b export', function() {
+      eq(W5.CONFIG.lenses.map(function(l) { return l.id; }).sort().join(','), 'economic,political,psychological');
+    });
+
+    assert('Valencia Cafe and Kimpton Fitzroy carry house rules, and no PLACEHOLDER remains', function() {
+      ['valencia', 'kimpton'].forEach(function(id) {
+        var site = W5.CONFIG.sites.filter(function(s) { return s.id === id; })[0];
+        ok(site && /permission/.test(site.venueNote), id);
+      });
+      eq(W5.listPlaceholders().length, 0, W5.listPlaceholders().map(function(p) { return p.text; }).join('; '));
+    });
+
+    assert('no route carries a PLACEHOLDER note', function() {
+      W5.CONFIG.routes.forEach(function(r, i) { ok(!r.note || r.note.indexOf('PLACEHOLDER:') !== 0, 'route ' + (i + 1)); });
     });
 
     assert('no decline-claim words on observer or instructor screens', function() {
