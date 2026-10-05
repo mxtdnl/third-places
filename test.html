@@ -1122,8 +1122,8 @@
       eq(W5.validateConfig().length, 0, W5.validateConfig().join('; '));
     });
 
-    assert('Nine sites, eight characteristics, four claims, six factors', function() {
-      eq(W5.CONFIG.sites.length, 9);
+    assert('Thirteen sites, eight characteristics, four claims, six factors', function() {
+      eq(W5.CONFIG.sites.length, 13);
       eq(W5.CONFIG.characteristics.length, 8);
       eq(W5.CONFIG.claims.map(function(c) { return c.id; }).join(','), 'supply,use,quality,outcome');
       eq(W5.CONFIG.factors.length, 6);
