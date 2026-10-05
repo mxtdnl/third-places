@@ -1417,67 +1417,109 @@
 
     var LONG = 'word '.repeat(25);
 
-    assert('claim-wall card eligibility: cannot-speak claims produce no card', function() {
-      var good = { scope: 'speaks', why: LONG, needed: LONG, finding: 'The cafe works as a meeting place for some regulars today.' };
-      ok(W5.claimCardEligible(good));
-      ok(W5.claimCardEligible({ scope: 'partly', why: LONG, needed: LONG, finding: good.finding }));
-      ok(!W5.claimCardEligible({ scope: 'cannot', why: LONG, needed: LONG, finding: good.finding }));
-      ok(!W5.claimCardEligible({ scope: 'speaks', why: LONG, needed: LONG, finding: 'Too short.' }));
-      ok(!W5.claimCardEligible({}));
-      ok(!W5.claimCardEligible(undefined));
-    });
-
-    assert('cards are built only for eligible claims', function() {
+    var SENT = 'The cafe invites lingering because nobody is asked to buy again.';
+    function w5Hw() {
       var hw = W5.blankHomework();
       hw.group = 1; hw.routeIndex = 0; hw.me = { name: 'Ana', letter: 'A' };
-      var f = 'The cafe works as a meeting place for some regulars today.';
-      hw.claims = { supply: { scope: 'cannot', why: LONG, needed: LONG, finding: f }, quality: { scope: 'partly', why: LONG, needed: LONG, finding: f } };
-      var c = W5.buildCards(hw);
-      eq(c.claims.length, 1);
-      ok(c.claims[0].indexOf('Quality') >= 0);
-    });
-
-    function w5Decline(id, claim, lens) {
-      var d = W5.blankDecline(id);
-      d.claim = claim; d.lens = lens; d.factor = 'cost'; d.refs = ['x:ng'];
-      d.mechanism = LONG; d.evidence = LONG;
-      d.line = 'If staying costs more over time, fewer people linger and talk.';
-      return d;
+      var o = w5Observer('A', 1, 0, 'Ana');
+      o.notes.push({ i: 'n1', s: 0, c: 'cv', x: 'Two tables chatting across the aisle', t: '11:05', f: 'design' });
+      o.spots.push({ i: 's1', x: 'Closed pub', y: 'Boarded up', k: 'former', t: '11:40' });
+      hw.records = { A: W5.buildShareRecord(o, 1) };
+      return hw;
+    }
+    function w5Explained(hw, c) {
+      var e = W5.blankExplanation();
+      e.on = true; e.why = 'word '.repeat(40); e.factors = ['design']; e.refs = ['n:A:n1'];
+      e.change = LONG; e.claim = 'quality'; e.how = LONG; e.line = SENT;
+      hw.explain[c] = e;
+      return e;
     }
 
-    assert('candidate explanation: every field is required, a single character is not enough', function() {
-      ok(W5.declineIssues(W5.blankDecline('d1')).length >= 6, 'blank explanation passed');
-      var d = w5Decline('d1', 'use', 'economic');
-      eq(W5.declineIssues(d).length, 0, W5.declineIssues(d).join('; '));
-      d.mechanism = 'x';
-      ok(W5.declineIssues(d).length === 1, 'one-character mechanism accepted');
-      d = w5Decline('d1', 'use', 'economic'); d.refs = [];
-      ok(W5.declineIssues(d).length === 1, 'explanation with nothing to rest on accepted');
-      d = w5Decline('d1', 'nonsense', 'economic');
-      ok(W5.declineIssues(d).length === 1, 'unknown claim accepted');
+    assert('explanation: every field is required, a single character is not enough', function() {
+      var hw = w5Hw();
+      var e = w5Explained(hw, 'cv');
+      eq(W5.explanationIssues(hw, 'cv').length, 0, W5.explanationIssues(hw, 'cv').join('; '));
+      ['why', 'change', 'how'].forEach(function(k) {
+        var keep = e[k]; e[k] = 'x';
+        eq(W5.explanationIssues(hw, 'cv').length, 1, 'one-character ' + k + ' accepted');
+        e[k] = keep;
+      });
+      e.why = 'word '.repeat(39);
+      eq(W5.explanationIssues(hw, 'cv').length, 1, 'why below the configured minimum accepted');
+      e.why = 'word '.repeat(40); e.claim = '';
+      eq(W5.explanationIssues(hw, 'cv').length, 1, 'missing decline claim accepted');
+      e.claim = 'quality'; e.refs = ['n:A:missing'];
+      eq(W5.explanationIssues(hw, 'cv').length, 1, 'evidence that no longer exists accepted');
+      e.refs = ['p:A:s1'];
+      eq(W5.explanationIssues(hw, 'cv').length, 0, 'a spotted place should count as evidence');
+      e.lens = '';
+      eq(W5.explanationIssues(hw, 'cv').length, 0, 'lens should be optional');
     });
 
-    assert('decline step needs the configured count and lens spread', function() {
-      var hw = W5.blankHomework();
-      hw.group = 1; hw.routeIndex = 0;
-      hw.decline = [w5Decline('d1', 'use', 'economic')];
-      ok(W5.stepIssues(hw, 'decline').length > 0, 'one explanation accepted');
-      hw.decline.push(w5Decline('d2', 'supply', 'economic'));
-      ok(W5.stepIssues(hw, 'decline').some(function(x) { return /lenses/.test(x); }), 'two explanations in one lens accepted');
-      hw.decline[1].lens = 'political';
-      eq(W5.stepIssues(hw, 'decline').length, 0, W5.stepIssues(hw, 'decline').join('; '));
+    assert('explain step needs the configured count, including one where the sites differ', function() {
+      var hw = w5Hw();
+      eq(W5.CONFIG.words.explainCount, 3);
+      hw.final = { '0|cv': 'present', '1|cv': 'absent', '0|lv': 'partial', '1|lv': 'partial', '0|rg': 'absent', '1|rg': 'absent', '0|ng': 'present', '1|ng': 'present' };
+      w5Explained(hw, 'lv'); w5Explained(hw, 'rg');
+      ok(W5.stepIssues(hw, 'explain').length > 0, 'two explanations accepted');
+      w5Explained(hw, 'ng');
+      ok(W5.stepIssues(hw, 'explain').some(function(x) { return /sites differ/.test(x); }), 'no explanation where sites differ accepted');
+      w5Explained(hw, 'cv');
+      eq(W5.stepIssues(hw, 'explain').length, 0, W5.stepIssues(hw, 'explain').join('; '));
     });
 
-    assert('candidate explanations produce A6 cards and appear in the report', function() {
-      var hw = W5.blankHomework();
-      hw.group = 1; hw.routeIndex = 0; hw.me = { name: 'Ana', letter: 'A' };
-      hw.decline = [w5Decline('d1', 'use', 'economic'), W5.blankDecline('d2')];
-      var c = W5.buildCards(hw);
-      eq(c.declines.length, 1, 'only complete explanations make cards');
-      ok(c.declines[0].indexOf('Economic') >= 0 && c.declines[0].indexOf('Candidate explanation') >= 0);
-      ok(W5.buildCardsHtml(hw).indexOf('Candidate explanation') >= 0);
-      ok(W5.buildReportHtml(hw).indexOf('Candidate explanations of decline') >= 0);
-      ok(W5.buildReportText(hw).indexOf('fewer people linger and talk') >= 0);
+    assert('compare step: only cells where observers differ must be chosen', function() {
+      var hw = w5Hw();
+      var a = W5.buildShareRecord(w5Observer('C', 1, 0), 1); a.ra['0'] = { rg: 'present', lv: 'partial' };
+      var d = W5.buildShareRecord(w5Observer('D', 1, 0), 1); d.ra['0'] = { rg: 'partial' };
+      var e = W5.buildShareRecord(w5Observer('E', 1, 0), 1); e.ra['0'] = { lv: 'partial' };
+      hw.records.C = a; hw.records.D = d; hw.records.E = e;
+      eq(W5.disputedCells(hw).length, 1);
+      eq(W5.stepIssues(hw, 'compare').length, 1);
+      eq(W5.finalRating(hw, 0, 'lv'), 'partial', 'agreed rating should carry through');
+      hw.final['0|rg'] = 'partial';
+      eq(W5.stepIssues(hw, 'compare').length, 0);
+    });
+
+    assert('weakestSites finds the site to ask "what would have to be different" about', function() {
+      var hw = w5Hw();
+      hw.final = { '0|cv': 'present', '1|cv': 'absent' };
+      var w = W5.weakestSites(hw, 'cv');
+      eq(w.sites.join(','), '1'); eq(w.rating, 'absent');
+      hw.final = { '0|cv': 'na' };
+      eq(W5.weakestSites(hw, 'cv').sites.length, 0, 'not observable should be ignored');
+    });
+
+    assert('cards are built only for complete explanations; report and text carry every answer', function() {
+      var hw = w5Hw();
+      w5Explained(hw, 'cv');
+      var half = W5.blankExplanation(); half.on = true; half.why = 'Too short.'; hw.explain.lv = half;
+      var cards = W5.buildCards(hw);
+      eq(cards.length, 1);
+      ok(cards[0].indexOf('Quality') >= 0 && cards[0].indexOf(SENT) >= 0);
+      ok(W5.buildCardsHtml(hw).indexOf('card-sheet') >= 0);
+      hw.explain.cv.change = 'If the tables were fixed in rows facing the counter';
+      var html = W5.buildReportHtml(hw), text = W5.buildReportText(hw);
+      ok(html.indexOf('fixed in rows') >= 0 && text.indexOf('fixed in rows') >= 0, 'what would have to be different missing');
+      ok(text.indexOf('Two tables chatting across the aisle') >= 0, 'evidence missing from text');
+      ok(html.indexOf(W5.esc(W5.CONFIG.snapshotNote)) >= 0, 'snapshot note missing');
+    });
+
+    assert('seven-step homework (v1) migrates without losing codes, ratings or text', function() {
+      var hw = w5Hw();
+      var v1 = { schema: 'tp-w5-homework', v: 1, step: 'claims', me: { name: 'Ana', letter: 'A' }, code: '', group: 1, routeIndex: 0,
+        records: hw.records, sort: {}, agree: { '0|rg': { rating: 'partial', reason: LONG } }, final: { '1|cv': 'absent' },
+        explain: { cv: { on: true, sites: { '0': { text: 'Busy talk here', factors: ['design'] }, '1': { text: 'Silence there', factors: ['rules'] }, '2': { text: '', factors: [] } },
+          contrast: 'Layout explains it', refs: ['A:n1'], line: SENT } }, overall: {}, decline: [], claims: {} };
+      var m = W5.normalise('homework', JSON.parse(JSON.stringify(v1)));
+      eq(m.v, 2); eq(m.step, 'compare');
+      eq(Object.keys(m.records).join(','), 'A');
+      eq(m.final['0|rg'], 'partial'); eq(m.final['1|cv'], 'absent');
+      var e = m.explain.cv;
+      ok(e.on && /Busy talk here/.test(e.why) && /Silence there/.test(e.why) && /Layout explains it/.test(e.why), 'explanation text lost');
+      eq(e.factors.sort().join(','), 'design,rules');
+      eq(e.refs.join(','), 'n:A:n1'); eq(e.line, SENT);
+      ok(!('decline' in m) && !('claims' in m) && !('sort' in m), 'old step data kept');
     });
 
     assert('lens ids match the week 6b export', function() {
