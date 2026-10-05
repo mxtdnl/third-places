@@ -22,7 +22,7 @@ Interactive teaching tools for Ray Oldenburg's third-place theory. Static HTML f
 - `SLIDES.md` — Blueprint for building a projection deck: the 16:9 stage model, type scale, slide archetypes, interaction patterns, contrast rules and the verification harnesses. Read before building or editing a deck; `theory-of-change.html` is the reference implementation
 - `third-place-content.md` — Source content and curriculum notes
 - `spec.md` — Mechanics, tuning values and design assumptions for the builder
-- `test.html` — Test suite (138 tests) covering data integrity, pure functions, HTML generators, and encoding
+- `test.html` — Test suite (139 tests) covering data integrity, pure functions, HTML generators, and encoding
 
 When adding a new activity HTML file, also add a card for it in `index.html` (inside the `.activity-grid` div) and list it in this Files section.
 

@@ -1484,6 +1484,14 @@
       eq(W5.CONFIG.lenses.map(function(l) { return l.id; }).sort().join(','), 'economic,political,psychological');
     });
 
+    assert('Valencia Cafe and Kimpton Fitzroy carry house rules, and no PLACEHOLDER remains', function() {
+      ['valencia', 'kimpton'].forEach(function(id) {
+        var site = W5.CONFIG.sites.filter(function(s) { return s.id === id; })[0];
+        ok(site && /permission/.test(site.venueNote), id);
+      });
+      eq(W5.listPlaceholders().length, 0, W5.listPlaceholders().map(function(p) { return p.text; }).join('; '));
+    });
+
     assert('no route carries a PLACEHOLDER note', function() {
       W5.CONFIG.routes.forEach(function(r, i) { ok(!r.note || r.note.indexOf('PLACEHOLDER:') !== 0, 'route ' + (i + 1)); });
     });

@@ -890,7 +890,9 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     //   people-dependent characteristics then default to "Not observable
     //   here" and the prompts point to rules, signage and design.
     // restrictionNote: shown at perimeter-only sites (a course rule)
-    // smallVenue / venueNote: house rules for small premises
+    // smallVenue: true marks small premises
+    // venueNote: house rules shown to observers at this site (any site;
+    //   leave '' for none)
     // facilitatorNote: instructor only
     // lat, lon: map position in decimal degrees (copy from any online map).
     //   Used only to draw the route map; the lines between sites are
@@ -902,8 +904,8 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         address: '74 Marchmont St, London WC1N 1AB',
         perimeterOnly: false, restrictionNote: '',
         smallVenue: true,
-        venueNote: 'PLACEHOLDER: house rules for observers at Valencia Cafe (how many at once, purchases, maximum stay).',
-        facilitatorNote: 'Shares a route with Coram\'s Fields and the Brunswick Centre. The route\'s most traditional candidate, so observers may rate it generously on atmosphere alone: ask them to name what produces each characteristic (cost of staying, staff behaviour, layout) rather than describe the mood. Small premises: split the group so the house rules on numbers are kept.' },
+        venueNote: 'House rules: observe from outside or from public areas. If you go into the cafe, first ask the staff for permission to observe and tell them the purpose of your observations. This is an arranged exception to the rule on approaching staff.',
+        facilitatorNote: 'Shares a route with Coram\'s Fields and the Brunswick Centre. The route\'s most traditional candidate, so observers may rate it generously on atmosphere alone: ask them to name what produces each characteristic (cost of staying, staff behaviour, layout) rather than describe the mood. Small premises: observers watch from outside or public areas, and anyone going in asks staff for permission first and explains the purpose of the visit.' },
       { id: 'brunswick', name: 'The Brunswick Centre',
         lat: 51.5240, lon: -0.1240,
         type: 'Mixed-use residential and retail complex with open concourse',
@@ -916,8 +918,9 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         type: 'Hotel lobby and bar (commercial, semi-public)',
         address: '1-8 Russell Square, London WC1B 5BE',
         perimeterOnly: false, restrictionNote: '',
-        smallVenue: false, venueNote: '',
-        facilitatorNote: 'Pairs with the British Museum: both can be walked into, but one is a commercial hotel lobby and bar and the other a free national institution. Neutral ground and low profile are the key characteristics: what signals whether the lobby and the bar are meant for hotel guests, paying customers or anyone? Ask observers to compare the two spaces: where does staying start to depend on buying? Observers go in as ordinary users, a few at a time, and must not test staff by sitting without buying.' },
+        smallVenue: false,
+        venueNote: 'House rules: observe from outside or from public areas. If you go into the bar area, first ask the staff for permission to observe and tell them the purpose of your observations. This is an arranged exception to the rule on approaching staff.',
+        facilitatorNote: 'Pairs with the British Museum: both can be walked into, but one is a commercial hotel lobby and bar and the other a free national institution. Neutral ground and low profile are the key characteristics: what signals whether the lobby and the bar are meant for hotel guests, paying customers or anyone? Ask observers to compare the two spaces: where does staying start to depend on buying? Observers watch from outside or public areas; anyone going into the bar area asks staff for permission first and explains the purpose of the visit. Go in a few at a time, and do not test staff by sitting without buying.' },
       { id: 'museum', name: 'British Museum',
         lat: 51.5193, lon: -0.1280,
         type: 'National public institution (museum, Great Court and forecourt)',
@@ -2695,7 +2698,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         if (!site) return;
         h += '<p class="small"><strong>' + esc(site.name) + '</strong> · ' + esc(site.type) + '<br>' + phText(site.address) +
           (site.perimeterOnly ? '<br><span class="alert">' + esc(site.restrictionNote) + '</span>' : '') +
-          (site.smallVenue ? '<br>' + phText(site.venueNote) : '') + '<br>' + phText(site.facilitatorNote) + '</p>';
+          (site.venueNote ? '<br>' + phText(site.venueNote) : '') + '<br>' + phText(site.facilitatorNote) + '</p>';
       });
       h += '</div>';
     });
@@ -2836,7 +2839,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       CONFIG.ethics.map(function (e) { return '<li>' + esc(e) + '</li>'; }).join('') + '</ol>';
     obsSites(obs).forEach(function (site) {
       if (site && site.perimeterOnly) h += '<div class="restrict" style="margin-top:0.6rem"><strong>' + esc(site.name) + ':</strong> ' + esc(site.restrictionNote) + '</div>';
-      if (site && site.smallVenue && site.venueNote && !isPlaceholder(site.venueNote)) h += '<div class="notice" style="margin-top:0.6rem"><strong>' + esc(site.name) + ':</strong> ' + esc(site.venueNote) + '</div>';
+      if (site && site.venueNote && !isPlaceholder(site.venueNote)) h += '<div class="notice" style="margin-top:0.6rem"><strong>' + esc(site.name) + ':</strong> ' + esc(site.venueNote) + '</div>';
     });
     h += '<div class="btn-row" style="margin-top:0.9rem">';
     if (j.ethicsAt) h += '<span class="notice good" style="margin:0" role="status">✓ ' + esc(t.ethicsDone) + ' ' + esc(j.ethicsAt) + '</span>';
@@ -2901,7 +2904,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     h += spotReminderHtml();
     if (site) {
       h += '<p class="site-info">' + siteLines(site, true) + '</p>';
-      if (site.smallVenue && site.venueNote && !isPlaceholder(site.venueNote)) h += '<div class="notice">' + esc(site.venueNote) + '</div>';
+      if (site.venueNote && !isPlaceholder(site.venueNote)) h += '<div class="notice">' + esc(site.venueNote) + '</div>';
     }
     charsForObserver(j).forEach(function (c) { h += renderCharCard(obs, si, site, c); });
     return h;
