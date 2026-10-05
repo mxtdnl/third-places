@@ -387,6 +387,18 @@ input.code-input { font-size: 1.8rem; font-weight: 800; letter-spacing: 0.4em; t
   padding: 0.5rem 0.9rem; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.04em;
   margin: 0 0 1rem; border-bottom: 4px solid var(--char-4);
 }
+.lens-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.4rem; }
+.lens-tag {
+  display: inline-flex; align-items: center; gap: 0.45rem; min-height: 36px; padding: 0.3rem 0.75rem;
+  border: 2px solid var(--accent); background: var(--bg-card); color: var(--text);
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.lens-tag .pip { width: 10px; height: 10px; background: var(--accent); display: inline-block; }
+.lens-tag.filled { background: var(--accent); color: #fff; }
+.lens-tag.filled .pip { background: #fff; }
+.lens-tag.filled.dark-ink { color: var(--text); }
+.lens-tag.filled.dark-ink .pip { background: var(--text); }
 .spot-reminder {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem;
   border-left: 6px solid var(--char-7); background: rgba(204,104,48,0.10); padding: 0.5rem 0.75rem;
@@ -864,7 +876,10 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       sentenceMin: 8,    // minimum words in a one-sentence explanation or finding
       sentenceMax: 30,   // maximum words in a one-sentence explanation or finding
       shareSentenceMax: 35, // maximum words in the share-out contrast sentence (field day, no minimum)
-      explainCount: 4    // characteristics each student must explain in full
+      explainCount: 4,   // characteristics each student must explain in full
+      declineCount: 2,   // candidate explanations of decline each student must complete
+      declineMax: 4,     // most candidate explanations a student can add
+      declineLenses: 2   // complete explanations must cover at least this many lenses (1 switches it off)
     },
 
     // ----- Sites -----
@@ -972,20 +987,17 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     // the walk from each site to the next (one number for every such
     // walk, or a list with one number per walk, e.g. [6, 4] for three
     // sites; ignored for single-site routes), walkBack = last site to
-    // base. Time on site is split equally between the sites.
-    // ALL TIMINGS BELOW ARE PLACEHOLDER VALUES.
+    // base. Time on site is split equally between the sites. The
+    // console's Map tab lists straight-line distances for checking.
+    // note (optional): a line for the instructor, shown with the route.
     //
     // Changing a route's sites changes its join codes, so finish editing
     // routes before the session and give students the same file.
     routes: [
-      { sites: ['valencia', 'corams', 'brunswick'], walkOut: 10, walkBetween: [5, 5], walkBack: 10,
-        note: 'PLACEHOLDER: verify proximity and walking times' },
-      { sites: ['kimpton', 'museum'], walkOut: 10, walkBetween: 5, walkBack: 10,
-        note: 'PLACEHOLDER: verify proximity and walking times' },
-      { sites: ['library', 'granary'], walkOut: 10, walkBetween: 5, walkBack: 10,
-        note: 'PLACEHOLDER: verify proximity and walking times' },
-      { sites: ['regents', 'marylebone'], walkOut: 10, walkBetween: 5, walkBack: 10,
-        note: 'PLACEHOLDER: verify proximity and walking times' }
+      { sites: ['valencia', 'corams', 'brunswick'], walkOut: 10, walkBetween: [5, 5], walkBack: 10 },
+      { sites: ['kimpton', 'museum'], walkOut: 10, walkBetween: 5, walkBack: 10 },
+      { sites: ['library', 'granary'], walkOut: 10, walkBetween: 5, walkBack: 10 },
+      { sites: ['regents', 'marylebone'], walkOut: 10, walkBetween: 5, walkBack: 10 }
     ],
 
     // ----- Oldenburg's eight characteristics -----
@@ -1155,6 +1167,14 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       { id: 'quality', name: 'Quality', colour: 'var(--claim-quality)', def: 'Those that remain function less well as third places.' },
       { id: 'outcome', name: 'Outcome', colour: 'var(--claim-outcome)', def: 'Social consequences such as belonging and trust have worsened.' }
     ],
+    // ----- Homework only: the three disciplinary lenses -----
+    // ids match the week 6b Adjudication Bench export. colour matches the
+    // lens colours used in the Evidence Compass and week 6b.
+    lenses: [
+      { id: 'psychological', name: 'Psychological', colour: 'var(--char-1)', focus: 'Behaviour, cognition, wellbeing' },
+      { id: 'political', name: 'Political', colour: 'var(--char-2)', focus: 'Policy, power, institutions' },
+      { id: 'economic', name: 'Economic', colour: 'var(--char-4)', focus: 'Markets, costs, incentives' }
+    ],
     snapshotNote: 'One visit is a snapshot. It shows these places on one day, at one time, and change over time cannot be observed in it. For each claim, judge for yourself what kind of evidence your visit produced and whether that evidence bears on the claim.',
     scopeOptions: [
       { id: 'speaks', label: 'The visit speaks to this claim' },
@@ -1177,7 +1197,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         heading: 'Choose your part',
         instructor: { title: 'Instructor', desc: 'Allocate routes, read join codes aloud, brief the groups and run the spoken debrief.', who: 'Laptop · instructor only' },
         observer: { title: 'Observer', desc: 'Join your group, get your role, log what you see at each site and share it with your group.', who: 'Your own phone · in the field' },
-        homework: { title: 'Homework', desc: 'Sort the group\'s notes, explain the characteristics across your sites, judge what one visit can tell you, and print your outputs.', who: 'Any device · per student' }
+        homework: { title: 'Homework', desc: 'Sort the group\'s notes, explain the characteristics across your sites, turn what you saw into candidate explanations of decline, judge what one visit can tell you, and print your outputs.', who: 'Any device · per student' }
       },
       modeNames: { instructor: 'Instructor console', observer: 'Observer', homework: 'Homework' },
       switchMode: 'Change part',
@@ -1314,7 +1334,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         spotCount: 'places spotted'
       },
       homework: {
-        tabs: { load: 'Load', sort: '1 Sort', agree: '2 Agree', explain: '3 Explain', overall: '4 Overall', claims: '5 Claims', outputs: '6 Outputs' },
+        tabs: { load: 'Load', sort: '1 Sort', agree: '2 Agree', explain: '3 Explain', overall: '4 Overall', decline: '5 Decline', claims: '6 Claims', outputs: '7 Outputs' },
         loadTitle: 'Load your group\'s data',
         loadHelp: 'Use the observer data on this phone, or paste every share code from your group chat, or import an exported JSON file.',
         fromDevice: 'Use this device\'s observer data',
@@ -1362,23 +1382,42 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         justify: 'Why: what from your explanations supports this judgement?',
         basedOn: 'Explanations this rests on',
         noExplained: 'Complete at least one explanation in step 3 first.',
-        claimsTitle: 'Step 5 · Decline claims',
+        declineTitle: 'Step 5 · From what you saw to decline',
+        declineHelp: 'Steps 3 and 4 explain why your sites differ today. Decline is a change over time, which one visit cannot show. Here you turn what you saw into candidate explanations of decline: if something you saw producing or blocking a characteristic has changed over time, which decline claim would that change explain, and how? These are explanations to test in weeks 6 and 7, not conclusions.',
+        declineRule: 'Complete at least {n} candidate explanations, covering at least {l} different lenses.',
+        declineAdd: '+ Add a candidate explanation',
+        declineItem: 'Candidate explanation',
+        declineRemove: 'Remove',
+        declineRemoveConfirm: 'Confirm remove',
+        declineCancel: 'Cancel',
+        declineClaim: 'The decline claim it would explain',
+        declineLens: 'Lens',
+        declineFactor: 'What you saw at work: what produced or blocked a characteristic',
+        declineGround: 'What it rests on: your step 3 explanations or places spotted on the walk',
+        declineNoGround: 'Complete an explanation in step 3, or load places spotted on the walk, to link them here.',
+        declineMechanism: 'The mechanism: what would have changed over time (the cause), how that change works on people or places (the pathway), and how it produces this kind of decline (the outcome)?',
+        declineEvidence: 'What evidence would show whether that change really happened, and whether it had this effect?',
+        declineLine: 'One sentence for your claim-wall card',
+        declineNone: 'No candidate explanations yet.',
+        lensCoverage: 'Lenses covered by complete explanations',
+        claimsTitle: 'Step 6 · Decline claims',
         claimsHelp: 'For each claim: can your visit speak to it at all? You decide.',
         scopeLabel: 'Scope',
         whyField: 'Why: what kind of evidence did a single visit to these sites produce, and why does it bear (or not bear) on this claim?',
         suggestsField: 'What the visit does suggest about this claim, if anything',
-        suggestsLinks: 'Linked notes, explanations and places spotted on the walk',
+        suggestsLinks: 'Linked notes, explanations, candidate explanations and places spotted on the walk',
         neededField: 'What evidence would be needed to test this claim properly? (For example: repeated observation over time, records of openings and closures, survey data.)',
         findingField: 'One-sentence finding for the claim-wall card',
-        outputsTitle: 'Step 6 · Outputs',
+        outputsTitle: 'Step 7 · Outputs',
         checklist: 'What is complete',
         printReport: 'Print A4 report',
         printCards: 'Print A6 cards',
         cardsTitle: 'Card preview',
         noClaimCards: 'No claim-wall cards: a card is made only for a claim you marked "speaks to" or "partly speaks to", with a finding and the evidence still needed.',
         noCharCards: 'No characteristic cards yet: complete an explanation in step 3.',
+        noDeclineCards: 'No candidate explanation cards yet: complete one in step 5.',
         spotTitle: 'Places spotted on the walk',
-        spotHelp: 'Other possible third places your group passed between the sites. You can link them to a decline claim in step 5: for example, former premises or a busy place passed at lunchtime.'
+        spotHelp: 'Other possible third places your group passed between the sites. You can use them in step 5 and link them to a decline claim in step 6: for example, former premises or a busy place passed at lunchtime.'
       }
     }
   };
@@ -1414,6 +1453,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
   var FACTOR = byId(CONFIG.factors);
   var CLAIM = byId(CONFIG.claims);
   var SPOT_STATUS = byId(CONFIG.spotStatuses);
+  var LENS = byId(CONFIG.lenses);
   var CHAR_IDS = CONFIG.characteristics.map(function (c) { return c.id; });
 
   // Counts words: whitespace-separated tokens that contain at least one
@@ -1945,6 +1985,34 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
   }
   function validExplanations(hw) { return CHAR_IDS.filter(function (c) { return explanationIssues(hw, c).length === 0; }); }
 
+  // ---- Step 5: candidate explanations of decline
+  function blankDecline(id) { return { id: id, claim: '', lens: '', factor: '', refs: [], mechanism: '', evidence: '', line: '' }; }
+  function nextDeclineId(hw) {
+    var n = 0;
+    (hw.decline || []).forEach(function (d) { var m = /^d(\d+)$/.exec(d.id || ''); if (m) n = Math.max(n, +m[1]); });
+    return 'd' + (n + 1);
+  }
+  function declineIssues(d) {
+    var issues = [];
+    if (!d) return ['Missing.'];
+    if (!CLAIM[d.claim]) issues.push('Choose the decline claim.');
+    if (!LENS[d.lens]) issues.push('Choose a lens.');
+    if (!FACTOR[d.factor]) issues.push('Choose what you saw at work.');
+    if (!d.refs || !d.refs.length) issues.push('Link at least one explanation or spotted place it rests on.');
+    if (!longOk(d.mechanism)) issues.push('Mechanism: at least ' + CONFIG.words.min + ' words.');
+    if (!longOk(d.evidence)) issues.push('Evidence: at least ' + CONFIG.words.min + ' words.');
+    if (!sentenceOk(d.line)) issues.push('Card sentence: ' + CONFIG.words.sentenceMin + ' to ' + CONFIG.words.sentenceMax + ' words.');
+    return issues;
+  }
+  function validDeclines(hw) { return (hw.decline || []).filter(function (d) { return declineIssues(d).length === 0; }); }
+  function declineLensCount(hw) {
+    var seen = {};
+    validDeclines(hw).forEach(function (d) { seen[d.lens] = true; });
+    return Object.keys(seen).length;
+  }
+  function declineLensTarget() { return Math.max(1, Math.min(CONFIG.words.declineLenses || 1, CONFIG.lenses.length, CONFIG.words.declineCount)); }
+  function declineLabel(d) { return (CLAIM[d.claim] ? CLAIM[d.claim].name : 'No claim') + ', ' + (LENS[d.lens] ? LENS[d.lens].name.toLowerCase() : 'no lens') + (d.line ? ': ' + d.line : ''); }
+
   function claimIssues(entry) {
     var issues = [];
     if (!entry || !entry.scope) return ['Choose a scope.'];
@@ -1990,6 +2058,15 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         if (!longOk(o.text)) issues.push(hwSiteName(hw, si) + ': justification needs ' + CONFIG.words.min + ' words.');
         if (!o.refs || !o.refs.length) issues.push(hwSiteName(hw, si) + ': link at least one explanation.');
       }
+    } else if (step === 'decline') {
+      var vd = validDeclines(hw).length;
+      if (vd < CONFIG.words.declineCount) issues.push(vd + ' of ' + CONFIG.words.declineCount + ' candidate explanations complete.');
+      var lt = declineLensTarget();
+      if (declineLensCount(hw) < lt) issues.push('Complete explanations cover ' + declineLensCount(hw) + ' of the ' + lt + ' lenses needed.');
+      (hw.decline || []).forEach(function (d, i) {
+        var di = declineIssues(d);
+        if (di.length) issues.push('Candidate explanation ' + (i + 1) + ': ' + di[0]);
+      });
     } else if (step === 'claims') {
       CONFIG.claims.forEach(function (cl) {
         claimIssues(hw.claims[cl.id]).forEach(function (x) { issues.push(cl.name + ': ' + x); });
@@ -2012,7 +2089,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
   }
   function blankHomework() {
     return { schema: SCHEMAS.homework, v: 1, step: 'load', me: { name: '', letter: '' }, code: '', group: null, routeIndex: null,
-      records: {}, sort: {}, agree: {}, final: {}, explain: {}, overall: {}, claims: {}, updated: '' };
+      records: {}, sort: {}, agree: {}, final: {}, explain: {}, overall: {}, decline: [], claims: {}, updated: '' };
   }
   var BLANK = { instructor: blankInstructor, observer: blankObserver, homework: blankHomework };
 
@@ -2031,7 +2108,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
 
   var S = { instructor: null, observer: null, homework: null };
   var mode = null;
-  var ui = { toolsOpen: false, confirmReset: false, status: '', storageOk: true, editNote: null, delNote: null, delSpot: null,
+  var ui = { toolsOpen: false, confirmReset: false, status: '', storageOk: true, editNote: null, delNote: null, delSpot: null, delDecline: null,
     obsReport: null, hwReport: null, showAll: {}, pasteObs: '', pasteHw: '' };
 
   function loadState(which) {
@@ -2548,7 +2625,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         h += '<button type="button" id="route-' + i + '" class="route-btn" data-action="assign-route" data-route="' + i + '" aria-pressed="' + (mine === i) + '"' + (disabled ? ' disabled' : '') + '>' +
           '<span class="rb-title">Route ' + (i + 1) + ': ' + esc(routeLabel(i)) + '</span>' +
           '<span class="rb-sub">' + esc(routeTimesLine(i)) + '</span>' +
-          '<span class="rb-sub">' + phText(r.note) + '</span>' +
+          (r.note ? '<span class="rb-sub">' + phText(r.note) + '</span>' : '') +
           (tm.warning ? '<span class="rb-warn">' + esc(t.shortWarn) + ': ' + esc(tm.warning) + '</span>' : '') +
           (disabled ? '<span class="rb-warn">' + esc(t.conflictPrefix) + ' ' + conflicts.join(', ') + '</span>' : '') + '</button>';
       });
@@ -2610,7 +2687,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     CONFIG.routes.forEach(function (r, i) {
       var tm = routeTimes(r);
       h += '<div class="disc-item" style="--accent:var(--char-' + ((i % 8) + 1) + ')"><h3>Route ' + (i + 1) + ': ' + esc(routeLabel(i)) + '</h3>' +
-        '<p class="small">Walk out ' + r.walkOut + ' min' + (r.sites.length > 1 ? ' · between ' + betweenWalks(r).join(' + ') + ' min' : '') + ' · back ' + r.walkBack + ' min · ' + phText(r.note) + '</p>' +
+        '<p class="small">Walk out ' + r.walkOut + ' min' + (r.sites.length > 1 ? ' · between ' + betweenWalks(r).join(' + ') + ' min' : '') + ' · back ' + r.walkBack + ' min' + (r.note ? ' · ' + phText(r.note) : '') + '</p>' +
         '<p class="small">' + esc(routeTimesLine(i)) + (tm.moves.length ? ' · move by ' + movesText(tm) : '') + ' · leave by ' + minToTime(tm.leaveBy) + '</p>' +
         (tm.warning ? '<p class="alert small">' + esc(tm.warning) + '</p>' : '');
       r.sites.forEach(function (id) {
@@ -3059,7 +3136,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
   // =====================================================================
   // Homework
   // =====================================================================
-  var HW_STEPS = ['load', 'sort', 'agree', 'explain', 'overall', 'claims', 'outputs'];
+  var HW_STEPS = ['load', 'sort', 'agree', 'explain', 'overall', 'decline', 'claims', 'outputs'];
 
   function renderHomework() {
     var hw = S.homework, t = CONFIG.text.homework;
@@ -3073,6 +3150,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       case 'agree': h += renderAgree(); break;
       case 'explain': h += renderExplain(); break;
       case 'overall': h += renderOverall(); break;
+      case 'decline': h += renderDecline(); break;
       case 'claims': h += renderClaims(); break;
       case 'outputs': h += renderOutputs(); break;
       default: h += renderLoad();
@@ -3133,7 +3211,8 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     if (mode !== 'homework') return;
     Array.prototype.forEach.call(document.querySelectorAll('[data-issues]'), function (el) {
       var k = el.getAttribute('data-issues').split(':');
-      el.innerHTML = issuesInner(k[0] === 'explain' ? explanationIssues(S.homework, k[1]) : claimIssues(S.homework.claims[k[1]]));
+      el.innerHTML = issuesInner(k[0] === 'explain' ? explanationIssues(S.homework, k[1]) :
+        k[0] === 'decline' ? declineIssues(S.homework.decline[+k[1]]) : claimIssues(S.homework.claims[k[1]]));
     });
   }
 
@@ -3272,6 +3351,48 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     return h;
   }
 
+  function renderDecline() {
+    var hw = S.homework, t = CONFIG.text.homework;
+    var valid = validExplanations(hw), spots = hwSpots(hw);
+    var rule = t.declineRule.replace('{n}', CONFIG.words.declineCount).replace('{l}', declineLensTarget());
+    var h = '<section class="panel" style="--accent:var(--char-3)"><span class="deco-dot"></span><h2>' + esc(t.declineTitle) + '</h2><p>' + esc(t.declineHelp) + '</p>' +
+      '<p><strong>' + esc(rule) + '</strong></p>';
+    var covered = {};
+    validDeclines(hw).forEach(function (d) { covered[d.lens] = true; });
+    h += '<span class="field-label">' + esc(t.lensCoverage) + '</span><div class="lens-row">' + CONFIG.lenses.map(function (l) {
+      return '<span class="lens-tag' + (covered[l.id] ? ' filled' : '') + (l.colour === 'var(--char-4)' ? ' dark-ink' : '') + '" style="--accent:' + l.colour + '"><span class="pip" aria-hidden="true"></span>' + esc(l.name) +
+        '<span class="sr-only">' + (covered[l.id] ? ': covered' : ': not yet covered') + '</span></span>';
+    }).join('') + '</div></section>';
+
+    if (!hw.decline.length) h += '<div class="notice">' + esc(t.declineNone) + '</div>';
+    hw.decline.forEach(function (d, i) {
+      var base = 'decline.' + i;
+      var iss = declineIssues(d);
+      var accent = LENS[d.lens] ? LENS[d.lens].colour : 'var(--char-3)';
+      h += '<section class="panel" style="--accent:' + accent + '"><span class="eyebrow">' + (iss.length ? 'In progress' : '✓ Complete') + '</span><h2>' + esc(t.declineItem) + ' ' + (i + 1) + '</h2>';
+      h += chipGroup(t.declineClaim, CONFIG.claims.map(function (cl) { return chip('radio', base + '.claim', cl.id, cl.name + ': ' + cl.def, d.claim === cl.id, { style: '--accent:' + cl.colour }); }).join(''), { cls: 'grid2' });
+      h += chipGroup(t.declineLens, CONFIG.lenses.map(function (l) { return chip('radio', base + '.lens', l.id, l.name + ' · ' + l.focus, d.lens === l.id, { style: '--accent:' + l.colour }); }).join(''));
+      h += chipGroup(t.declineFactor, CONFIG.factors.map(function (f) { return chip('radio', base + '.factor', f.id, f.label, d.factor === f.id); }).join(''));
+      var ground = valid.map(function (c) { return chip('checkbox', base + '.refs', 'x:' + c, 'Explanation: ' + CHAR[c].name, (d.refs || []).indexOf('x:' + c) >= 0, { style: charStyle(c) }); })
+        .concat(spots.map(function (x) { return chip('checkbox', base + '.refs', 'p:' + x.key, 'Spotted: ' + spotLabel(x), (d.refs || []).indexOf('p:' + x.key) >= 0, { style: '--accent:var(--char-7)' }); })).join('');
+      h += chipGroup(t.declineGround, ground || '<span class="quiet small">' + esc(t.declineNoGround) + '</span>');
+      h += textArea(base + '.mechanism', t.declineMechanism, d.mechanism, { min: CONFIG.words.min, rows: 6 });
+      h += textArea(base + '.evidence', t.declineEvidence, d.evidence, { min: CONFIG.words.min, rows: 5 });
+      h += textInput(base + '.line', t.declineLine, d.line, { min: CONFIG.words.sentenceMin, max: CONFIG.words.sentenceMax });
+      h += issuesHtml('decline:' + i, iss);
+      h += '<div class="btn-row" style="margin-top:0.75rem">';
+      if (ui.delDecline === d.id) {
+        h += '<button type="button" class="btn btn-red btn-small" id="dd2-' + esc(d.id) + '" data-action="decline-del-yes" data-id="' + esc(d.id) + '">' + esc(t.declineRemoveConfirm) + '</button>' +
+          '<button type="button" class="btn btn-ghost btn-small" data-action="decline-del-no">' + esc(t.declineCancel) + '</button>';
+      } else {
+        h += '<button type="button" class="btn btn-ghost btn-small" id="dd-' + esc(d.id) + '" data-action="decline-del" data-id="' + esc(d.id) + '">' + esc(t.declineRemove) + '</button>';
+      }
+      h += '</div></section>';
+    });
+    if (hw.decline.length < CONFIG.words.declineMax) h += '<div class="btn-row"><button type="button" class="btn btn-red" id="decline-add" data-action="decline-add">' + esc(t.declineAdd) + '</button></div>';
+    return h;
+  }
+
   function renderClaims() {
     var hw = S.homework, t = CONFIG.text.homework;
     var h = '<section class="panel" style="--accent:var(--char-2)"><span class="deco-dot"></span><h2>' + esc(t.claimsTitle) + '</h2><p>' + esc(t.claimsHelp) + '</p></section>';
@@ -3279,6 +3400,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     var notes = hwNotes(hw);
     var spots = hwSpots(hw);
     var valid = validExplanations(hw);
+    var declines = validDeclines(hw);
     CONFIG.claims.forEach(function (cl) {
       var e = hw.claims[cl.id] || {};
       var base = 'claims.' + cl.id;
@@ -3289,6 +3411,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       var tagged = notes.filter(function (x) { return noteTags(hw, x).claims.indexOf(cl.id) >= 0; });
       var refChips = tagged.map(function (x) { return chip('checkbox', base + '.refs', 'n:' + x.key, hwSiteName(hw, noteTags(hw, x).site) + ': ' + x.x, (e.refs || []).indexOf('n:' + x.key) >= 0); })
         .concat(valid.map(function (c) { return chip('checkbox', base + '.refs', 'x:' + c, 'Explanation: ' + CHAR[c].name, (e.refs || []).indexOf('x:' + c) >= 0, { style: charStyle(c) }); }))
+        .concat(declines.filter(function (d) { return d.claim === cl.id; }).map(function (d) { return chip('checkbox', base + '.refs', 'd:' + d.id, 'Candidate explanation: ' + declineLabel(d), (e.refs || []).indexOf('d:' + d.id) >= 0, { style: '--accent:' + LENS[d.lens].colour }); }))
         .concat(spots.map(function (x) { return chip('checkbox', base + '.refs', 'p:' + x.key, 'Spotted: ' + spotLabel(x), (e.refs || []).indexOf('p:' + x.key) >= 0, { style: '--accent:var(--char-7)' }); })).join('');
       h += chipGroup(t.suggestsLinks, refChips || '<span class="quiet small">Tag notes to this claim in step 1, complete explanations in step 3, or load places spotted on the walk, to link them here.</span>');
       h += textArea(base + '.needed', t.neededField, e.needed, { min: CONFIG.words.min, rows: 5 });
@@ -3302,7 +3425,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
   function renderOutputs() {
     var hw = S.homework, t = CONFIG.text.homework;
     var h = '<section class="panel" style="--accent:var(--char-7)"><span class="deco-dot"></span><h2>' + esc(t.outputsTitle) + '</h2><h3>' + esc(t.checklist) + '</h3><ul class="check-list">';
-    HW_STEPS.slice(0, 6).forEach(function (s) {
+    HW_STEPS.slice(0, HW_STEPS.length - 1).forEach(function (s) {
       var iss = stepIssues(hw, s);
       h += '<li class="' + (iss.length ? '' : 'done') + '"><strong>' + esc(t.tabs[s]) + '</strong>' + iss.slice(0, 6).map(function (x) { return '<span class="issue">' + esc(x) + '</span>'; }).join('') +
         (iss.length > 6 ? '<span class="issue">and ' + (iss.length - 6) + ' more</span>' : '') + '</li>';
@@ -3314,8 +3437,9 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     var cards = buildCards(hw);
     h += '<section class="panel" style="--accent:var(--char-1)"><h3>' + esc(t.cardsTitle) + '</h3>';
     if (!cards.chars.length) h += '<p class="notice">' + esc(t.noCharCards) + '</p>';
+    if (!cards.declines.length) h += '<p class="notice">' + esc(t.noDeclineCards) + '</p>';
     if (!cards.claims.length) h += '<p class="notice">' + esc(t.noClaimCards) + '</p>';
-    h += '<div class="preview-cards">' + cards.chars.concat(cards.claims).join('') + '</div></section>';
+    h += '<div class="preview-cards">' + cards.chars.concat(cards.declines, cards.claims).join('') + '</div></section>';
     return h;
   }
 
@@ -3335,6 +3459,13 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         '<div class="a6-title">' + esc(CHAR[c].name) + '</div><div class="a6-label">Sites</div><div class="a6-text">' + esc(hwSitesLabel(hw)) + '</div>' +
         '<div class="a6-label">Explanation</div><div class="a6-text">' + esc(e.line) + '</div><div class="a6-foot">' + esc(name) + '</div></div>';
     });
+    var declines = validDeclines(hw).map(function (d) {
+      var cl = CLAIM[d.claim], lens = LENS[d.lens];
+      return '<div class="a6" style="--accent:' + lens.colour + '"><div class="a6-eyebrow">' + esc(eyebrow) + ' · Candidate explanation</div><div class="a6-bar"></div>' +
+        '<div class="a6-title">' + esc(cl.name) + ': ' + esc(cl.def) + '</div><div class="a6-label">Lens</div><div class="a6-text">' + esc(lens.name) + ' · ' + esc(FACTOR[d.factor].label) + '</div>' +
+        '<div class="a6-label">Explanation</div><div class="a6-text">' + esc(d.line) + '</div>' +
+        '<div class="a6-label">Evidence that would test it</div><div class="a6-text">' + esc(d.evidence) + '</div><div class="a6-foot">' + esc(name) + '</div></div>';
+    });
     var claims = CONFIG.claims.filter(function (cl) { return claimCardEligible(hw.claims[cl.id]); }).map(function (cl) {
       var e = hw.claims[cl.id];
       return '<div class="a6" style="--accent:' + cl.colour + '"><div class="a6-eyebrow">' + esc(eyebrow) + ' · Claim wall</div><div class="a6-bar"></div>' +
@@ -3343,11 +3474,11 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         '<div class="a6-label">Finding</div><div class="a6-text">' + esc(e.finding) + '</div>' +
         '<div class="a6-label">Evidence still needed</div><div class="a6-text">' + esc(e.needed) + '</div><div class="a6-foot">' + esc(name) + '</div></div>';
     });
-    return { chars: chars, claims: claims };
+    return { chars: chars, declines: declines, claims: claims };
   }
   function buildCardsHtml(hw) {
     var all = buildCards(hw);
-    var cards = all.chars.concat(all.claims);
+    var cards = all.chars.concat(all.declines, all.claims);
     if (!cards.length) return '<div class="p-doc"><p>No cards to print yet.</p></div>';
     var h = '';
     for (var i = 0; i < cards.length; i += 4) h += '<section class="card-sheet">' + cards.slice(i, i + 4).join('') + '</section>';
@@ -3411,6 +3542,17 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         (o.refs && o.refs.length ? '<p><em>Based on: ' + esc(o.refs.map(function (c) { return CHAR[c] ? CHAR[c].name : c; }).join(', ')) + '</em></p>' : '') + '</div>';
     }
 
+    h += '<h2 style="--accent:var(--char-3)">Candidate explanations of decline</h2>';
+    if (!hw.decline.length) h += '<p>None yet.</p>';
+    hw.decline.forEach(function (d, i) {
+      var lens = LENS[d.lens];
+      h += '<div class="p-block" style="--accent:' + (lens ? lens.colour : 'var(--char-3)') + '"><h3>' + (i + 1) + '. ' + esc(CLAIM[d.claim] ? CLAIM[d.claim].name + ': ' + CLAIM[d.claim].def : 'No claim chosen') + '</h3>' +
+        '<p><strong>Lens:</strong> ' + esc(lens ? lens.name : 'not chosen') + ' · <strong>What was seen at work:</strong> ' + esc(FACTOR[d.factor] ? FACTOR[d.factor].label : 'not chosen') + '</p>' +
+        (d.refs && d.refs.length ? '<p><em>Rests on: ' + esc(d.refs.map(function (r) { return refLabel(hw, r); }).join('; ')) + '</em></p>' : '') +
+        '<p><strong>Mechanism:</strong> ' + esc(d.mechanism || '') + '</p><p><strong>Evidence that would test it:</strong> ' + esc(d.evidence || '') + '</p>' +
+        '<p><strong>In one sentence:</strong> ' + esc(d.line || '') + '</p></div>';
+    });
+
     h += '<h2 style="--accent:var(--char-2)">Decline claims</h2><p><em>' + esc(CONFIG.snapshotNote) + '</em></p>';
     CONFIG.claims.forEach(function (cl) {
       var e = hw.claims[cl.id] || {};
@@ -3441,10 +3583,12 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     }
     return h + '</div>';
   }
+  function declineById(hw, id) { var all = hw.decline || []; for (var i = 0; i < all.length; i++) if (all[i].id === id) return all[i]; return null; }
   function spotByKey(hw, key) { var all = hwSpots(hw); for (var i = 0; i < all.length; i++) if (all[i].key === key) return all[i]; return null; }
   function refLabel(hw, r) {
     if (r.indexOf('x:') === 0) return 'Explanation: ' + (CHAR[r.slice(2)] ? CHAR[r.slice(2)].name : r);
     if (r.indexOf('p:') === 0) { var sp = spotByKey(hw, r.slice(2)); return sp ? 'Spotted: ' + spotLabel(sp) : r; }
+    if (r.indexOf('d:') === 0) { var dd = declineById(hw, r.slice(2)); return dd ? 'Candidate explanation: ' + declineLabel(dd) : r; }
     var n = noteByKey(hw, r.slice(2));
     return n ? 'Note: ' + n.x : r;
   }
@@ -3491,6 +3635,16 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       line('- ' + hwSiteName(hw, s5) + ': ' + (o.level ? levelLabel(o.level) : 'not judged'));
       if (o.text) line('  ' + o.text);
     }
+    line(''); line('CANDIDATE EXPLANATIONS OF DECLINE');
+    if (!hw.decline.length) line('- none');
+    hw.decline.forEach(function (d, i) {
+      line('* ' + (i + 1) + '. ' + (CLAIM[d.claim] ? CLAIM[d.claim].name.toUpperCase() + ': ' + CLAIM[d.claim].def : 'No claim chosen'));
+      line('  Lens: ' + (LENS[d.lens] ? LENS[d.lens].name : 'not chosen') + ' | What was seen at work: ' + (FACTOR[d.factor] ? FACTOR[d.factor].label : 'not chosen'));
+      (d.refs || []).forEach(function (r) { line('  Rests on: ' + refLabel(hw, r)); });
+      line('  Mechanism: ' + (d.mechanism || ''));
+      line('  Evidence that would test it: ' + (d.evidence || ''));
+      line('  In one sentence: ' + (d.line || ''));
+    });
     line(''); line('DECLINE CLAIMS');
     line(CONFIG.snapshotNote);
     CONFIG.claims.forEach(function (cl) {
@@ -3827,7 +3981,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
       }
       case 'remove-peer': delete st.peers[el.getAttribute('data-letter')]; break;
       // ---- homework
-      case 'htab': st.step = el.getAttribute('data-tab'); save(); render(); window.scrollTo(0, 0); return;
+      case 'htab': st.step = el.getAttribute('data-tab'); ui.delDecline = null; save(); render(); window.scrollTo(0, 0); return;
       case 'hw-from-device': {
         var raw = null;
         try { raw = JSON.parse(localStorage.getItem(KEYS.observer)); } catch (err) { raw = null; }
@@ -3852,6 +4006,21 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         var c = el.getAttribute('data-ch');
         if (!st.explain[c]) st.explain[c] = blankExplanation();
         st.explain[c].on = !st.explain[c].on;
+        break;
+      }
+      case 'decline-add':
+        if (st.decline.length < CONFIG.words.declineMax) st.decline.push(blankDecline(nextDeclineId(st)));
+        save(); render(); focusId(fid('decline.' + (st.decline.length - 1) + '.claim', CONFIG.claims[0].id)); return;
+      case 'decline-del': ui.delDecline = el.getAttribute('data-id'); render(); focusId('dd2-' + ui.delDecline); return;
+      case 'decline-del-no': { var dk = ui.delDecline; ui.delDecline = null; render(); focusId('dd-' + dk); return; }
+      case 'decline-del-yes': {
+        var did = el.getAttribute('data-id');
+        st.decline = st.decline.filter(function (d) { return d.id !== did; });
+        Object.keys(st.claims).forEach(function (k) {
+          var c = st.claims[k];
+          if (c && Array.isArray(c.refs)) c.refs = c.refs.filter(function (r) { return r !== 'd:' + did; });
+        });
+        ui.delDecline = null;
         break;
       }
       case 'show-all': { var ch = el.getAttribute('data-ch'); ui.showAll[ch] = !ui.showAll[ch]; render(); return; }
@@ -4104,6 +4273,9 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     blankHomework: blankHomework,
     blankInstructor: blankInstructor,
     blankExplanation: blankExplanation,
+    blankDecline: blankDecline,
+    declineIssues: declineIssues,
+    validDeclines: validDeclines,
     esc: esc
   };
 

@@ -1437,6 +1437,57 @@
       ok(c.claims[0].indexOf('Quality') >= 0);
     });
 
+    function w5Decline(id, claim, lens) {
+      var d = W5.blankDecline(id);
+      d.claim = claim; d.lens = lens; d.factor = 'cost'; d.refs = ['x:ng'];
+      d.mechanism = LONG; d.evidence = LONG;
+      d.line = 'If staying costs more over time, fewer people linger and talk.';
+      return d;
+    }
+
+    assert('candidate explanation: every field is required, a single character is not enough', function() {
+      ok(W5.declineIssues(W5.blankDecline('d1')).length >= 6, 'blank explanation passed');
+      var d = w5Decline('d1', 'use', 'economic');
+      eq(W5.declineIssues(d).length, 0, W5.declineIssues(d).join('; '));
+      d.mechanism = 'x';
+      ok(W5.declineIssues(d).length === 1, 'one-character mechanism accepted');
+      d = w5Decline('d1', 'use', 'economic'); d.refs = [];
+      ok(W5.declineIssues(d).length === 1, 'explanation with nothing to rest on accepted');
+      d = w5Decline('d1', 'nonsense', 'economic');
+      ok(W5.declineIssues(d).length === 1, 'unknown claim accepted');
+    });
+
+    assert('decline step needs the configured count and lens spread', function() {
+      var hw = W5.blankHomework();
+      hw.group = 1; hw.routeIndex = 0;
+      hw.decline = [w5Decline('d1', 'use', 'economic')];
+      ok(W5.stepIssues(hw, 'decline').length > 0, 'one explanation accepted');
+      hw.decline.push(w5Decline('d2', 'supply', 'economic'));
+      ok(W5.stepIssues(hw, 'decline').some(function(x) { return /lenses/.test(x); }), 'two explanations in one lens accepted');
+      hw.decline[1].lens = 'political';
+      eq(W5.stepIssues(hw, 'decline').length, 0, W5.stepIssues(hw, 'decline').join('; '));
+    });
+
+    assert('candidate explanations produce A6 cards and appear in the report', function() {
+      var hw = W5.blankHomework();
+      hw.group = 1; hw.routeIndex = 0; hw.me = { name: 'Ana', letter: 'A' };
+      hw.decline = [w5Decline('d1', 'use', 'economic'), W5.blankDecline('d2')];
+      var c = W5.buildCards(hw);
+      eq(c.declines.length, 1, 'only complete explanations make cards');
+      ok(c.declines[0].indexOf('Economic') >= 0 && c.declines[0].indexOf('Candidate explanation') >= 0);
+      ok(W5.buildCardsHtml(hw).indexOf('Candidate explanation') >= 0);
+      ok(W5.buildReportHtml(hw).indexOf('Candidate explanations of decline') >= 0);
+      ok(W5.buildReportText(hw).indexOf('fewer people linger and talk') >= 0);
+    });
+
+    assert('lens ids match the week 6b export', function() {
+      eq(W5.CONFIG.lenses.map(function(l) { return l.id; }).sort().join(','), 'economic,political,psychological');
+    });
+
+    assert('no route carries a PLACEHOLDER note', function() {
+      W5.CONFIG.routes.forEach(function(r, i) { ok(!r.note || r.note.indexOf('PLACEHOLDER:') !== 0, 'route ' + (i + 1)); });
+    });
+
     assert('no decline-claim words on observer or instructor screens', function() {
       var xhr = new XMLHttpRequest();
       xhr.open('GET', 'week5-field-trip-planner.html', false);
