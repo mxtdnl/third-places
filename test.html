@@ -1129,8 +1129,25 @@
       eq(W5.CONFIG.factors.length, 6);
     });
 
-    assert('Every route note and walking time is flagged as a placeholder', function() {
-      W5.CONFIG.routes.forEach(function(r) { ok(r.note.indexOf('PLACEHOLDER:') === 0, r.sites.join('+')); });
+    assert('Map: every site and the base have a position, and distances are plausible', function() {
+      var base = { lat: W5.CONFIG.session.baseLat, lon: W5.CONFIG.session.baseLon };
+      W5.CONFIG.sites.forEach(function(s) {
+        ok(typeof s.lat === 'number' && typeof s.lon === 'number', s.id);
+        var d = W5.distanceM(base, s);
+        ok(d > 0 && d < 5000, s.id + ' is ' + Math.round(d) + ' m from base');
+      });
+      var one = W5.distanceM({ lat: 51.5, lon: -0.13 }, { lat: 51.5 + 1 / 111.32, lon: -0.13 });
+      ok(Math.abs(one - 1000) < 1, '1 km north measured as ' + one);
+    });
+
+    assert('Map: SVG draws a marker for every site on the routes shown', function() {
+      var all = W5.CONFIG.routes.map(function(r, i) { return i; });
+      var svg = W5.mapSvg(all, { labels: true });
+      var n = 0; W5.CONFIG.routes.forEach(function(r) { n += r.sites.length; });
+      eq((svg.match(/<circle /g) || []).length, n);
+      ok(svg.indexOf('role="img"') > 0, 'svg has role img');
+      var one = W5.mapSvg([0], {});
+      eq((one.match(/<circle /g) || []).length, W5.CONFIG.routes[0].sites.length);
     });
 
     suite('Field Visit — Join codes');
