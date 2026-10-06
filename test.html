@@ -1150,6 +1150,13 @@
       eq((one.match(/<circle /g) || []).length, W5.CONFIG.routes[0].sites.length);
     });
 
+    assert('Map: links open the phone\'s map app (geo: on Android, Apple Maps on iOS, web elsewhere)', function() {
+      var p = { lat: 51.5259, lon: -0.1339 };
+      eq(W5.mapAppLink(p, 'Base (room)', 'android'), 'geo:51.5259,-0.1339?q=51.5259,-0.1339(Base%20room)');
+      eq(W5.mapAppLink(p, "Regent's Place", 'ios'), 'https://maps.apple.com/?ll=51.5259,-0.1339&q=Regent\'s%20Place');
+      ok(W5.mapAppLink(p, 'Base', 'web').indexOf('https://www.openstreetmap.org/?mlat=51.5259&mlon=-0.1339') === 0, 'web link');
+    });
+
     suite('Field Visit — Join codes');
 
     assert('encode/decode round-trips every group and route', function() {
@@ -1215,7 +1222,7 @@
 
     suite('Field Visit — Timings');
 
-    var SESSION = { start: '12:15', returnBy: '13:15', minObsMinutes: 10 };
+    var SESSION = { start: '12:15', returnBy: '13:05', minObsMinutes: 10 };
 
     assert('two-site route splits observation time and derives clocks', function() {
       var t = W5.routeTimes({ sites: ['a', 'b'], walkOut: 10, walkBetween: 5, walkBack: 10 }, SESSION);

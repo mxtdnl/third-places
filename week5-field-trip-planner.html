@@ -554,7 +554,9 @@ th[scope="row"] { font-size: 0.88rem; letter-spacing: 0.01em; text-transform: no
 }
 .ml-code.ring { background: var(--bg-card); color: var(--text); border: 4px solid var(--accent); }
 .ml-code.base { border-radius: 0; background: var(--text); color: #fff; }
+.ml-links { display: flex; flex-wrap: wrap; column-gap: 1rem; }
 .ml-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--char-1); font-weight: 700; }
+.ml-link.ml-web { color: var(--text-muted); font-weight: 600; }
 
 #print-area { display: none; }
 
@@ -1252,7 +1254,13 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         noRoute: 'Enter your join code on the Join tab to see your own route. Until then, every route is shown.',
         baseLabel: 'Base',
         perimeterKey: 'Ring marker: perimeter only, stay outside the boundary.',
-        openMap: 'Open in a map app',
+        // Map links: on phones the first opens the phone's own map app
+        // (Android: the default map app; iPhone and iPad: Apple Maps) and
+        // the second opens the OpenStreetMap website as a fallback. Laptops
+        // get the website link only.
+        openMap: 'Open in your map app',
+        webMap: 'Web map',
+        openWeb: 'Open map',
         distTitle: 'Straight-line distances',
         distHelp: 'As the crow flies, so walking distances are longer. Use these to check the walking times set for each route.',
         backBy: 'Back at base by'
@@ -2292,6 +2300,33 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
   function osmLink(p) {
     return 'https://www.openstreetmap.org/?mlat=' + p.lat + '&mlon=' + p.lon + '#map=18/' + p.lat + '/' + p.lon;
   }
+  // Which kind of map link this device gets: 'android', 'ios' or 'web'.
+  // iPadOS reports itself as a Mac, so a Mac with a touch screen counts as iOS.
+  function mapPlatform() {
+    if (typeof navigator === 'undefined') return 'web';
+    var ua = navigator.userAgent || '';
+    if (/Android/i.test(ua)) return 'android';
+    if (/iPhone|iPad|iPod/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return 'ios';
+    return 'web';
+  }
+  // Link that opens point p in the device's map app, labelled with name.
+  // Android: a geo: link, which opens the default map app (or asks which
+  // app to use). iOS: an Apple Maps link, which opens the Maps app.
+  function mapAppLink(p, name, platform) {
+    var ll = p.lat + ',' + p.lon;
+    var label = encodeURIComponent(String(name || '').replace(/[()]/g, ''));
+    if (platform === 'android') return 'geo:' + ll + '?q=' + ll + '(' + label + ')';
+    if (platform === 'ios') return 'https://maps.apple.com/?ll=' + ll + '&q=' + label;
+    return osmLink(p);
+  }
+  // Map link(s) for one point: the map app plus a web fallback on phones.
+  function mapLinksHtml(p, name) {
+    var tm = CONFIG.text.map, pf = mapPlatform();
+    if (pf === 'web') return '<span class="ml-links"><a class="small ml-link" href="' + esc(osmLink(p)) + '" target="_blank" rel="noopener">' + esc(tm.openWeb) + '</a></span>';
+    // A geo: link must not open a new tab: Android hands it straight to the map app.
+    return '<span class="ml-links"><a class="small ml-link" href="' + esc(mapAppLink(p, name, pf)) + '"' + (pf === 'android' ? '' : ' target="_blank" rel="noopener"') + '>' + esc(tm.openMap) + '</a>' +
+      '<a class="small ml-link ml-web" href="' + esc(osmLink(p)) + '" target="_blank" rel="noopener">' + esc(tm.webMap) + '</a></span>';
+  }
 
   // routes: indices to draw. o.width: viewBox width (smaller = larger
   // markers on screen). o.labels: draw site names beside markers.
@@ -2510,13 +2545,13 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
         h += '<div class="ml-site"><span class="ml-code' + (site.perimeterOnly ? ' ring' : '') + '" style="--ink:' + routeInk(ri) + '">' + esc(siteCode(ri, si)) + '</span><div>' +
           '<strong>' + esc(site.name) + '</strong><br><span class="small">' + phText(site.address) + '</span>' +
           (site.perimeterOnly ? '<br><span class="small alert">' + esc(site.restrictionNote) + '</span>' : '') +
-          '<br><a class="small ml-link" href="' + esc(osmLink(site)) + '" target="_blank" rel="noopener">' + esc(tm.openMap) + '</a></div></div>';
+          mapLinksHtml(site, site.name) + '</div></div>';
       });
       h += '</div>';
     });
     var base = basePoint();
     h += '<div class="ml-route" style="--accent:var(--text)"><h3>' + esc(tm.baseLabel) + '</h3><div class="ml-site"><span class="ml-code base" aria-hidden="true">B</span><div><strong>' + esc(CONFIG.session.base) + '</strong>' +
-      '<br><a class="small ml-link" href="' + esc(osmLink(base)) + '" target="_blank" rel="noopener">' + esc(tm.openMap) + '</a></div></div></div>';
+      mapLinksHtml(base, CONFIG.session.base) + '</div></div></div>';
     return h + '</div>';
   }
 
@@ -3988,6 +4023,7 @@ H3IAHSEf+F9fBT5eraJE9PjgGKflgAAA
     routeTimes: routeTimes,
     validateConfig: validateConfig,
     distanceM: distanceM,
+    mapAppLink: mapAppLink,
     mapSvg: mapSvg,
     listPlaceholders: listPlaceholders,
     lettersForSize: lettersForSize,
