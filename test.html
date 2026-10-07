@@ -102,11 +102,11 @@
 
   function loadScripts(callback) {
     var loaded = 0;
-    var labCode, decoderCode, builderCode, benchCode, w5Code;
+    var labCode, decoderCode, builderCode, benchCode, w5Code, cwsCode;
 
     function done() {
       loaded++;
-      if (loaded < 5) return;
+      if (loaded < 6) return;
 
       // Execute decoder in a namespace
       try {
@@ -232,8 +232,23 @@
         assert('week5-field-trip-planner.html parses without syntax errors', function() { throw e; });
       }
 
+      // Execute week 6 claim wall sort (its init is guarded on #cws-app, absent here; it exposes window.CWS)
+      try {
+        var cwsFn = new Function(cwsCode);
+        cwsFn();
+      } catch(e) {
+        suite('LOAD ERRORS');
+        assert('week6-claim-wall-sort.html parses without syntax errors', function() { throw e; });
+      }
+
       callback();
     }
+
+    var xhr6 = new XMLHttpRequest();
+    xhr6.open('GET', 'week6-claim-wall-sort.html');
+    xhr6.onload = function() { cwsCode = extractAndRun(xhr6.responseText, 'cws'); done(); };
+    xhr6.onerror = function() { cwsCode = ''; done(); };
+    xhr6.send();
 
     var xhr5 = new XMLHttpRequest();
     xhr5.open('GET', 'week5-field-trip-planner.html');
@@ -1215,7 +1230,7 @@
 
     suite('Field Visit — Timings');
 
-    var SESSION = { start: '12:15', returnBy: '13:15', minObsMinutes: 10 };
+    var SESSION = { start: '12:15', returnBy: '13:05', minObsMinutes: 10 };
 
     assert('two-site route splits observation time and derives clocks', function() {
       var t = W5.routeTimes({ sites: ['a', 'b'], walkOut: 10, walkBetween: 5, walkBack: 10 }, SESSION);
@@ -1577,6 +1592,372 @@
       xhr.send();
       var m = xhr.responseText.match(/<script>([\s\S]*?)<\/script>/);
       ok(m && !/[‘’“”]/.test(m[1]), 'curly quotes found');
+    });
+
+    // =====================================================
+    // CLAIM WALL SORT (week 6)
+    // =====================================================
+
+    suite('Claim Wall Sort — Data');
+
+    function cwsGet(path) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', path, false);
+      xhr.send();
+      return xhr.responseText;
+    }
+
+    assert('CWS test hook is exposed with 39 starting cards', function() {
+      ok(window.CWS && CWS.CONFIG, 'missing CWS');
+      eq(CWS.CONFIG.cards.length, 39);
+    });
+
+    assert('embedded cards equal claim-wall/analysis/S1.json (ids, text, claim, lens, uncertain)', function() {
+      var s1 = JSON.parse(cwsGet('claim-wall/analysis/S1.json'));
+      eq(s1.entries.length, 39, 'S1 count');
+      eq(CWS.CONFIG.cards.length, s1.entries.length, 'count');
+      s1.entries.forEach(function(e, i) {
+        var c = CWS.CONFIG.cards[i];
+        eq(c.id, e.entry_id, 'id ' + i);
+        eq(c.text, e.card_text, 'text ' + e.entry_id);
+        eq(c.claim, e.claim_no, 'claim ' + e.entry_id);
+        eq(c.lens, e.discipline.toLowerCase(), 'lens ' + e.entry_id);
+        eq(c.uncertain, e.transcription_confidence === 'Uncertain', 'uncertain ' + e.entry_id);
+      });
+    });
+
+    assert('claim rows use the wall wording and order from S1', function() {
+      var s1 = JSON.parse(cwsGet('claim-wall/analysis/S1.json'));
+      eq(CWS.CONFIG.claims.map(function(c) { return c.label; }).join(','), 'Quantity,Usage,Outcomes,Quality');
+      s1.claim_synthesis.forEach(function(cs) {
+        var c = CWS.CONFIG.claims.filter(function(x) { return x.no === cs.claim_no; })[0];
+        eq(c.label, cs.claim_label); eq(c.text, cs.claim_text);
+      });
+      eq(CWS.CONFIG.lenses.map(function(l) { return l.name; }).join(','), 'Psychology,Economics,Politics');
+    });
+
+    assert('no analyser output is embedded in the cards or the file', function() {
+      CWS.CONFIG.cards.forEach(function(c) { eq(Object.keys(c).sort().join(','), 'claim,id,lens,text,uncertain', c.id); });
+      var t = cwsGet('week6-claim-wall-sort.html');
+      ['misfiled_to', 'not_an_explanation', 'actual_lens', 'claim_synthesis', 'testable_implication'].forEach(function(k) {
+        ok(t.indexOf(k) === -1, k + ' found');
+      });
+    });
+
+    assert('card colours meet WCAG AA against #2A1F18', function() {
+      function lum(h) {
+        var c = [1, 3, 5].map(function(i) { var x = parseInt(h.substr(i, 2), 16) / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); });
+        return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+      }
+      var t = lum('#2A1F18');
+      Object.keys(CWS.CONFIG.cardColours).forEach(function(k) {
+        var l = lum(CWS.CONFIG.cardColours[k]);
+        ok((Math.max(l, t) + 0.05) / (Math.min(l, t) + 0.05) >= 4.5, k + ' fails AA');
+      });
+    });
+
+    assert('card rotation is stable per card and within -2 to 2 degrees', function() {
+      CWS.CONFIG.cards.forEach(function(c) {
+        var r = CWS.rotationFor(c.id);
+        eq(r, CWS.rotationFor(c.id));
+        ok(r >= -2 && r <= 2, c.id + ' ' + r);
+      });
+    });
+
+    assert('transcriber insertions are wrapped for muted italics', function() {
+      var h = CWS.cardTextHtml('There might [be] a hierarchy');
+      ok(h.indexOf('<span class="ins">[be]</span>') !== -1, h);
+      ok(CWS.cardTextHtml('<b>').indexOf('<b>') === -1, 'not escaped');
+    });
+
+    suite('Claim Wall Sort — Wall');
+
+    var CWS_NOW = '2026-10-07T10:00:00.000Z';
+    var CWS_TEXT = 'The cafe near the station had no seating so people left quickly';
+
+    assert('every starting card begins at its claim x lens cell; holding area empty', function() {
+      var s = CWS.blankState();
+      CWS.CONFIG.cards.forEach(function(c) { eq(CWS.findCell(s, c.id), CWS.cellKey(c.claim, c.lens), c.id); });
+      eq(s.cells.hold.length, 0);
+      ok(!CWS.isMoved(s, 'S1-001'));
+    });
+
+    assert('new card text enforces 8 to 30 words', function() {
+      ok(CWS.validateNewCard({ text: 'a', claim: 2, lens: 'economics' }).length > 0, 'one char');
+      ok(CWS.validateNewCard({ text: 'one two three four five six seven', claim: 2, lens: 'economics' }).length > 0, '7 words');
+      eq(CWS.validateNewCard({ text: 'one two three four five six seven eight', claim: 2, lens: 'economics' }).length, 0);
+      ok(CWS.validateNewCard({ text: 'word '.repeat(31), claim: 2, lens: 'economics' }).length > 0, '31 words');
+      ok(CWS.validateNewCard({ text: CWS_TEXT, claim: 9, lens: 'economics' }).length > 0, 'bad claim');
+    });
+
+    assert('new card id is group prefix + suffix, placed in its cell and marked new', function() {
+      var s = CWS.blankState(); s.group.name = 'Red Team';
+      var r = CWS.addNewCard(s, { text: CWS_TEXT, claim: 2, lens: 'economics' }, function() { return 'abc123'; });
+      eq(r.id, 'REDTEA-abc123');
+      eq(CWS.findCell(s, r.id), 'c2-economics');
+      eq(s.newCards[0].source, 'Field visit (week 5)');
+      ok(!CWS.isMoved(s, r.id));
+    });
+
+    assert('starting cards cannot be deleted; new cards can, with their lines', function() {
+      var s = CWS.blankState(); s.group.name = 'A';
+      var id = CWS.addNewCard(s, { text: CWS_TEXT, claim: 1, lens: 'politics' }).id;
+      CWS.addConnection(s, id, 'S1-008', '');
+      ok(!CWS.deleteNewCard(s, 'S1-001'));
+      eq(CWS.findCell(s, 'S1-001'), 'c1-psychology');
+      ok(CWS.deleteNewCard(s, id));
+      eq(CWS.findCell(s, id), null);
+      eq(s.connections.length, 0);
+    });
+
+    assert('moving within and between cells keeps every card exactly once', function() {
+      var s = CWS.blankState();
+      CWS.moveCard(s, 'S1-003', 'c1-economics', 3);
+      eq(s.cells['c1-economics'].join(','), 'S1-004,S1-005,S1-003,S1-006,S1-007');
+      CWS.moveCard(s, 'S1-007', 'c1-economics', 0);
+      eq(s.cells['c1-economics'][0], 'S1-007');
+      CWS.moveCard(s, 'S1-022', 'hold');
+      eq(CWS.findCell(s, 'S1-022'), 'hold');
+      ok(CWS.isMoved(s, 'S1-022'));
+      var all = [];
+      CWS.CELL_KEYS.forEach(function(k) { all = all.concat(s.cells[k]); });
+      eq(all.length, 39);
+    });
+
+    assert('connections: A-B equals B-A, labels max 8 words, no self links', function() {
+      var s = CWS.blankState();
+      ok(CWS.addConnection(s, 'S1-014', 'S1-006', 'time').key);
+      ok(CWS.addConnection(s, 'S1-006', 'S1-014', '').exists);
+      eq(s.connections.length, 1);
+      eq(s.connections[0].a, 'S1-006');
+      ok(CWS.addConnection(s, 'S1-001', 'S1-001', '').error);
+      ok(CWS.addConnection(s, 'S1-001', 'S1-002', 'one two three four five six seven eight nine').error);
+    });
+
+    assert('connections survive card moves', function() {
+      var s = CWS.blankState();
+      CWS.addConnection(s, 'S1-006', 'S1-014', 'time');
+      CWS.moveCard(s, 'S1-006', 'c4-politics');
+      CWS.moveCard(s, 'S1-014', 'hold');
+      eq(s.connections.length, 1);
+      eq(s.connections[0].a + '|' + s.connections[0].b, 'S1-006|S1-014');
+      eq(s.connections[0].label, 'time');
+    });
+
+    assert('export requires a group name', function() {
+      var s = CWS.blankState();
+      ok(CWS.exportBlockers(s).length > 0);
+      s.group.name = 'A';
+      eq(CWS.exportBlockers(s).length, 0);
+    });
+
+    assert('export -> import round trip keeps positions, new cards and connections', function() {
+      var s = CWS.blankState(); s.group.name = 'Group A'; s.group.members = 'Ana, Ben';
+      CWS.moveCard(s, 'S1-001', 'c2-psychology');
+      CWS.moveCard(s, 'S1-022', 'hold');
+      var id = CWS.addNewCard(s, { text: CWS_TEXT, claim: 2, lens: 'economics' }, function() { return 'x1'; }).id;
+      CWS.addConnection(s, id, 'S1-014', 'no seating');
+      var ex = CWS.buildExport(s, CWS_NOW);
+      eq(ex.group.members.join('|'), 'Ana|Ben');
+      var json = JSON.stringify(ex);
+      var back = JSON.parse(json);
+      eq(CWS.validateExport(back).length, 0, CWS.validateExport(back).join('; '));
+      var s2 = CWS.stateFromExport(back);
+      eq(JSON.stringify(CWS.buildExport(s2, CWS_NOW)), json);
+      eq(CWS.findCell(s2, 'S1-001'), 'c2-psychology');
+      eq(CWS.findCell(s2, id), 'c2-economics');
+      eq(s2.connections[0].label, 'no seating');
+    });
+
+    assert('import rejects other tools, other card sets and broken files', function() {
+      var s = CWS.blankState(); s.group.name = 'A';
+      var ex = CWS.buildExport(s, CWS_NOW);
+      ok(/not a Claim Wall Sort/.test(CWS.validateExport({ schema: 'week6b-adjudication-bench' })[0]));
+      ok(/not a Claim Wall Sort/.test(CWS.validateExport(null)[0]));
+      var other = JSON.parse(JSON.stringify(ex)); other.cardSet = 'S2';
+      ok(/different card set/.test(CWS.validateExport(other)[0]));
+      var missing = JSON.parse(JSON.stringify(ex)); missing.cells['c1-psychology'] = [];
+      ok(CWS.validateExport(missing).length > 0);
+      var dup = JSON.parse(JSON.stringify(ex)); dup.cells.hold = ['S1-001'];
+      ok(CWS.validateExport(dup).length > 0);
+    });
+
+    suite('Claim Wall Sort — Merge');
+
+    function cwsFile(name, moves, newCards, links) {
+      var s = CWS.blankState(); s.group.name = name; s.group.members = name + ' one, ' + name + ' two';
+      Object.keys(moves).forEach(function(id) { CWS.moveCard(s, id, moves[id]); });
+      (newCards || []).forEach(function(nc, i) { CWS.addNewCard(s, nc, function() { return 'n' + i; }); });
+      (links || []).forEach(function(l) { CWS.addConnection(s, l[0], l[1], l[2]); });
+      return CWS.buildExport(s, CWS_NOW);
+    }
+    function cwsABC() {
+      var A = cwsFile('Group A',
+        { 'S1-001': 'c2-psychology', 'S1-022': 'hold', 'S1-009': 'c4-politics' },
+        [{ text: CWS_TEXT, claim: 2, lens: 'economics' }],
+        [['S1-006', 'S1-014', 'time pressure'], ['S1-035', 'S1-036', '']]);
+      var B = cwsFile('Group B',
+        { 'S1-001': 'c2-psychology', 'S1-009': 'c4-politics' },
+        [],
+        [['S1-014', 'S1-006', 'long hours']]);
+      var C = cwsFile('Group C',
+        { 'S1-022': 'c1-economics', 'S1-009': 'c4-politics' },
+        [{ text: CWS_TEXT + ' again', claim: 4, lens: 'psychology' }, { text: 'Benches faced the wall so nobody could talk to anyone else there', claim: 4, lens: 'politics' }],
+        [['S1-006', 'S1-014', ''], ['GROUPC-n0', 'S1-011', 'same idea']]);
+      return [A, B, C];
+    }
+    function cwsLink(s, a, b) {
+      return s.connections.filter(function(c) { return CWS.linkKey(c.a, c.b) === CWS.linkKey(a, b); })[0];
+    }
+
+    assert('three groups: majority cells, ties to original, DISPUTED markers', function() {
+      var r = CWS.mergeFiles(cwsABC(), { name: 'Class wall', members: '' });
+      eq(r.errors.length, 0, r.errors.join('; '));
+      var s = r.state;
+      eq(CWS.findCell(s, 'S1-001'), 'c2-psychology', 'majority');
+      eq(CWS.findCell(s, 'S1-022'), 'c3-economics', 'tie -> original');
+      eq(CWS.findCell(s, 'S1-009'), 'c4-politics', 'unanimous');
+      eq(CWS.findCell(s, 'S1-033'), 'c4-economics', 'untouched');
+      eq(CWS.disputedIds(s).sort().join(','), 'S1-001,S1-022');
+      ok(!CWS.isDisputed(s, 'S1-009'));
+      var v = CWS.votesFor(s.merge.sources, 'S1-022').map(function(x) { return x.group + '=' + x.cell; }).join(',');
+      eq(v, 'Group A=hold,Group B=c3-economics,Group C=c1-economics');
+    });
+
+    assert('three groups: new cards are the union, labelled with their group', function() {
+      var s = CWS.mergeFiles(cwsABC(), { name: 'Class wall' }).state;
+      eq(s.newCards.length, 3);
+      eq(s.newCards.map(function(c) { return c.group + ':' + c.id; }).join(','), 'Group A:GROUPA-n0,Group C:GROUPC-n0,Group C:GROUPC-n1');
+      eq(CWS.findCell(s, 'GROUPC-n1'), 'c4-politics');
+      ok(!CWS.isDisputed(s, 'GROUPA-n0'));
+    });
+
+    assert('three groups: connections de-duplicated with group counts and labels', function() {
+      var s = CWS.mergeFiles(cwsABC(), { name: 'Class wall' }).state;
+      eq(s.connections.length, 3);
+      var t = cwsLink(s, 'S1-006', 'S1-014');
+      eq(CWS.connCount(s, t), 3);
+      eq(t.groups.map(function(g) { return g.group + ':' + g.label; }).join(','), 'Group A:time pressure,Group B:long hours,Group C:');
+      eq(CWS.connCount(s, cwsLink(s, 'S1-035', 'S1-036')), 1);
+      eq(cwsLink(s, 'S1-011', 'GROUPC-n0').groups[0].label, 'same idea');
+    });
+
+    assert('merging is order-independent', function() {
+      var f = cwsABC();
+      var ref = JSON.stringify(CWS.mergeFiles(f, { name: 'Class wall' }).state);
+      [[0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]].forEach(function(o) {
+        eq(JSON.stringify(CWS.mergeFiles(o.map(function(i) { return f[i]; }), { name: 'Class wall' }).state), ref, 'order ' + o.join(''));
+      });
+    });
+
+    assert('merging never alters the source files', function() {
+      var f = cwsABC();
+      var before = JSON.stringify(f);
+      var s = CWS.mergeFiles(f, { name: 'Class wall' }).state;
+      CWS.moveCard(s, 'S1-001', 'hold');
+      CWS.removeConnection(s, 'S1-006|S1-014');
+      eq(JSON.stringify(f), before);
+    });
+
+    assert('picking a cell clears DISPUTED; the merged wall exports and validates', function() {
+      var s = CWS.mergeFiles(cwsABC(), { name: 'Class wall' }).state;
+      CWS.pickCell(s, 'S1-022', 'c1-economics');
+      ok(!CWS.isDisputed(s, 'S1-022'));
+      eq(CWS.findCell(s, 'S1-022'), 'c1-economics');
+      CWS.moveCard(s, 'S1-001', 'c2-psychology');
+      ok(CWS.isDisputed(s, 'S1-001'), 'same-cell move is not a pick');
+      CWS.moveCard(s, 'S1-001', 'hold');
+      ok(!CWS.isDisputed(s, 'S1-001'), 'drag to a new cell is a pick');
+      var ex = CWS.buildExport(s, CWS_NOW);
+      eq(CWS.validateExport(ex).length, 0, CWS.validateExport(ex).join('; '));
+      eq(CWS.exportBlockers(s).length, 0);
+    });
+
+    assert('re-merging a class wall with a late group equals merging all files at once', function() {
+      var f = cwsABC();
+      var D = cwsFile('Group D', { 'S1-022': 'hold' }, [], [['S1-006', 'S1-014', 'work']]);
+      var wall = CWS.buildExport(CWS.mergeFiles(f, { name: 'Class wall' }).state, CWS_NOW);
+      var two = CWS.mergeFiles([wall, D], { name: 'Class wall' }).state;
+      var all = CWS.mergeFiles(f.concat([D]), { name: 'Class wall' }).state;
+      eq(JSON.stringify(two.cells), JSON.stringify(all.cells));
+      eq(JSON.stringify(two.connections), JSON.stringify(all.connections));
+      eq(two.merge.sources.length, 4);
+      eq(CWS.findCell(two, 'S1-022'), 'hold');
+      eq(CWS.findCell(two, 'S1-001'), 'c1-psychology', '2-2 tie -> original');
+      eq(CWS.connCount(two, cwsLink(two, 'S1-006', 'S1-014')), 4);
+    });
+
+    assert('instructor picks survive a re-merge unless the majority changes', function() {
+      var s = CWS.mergeFiles(cwsABC(), { name: 'Class wall' }).state;
+      CWS.pickCell(s, 'S1-001', 'hold');           // basis c2-psychology
+      CWS.pickCell(s, 'S1-022', 'c1-economics');   // basis c3-economics (tie)
+      var wall = CWS.buildExport(s, CWS_NOW);
+      var D = cwsFile('Group D', { 'S1-001': 'c2-psychology', 'S1-022': 'hold' }, [], []);
+      var r = CWS.mergeFiles([wall, D], { name: 'Class wall' }).state;
+      eq(CWS.findCell(r, 'S1-001'), 'hold', 'majority unchanged: pick kept');
+      ok(!CWS.isDisputed(r, 'S1-001'));
+      eq(CWS.findCell(r, 'S1-022'), 'hold', 'majority changed: pick dropped');
+      ok(CWS.isDisputed(r, 'S1-022'));
+    });
+
+    assert('cards and lines added on a merged wall, and lines removed, survive a re-merge', function() {
+      var s = CWS.mergeFiles(cwsABC(), { name: 'Class wall' }).state;
+      var id = CWS.addNewCard(s, { text: 'Class added this card about the stadium cafe opening hours today', claim: 3, lens: 'politics' }, function() { return 'z9'; }).id;
+      CWS.addConnection(s, id, 'S1-025', 'budget');
+      CWS.removeConnection(s, 'S1-035|S1-036');
+      var r = CWS.mergeFiles([CWS.buildExport(s, CWS_NOW)], { name: 'Class wall v2' }).state;
+      eq(CWS.findCell(r, id), 'c3-politics');
+      var l = cwsLink(r, id, 'S1-025');
+      ok(l, 'class line kept');
+      eq(l.groups[0].group + ':' + l.groups[0].label, 'Class wall:budget');
+      ok(!cwsLink(r, 'S1-035', 'S1-036'), 'removed line stays removed');
+    });
+
+    assert('merge rejects duplicate groups, other tools and other card sets, changing nothing', function() {
+      var f = cwsABC();
+      ok(CWS.mergeFiles([f[0], f[0]], {}).errors.length > 0, 'duplicate');
+      ok(!CWS.mergeFiles([f[0], f[0]], {}).state);
+      ok(CWS.mergeFiles([f[0], { schema: 'week6b-adjudication-bench' }], {}).errors.length > 0, 'other tool');
+      var other = JSON.parse(JSON.stringify(f[1])); other.cardSet = 'S2';
+      ok(/different card set/.test(CWS.mergeFiles([f[0], other], {}).errors[0]));
+      var wall = CWS.buildExport(CWS.mergeFiles(f, { name: 'Class wall' }).state, CWS_NOW);
+      ok(/Group A/.test(CWS.mergeFiles([wall, f[0]], {}).errors.join(' ')), 'group inside a merged wall');
+    });
+
+    assert('copy as text lists moves, disputes, new cards and connections with counts', function() {
+      var s = CWS.mergeFiles(cwsABC(), { name: 'Class wall' }).state;
+      var t = CWS.buildText(s, new Date(CWS_NOW));
+      ok(t.indexOf('S1-001: Claim 1 Quantity · Psychology -> Claim 2 Usage · Psychology') !== -1, 'from -> to');
+      ok(/DISPUTED CARDS[\s\S]*Group C: Claim 1 Quantity · Economics/.test(t), 'placements');
+      ok(t.indexOf('GROUPC-n1') !== -1, 'new card');
+      ok(t.indexOf('S1-006 <-> S1-014  (3 groups: Group A "time pressure"; Group B "long hours"; Group C)') !== -1, 'connection');
+    });
+
+    assert('A6 sheets hold four new cards per page', function() {
+      var s = CWS.blankState(); s.group.name = 'A';
+      for (var i = 0; i < 5; i++) CWS.addNewCard(s, { text: CWS_TEXT, claim: 1, lens: 'economics' }, function() { return 'q' + Math.random().toString(36).slice(2, 7); });
+      var h = CWS.buildA6Html(s);
+      eq((h.match(/class="a6-sheet"/g) || []).length, 2);
+      eq((h.match(/class="a6"/g) || []).length, 5);
+      eq(CWS.buildA6Html(CWS.blankState()), '');
+    });
+
+    suite('Claim Wall Sort — Encoding');
+
+    assert('week6-claim-wall-sort.html declares charset=utf-8 first and carries the favicon', function() {
+      var t = cwsGet('week6-claim-wall-sort.html');
+      ok(t.indexOf('<meta charset="utf-8">') === 0, 'charset not first');
+      ok(t.indexOf('<link rel="icon" type="image/png" href="data:image/png;base64,') > t.indexOf('<title>'), 'favicon');
+    });
+
+    assert('week6-claim-wall-sort.html uses no curly quotes in its script and makes no network calls', function() {
+      var m = cwsGet('week6-claim-wall-sort.html').match(/<script>([\s\S]*?)<\/script>/);
+      ok(m && !/[‘’“”]/.test(m[1]), 'curly quotes found');
+      ok(!/fetch\(|XMLHttpRequest|https?:\/\//.test(m[1]), 'network call found');
+    });
+
+    assert('no PLACEHOLDER strings remain in week6-claim-wall-sort.html', function() {
+      ok(cwsGet('week6-claim-wall-sort.html').indexOf('PLACEHOLDER:') === -1);
     });
 
     // =====================================================

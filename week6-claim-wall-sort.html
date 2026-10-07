@@ -1,0 +1,2000 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claim Wall Sort</title>
+<!-- Favicon: Home icons created by Good Ware - Flaticon (Flaticon) -->
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+<!--
+  WEEK 6 - CLAIM WALL SORT
+  Social Phenomena Challenge, ADJUDICATE phase (week 6).
+
+  A click-and-drag virtual copy of the physical claim wall. Groups, on their
+  own devices, (1) tidy the wall, (2) add new cards from the week 5 field
+  visit, and (3) link similar explanations with red string, then reproduce
+  the changes on the corkboard. The instructor merges the groups' exports
+  into one class wall. One screen, one board, no steps, no scoring.
+
+  This tool never asks what should be done about the decline, and it shows
+  no analyser output (scores, misfiling, lens fit, synthesis): students
+  decide where cards belong.
+
+  ============================================================================
+  DESIGN DEPARTURE (documented exception to CLAUDE.md)
+  ============================================================================
+  The BOARD deliberately departs from the house palette, the way mondi.html
+  has its own design system: it is a corkboard (CSS-only speckled cork inside
+  a wooden frame), the cards are paper index cards in the colours of the real
+  card stock (CONFIG.cardColours), each slightly rotated with a push-pin and
+  a soft shadow, cell boundaries are drawn as tape, and links are red string.
+  Everything AROUND the board (header, toolbar, buttons, dialogs, lists,
+  typography) follows CLAUDE.md: house tokens, zero radius on UI controls,
+  uppercase labels. Pins and string knots are round because they depict
+  real pins, not UI controls.
+
+  ============================================================================
+  EXPORT JSON  (tool "week6-claim-wall-sort", schemaVersion 1)
+  ============================================================================
+  {
+    "tool": "week6-claim-wall-sort",            REQUIRED, constant
+    "schemaVersion": 1,                          REQUIRED
+    "cardSet": "S1",                             REQUIRED, must match CONFIG.cardSet
+    "cardIds": ["S1-001", ...],                  REQUIRED, the starting card ids
+    "exportedAt": "ISO 8601 timestamp",
+    "group": { "name": "string", "members": ["string", ...] },
+    "cells": { "c1-psychology": ["S1-001", ...], ..., "hold": [...] },
+                                                 card positions, in order within
+                                                 each cell. Cell keys are
+                                                 "c<claim>-<lens>" or "hold".
+    "newCards": [ { "id", "text", "claim", "lens", "source", "group",
+                    "origin" (cell when added), "createdAt" } ],
+    "connections": [ { "a", "b" (a < b), "label",
+                       "local": true if drawn on this wall,
+                       "groups": [ { "group", "label" } ] from merged groups } ],
+    "merge": null for a group's own wall, or for a merged wall:
+      { "sources": [ { "group", "members", "exportedAt",
+                       "placements": { cardId: cellKey },
+                       "newCards": [...], "connections": [ { "a", "b", "label" } ] } ],
+        "overrides": { cardId: { "cell", "basis" (majority cell when picked), "at" } },
+        "removedLinks": ["a|b", ...], "removedCards": [cardId, ...] }
+  }
+
+  MERGING. A merged wall keeps every group's raw placements in
+  merge.sources, so merging a merged wall again with a late group's file
+  recounts every card as if all the original files had been merged at once.
+  The instructor's picks (overrides) survive a re-merge unless the new count
+  changes the card's majority cell.
+  ============================================================================
+-->
+<style>
+  :root {
+    --bg: #F2DFBE;
+    --bg-card: #FFFAF2;
+    --bg-deep: #E8D2A8;
+    --text: #2A1F18;
+    --text-muted: #6A5A48;
+    --border: #D8C8A8;
+
+    --char-1: #5C3A96;
+    --char-2: #B52838;
+    --char-3: #C85218;
+    --char-4: #D4A020;
+    --char-5: #7A5828;
+    --char-6: #B83068;
+    --char-7: #CC6830;
+    --char-8: #7E58A8;
+
+    --correct: #2A7A42;
+    --incorrect: #B82828;
+    --incorrect-bg: #FDEEEE;
+
+    /* Board only (the documented departure): cork, frame, tape, string */
+    --cork: #C49A6C;
+    --frame: #6B4423;
+    --frame-light: #82552E;
+    --frame-dark: #573517;
+    --tape: rgba(246, 238, 214, 0.92);
+    --string: #9A0C16;
+    --card-ink: #2A1F18;
+    --card-ink-muted: #4A3828;
+    --stamp-disputed: #7A1420;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+  :focus-visible { outline: 3px solid var(--char-1); outline-offset: 2px; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  .app-wrap { max-width: 1240px; margin: 0 auto; padding: 1.5rem 2rem 3rem; }
+
+  h1 {
+    font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 800; letter-spacing: 0.06em;
+    text-transform: uppercase; line-height: 1.1; margin-bottom: 0.5rem;
+  }
+  h2 {
+    font-size: clamp(1.2rem, 2.4vw, 1.6rem); font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.05em; line-height: 1.2; margin-bottom: 0.75rem;
+  }
+  h3 { font-size: 0.95rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; }
+  p { margin-bottom: 0.6rem; }
+  .eyebrow { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); }
+  .lede { font-size: 1.02rem; color: var(--text-muted); max-width: 760px; margin-bottom: 0.25rem; }
+  .quiet { color: var(--text-muted); font-size: 0.88rem; }
+  .alert { color: var(--incorrect); font-weight: 700; font-size: 0.88rem; }
+
+  /* ── Page header with house geometry ── */
+  .page-header {
+    position: relative; overflow: hidden;
+    padding: 1.5rem 2rem 1.25rem 0; margin-bottom: 1rem;
+    border-bottom: 6px solid var(--char-5);
+  }
+  .page-header > * { position: relative; z-index: 1; }
+  .page-header::before {
+    content: ''; position: absolute; width: 220px; height: 220px;
+    background: var(--char-2); border-radius: 50%; opacity: 0.08;
+    top: -70px; right: -40px; z-index: 0;
+  }
+  .page-header::after {
+    content: ''; position: absolute; width: 64px; height: 64px;
+    background: var(--char-4); opacity: 0.14;
+    bottom: 14px; right: 150px; transform: rotate(25deg); z-index: 0;
+  }
+  .page-header .deco-bar {
+    position: absolute; z-index: 0; pointer-events: none;
+    width: 150px; height: 10px; background: var(--char-3);
+    top: 26px; right: 250px; transform: rotate(-8deg);
+  }
+  .page-header .deco-ring {
+    position: absolute; z-index: 0; pointer-events: none;
+    width: 84px; height: 84px; border: 6px solid var(--char-1); border-radius: 50%;
+    bottom: -30px; right: 40px; opacity: 0.3;
+  }
+
+  /* ── Group strip ── */
+  .group-strip {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 0.5rem 1rem;
+    background: var(--bg-card); border: 2px solid var(--border); border-left: 6px solid var(--char-1);
+    padding: 0.75rem 1rem; margin-bottom: 0.75rem;
+  }
+  .field label, .field .label {
+    display: block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.2rem;
+  }
+  input[type="text"], textarea, select {
+    width: 100%; font: inherit; font-size: 0.95rem; color: var(--text);
+    background: #fff; border: 2px solid var(--border); border-radius: 0;
+    padding: 0.5rem 0.65rem; min-height: 44px;
+  }
+  textarea { min-height: 110px; resize: vertical; }
+  input:focus, textarea:focus, select:focus { border-color: var(--char-1); outline: 3px solid var(--char-4); outline-offset: 1px; }
+
+  /* ── Buttons ── */
+  .btn {
+    font: inherit; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    min-height: 44px; padding: 0.55rem 1rem; border: 2px solid transparent; border-radius: 0;
+    cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease, border-color 0.2s ease;
+  }
+  .btn:active { transform: translateY(0); }
+  .btn-primary { background: var(--char-1); color: #fff; }
+  .btn-primary:hover { background: var(--char-2); transform: translateY(-2px); }
+  .btn-accent { background: var(--char-5); color: #fff; }
+  .btn-accent:hover { background: var(--char-2); transform: translateY(-2px); }
+  .btn-ghost { background: transparent; color: var(--text); border-color: var(--text); }
+  .btn-ghost:hover { background: var(--text); color: var(--bg); transform: translateY(-2px); }
+  .btn-ghost[aria-pressed="true"] { background: var(--char-2); border-color: var(--char-2); color: #fff; }
+  .btn-danger { background: transparent; color: var(--incorrect); border-color: var(--incorrect); }
+  .btn-danger:hover { background: var(--incorrect); color: #fff; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-small { font-size: 0.68rem; padding: 0.4rem 0.75rem; }
+
+  .toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; }
+  .toolbar .sep { width: 2px; align-self: stretch; background: var(--border); margin: 0 0.15rem; }
+  .status {
+    min-height: 1.6rem; font-size: 0.88rem; font-weight: 600; margin-bottom: 0.5rem;
+    padding-left: 0.6rem; border-left: 4px solid var(--char-4);
+  }
+  .status:empty { border-left-color: transparent; }
+
+  /* ── Merge panel ── */
+  .merge-panel {
+    background: rgba(200,82,24,0.08); border: 2px solid var(--border); border-left: 6px solid var(--char-3);
+    padding: 0.75rem 1rem; margin-bottom: 0.75rem; font-size: 0.9rem;
+  }
+  .merge-panel ul { list-style: none; display: flex; flex-wrap: wrap; gap: 0.35rem 1.25rem; margin-top: 0.25rem; }
+  .merge-panel li::before { content: ''; display: inline-block; width: 9px; height: 9px; background: var(--char-3); margin-right: 6px; }
+
+  /* ── Connect-mode banner ── */
+  .connect-banner {
+    background: var(--char-2); color: #fff; padding: 0.6rem 1rem; margin-bottom: 0.5rem;
+    font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; font-size: 0.8rem;
+    display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; justify-content: space-between;
+  }
+  .connect-banner .btn { border-color: #fff; color: #fff; }
+  .connect-banner .btn:hover { background: #fff; color: var(--char-2); }
+
+  /* ============================================================
+     THE BOARD (corkboard: the documented departure)
+     ============================================================ */
+  .frame {
+    position: relative;
+    border: 18px solid var(--frame);
+    border-image: repeating-linear-gradient(100deg, var(--frame) 0 9px, var(--frame-light) 9px 13px, var(--frame-dark) 13px 19px, var(--frame) 19px 26px) 18;
+    box-shadow: 0 6px 18px rgba(42,31,24,0.25), inset 0 0 0 2px rgba(0,0,0,0.25);
+    background: var(--cork);
+  }
+  .cork-tex {
+    background-color: var(--cork);
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(92,58,28,0.38) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 70% 60%, rgba(92,58,28,0.30) 0 1.2px, transparent 1.9px),
+      radial-gradient(circle at 40% 80%, rgba(255,240,210,0.35) 0 1px, transparent 1.7px),
+      radial-gradient(circle at 85% 15%, rgba(70,40,15,0.25) 0 1.5px, transparent 2.2px),
+      radial-gradient(circle at 55% 45%, rgba(150,105,60,0.35) 0 2px, transparent 2.8px);
+    background-size: 9px 11px, 13px 7px, 17px 19px, 23px 29px, 31px 37px;
+  }
+  .cork { position: relative; padding: 10px; }
+  .wall {
+    display: grid;
+    grid-template-columns: minmax(118px, 0.62fr) repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    background:
+      repeating-linear-gradient(90deg, rgba(220,205,170,0.0) 0 6px, rgba(200,185,150,0.35) 6px 7px),
+      var(--tape);
+    padding: 8px;
+  }
+  .wall > * { min-width: 0; }
+  .wall-corner, .lens-head, .claim-slot, .cell { padding: 10px; }
+  .lens-head { display: flex; align-items: center; justify-content: center; }
+  .lens-head .paper, .hold-head .paper {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    background: var(--bg-card); color: var(--card-ink); padding: 0.35rem 0.75rem;
+    font-size: 0.8rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+    box-shadow: 0 2px 4px rgba(42,31,24,0.25);
+  }
+  .swatch { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--card-ink); border-radius: 3px; }
+  .wall-corner { display: flex; align-items: flex-end; }
+  .wall-corner .paper { background: var(--bg-card); padding: 0.2rem 0.5rem; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+
+  .claim-card {
+    position: relative; background: var(--claim-bg); color: var(--card-ink);
+    padding: 1.1rem 0.75rem 0.75rem; transform: rotate(var(--rot, 0deg));
+    box-shadow: 0 3px 6px rgba(42,31,24,0.3);
+  }
+  .claim-card .claim-no { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
+  .claim-card .claim-label { font-size: 1.1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.1; }
+  .claim-card .claim-text { font-size: 0.8rem; line-height: 1.35; margin: 0.35rem 0 0; }
+
+  .cell { position: relative; min-height: 120px; }
+  .cell.drop-target { box-shadow: inset 0 0 0 4px var(--card-ink); }
+  .cell-label { display: none; }
+  .cell-cards { display: flex; flex-wrap: wrap; gap: 16px 12px; align-items: flex-start; min-height: 80px; }
+  .cell.empty .cell-cards::before {
+    content: 'Empty'; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--card-ink); background: rgba(255,250,242,0.75); padding: 0.15rem 0.4rem;
+  }
+
+  .hold { margin-top: 10px; background: var(--tape); padding: 8px; }
+  .hold .cell { min-height: 100px; }
+  .hold-head { padding: 4px 10px 0; }
+
+  /* ── Paper cards ── */
+  .card {
+    position: relative; flex: 1 1 124px; max-width: 220px; min-height: 44px;
+    background: var(--card-bg); color: var(--card-ink);
+    padding: 1rem 0.6rem 0.5rem;
+    transform: rotate(var(--rot, 0deg));
+    box-shadow: 0 2px 5px rgba(42,31,24,0.32), 0 1px 1px rgba(42,31,24,0.2);
+    cursor: grab; user-select: none; -webkit-user-select: none;
+    transition: box-shadow 0.15s ease, opacity 0.15s ease;
+    touch-action: none;
+  }
+  .card:hover { box-shadow: 0 6px 12px rgba(42,31,24,0.35); }
+  .card:focus-visible { outline: 3px solid #fff; outline-offset: 1px; box-shadow: 0 0 0 6px var(--card-ink); }
+  .card.dragging { opacity: 0.35; }
+  .card.conn-a { outline: 4px solid var(--string); outline-offset: 2px; }
+  .pin {
+    position: absolute; top: 4px; left: 50%; width: 14px; height: 14px; margin-left: -7px;
+    border-radius: 50%; background: var(--string);
+    box-shadow: inset -2px -2px 0 rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.45);
+  }
+  .claim-card .pin { background: #2A5A8A; }
+  .card-lens { display: block; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--card-ink-muted); }
+  .card-text { font-size: 0.84rem; line-height: 1.35; margin: 0.15rem 0 0.3rem; overflow-wrap: anywhere; }
+  .ins { font-style: italic; color: var(--card-ink-muted); }
+  .card-foot { display: flex; flex-wrap: wrap; gap: 0.2rem 0.4rem; align-items: center; font-size: 0.64rem; font-weight: 700; letter-spacing: 0.06em; color: var(--card-ink-muted); text-transform: uppercase; }
+  .chip {
+    display: inline-block; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 1px 5px; border: 1.5px solid var(--card-ink); color: var(--card-ink); background: rgba(255,250,242,0.6);
+  }
+  .chip.uncertain { border-style: dashed; }
+  .chip.moved { background: var(--card-ink); color: #fff; }
+  .stamp {
+    position: absolute; top: -8px; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 2px 6px; color: #fff; transform: rotate(6deg); box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+  .stamp-new { right: -6px; background: var(--card-ink); }
+  .stamp-disputed { left: -6px; background: var(--stamp-disputed); transform: rotate(-5deg); }
+  .card-links { display: none; }
+  .ghost {
+    flex: 1 1 124px; max-width: 220px; min-height: 64px; padding: 0.5rem;
+    border: 3px dashed var(--card-ink); background: rgba(255,250,242,0.55);
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--card-ink);
+    pointer-events: none;
+  }
+  .board.only-disputed .card:not(.disputed) { display: none; }
+  .board.only-disputed .ghost { display: none; }
+
+  .drag-float {
+    position: fixed; z-index: 1000; pointer-events: none; margin: 0;
+    box-shadow: 0 12px 24px rgba(42,31,24,0.4); opacity: 0.95;
+  }
+
+  /* ── Strings overlay ── */
+  .strings { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; z-index: 5; }
+  .strings .hit { pointer-events: stroke; cursor: pointer; }
+  .tags { position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 6; }
+  .knot {
+    position: absolute; transform: translate(-50%, -50%);
+    font: inherit; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    background: var(--string); color: #fff; border: 2px solid #fff; border-radius: 0;
+    padding: 2px 6px; min-width: 18px; min-height: 18px; cursor: pointer; white-space: nowrap;
+    max-width: 180px; overflow: hidden; text-overflow: ellipsis;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.45);
+  }
+  .knot::before { content: ''; position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; transform: translate(-50%, -50%); }
+  .knot.empty { width: 18px; height: 18px; padding: 0; border-radius: 50%; }
+  .knot:focus-visible { outline: 3px solid #fff; box-shadow: 0 0 0 6px var(--card-ink); }
+  .board.only-disputed .strings, .board.only-disputed .tags { display: none; }
+
+  .tip {
+    position: fixed; z-index: 1100; max-width: 280px; pointer-events: none;
+    background: var(--text); color: var(--bg-card); font-size: 0.8rem; line-height: 1.4;
+    padding: 0.5rem 0.7rem; border-left: 5px solid var(--string);
+  }
+  .tip[hidden] { display: none; }
+
+  /* ── Connections list ── */
+  .panel {
+    position: relative; overflow: hidden; margin-top: 1.5rem;
+    background: var(--bg-card); border: 2px solid var(--border); border-top: 6px solid var(--char-2);
+    padding: 1rem 1.25rem;
+  }
+  .panel::after {
+    content: ''; position: absolute; width: 120px; height: 120px; border-radius: 50%;
+    background: var(--char-4); opacity: 0.1; right: -30px; bottom: -40px; pointer-events: none;
+  }
+  .panel > * { position: relative; z-index: 1; }
+  .link-list { list-style: none; }
+  .link-list li {
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.5rem 0.75rem; align-items: start;
+    padding: 0.6rem 0; border-top: 2px solid var(--border);
+  }
+  .link-no { font-weight: 800; color: #fff; background: var(--string); padding: 0.1rem 0.45rem; font-size: 0.75rem; letter-spacing: 0.08em; }
+  .link-body { font-size: 0.9rem; }
+  .link-body .groups { color: var(--text-muted); font-size: 0.82rem; }
+  .link-body .lbl { font-weight: 700; }
+
+  /* ── Dialogs ── */
+  dialog {
+    margin: auto; border: 0; border-radius: 0; padding: 0; color: var(--text); background: var(--bg-card);
+    width: min(560px, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow-y: auto;
+    border-top: 8px solid var(--dlg-color, var(--char-1));
+    box-shadow: 0 12px 32px rgba(42,31,24,0.35);
+  }
+  dialog::backdrop { background: rgba(42,31,24,0.55); }
+  .dlg-body { padding: 1.1rem 1.25rem 1.25rem; }
+  .dlg-body h2 { font-size: 1.15rem; }
+  .dlg-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+  .dlg-section { border-top: 2px solid var(--border); padding-top: 0.75rem; margin-top: 0.75rem; }
+  .dlg-card-preview {
+    background: var(--card-bg); color: var(--card-ink); padding: 0.75rem; margin-bottom: 0.75rem;
+    border-left: 6px solid var(--card-ink);
+  }
+  .two-col { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.5rem 0.75rem; }
+  .word-count { font-size: 0.8rem; font-weight: 700; margin-top: 0.25rem; }
+  .word-count.ok { color: var(--correct); }
+  .word-count.bad { color: var(--incorrect); }
+  .vote-list { list-style: none; }
+  .vote-list li { display: flex; flex-wrap: wrap; gap: 0.4rem 0.75rem; align-items: center; justify-content: space-between; padding: 0.4rem 0; border-top: 2px solid var(--border); }
+  .file-list { list-style: none; margin: 0.5rem 0; }
+  .file-list li { display: flex; flex-wrap: wrap; gap: 0.4rem 0.75rem; align-items: center; justify-content: space-between; padding: 0.5rem 0; border-top: 2px solid var(--border); }
+  .file-list .err { color: var(--incorrect); font-weight: 700; font-size: 0.85rem; }
+  .pick { display: inline-flex; align-items: center; justify-content: center; }
+
+  .print-only { display: none; }
+
+  /* ── Narrow: stacked cells, Move to... instead of drag ── */
+  @media (max-width: 699.98px) {
+    .app-wrap { padding: 1rem 16px 2.5rem; }
+    .page-header { padding-right: 0; }
+    .page-header .deco-bar { right: 12px; top: 4px; width: 80px; }
+    .group-strip { grid-template-columns: minmax(0, 1fr); }
+    .frame { border-width: 10px; border-image-slice: 10; border-image-width: 10px; }
+    .cork { padding: 6px; }
+    .wall { grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 6px; }
+    .wall-corner, .lens-head { display: none; }
+    .claim-slot { padding: 10px 6px 4px; }
+    .cell { min-height: 0; padding: 8px; }
+    .cell-label { display: block; margin-bottom: 0.4rem; }
+    .cell-label span {
+      display: inline-block; background: var(--bg-card); color: var(--card-ink); padding: 0.15rem 0.5rem;
+      font-size: 0.68rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+    }
+    .card { cursor: pointer; touch-action: manipulation; flex-basis: 100%; max-width: none; }
+    .ghost { flex-basis: 100%; max-width: none; }
+    .two-col { grid-template-columns: minmax(0, 1fr); }
+    .link-list li { grid-template-columns: auto minmax(0, 1fr); }
+    .link-list li .btn { grid-column: 1 / -1; justify-self: start; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+    .btn:hover { transform: none; }
+    .drag-float { transform: none !important; box-shadow: none; }
+  }
+
+  /* ── Print: A4 landscape board, connections list, A6 new cards ── */
+  @page { size: A4 landscape; margin: 8mm; }
+  @media print {
+    body { background: #fff; font-size: 9pt; }
+    .app-wrap { max-width: none; padding: 0; }
+    .page-header { padding: 0 0 2mm; margin-bottom: 2mm; border-bottom-width: 1mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page-header::before, .page-header::after, .deco-bar, .deco-ring, .lede { display: none; }
+    h1 { font-size: 16pt; margin: 0; }
+    .no-print, .toolbar, .status, .group-strip, .connect-banner, dialog, .tip, .strings, .tags, .ghost { display: none !important; }
+    .print-only { display: block; }
+    .print-meta { font-size: 9pt; margin-bottom: 2mm; }
+    .merge-panel { padding: 1.5mm 3mm; margin-bottom: 2mm; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .frame { border: 0.6mm solid #6B4423; border-image: none; box-shadow: none; background: #fff; }
+    .cork-tex { background: #fff !important; }
+    .cork { padding: 0; }
+    .wall { background: #fff; gap: 0; padding: 0; grid-template-columns: 28mm repeat(3, minmax(0, 1fr)); }
+    .wall > * { border: 0.3mm solid #9A8A70; }
+    .wall-corner, .lens-head, .claim-slot, .cell { padding: 1.5mm; }
+    .hold { background: #fff; margin-top: 2mm; padding: 0; border: 0.3mm solid #9A8A70; }
+    .cell { min-height: 0; break-inside: auto; }
+    .cell.empty .cell-cards::before { background: none; }
+    .cell-cards { gap: 1.5mm; min-height: 0; }
+    .card, .claim-card {
+      transform: none; box-shadow: none; padding: 1.5mm 2mm; flex: 1 1 36mm; max-width: none;
+      border: 0.3mm solid #2A1F18; break-inside: avoid;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .pin { display: none; }
+    .card-text { font-size: 7.5pt; margin: 0.5mm 0; }
+    .card-lens, .card-foot, .chip { font-size: 6pt; }
+    .stamp { position: static; display: inline-block; transform: none; font-size: 6pt; margin-right: 1mm; box-shadow: none; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .chip.moved, .swatch, .link-no { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card-links { display: block; font-size: 6.5pt; font-weight: 800; color: #9A0C16; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .claim-card .claim-label { font-size: 9pt; }
+    .claim-card .claim-text { font-size: 7pt; }
+    .lens-head .paper, .hold-head .paper, .wall-corner .paper { box-shadow: none; font-size: 7pt; padding: 0; }
+    .panel { break-before: page; border: 0; border-top: 1mm solid #9A0C16; margin: 0; padding: 2mm 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .panel::after { display: none; }
+    .link-list li { grid-template-columns: auto minmax(0, 1fr); padding: 1.2mm 0; border-top: 0.3mm solid #9A8A70; break-inside: avoid; }
+    .link-body { font-size: 8.5pt; }
+    .a6-sheet {
+      display: grid; grid-template-columns: 140mm 140mm; grid-template-rows: 97mm 97mm;
+      break-before: page;
+    }
+    .a6 {
+      width: 140mm; height: 97mm; border: 0.3mm dashed #8A7A62; padding: 6mm 7mm;
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .a6-eyebrow { font-size: 7pt; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #4A3828; }
+    .a6-bar { height: 4mm; background: var(--card-bg); border: 0.3mm solid #2A1F18; margin: 1.5mm 0 3mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .a6-title { font-size: 11pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.15; }
+    .a6-lens { font-size: 7.5pt; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 2mm; }
+    .a6-text { font-size: 12pt; line-height: 1.35; overflow-wrap: anywhere; }
+    .a6-foot { margin-top: auto; padding-top: 2mm; font-size: 7pt; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; border-top: 0.4mm solid #2A1F18; }
+  }
+</style>
+
+<div class="app-wrap" id="cws-app">
+  <header class="page-header">
+    <div class="deco-bar" aria-hidden="true"></div>
+    <div class="deco-ring" aria-hidden="true"></div>
+    <p class="eyebrow" id="cws-eyebrow" style="color: var(--char-3)"></p>
+    <h1 id="cws-title"></h1>
+    <p class="lede" id="cws-lede"></p>
+    <p class="print-only print-meta" id="cws-print-meta"></p>
+  </header>
+
+  <section class="group-strip" aria-label="Group">
+    <div class="field">
+      <label for="grp-name">Group name</label>
+      <input type="text" id="grp-name" autocomplete="off" maxlength="60">
+    </div>
+    <div class="field">
+      <label for="grp-members">Members (separate with commas)</label>
+      <input type="text" id="grp-members" autocomplete="off" maxlength="300">
+    </div>
+  </section>
+
+  <div class="toolbar" role="toolbar" aria-label="Wall tools">
+    <button type="button" class="btn btn-primary" id="btn-add">Add card</button>
+    <button type="button" class="btn btn-ghost" id="btn-connect" aria-pressed="false">Connect</button>
+    <button type="button" class="btn btn-ghost" id="btn-original" aria-pressed="false">Show original places</button>
+    <button type="button" class="btn btn-ghost" id="btn-disputed" aria-pressed="false">Disputed only</button>
+    <span class="sep" aria-hidden="true"></span>
+    <button type="button" class="btn btn-accent" id="btn-merge">Merge group files</button>
+    <button type="button" class="btn btn-ghost" id="btn-export">Export JSON</button>
+    <button type="button" class="btn btn-ghost" id="btn-import">Import JSON</button>
+    <input type="file" id="import-file" accept="application/json,.json" class="sr-only" tabindex="-1" aria-hidden="true">
+    <button type="button" class="btn btn-ghost" id="btn-copy">Copy as text</button>
+    <button type="button" class="btn btn-ghost" id="btn-print">Print</button>
+    <button type="button" class="btn btn-danger" id="btn-reset">Reset</button>
+  </div>
+  <p class="status" id="status" role="status" aria-live="polite"></p>
+  <div id="connect-banner"></div>
+  <div id="merge-panel"></div>
+
+  <main>
+    <div class="frame">
+      <div class="cork cork-tex board" id="board"></div>
+    </div>
+    <section class="panel" id="links-panel" aria-labelledby="links-title"></section>
+  </main>
+  <div id="print-cards" class="print-only"></div>
+</div>
+
+<div class="tip" id="tip" hidden></div>
+
+<dialog id="dlg-card" aria-labelledby="dlg-card-title"><div class="dlg-body" id="dlg-card-body"></div></dialog>
+<dialog id="dlg-add" aria-labelledby="dlg-add-title" style="--dlg-color: var(--char-1)"><div class="dlg-body" id="dlg-add-body"></div></dialog>
+<dialog id="dlg-link" aria-labelledby="dlg-link-title" style="--dlg-color: var(--char-2)"><div class="dlg-body" id="dlg-link-body"></div></dialog>
+<dialog id="dlg-merge" aria-labelledby="dlg-merge-title" style="--dlg-color: var(--char-3)"><div class="dlg-body" id="dlg-merge-body"></div></dialog>
+
+<script>
+(function () {
+  'use strict';
+
+  // ==========================================================================
+  // CONFIG: everything a non-developer may want to edit lives here.
+  // No text in this tool is a placeholder. Do not add study findings,
+  // statistics or facts about real places.
+  // ==========================================================================
+  var CONFIG = {
+    // Identity of exports. Files from any other tool are rejected on import.
+    toolId: 'week6-claim-wall-sort',
+    schemaVersion: 1,
+    // Autosave key, namespaced per tool and version. Bump the suffix to
+    // start every device afresh after a breaking change to the card set.
+    storageKey: 'week6-claim-wall-sort-v1',
+    // The snapshot the starting cards come from (claim-wall/analysis/S1.json).
+    // Exports carry it, and files for a different card set are rejected.
+    cardSet: 'S1',
+
+    // Card stock colours. MATCH THESE TO THE REAL CARD STOCK on the wall.
+    // Text on every colour is #2A1F18; keep each colour light enough for
+    // a contrast ratio of at least 4.5:1 against it (WCAG AA). The four
+    // values below give 7.3:1 or more.
+    cardColours: {
+      psychology: '#F4A99B',  // salmon pink cards
+      economics:  '#F2CC5B',  // yellowy gold cards
+      politics:   '#F59A4A',  // orange cards
+      claim:      '#8CC98A'   // green claim header cards
+    },
+
+    // The four claim rows, in the wall's own order and wording (from S1).
+    // week5 is the matching term on the week 5 field visit cards.
+    claims: [
+      { no: 1, label: 'Quantity', text: 'The # of third places is declining (quantity)', week5: 'Supply' },
+      { no: 2, label: 'Usage', text: 'People use third places less than they did before (usage)', week5: 'Use' },
+      { no: 3, label: 'Outcomes', text: 'Outcomes of third places are worsening for social/community (outcomes)', week5: 'Outcome' },
+      { no: 4, label: 'Quality', text: 'Remaining places exhibit fewer third-place characteristics (quality)', week5: 'Quality' }
+    ],
+    // The three lens columns, in the wall's order. week5 is the matching
+    // lens name on the week 5 field visit cards.
+    lenses: [
+      { id: 'psychology', name: 'Psychology', week5: 'Psychological' },
+      { id: 'economics', name: 'Economics', week5: 'Economic' },
+      { id: 'politics', name: 'Politics', week5: 'Political' }
+    ],
+    // The holding area at the bottom edge of the board.
+    holdingName: 'Not sure / not an explanation',
+
+    // New cards from the week 5 field visit.
+    newCard: {
+      minWords: 8,
+      maxWords: 30,
+      source: 'Field visit (week 5)'
+    },
+    // Maximum words in a red-line label.
+    labelMaxWords: 8,
+    // Below this width the board becomes stacked cells and cards are moved
+    // with "Move to..." instead of dragging.
+    narrowBreakpoint: 700,
+
+    // Interface copy.
+    text: {
+      eyebrow: 'Week 6 \u00b7 Adjudicate \u00b7 Claim wall',
+      title: 'Claim Wall Sort',
+      lede: 'A virtual copy of the claim wall. Tidy it by moving cards to where your group thinks they belong, add cards from the week 5 field visit, and connect similar explanations with red string. Then make the same changes on the corkboard.',
+      connectBannerA: 'Connect: choose the first card',
+      connectBannerB: 'Connect: now choose the second card',
+      noLinks: 'No red lines yet. Choose Connect, then tap two cards.',
+      startingNoDelete: 'Starting cards cannot be deleted. If you think this is not an explanation, move it to the holding area.'
+    },
+
+    // The 39 starting cards, verbatim from claim-wall/analysis/S1.json
+    // (entry_id, card_text, claim_no, discipline). Square brackets are
+    // transcriber insertions, not student text, and are shown in muted
+    // italics. uncertain = the transcription confidence is Uncertain.
+    // Do not edit the text: the test suite checks it against S1.json.
+    cards: [
+      { id: "S1-001", claim: 1, lens: "psychology", uncertain: false, text: "People don't want to be in crowded spaces." },
+      { id: "S1-002", claim: 1, lens: "psychology", uncertain: false, text: "Social media isolation (bad reputation given by influencers)" },
+      { id: "S1-003", claim: 1, lens: "economics", uncertain: false, text: "They aren't economically viable. The don't make enough revenue. They don't break even, harder to stay in business." },
+      { id: "S1-004", claim: 1, lens: "economics", uncertain: false, text: "Lack of funding because of corruption or bad location." },
+      { id: "S1-005", claim: 1, lens: "economics", uncertain: false, text: "Decrease in budget: relocation of money to other sectors. Also politics." },
+      { id: "S1-006", claim: 1, lens: "economics", uncertain: false, text: "High cost of living means need to work instead of socilise." },
+      { id: "S1-007", claim: 1, lens: "economics", uncertain: false, text: "More recognized brands like Starbucks receive more money than the local brands." },
+      { id: "S1-008", claim: 1, lens: "politics", uncertain: false, text: "Conservative governments have underinvested in third places." },
+      { id: "S1-009", claim: 1, lens: "politics", uncertain: false, text: "Polarization" },
+      { id: "S1-010", claim: 2, lens: "psychology", uncertain: false, text: "Modernisation: physical 3d places are declining because virtual ones are more available & other forms of entertainment." },
+      { id: "S1-011", claim: 2, lens: "psychology", uncertain: false, text: "People are becoming less collectively minded and more individualist. - social media, internet, talking to ai, modernisation - people don't have time for community because work." },
+      { id: "S1-012", claim: 2, lens: "psychology", uncertain: false, text: "Covid Adaptation: people become more introverted cause they got used to lock down." },
+      { id: "S1-013", claim: 2, lens: "economics", uncertain: false, text: "Some third places propose things that ppl can make themselves (for cheaper) -> coffee" },
+      { id: "S1-014", claim: 2, lens: "economics", uncertain: false, text: "People are working more and for longer because of rising living costs and therefore don't have time to go to third places" },
+      { id: "S1-015", claim: 2, lens: "economics", uncertain: true, text: "There might [be] a hierarchy because nowadays third spaces are actually turning into business things eg: selling things; bringing ID" },
+      { id: "S1-016", claim: 2, lens: "economics", uncertain: false, text: "Economics: Less disposable income for ticketed third spaces (museums etc)" },
+      { id: "S1-017", claim: 2, lens: "politics", uncertain: true, text: "After math of political polecies from [Covid]" },
+      { id: "S1-018", claim: 2, lens: "politics", uncertain: true, text: "Less funding for communal incentives, like youth groups. More right wing parties are winning elections. And this is not something they prioritise. If you [have?] the money." },
+      { id: "S1-019", claim: 3, lens: "psychology", uncertain: false, text: "Social anxiety and stress" },
+      { id: "S1-020", claim: 3, lens: "psychology", uncertain: false, text: "Social media massive consumption. Because people don't feel like they want to socialize anymore physically. & expectation" },
+      { id: "S1-021", claim: 3, lens: "economics", uncertain: false, text: "Workers earning a minimum wage is leading to demotivation." },
+      { id: "S1-022", claim: 3, lens: "economics", uncertain: false, text: "Inflation" },
+      { id: "S1-023", claim: 3, lens: "politics", uncertain: true, text: "The government feels like people go to third places to plan revolutions." },
+      { id: "S1-024", claim: 3, lens: "politics", uncertain: true, text: "Polarization, which can make people['s lives] spread into their [own] bubble." },
+      { id: "S1-025", claim: 3, lens: "politics", uncertain: false, text: "Different political parties have different budget priorities. Public goods." },
+      { id: "S1-026", claim: 3, lens: "politics", uncertain: false, text: "Government increasing taxes." },
+      { id: "S1-027", claim: 4, lens: "psychology", uncertain: false, text: "People are more introverted and so socialise less." },
+      { id: "S1-028", claim: 4, lens: "psychology", uncertain: false, text: "The interior design is not for everyone, like the type music." },
+      { id: "S1-029", claim: 4, lens: "psychology", uncertain: false, text: "There is not a neutral surrounding so everyone can feel comfortable. (Low-profile)" },
+      { id: "S1-030", claim: 4, lens: "psychology", uncertain: true, text: "People are more pessimist and there [are] less playful" },
+      { id: "S1-031", claim: 4, lens: "psychology", uncertain: false, text: "Technology replaces conversations as an activity" },
+      { id: "S1-032", claim: 4, lens: "economics", uncertain: false, text: "Club's/Leisure centre memberships are way to expensive. They don't represent what they use to in terms of connections and wealth. People don't use all the things that they offer so they" },
+      { id: "S1-033", claim: 4, lens: "economics", uncertain: false, text: "The Deterioration." },
+      { id: "S1-034", claim: 4, lens: "economics", uncertain: false, text: "You can't really come and go as you please if you have to pay for it. (So there is no neutral ground)" },
+      { id: "S1-035", claim: 4, lens: "politics", uncertain: false, text: "Less of a leveller because of increased polarization" },
+      { id: "S1-036", claim: 4, lens: "politics", uncertain: false, text: "The increase of polarization (Right x Left)" },
+      { id: "S1-037", claim: 4, lens: "politics", uncertain: false, text: "Overcommercialization causes the third places to focus on profit." },
+      { id: "S1-038", claim: 4, lens: "politics", uncertain: false, text: "Capitalism makes it exclusive to a certain group of people." },
+      { id: "S1-039", claim: 4, lens: "politics", uncertain: true, text: "F. Quality of event. Which events are being offer." }
+    ]
+  };
+
+  // ==========================================================================
+  // Constants and small helpers
+  // ==========================================================================
+  var HOLD = 'hold';
+  var CLAIM = {}; CONFIG.claims.forEach(function (c) { CLAIM[c.no] = c; });
+  var LENS = {}; CONFIG.lenses.forEach(function (l) { LENS[l.id] = l; });
+  var START = {}; CONFIG.cards.forEach(function (c) { START[c.id] = c; });
+  var START_IDS = CONFIG.cards.map(function (c) { return c.id; }).sort();
+  var CELL_KEYS = [];
+  CONFIG.claims.forEach(function (c) { CONFIG.lenses.forEach(function (l) { CELL_KEYS.push(cellKey(c.no, l.id)); }); });
+  CELL_KEYS.push(HOLD);
+
+  function cellKey(claimNo, lensId) { return 'c' + claimNo + '-' + lensId; }
+  function parseCell(key) {
+    if (key === HOLD) return { hold: true };
+    var m = /^c(\d+)-([a-z]+)$/.exec(String(key));
+    if (!m || !CLAIM[+m[1]] || !LENS[m[2]]) return null;
+    return { claim: +m[1], lens: m[2] };
+  }
+  function isCellKey(key) { return CELL_KEYS.indexOf(key) !== -1; }
+  function cellName(key) {
+    var p = parseCell(key);
+    if (!p) return String(key);
+    if (p.hold) return CONFIG.holdingName;
+    return 'Claim ' + p.claim + ' ' + CLAIM[p.claim].label + ' \u00b7 ' + LENS[p.lens].name;
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function cmp(a, b) { return a < b ? -1 : a > b ? 1 : 0; }
+  function cmpName(a, b) { return cmp(String(a).toLowerCase(), String(b).toLowerCase()) || cmp(String(a), String(b)); }
+  function normName(s) { return String(s || '').trim().replace(/\s+/g, ' ').toLowerCase(); }
+  function wordCount(s) {
+    var m = String(s || '').match(/[A-Za-z0-9\u00C0-\u024F]+(?:['\u2019\-][A-Za-z0-9\u00C0-\u024F]+)*/g);
+    return m ? m.length : 0;
+  }
+  function membersList(s) {
+    if (Array.isArray(s)) return s.map(function (x) { return String(x).trim(); }).filter(Boolean);
+    return String(s || '').split(/[,;\n]/).map(function (x) { return x.trim(); }).filter(Boolean);
+  }
+  // Stable rotation in [-2, 2] degrees from the card id: never stored,
+  // never re-randomised on reload.
+  function rotationFor(id) {
+    var h = 2166136261;
+    var s = String(id);
+    for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+    return Math.round(((h % 4001) / 1000 - 2) * 100) / 100;
+  }
+  function cardColour(lensId) { return CONFIG.cardColours[lensId] || CONFIG.cardColours.claim; }
+  // Card text with [transcriber insertions] wrapped for muted italics.
+  function cardTextHtml(text) {
+    return String(text).split(/(\[[^\]]*\])/).map(function (part) {
+      return /^\[[^\]]*\]$/.test(part) ? '<span class="ins">' + esc(part) + '</span>' : esc(part);
+    }).join('');
+  }
+  function linkKey(a, b) { return a < b ? a + '|' + b : b + '|' + a; }
+  function randomSuffix() {
+    var chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+    var out = '';
+    var buf = null;
+    try { buf = new Uint32Array(6); window.crypto.getRandomValues(buf); } catch (e) { buf = null; }
+    for (var i = 0; i < 6; i++) out += chars[(buf ? buf[i] : Math.floor(Math.random() * 4294967296)) % chars.length];
+    return out;
+  }
+  function groupPrefix(name) {
+    var p = String(name || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    return p || 'GRP';
+  }
+
+  // ==========================================================================
+  // State
+  // ==========================================================================
+  function startingCells() {
+    var cells = {};
+    CELL_KEYS.forEach(function (k) { cells[k] = []; });
+    CONFIG.cards.forEach(function (c) { cells[cellKey(c.claim, c.lens)].push(c.id); });
+    return cells;
+  }
+  function blankState() {
+    return { group: { name: '', members: '' }, cells: startingCells(), newCards: [], connections: [], merge: null };
+  }
+  function newCardById(state, id) {
+    for (var i = 0; i < state.newCards.length; i++) if (state.newCards[i].id === id) return state.newCards[i];
+    return null;
+  }
+  function cardById(state, id) { return START[id] || newCardById(state, id); }
+  function findCell(state, id) {
+    for (var i = 0; i < CELL_KEYS.length; i++) if (state.cells[CELL_KEYS[i]].indexOf(id) !== -1) return CELL_KEYS[i];
+    return null;
+  }
+  function originCell(state, id) {
+    if (START[id]) return cellKey(START[id].claim, START[id].lens);
+    var n = newCardById(state, id);
+    return n ? n.origin : null;
+  }
+  function isMoved(state, id) { return findCell(state, id) !== originCell(state, id); }
+  function allCardIds(state) {
+    var ids = [];
+    CELL_KEYS.forEach(function (k) { ids = ids.concat(state.cells[k]); });
+    return ids;
+  }
+
+  // ----- Merge votes -----
+  function votesFor(sources, id) {
+    var v = [];
+    (sources || []).forEach(function (r) {
+      if (r.placements && Object.prototype.hasOwnProperty.call(r.placements, id)) v.push({ group: r.group, cell: r.placements[id] });
+    });
+    return v;
+  }
+  // Majority cell; ties (or no votes) fall back to the original cell.
+  function majorityFor(sources, id, original) {
+    var votes = votesFor(sources, id);
+    if (!votes.length) return original;
+    var counts = {};
+    votes.forEach(function (v) { counts[v.cell] = (counts[v.cell] || 0) + 1; });
+    var best = 0, winners = [];
+    Object.keys(counts).forEach(function (k) {
+      if (counts[k] > best) { best = counts[k]; winners = [k]; } else if (counts[k] === best) winners.push(k);
+    });
+    return winners.length === 1 ? winners[0] : original;
+  }
+  function distinctVoteCells(sources, id) {
+    var seen = {};
+    votesFor(sources, id).forEach(function (v) { seen[v.cell] = true; });
+    return Object.keys(seen).length;
+  }
+  function isDisputed(state, id) {
+    if (!state.merge) return false;
+    if (state.merge.overrides[id]) return false;
+    return distinctVoteCells(state.merge.sources, id) > 1;
+  }
+  function disputedIds(state) { return allCardIds(state).filter(function (id) { return isDisputed(state, id); }); }
+
+  // ----- Mutations (all take the state they change, for testing) -----
+  // Move a card to a cell, at an index within it (end if omitted).
+  // On a merged wall any change of cell is the instructor's pick for that
+  // card: it is recorded as an override and clears DISPUTED.
+  function moveCard(state, id, toKey, index) {
+    if (!isCellKey(toKey)) return false;
+    var from = findCell(state, id);
+    if (!from) return false;
+    var list = state.cells[from];
+    var oldIdx = list.indexOf(id);
+    list.splice(oldIdx, 1);
+    var target = state.cells[toKey];
+    // index refers to the cell before the card was lifted out of it
+    if (from === toKey && index != null && index > oldIdx) index -= 1;
+    if (index == null || index < 0 || index > target.length) index = target.length;
+    target.splice(index, 0, id);
+    if (state.merge && from !== toKey) recordPick(state, id, toKey);
+    return from !== toKey || index !== oldIdx;
+  }
+  function recordPick(state, id, key) {
+    state.merge.overrides[id] = { cell: key, basis: majorityFor(state.merge.sources, id, sourceOrigin(state, id)), at: new Date().toISOString() };
+  }
+  // Instructor picks a cell for a disputed card (may be its current cell).
+  function pickCell(state, id, key) {
+    if (findCell(state, id) !== key) moveCard(state, id, key);
+    if (state.merge) recordPick(state, id, key);
+  }
+  function sourceOrigin(state, id) { return originCell(state, id); }
+
+  function validateNewCard(fields) {
+    var errs = [];
+    var n = wordCount(fields.text);
+    if (n < CONFIG.newCard.minWords) errs.push('Write at least ' + CONFIG.newCard.minWords + ' words (now ' + n + ').');
+    if (n > CONFIG.newCard.maxWords) errs.push('Keep it to ' + CONFIG.newCard.maxWords + ' words or fewer (now ' + n + ').');
+    if (!CLAIM[+fields.claim]) errs.push('Choose a claim.');
+    if (!LENS[fields.lens]) errs.push('Choose a lens.');
+    return errs;
+  }
+  function addNewCard(state, fields, suffixFn) {
+    var errs = validateNewCard(fields);
+    if (errs.length) return { errors: errs };
+    var prefix = groupPrefix(state.group.name);
+    var id;
+    do { id = prefix + '-' + (suffixFn || randomSuffix)(); } while (cardById(state, id));
+    var key = cellKey(+fields.claim, fields.lens);
+    state.newCards.push({
+      id: id, text: String(fields.text).trim().replace(/\s+/g, ' '), claim: +fields.claim, lens: fields.lens,
+      source: CONFIG.newCard.source, group: String(state.group.name || '').trim(), origin: key,
+      createdAt: new Date().toISOString()
+    });
+    state.cells[key].push(id);
+    return { id: id };
+  }
+  function deleteNewCard(state, id) {
+    if (START[id] || !newCardById(state, id)) return false;
+    var from = findCell(state, id);
+    if (from) state.cells[from].splice(state.cells[from].indexOf(id), 1);
+    state.newCards = state.newCards.filter(function (c) { return c.id !== id; });
+    state.connections = state.connections.filter(function (c) { return c.a !== id && c.b !== id; });
+    if (state.merge) {
+      var fromSource = state.merge.sources.some(function (r) { return r.newCards.some(function (c) { return c.id === id; }); });
+      if (fromSource && state.merge.removedCards.indexOf(id) === -1) { state.merge.removedCards.push(id); state.merge.removedCards.sort(); }
+      delete state.merge.overrides[id];
+    }
+    return true;
+  }
+  function connByKey(state, key) {
+    for (var i = 0; i < state.connections.length; i++) if (linkKey(state.connections[i].a, state.connections[i].b) === key) return state.connections[i];
+    return null;
+  }
+  function labelWords(label) { return wordCount(label); }
+  function addConnection(state, a, b, label) {
+    if (a === b) return { error: 'Choose two different cards.' };
+    if (!cardById(state, a) || !cardById(state, b)) return { error: 'Card not found.' };
+    label = String(label || '').trim().replace(/\s+/g, ' ');
+    if (labelWords(label) > CONFIG.labelMaxWords) return { error: 'Keep the label to ' + CONFIG.labelMaxWords + ' words or fewer.' };
+    var key = linkKey(a, b);
+    if (connByKey(state, key)) return { exists: true, key: key };
+    state.connections.push({ a: a < b ? a : b, b: a < b ? b : a, label: label, local: true, groups: [] });
+    state.connections.sort(function (x, y) { return cmp(linkKey(x.a, x.b), linkKey(y.a, y.b)); });
+    return { key: key };
+  }
+  function removeConnection(state, key) {
+    var c = connByKey(state, key);
+    if (!c) return false;
+    state.connections = state.connections.filter(function (x) { return x !== c; });
+    if (state.merge && c.groups.length && state.merge.removedLinks.indexOf(key) === -1) {
+      state.merge.removedLinks.push(key); state.merge.removedLinks.sort();
+    }
+    return true;
+  }
+  function wallName(state) { return String(state.group.name || '').trim() || 'This wall'; }
+  // Every group behind a line, with its label.
+  function connGroups(state, c) {
+    var g = c.groups.slice();
+    if (c.local) g.push({ group: wallName(state), label: c.label });
+    return g;
+  }
+  function connCount(state, c) { return c.groups.length + (c.local ? 1 : 0); }
+
+  // ==========================================================================
+  // Export, import and validation
+  // ==========================================================================
+  function buildExport(state, now) {
+    var s = clone(state);
+    var name = String(s.group.name || '').trim();
+    if (!s.merge) s.newCards.forEach(function (c) { c.group = name; });
+    return {
+      tool: CONFIG.toolId,
+      schemaVersion: CONFIG.schemaVersion,
+      cardSet: CONFIG.cardSet,
+      cardIds: START_IDS.slice(),
+      exportedAt: now || new Date().toISOString(),
+      group: { name: name, members: membersList(s.group.members) },
+      cells: s.cells,
+      newCards: s.newCards,
+      connections: s.connections,
+      merge: s.merge
+    };
+  }
+  function exportBlockers(state) {
+    var errs = [];
+    var name = String(state.group.name || '').trim();
+    if (!name) errs.push('Enter your group name at the top before exporting.');
+    if (state.merge && name && state.merge.sources.some(function (r) { return normName(r.group) === normName(name); })) {
+      errs.push('This merged wall has the same name as one of its groups. Give it a different name (for example "Class wall") before exporting.');
+    }
+    return errs;
+  }
+
+  function isObj(o) { return o && typeof o === 'object' && !Array.isArray(o); }
+  // Returns a list of problems; an empty list means the file is usable.
+  function validateExport(obj) {
+    if (!isObj(obj) || obj.tool !== CONFIG.toolId) {
+      return ['This file is not a Claim Wall Sort export' + (isObj(obj) && (obj.tool || obj.schema) ? ' (it comes from "' + String(obj.tool || obj.schema) + '")' : '') + '. Nothing was changed.'];
+    }
+    if (typeof obj.schemaVersion !== 'number' || obj.schemaVersion > CONFIG.schemaVersion) return ['This file was made by a newer version of the Claim Wall Sort. Nothing was changed.'];
+    if (obj.cardSet !== CONFIG.cardSet || !Array.isArray(obj.cardIds) || obj.cardIds.slice().sort().join(',') !== START_IDS.join(',')) {
+      return ['This file uses a different card set (' + String(obj.cardSet) + ') from this wall (' + CONFIG.cardSet + '). Nothing was changed.'];
+    }
+    var errs = [];
+    if (!isObj(obj.group) || typeof obj.group.name !== 'string') errs.push('The group details are missing.');
+    if (!isObj(obj.cells)) return errs.concat(['The card positions are missing.']);
+    var keys = Object.keys(obj.cells);
+    if (keys.length !== CELL_KEYS.length || keys.some(function (k) { return !isCellKey(k) || !Array.isArray(obj.cells[k]); })) errs.push('The card positions do not match the wall layout.');
+    if (!Array.isArray(obj.newCards)) errs.push('The new cards are missing.');
+    if (!Array.isArray(obj.connections)) errs.push('The connections are missing.');
+    if (errs.length) return errs;
+    var seen = {};
+    var newIds = {};
+    obj.newCards.forEach(function (c) {
+      if (!isObj(c) || typeof c.id !== 'string' || START[c.id] || newIds[c.id]) { errs.push('A new card has a missing or duplicate id.'); return; }
+      if (typeof c.text !== 'string' || !CLAIM[c.claim] || !LENS[c.lens] || !isCellKey(c.origin)) errs.push('New card ' + c.id + ' is incomplete.');
+      newIds[c.id] = true;
+    });
+    keys.forEach(function (k) {
+      obj.cells[k].forEach(function (id) {
+        if (seen[id]) errs.push('Card ' + id + ' appears twice.');
+        else if (!START[id] && !newIds[id]) errs.push('Card ' + id + ' is not part of this wall.');
+        seen[id] = true;
+      });
+    });
+    START_IDS.forEach(function (id) { if (!seen[id]) errs.push('Starting card ' + id + ' is missing.'); });
+    Object.keys(newIds).forEach(function (id) { if (!seen[id]) errs.push('New card ' + id + ' has no position.'); });
+    obj.connections.forEach(function (c) {
+      if (!isObj(c) || !seen[c.a] || !seen[c.b] || c.a === c.b) errs.push('A connection points to a card that is not on this wall.');
+      else if (!Array.isArray(c.groups)) errs.push('A connection is incomplete.');
+    });
+    if (obj.merge != null) {
+      var m = obj.merge;
+      if (!isObj(m) || !Array.isArray(m.sources) || !isObj(m.overrides) || !Array.isArray(m.removedLinks) || !Array.isArray(m.removedCards)) errs.push('The merge record is incomplete.');
+      else m.sources.forEach(function (r) {
+        if (!isObj(r) || typeof r.group !== 'string' || !isObj(r.placements) || !Array.isArray(r.newCards) || !Array.isArray(r.connections)) errs.push('A merged group record is incomplete.');
+      });
+    }
+    return errs.filter(function (e, i, a) { return a.indexOf(e) === i; });
+  }
+  // Turn a validated export into wall state (deep copy: the file is untouched).
+  function stateFromExport(obj) {
+    var o = clone(obj);
+    return {
+      group: { name: o.group.name || '', members: membersList(o.group.members).join(', ') },
+      cells: o.cells,
+      newCards: o.newCards,
+      connections: o.connections.map(function (c) {
+        return { a: c.a < c.b ? c.a : c.b, b: c.a < c.b ? c.b : c.a, label: c.label || '', local: !!c.local, groups: c.groups || [] };
+      }),
+      merge: o.merge ? { sources: o.merge.sources, overrides: o.merge.overrides, removedLinks: o.merge.removedLinks, removedCards: o.merge.removedCards } : null
+    };
+  }
+
+  // ==========================================================================
+  // Merge (pure: same files in any order give the same wall)
+  // ==========================================================================
+  function sortedObj(o) {
+    var out = {};
+    Object.keys(o).sort().forEach(function (k) { out[k] = o[k]; });
+    return out;
+  }
+  function normRecord(r) {
+    return {
+      group: String(r.group).trim(),
+      members: membersList(r.members),
+      exportedAt: r.exportedAt || null,
+      placements: sortedObj(r.placements),
+      newCards: clone(r.newCards).map(function (c) { c.group = String(r.group).trim(); return c; }).sort(function (a, b) { return cmp(a.id, b.id); }),
+      connections: r.connections.map(function (c) { return { a: c.a < c.b ? c.a : c.b, b: c.a < c.b ? c.b : c.a, label: c.label || '' }; })
+        .sort(function (a, b) { return cmp(linkKey(a.a, a.b), linkKey(b.a, b.b)); })
+    };
+  }
+  // The group records inside one file: a group's own wall is one record; a
+  // merged wall expands to its original groups plus anything added on it.
+  function recordsOf(file) {
+    var placements = {};
+    Object.keys(file.cells).forEach(function (k) { file.cells[k].forEach(function (id) { placements[id] = k; }); });
+    if (!file.merge) {
+      return {
+        records: [normRecord({
+          group: file.group.name, members: file.group.members, exportedAt: file.exportedAt, placements: placements,
+          newCards: file.newCards, connections: file.connections
+        })],
+        overrides: {}, removedLinks: [], removedCards: []
+      };
+    }
+    var records = file.merge.sources.map(normRecord);
+    var fromSources = {};
+    records.forEach(function (r) { r.newCards.forEach(function (c) { fromSources[c.id] = true; }); });
+    var localCards = file.newCards.filter(function (c) { return !fromSources[c.id]; });
+    var localLinks = file.connections.filter(function (c) { return c.local; });
+    if (localCards.length || localLinks.length) {
+      var lp = {};
+      localCards.forEach(function (c) { lp[c.id] = placements[c.id]; });
+      records.push(normRecord({
+        group: file.group.name, members: file.group.members, exportedAt: file.exportedAt, placements: lp,
+        newCards: localCards, connections: localLinks
+      }));
+    }
+    return { records: records, overrides: file.merge.overrides, removedLinks: file.merge.removedLinks, removedCards: file.merge.removedCards };
+  }
+  // Group names a file contributes (for the merge list).
+  function groupsInFile(file) { return recordsOf(file).records.map(function (r) { return r.group; }); }
+
+  // files: validated export objects. wallGroup: { name, members } for the result.
+  function mergeFiles(files, wallGroup) {
+    var errors = [];
+    if (!files.length) return { errors: ['Choose at least one group file.'] };
+    var records = [], overrides = {}, removedLinks = {}, removedCards = {};
+    files.forEach(function (f, i) {
+      var v = validateExport(f);
+      if (v.length) { errors.push('File ' + (i + 1) + ': ' + v[0]); return; }
+      var x = recordsOf(f);
+      records = records.concat(x.records);
+      Object.keys(x.overrides).forEach(function (id) {
+        var o = x.overrides[id], cur = overrides[id];
+        if (!cur || cmp(o.at || '', cur.at || '') > 0 || (o.at === cur.at && cmp(o.cell, cur.cell) < 0)) overrides[id] = clone(o);
+      });
+      x.removedLinks.forEach(function (k) { removedLinks[k] = true; });
+      x.removedCards.forEach(function (k) { removedCards[k] = true; });
+    });
+    var byName = {};
+    records.forEach(function (r) {
+      if (!r.group) errors.push('A file has no group name. Ask that group to add it and export again.');
+      else if (byName[normName(r.group)]) errors.push('Group "' + r.group + '" appears more than once. Remove one of its files.');
+      byName[normName(r.group)] = true;
+    });
+    if (errors.length) return { errors: errors.filter(function (e, i, a) { return a.indexOf(e) === i; }) };
+    records.sort(function (a, b) { return cmpName(a.group, b.group); });
+
+    var state = {
+      group: { name: String(wallGroup && wallGroup.name || ''), members: String(wallGroup && wallGroup.members || '') },
+      cells: {}, newCards: [], connections: [],
+      merge: { sources: records, overrides: {}, removedLinks: Object.keys(removedLinks).sort(), removedCards: Object.keys(removedCards).sort() }
+    };
+    CELL_KEYS.forEach(function (k) { state.cells[k] = []; });
+    var newCards = [];
+    records.forEach(function (r) { r.newCards.forEach(function (c) { if (!removedCards[c.id]) newCards.push(clone(c)); }); });
+    newCards.sort(function (a, b) { return cmpName(a.group, b.group) || cmp(a.id, b.id); });
+    state.newCards = newCards;
+
+    function place(id, original) {
+      var maj = majorityFor(records, id, original);
+      if (!isCellKey(maj)) maj = original;
+      var ov = overrides[id];
+      var cell = maj;
+      if (ov && ov.basis === maj && isCellKey(ov.cell)) { cell = ov.cell; state.merge.overrides[id] = clone(ov); }
+      state.cells[cell].push(id);
+    }
+    START_IDS.forEach(function (id) { place(id, cellKey(START[id].claim, START[id].lens)); });
+    newCards.forEach(function (c) { place(c.id, c.origin); });
+
+    var onWall = {};
+    allCardIds(state).forEach(function (id) { onWall[id] = true; });
+    var links = {};
+    records.forEach(function (r) {
+      r.connections.forEach(function (c) {
+        var key = linkKey(c.a, c.b);
+        if (removedLinks[key] || !onWall[c.a] || !onWall[c.b]) return;
+        if (!links[key]) links[key] = { a: c.a, b: c.b, label: '', local: false, groups: [] };
+        if (!links[key].groups.some(function (g) { return g.group === r.group; })) links[key].groups.push({ group: r.group, label: c.label });
+      });
+    });
+    state.connections = Object.keys(links).sort().map(function (k) { return links[k]; });
+    return { state: state, errors: [] };
+  }
+
+  // ==========================================================================
+  // Copy as text
+  // ==========================================================================
+  function cardLine(state, id) {
+    var c = cardById(state, id);
+    var bits = ['[' + id + '] ' + c.text];
+    bits.push('(' + LENS[c.lens].name + ' card)');
+    if (START[id] && c.uncertain) bits.push('(uncertain transcription)');
+    if (!START[id]) bits.push('(NEW' + (state.merge && c.group ? ', ' + c.group : '') + ', ' + CONFIG.newCard.source + ')');
+    if (isMoved(state, id)) bits.push('(moved from ' + cellName(originCell(state, id)) + ')');
+    if (isDisputed(state, id)) bits.push('(DISPUTED)');
+    return bits.join(' ');
+  }
+  function connLine(state, c, i) {
+    var g = connGroups(state, c);
+    var n = g.length;
+    var line = 'L' + (i + 1) + '  ' + c.a + ' <-> ' + c.b;
+    if (!state.merge) return line + (c.label ? '  "' + c.label + '"' : '');
+    return line + '  (' + n + (n === 1 ? ' group' : ' groups') + ': ' + g.map(function (x) { return x.group + (x.label ? ' "' + x.label + '"' : ''); }).join('; ') + ')';
+  }
+  function buildText(state, now) {
+    var out = [];
+    var stamp = (now || new Date()).toLocaleString('en-GB');
+    out.push('CLAIM WALL SORT');
+    out.push('Group: ' + (String(state.group.name || '').trim() || '(no name)'));
+    var mem = membersList(state.group.members);
+    if (mem.length) out.push('Members: ' + mem.join(', '));
+    if (state.merge) out.push('Merged from: ' + state.merge.sources.map(function (r) { return r.group; }).join(', '));
+    out.push('Copied: ' + stamp);
+    out.push('');
+    out.push('CARDS BY CLAIM AND LENS');
+    CONFIG.claims.forEach(function (cl) {
+      out.push('');
+      out.push('Claim ' + cl.no + ' ' + cl.label + ': ' + cl.text);
+      CONFIG.lenses.forEach(function (l) {
+        var ids = state.cells[cellKey(cl.no, l.id)];
+        out.push('  ' + l.name + (ids.length ? '' : ': (empty)'));
+        ids.forEach(function (id) { out.push('    - ' + cardLine(state, id)); });
+      });
+    });
+    out.push('');
+    out.push(CONFIG.holdingName + (state.cells[HOLD].length ? '' : ': (empty)'));
+    state.cells[HOLD].forEach(function (id) { out.push('    - ' + cardLine(state, id)); });
+
+    var moved = allCardIds(state).filter(function (id) { return isMoved(state, id); });
+    out.push('');
+    out.push('MOVED CARDS (from -> to)');
+    if (!moved.length) out.push('  None');
+    moved.forEach(function (id) { out.push('  ' + id + ': ' + cellName(originCell(state, id)) + ' -> ' + cellName(findCell(state, id))); });
+
+    if (state.merge) {
+      var disp = disputedIds(state);
+      out.push('');
+      out.push('DISPUTED CARDS (where each group put it)');
+      if (!disp.length) out.push('  None');
+      disp.forEach(function (id) {
+        out.push('  ' + id + ' (now in ' + cellName(findCell(state, id)) + '): ' + cardById(state, id).text);
+        votesFor(state.merge.sources, id).forEach(function (v) { out.push('    ' + v.group + ': ' + cellName(v.cell)); });
+      });
+    }
+
+    out.push('');
+    out.push('NEW CARDS (' + CONFIG.newCard.source + ')');
+    if (!state.newCards.length) out.push('  None');
+    state.newCards.forEach(function (c) {
+      out.push('  [' + c.id + '] ' + c.text + ' (' + cellName(cellKey(c.claim, c.lens)) + (state.merge && c.group ? '; ' + c.group : '') + '; now in ' + cellName(findCell(state, c.id)) + ')');
+    });
+
+    out.push('');
+    out.push('CONNECTIONS (red lines)');
+    if (!state.connections.length) out.push('  None');
+    state.connections.forEach(function (c, i) { out.push('  ' + connLine(state, c, i)); });
+    return out.join('\n');
+  }
+
+  // ==========================================================================
+  // Print: A6 sheets for new cards (four per A4 landscape page)
+  // ==========================================================================
+  function buildA6Html(state) {
+    if (!state.newCards.length) return '';
+    var cards = state.newCards.map(function (c) {
+      var at = findCell(state, c.id);
+      var p = parseCell(at);
+      var title = p.hold ? CONFIG.holdingName : 'Claim ' + p.claim + ' ' + CLAIM[p.claim].label;
+      return '<div class="a6" style="--card-bg:' + esc(cardColour(c.lens)) + '">' +
+        '<div class="a6-eyebrow">Week 6 \u00b7 Claim wall \u00b7 New card' + (c.group ? ' \u00b7 ' + esc(c.group) : '') + '</div>' +
+        '<div class="a6-bar"></div>' +
+        '<div class="a6-title">' + esc(title) + '</div>' +
+        '<div class="a6-lens">' + esc(LENS[c.lens].name) + ' card' + (p.hold ? '' : ' \u00b7 ' + esc(LENS[p.lens].name) + ' column') + '</div>' +
+        '<div class="a6-text">' + esc(c.text) + '</div>' +
+        '<div class="a6-foot">' + esc(CONFIG.newCard.source) + ' \u00b7 ' + esc(c.id) + '</div></div>';
+    });
+    var h = '';
+    for (var i = 0; i < cards.length; i += 4) h += '<section class="a6-sheet">' + cards.slice(i, i + 4).join('') + '</section>';
+    return h;
+  }
+
+  // ==========================================================================
+  // UI (only runs when the page itself is open, not in test.html)
+  // ==========================================================================
+  var state = blankState();
+  var ui = { connect: false, connectA: null, showOriginal: false, onlyDisputed: false, staged: [], stagedErrors: [], lastFocus: null };
+  var els = {};
+  var drag = null;
+  var suppressClick = false;
+  var drawQueued = false;
+  var narrowMq = null;
+
+  function byId(id) { return document.getElementById(id); }
+  function isNarrow() { return narrowMq ? narrowMq.matches : false; }
+
+  function save() {
+    try {
+      window.localStorage.setItem(CONFIG.storageKey, JSON.stringify(buildExport(state)));
+      return true;
+    } catch (e) {
+      say('Could not save on this device (storage unavailable). Export your wall to keep it.');
+      return false;
+    }
+  }
+  function load() {
+    try {
+      var raw = window.localStorage.getItem(CONFIG.storageKey);
+      if (!raw) return;
+      var obj = JSON.parse(raw);
+      if (!validateExport(obj).length) state = stateFromExport(obj);
+    } catch (e) { /* start blank */ }
+  }
+  function say(msg) { els.status.textContent = msg; }
+  function commit(msg) { save(); render(); if (msg) say(msg); }
+
+  // ----- Rendering -----
+  function cardHtml(id, linkNos) {
+    var c = cardById(state, id);
+    var isNew = !START[id];
+    var moved = isMoved(state, id);
+    var disputed = isDisputed(state, id);
+    var cls = 'card' + (moved ? ' moved' : '') + (isNew ? ' new' : '') + (disputed ? ' disputed' : '') + (ui.connectA === id ? ' conn-a' : '');
+    var label = id + ', ' + LENS[c.lens].name + ' card' + (isNew ? ', new' : '') + (moved ? ', moved from ' + cellName(originCell(state, id)) : '') + (disputed ? ', disputed' : '') + (START[id] && c.uncertain ? ', uncertain transcription' : '') + ': ' + c.text;
+    var h = '<div class="' + cls + '" data-id="' + esc(id) + '" tabindex="0" role="button" aria-label="' + esc(label) + '" style="--card-bg:' + esc(cardColour(c.lens)) + ';--rot:' + rotationFor(id) + 'deg">';
+    h += '<span class="pin" aria-hidden="true"></span>';
+    if (isNew) h += '<span class="stamp stamp-new" aria-hidden="true">New</span>';
+    if (disputed) h += '<span class="stamp stamp-disputed" aria-hidden="true">Disputed</span>';
+    h += '<span class="card-lens" aria-hidden="true">' + esc(LENS[c.lens].name) + '</span>';
+    h += '<p class="card-text" aria-hidden="true">' + cardTextHtml(c.text) + '</p>';
+    h += '<span class="card-foot" aria-hidden="true"><span>' + esc(id) + '</span>';
+    if (isNew && state.merge && c.group) h += '<span>' + esc(c.group) + '</span>';
+    if (START[id] && c.uncertain) h += '<span class="chip uncertain" title="Uncertain transcription">Uncertain</span>';
+    if (moved) h += '<span class="chip moved" title="Moved from ' + esc(cellName(originCell(state, id))) + '">Moved</span>';
+    h += '</span>';
+    if (linkNos && linkNos.length) h += '<span class="card-links" aria-hidden="true">Lines: ' + esc(linkNos.join(', ')) + '</span>';
+    h += '</div>';
+    return h;
+  }
+  function cellHtml(key, linkMap) {
+    var ids = state.cells[key];
+    var p = parseCell(key);
+    var name = cellName(key);
+    var h = '<section class="cell cork-tex' + (ids.length ? '' : ' empty') + '" data-cell="' + key + '" aria-label="' + esc(name) + ', ' + ids.length + (ids.length === 1 ? ' card' : ' cards') + '">';
+    if (!p.hold) h += '<h3 class="cell-label"><span>' + esc(LENS[p.lens].name) + '</span></h3>';
+    h += '<div class="cell-cards">';
+    ids.forEach(function (id) { h += cardHtml(id, linkMap[id]); });
+    if (ui.showOriginal) {
+      allCardIds(state).forEach(function (id) {
+        if (originCell(state, id) === key && findCell(state, id) !== key) {
+          h += '<div class="ghost" aria-hidden="true">Originally here: ' + esc(id) + '<br>Now: ' + esc(cellName(findCell(state, id))) + '</div>';
+        }
+      });
+    }
+    h += '</div></section>';
+    return h;
+  }
+  function renderBoard() {
+    var linkMap = {};
+    state.connections.forEach(function (c, i) {
+      (linkMap[c.a] = linkMap[c.a] || []).push('L' + (i + 1));
+      (linkMap[c.b] = linkMap[c.b] || []).push('L' + (i + 1));
+    });
+    var h = '<div class="wall">';
+    h += '<div class="wall-corner cork-tex" aria-hidden="true"><span class="paper">Claim / lens</span></div>';
+    CONFIG.lenses.forEach(function (l) {
+      h += '<div class="lens-head cork-tex" aria-hidden="true"><span class="paper"><span class="swatch" style="background:' + esc(cardColour(l.id)) + '"></span>' + esc(l.name) + '</span></div>';
+    });
+    CONFIG.claims.forEach(function (cl) {
+      h += '<div class="claim-slot cork-tex"><div class="claim-card" style="--claim-bg:' + esc(CONFIG.cardColours.claim) + ';--rot:' + rotationFor('claim-' + cl.no) + 'deg">' +
+        '<span class="pin" aria-hidden="true"></span><h2 class="claim-no" style="font-size:0.68rem;margin:0">Claim ' + cl.no + '</h2>' +
+        '<div class="claim-label">' + esc(cl.label) + '</div><p class="claim-text">' + esc(cl.text) + '</p></div></div>';
+      CONFIG.lenses.forEach(function (l) { h += cellHtml(cellKey(cl.no, l.id), linkMap); });
+    });
+    h += '</div>';
+    h += '<div class="hold"><div class="hold-head"><span class="paper">' + esc(CONFIG.holdingName) + '</span></div>' + cellHtml(HOLD, linkMap) + '</div>';
+    h += '<svg class="strings" id="strings" aria-hidden="true"></svg><div class="tags" id="tags"></div>';
+    els.board.innerHTML = h;
+    els.board.classList.toggle('only-disputed', ui.onlyDisputed);
+  }
+  function excerpt(text, n) {
+    var w = String(text).split(/\s+/);
+    return w.length > n ? w.slice(0, n).join(' ') + '\u2026' : String(text);
+  }
+  function renderLinks() {
+    var h = '<h2 id="links-title">Red lines</h2>';
+    if (!state.connections.length) { els.links.innerHTML = h + '<p class="quiet">' + esc(CONFIG.text.noLinks) + '</p>'; return; }
+    h += '<p class="quiet no-print">Each line as text, so the list can be read without the drawing.</p><ol class="link-list">';
+    state.connections.forEach(function (c, i) {
+      var a = cardById(state, c.a), b = cardById(state, c.b);
+      var g = connGroups(state, c);
+      h += '<li><span class="link-no">L' + (i + 1) + '</span><div class="link-body"><div><b>' + esc(c.a) + '</b> ' + esc(excerpt(a.text, 10)) + ' <b aria-label="linked with">\u2194</b> <b>' + esc(c.b) + '</b> ' + esc(excerpt(b.text, 10)) + '</div>';
+      if (state.merge) {
+        h += '<div class="groups">' + g.length + (g.length === 1 ? ' group' : ' groups') + ': ' + g.map(function (x) { return esc(x.group) + (x.label ? ' <span class="lbl">"' + esc(x.label) + '"</span>' : ''); }).join('; ') + '</div>';
+      } else if (c.label) {
+        h += '<div class="groups">Label: <span class="lbl">' + esc(c.label) + '</span></div>';
+      }
+      h += '</div><button type="button" class="btn btn-danger btn-small no-print" data-remove-link="' + esc(linkKey(c.a, c.b)) + '">Remove<span class="sr-only"> line L' + (i + 1) + '</span></button></li>';
+    });
+    els.links.innerHTML = h + '</ol>';
+  }
+  function renderMergePanel() {
+    if (!state.merge) { els.mergePanel.innerHTML = ''; return; }
+    var d = disputedIds(state).length;
+    var h = '<div class="merge-panel"><b class="eyebrow" style="color:var(--char-3)">Merged wall</b> \u00b7 ' + state.merge.sources.length + ' group records \u00b7 ' + d + (d === 1 ? ' disputed card' : ' disputed cards') + '<ul>';
+    state.merge.sources.forEach(function (r) {
+      h += '<li>' + esc(r.group) + (r.members.length ? ' (' + esc(r.members.join(', ')) + ')' : '') + (r.exportedAt ? ' <span class="quiet">exported ' + esc(new Date(r.exportedAt).toLocaleString('en-GB')) + '</span>' : '') + '</li>';
+    });
+    els.mergePanel.innerHTML = h + '</ul></div>';
+  }
+  function renderChrome() {
+    els.connectBtn.setAttribute('aria-pressed', ui.connect ? 'true' : 'false');
+    els.originalBtn.setAttribute('aria-pressed', ui.showOriginal ? 'true' : 'false');
+    if (!state.merge && ui.onlyDisputed) ui.onlyDisputed = false;
+    els.disputedBtn.setAttribute('aria-pressed', ui.onlyDisputed ? 'true' : 'false');
+    els.disputedBtn.disabled = !state.merge;
+    els.banner.innerHTML = ui.connect
+      ? '<div class="connect-banner" role="note"><span>' + esc(ui.connectA ? CONFIG.text.connectBannerB + ' (first: ' + ui.connectA + ')' : CONFIG.text.connectBannerA) + '</span><button type="button" class="btn btn-small" id="btn-connect-done">Done</button></div>'
+      : '';
+    var mem = membersList(state.group.members);
+    els.printMeta.textContent = 'Group: ' + (String(state.group.name || '').trim() || '(no name)') + (mem.length ? ' \u00b7 Members: ' + mem.join(', ') : '') + ' \u00b7 Printed ' + new Date().toLocaleString('en-GB');
+  }
+  function render() {
+    renderChrome();
+    renderMergePanel();
+    renderBoard();
+    renderLinks();
+    els.printCards.innerHTML = buildA6Html(state);
+    queueDraw();
+  }
+
+  // ----- Strings -----
+  function queueDraw() {
+    if (drawQueued) return;
+    drawQueued = true;
+    window.requestAnimationFrame(function () { drawQueued = false; drawStrings(); });
+  }
+  function pinPoint(id, base) {
+    var card = els.board.querySelector('.card[data-id="' + cssEsc(id) + '"]');
+    if (!card || card.offsetParent === null) return null;
+    var r = card.querySelector('.pin').getBoundingClientRect();
+    return { x: r.left + r.width / 2 - base.left, y: r.top + r.height / 2 - base.top };
+  }
+  function cssEsc(s) { return String(s).replace(/["\\]/g, '\\$&'); }
+  function drawStrings() {
+    var svg = byId('strings'), tags = byId('tags');
+    if (!svg || !tags) return;
+    var base = els.board.getBoundingClientRect();
+    svg.setAttribute('width', els.board.offsetWidth);
+    svg.setAttribute('height', els.board.offsetHeight);
+    var s = '', t = '';
+    state.connections.forEach(function (c, i) {
+      var p = pinPoint(c.a, base), q = pinPoint(c.b, base);
+      if (!p || !q) return;
+      var key = linkKey(c.a, c.b);
+      var n = connCount(state, c);
+      var w = Math.min(9, 3.5 + (n - 1) * 1.5);
+      var len = Math.sqrt((q.x - p.x) * (q.x - p.x) + (q.y - p.y) * (q.y - p.y));
+      var cx = (p.x + q.x) / 2, cy = (p.y + q.y) / 2 + Math.min(36, len * 0.08);
+      var d = 'M' + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + ' Q' + cx.toFixed(1) + ' ' + cy.toFixed(1) + ' ' + q.x.toFixed(1) + ' ' + q.y.toFixed(1);
+      s += '<path d="' + d + '" fill="none" stroke="rgba(42,31,24,0.55)" stroke-width="' + (w + 2) + '" stroke-linecap="round"/>';
+      s += '<path d="' + d + '" fill="none" style="stroke:var(--string)" stroke-width="' + w + '" stroke-linecap="round"/>';
+      s += '<path class="hit" data-link="' + esc(key) + '" d="' + d + '" fill="none" stroke="transparent" stroke-width="16"/>';
+      var mx = (p.x + 2 * cx + q.x) / 4, my = (p.y + 2 * cy + q.y) / 4;
+      var g = connGroups(state, c);
+      var labels = g.map(function (x) { return x.label; }).filter(Boolean).filter(function (x, j, a) { return a.indexOf(x) === j; });
+      var txt = labels.length === 1 ? labels[0] : '';
+      if (n > 1) txt = (txt ? txt + ' \u00b7 ' : '') + n + ' groups';
+      var aria = 'Red line L' + (i + 1) + ' between ' + c.a + ' and ' + c.b + (state.merge ? ', ' + n + (n === 1 ? ' group' : ' groups') : '') + (txt && !state.merge ? ', ' + txt : '');
+      t += '<button type="button" class="knot' + (txt ? '' : ' empty') + '" data-link="' + esc(key) + '" style="left:' + mx.toFixed(1) + 'px;top:' + my.toFixed(1) + 'px" aria-label="' + esc(aria) + '">' + esc(txt) + '</button>';
+    });
+    svg.innerHTML = s;
+    tags.innerHTML = t;
+  }
+  function tipText(key) {
+    var c = connByKey(state, key);
+    if (!c) return '';
+    var g = connGroups(state, c);
+    var head = c.a + ' \u2194 ' + c.b;
+    if (!state.merge) return head + (c.label ? '\n' + c.label : '');
+    return head + '\n' + g.map(function (x) { return x.group + (x.label ? ': "' + x.label + '"' : ': (no label)'); }).join('\n');
+  }
+  function showTip(key, x, y) {
+    var txt = tipText(key);
+    if (!txt) return hideTip();
+    els.tip.innerHTML = esc(txt).replace(/\n/g, '<br>');
+    els.tip.hidden = false;
+    var w = els.tip.offsetWidth, hgt = els.tip.offsetHeight;
+    els.tip.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, x + 12)) + 'px';
+    els.tip.style.top = Math.max(8, Math.min(window.innerHeight - hgt - 8, y + 12)) + 'px';
+  }
+  function hideTip() { els.tip.hidden = true; }
+
+  // ----- Dialogs -----
+  function openDialog(dlg) {
+    ui.lastFocus = document.activeElement;
+    hideTip();
+    if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open', '');
+  }
+  function closeDialog(dlg, focusId) {
+    if (typeof dlg.close === 'function') dlg.close(); else dlg.removeAttribute('open');
+    restoreFocus(focusId);
+  }
+  function restoreFocus(focusId) {
+    var target = null;
+    if (focusId) target = els.board.querySelector('.card[data-id="' + cssEsc(focusId) + '"]');
+    if (!target && ui.lastFocus && document.body.contains(ui.lastFocus)) target = ui.lastFocus;
+    if (target && target.focus) target.focus();
+  }
+  function cellOptions(selected) {
+    var h = '';
+    CONFIG.claims.forEach(function (cl) {
+      h += '<optgroup label="Claim ' + cl.no + ' ' + esc(cl.label) + '">';
+      CONFIG.lenses.forEach(function (l) {
+        var k = cellKey(cl.no, l.id);
+        h += '<option value="' + k + '"' + (k === selected ? ' selected' : '') + '>Claim ' + cl.no + ' ' + esc(cl.label) + ' \u00b7 ' + esc(l.name) + '</option>';
+      });
+      h += '</optgroup>';
+    });
+    h += '<option value="' + HOLD + '"' + (selected === HOLD ? ' selected' : '') + '>' + esc(CONFIG.holdingName) + '</option>';
+    return h;
+  }
+  function openCardDialog(id) {
+    var c = cardById(state, id);
+    if (!c) return;
+    var dlg = els.dlgCard;
+    var here = findCell(state, id);
+    var isNew = !START[id];
+    dlg.style.setProperty('--dlg-color', 'var(--char-5)');
+    var h = '<h2 id="dlg-card-title">Card ' + esc(id) + '</h2>';
+    h += '<div class="dlg-card-preview" style="--card-bg:' + esc(cardColour(c.lens)) + '"><div class="card-lens">' + esc(LENS[c.lens].name) + ' card' + (isNew ? ' \u00b7 New' + (c.group && state.merge ? ' \u00b7 ' + esc(c.group) : '') : '') + '</div><p class="card-text" style="font-size:1rem">' + cardTextHtml(c.text) + '</p>';
+    if (START[id] && c.uncertain) h += '<p class="card-foot">Uncertain transcription</p>';
+    if (isNew) h += '<p class="card-foot">Source: ' + esc(c.source || CONFIG.newCard.source) + '</p>';
+    h += '</div>';
+    h += '<p><b>Now:</b> ' + esc(cellName(here)) + '<br><b>Originally:</b> ' + esc(cellName(originCell(state, id))) + (isMoved(state, id) ? ' <span class="chip moved">Moved</span>' : '') + '</p>';
+    if (state.merge && distinctVoteCells(state.merge.sources, id) > 0) {
+      var votes = votesFor(state.merge.sources, id);
+      var disputed = isDisputed(state, id);
+      h += '<div class="dlg-section"><h3>' + (disputed ? 'Disputed: where each group put it' : 'Where each group put it') + '</h3><ul class="vote-list">';
+      var byCell = {};
+      votes.forEach(function (v) { (byCell[v.cell] = byCell[v.cell] || []).push(v.group); });
+      Object.keys(byCell).sort(function (a, b) { return byCell[b].length - byCell[a].length || CELL_KEYS.indexOf(a) - CELL_KEYS.indexOf(b); }).forEach(function (k) {
+        h += '<li><span><b>' + esc(cellName(k)) + '</b><br><span class="quiet">' + esc(byCell[k].join(', ')) + '</span></span>';
+        if (disputed) h += '<button type="button" class="btn btn-primary btn-small" data-pick="' + k + '">Place here</button>';
+        h += '</li>';
+      });
+      h += '</ul>';
+      if (disputed) h += '<p class="quiet">Placing the card here, or moving it anywhere, records the class decision and clears DISPUTED.</p>';
+      else if (state.merge.overrides[id]) h += '<p class="quiet">Placed by class decision.</p>';
+      h += '</div>';
+    }
+    h += '<div class="dlg-section"><h3>Move to\u2026</h3><div class="field"><label for="move-target">Claim and lens</label><select id="move-target">' + cellOptions(here) + '</select></div>';
+    h += '<div class="dlg-actions"><button type="button" class="btn btn-primary" data-act="move">Move</button>';
+    if (here !== HOLD) h += '<button type="button" class="btn btn-ghost" data-act="hold">Move to holding area</button>';
+    if (state.merge && isDisputed(state, id)) h += '<button type="button" class="btn btn-ghost" data-act="keep">Keep it here</button>';
+    h += '</div></div>';
+    h += '<div class="dlg-section"><div class="dlg-actions">';
+    h += '<button type="button" class="btn btn-ghost" data-act="connect">Connect from this card</button>';
+    if (isNew) h += '<button type="button" class="btn btn-danger" data-act="delete">Delete card</button>';
+    h += '<button type="button" class="btn btn-ghost" data-act="close">Close</button></div>';
+    if (!isNew) h += '<p class="quiet" style="margin-top:0.6rem">' + esc(CONFIG.text.startingNoDelete) + ' The card text cannot be edited.</p>';
+    h += '</div>';
+    els.dlgCardBody.innerHTML = h;
+    els.dlgCardBody.dataset.id = id;
+    openDialog(dlg);
+  }
+  function onCardDialogClick(e) {
+    var btn = e.target.closest('button');
+    if (!btn) return;
+    var id = els.dlgCardBody.dataset.id;
+    var act = btn.getAttribute('data-act');
+    var pick = btn.getAttribute('data-pick');
+    if (pick) {
+      pickCell(state, id, pick);
+      closeDialog(els.dlgCard, id); commit(id + ' placed in ' + cellName(pick) + '.'); restoreFocus(id); return;
+    }
+    if (act === 'move' || act === 'hold') {
+      var to = act === 'hold' ? HOLD : byId('move-target').value;
+      var from = findCell(state, id);
+      if (to === from) { say(id + ' is already in ' + cellName(to) + '.'); return; }
+      moveCard(state, id, to);
+      closeDialog(els.dlgCard, id); commit(id + ' moved to ' + cellName(to) + '.'); restoreFocus(id);
+    } else if (act === 'keep') {
+      pickCell(state, id, findCell(state, id));
+      closeDialog(els.dlgCard, id); commit(id + ' kept in ' + cellName(findCell(state, id)) + '.'); restoreFocus(id);
+    } else if (act === 'connect') {
+      ui.connect = true; ui.connectA = id;
+      closeDialog(els.dlgCard, id); render(); say('Connect: now choose the second card for ' + id + '.'); restoreFocus(id);
+    } else if (act === 'delete') {
+      if (!window.confirm('Delete new card ' + id + ' and any red lines attached to it?')) return;
+      deleteNewCard(state, id);
+      closeDialog(els.dlgCard); commit('Deleted ' + id + '.');
+    } else if (act === 'close') {
+      closeDialog(els.dlgCard, id);
+    }
+  }
+
+  function openAddDialog() {
+    var h = '<h2 id="dlg-add-title">Add a card from the field visit</h2>';
+    h += '<div class="field"><label for="add-text">Explanation (' + CONFIG.newCard.minWords + '\u2013' + CONFIG.newCard.maxWords + ' words)</label><textarea id="add-text" aria-describedby="add-count"></textarea><p class="word-count" id="add-count" aria-live="polite"></p></div>';
+    h += '<div class="two-col" style="margin-top:0.5rem"><div class="field"><label for="add-claim">Claim</label><select id="add-claim"><option value="">Choose\u2026</option>';
+    CONFIG.claims.forEach(function (cl) { h += '<option value="' + cl.no + '">Claim ' + cl.no + ' ' + esc(cl.label) + ' (week 5: ' + esc(cl.week5) + ')</option>'; });
+    h += '</select></div><div class="field"><label for="add-lens">Lens</label><select id="add-lens"><option value="">Choose\u2026</option>';
+    CONFIG.lenses.forEach(function (l) { h += '<option value="' + l.id + '">' + esc(l.name) + ' (week 5: ' + esc(l.week5) + ')</option>'; });
+    h += '</select></div></div>';
+    h += '<p class="field" style="margin-top:0.6rem"><span class="label">Source</span>' + esc(CONFIG.newCard.source) + '</p>';
+    h += '<p class="alert" id="add-err" role="alert"></p>';
+    h += '<div class="dlg-actions"><button type="button" class="btn btn-primary" data-act="add" disabled>Add card</button><button type="button" class="btn btn-ghost" data-act="cancel">Cancel</button></div>';
+    els.dlgAddBody.innerHTML = h;
+    updateAddCount();
+    openDialog(els.dlgAdd);
+    byId('add-text').focus();
+  }
+  function addFields() { return { text: byId('add-text').value, claim: byId('add-claim').value, lens: byId('add-lens').value }; }
+  function updateAddCount() {
+    var f = addFields();
+    var n = wordCount(f.text);
+    var ok = n >= CONFIG.newCard.minWords && n <= CONFIG.newCard.maxWords;
+    var el = byId('add-count');
+    el.textContent = n + (n === 1 ? ' word' : ' words') + (n < CONFIG.newCard.minWords ? ' \u00b7 at least ' + CONFIG.newCard.minWords : n > CONFIG.newCard.maxWords ? ' \u00b7 at most ' + CONFIG.newCard.maxWords : ' \u00b7 OK');
+    el.className = 'word-count ' + (ok ? 'ok' : 'bad');
+    els.dlgAddBody.querySelector('[data-act="add"]').disabled = validateNewCard(f).length > 0;
+  }
+  function onAddDialogClick(e) {
+    var btn = e.target.closest('button');
+    if (!btn) return;
+    var act = btn.getAttribute('data-act');
+    if (act === 'cancel') { closeDialog(els.dlgAdd); return; }
+    if (act === 'add') {
+      var res = addNewCard(state, addFields());
+      if (res.errors) { byId('add-err').textContent = res.errors.join(' '); return; }
+      closeDialog(els.dlgAdd);
+      commit('Added new card ' + res.id + ' to ' + cellName(findCell(state, res.id)) + '.');
+      restoreFocus(res.id);
+    }
+  }
+
+  function openLabelDialog(a, b) {
+    var h = '<h2 id="dlg-link-title">Red line</h2><p>' + esc(a) + ' \u2194 ' + esc(b) + '</p>';
+    h += '<div class="field"><label for="link-label">Label (optional, up to ' + CONFIG.labelMaxWords + ' words)</label><input type="text" id="link-label" maxlength="120" autocomplete="off" aria-describedby="link-count"><p class="word-count" id="link-count"></p></div>';
+    h += '<div class="dlg-actions"><button type="button" class="btn btn-primary" data-act="addlink">Add red line</button><button type="button" class="btn btn-ghost" data-act="cancel">Cancel</button></div>';
+    els.dlgLinkBody.innerHTML = h;
+    els.dlgLinkBody.dataset.mode = 'add';
+    els.dlgLinkBody.dataset.a = a; els.dlgLinkBody.dataset.b = b;
+    updateLinkCount();
+    openDialog(els.dlgLink);
+    byId('link-label').focus();
+  }
+  function updateLinkCount() {
+    var inp = byId('link-label');
+    if (!inp) return;
+    var n = labelWords(inp.value);
+    var el = byId('link-count');
+    el.textContent = n + ' / ' + CONFIG.labelMaxWords + ' words';
+    el.className = 'word-count ' + (n <= CONFIG.labelMaxWords ? 'ok' : 'bad');
+    els.dlgLinkBody.querySelector('[data-act="addlink"]').disabled = n > CONFIG.labelMaxWords;
+  }
+  function openLineDialog(key) {
+    var c = connByKey(state, key);
+    if (!c) return;
+    var i = state.connections.indexOf(c);
+    var g = connGroups(state, c);
+    var h = '<h2 id="dlg-link-title">Red line L' + (i + 1) + '</h2>';
+    [c.a, c.b].forEach(function (id) {
+      var card = cardById(state, id);
+      h += '<div class="dlg-card-preview" style="--card-bg:' + esc(cardColour(card.lens)) + '"><div class="card-lens">' + esc(id) + ' \u00b7 ' + esc(cellName(findCell(state, id))) + '</div><p class="card-text">' + cardTextHtml(card.text) + '</p></div>';
+    });
+    if (state.merge) {
+      h += '<h3>Drawn by ' + g.length + (g.length === 1 ? ' group' : ' groups') + '</h3><ul class="vote-list">';
+      g.forEach(function (x) { h += '<li><span><b>' + esc(x.group) + '</b>' + (x.label ? ': "' + esc(x.label) + '"' : ' <span class="quiet">(no label)</span>') + '</span></li>'; });
+      h += '</ul>';
+    } else if (c.label) {
+      h += '<p><b>Label:</b> ' + esc(c.label) + '</p>';
+    }
+    h += '<div class="dlg-actions"><button type="button" class="btn btn-danger" data-act="removelink">Remove line</button><button type="button" class="btn btn-ghost" data-act="cancel">Close</button></div>';
+    els.dlgLinkBody.innerHTML = h;
+    els.dlgLinkBody.dataset.mode = 'view';
+    els.dlgLinkBody.dataset.key = key;
+    openDialog(els.dlgLink);
+  }
+  function confirmRemoveLink(key) {
+    var c = connByKey(state, key);
+    if (!c) return false;
+    var n = connCount(state, c);
+    if (!window.confirm('Remove the red line between ' + c.a + ' and ' + c.b + (state.merge && n > 1 ? ' (drawn by ' + n + ' groups)' : '') + '?')) return false;
+    removeConnection(state, key);
+    commit('Removed the red line between ' + c.a + ' and ' + c.b + '.');
+    return true;
+  }
+  function onLinkDialogClick(e) {
+    var btn = e.target.closest('button');
+    if (!btn) return;
+    var act = btn.getAttribute('data-act');
+    if (act === 'cancel') { closeDialog(els.dlgLink); return; }
+    if (act === 'addlink') {
+      var a = els.dlgLinkBody.dataset.a, b = els.dlgLinkBody.dataset.b;
+      var res = addConnection(state, a, b, byId('link-label').value);
+      if (res.error) { say(res.error); return; }
+      ui.connectA = null;
+      closeDialog(els.dlgLink);
+      commit(res.exists ? a + ' and ' + b + ' are already linked.' : 'Red line added: ' + a + ' \u2194 ' + b + '. Choose another first card, or Done.');
+      restoreFocus(b);
+    } else if (act === 'removelink') {
+      if (confirmRemoveLink(els.dlgLinkBody.dataset.key)) closeDialog(els.dlgLink);
+    }
+  }
+
+  // ----- Merge dialog -----
+  function openMergeDialog() {
+    ui.staged = []; ui.stagedErrors = [];
+    renderMergeDialog();
+    openDialog(els.dlgMerge);
+  }
+  function renderMergeDialog() {
+    var h = '<h2 id="dlg-merge-title">Merge group files</h2>';
+    h += '<p class="quiet">Choose the groups\u2019 exported files, several at once or one at a time. The files themselves are never changed. A merged wall can be merged again with a late group\u2019s file.</p>';
+    h += '<div class="field"><label for="merge-files">Group files (.json)</label><input type="file" id="merge-files" accept="application/json,.json" multiple style="min-height:44px"></div>';
+    if (ui.stagedErrors.length) {
+      h += '<ul class="file-list">';
+      ui.stagedErrors.forEach(function (e) { h += '<li><span class="err">' + esc(e) + '</span></li>'; });
+      h += '</ul>';
+    }
+    h += '<h3 style="margin-top:0.75rem">To merge (' + ui.staged.length + ')</h3>';
+    if (!ui.staged.length) h += '<p class="quiet">No files chosen yet.</p>';
+    else {
+      h += '<ul class="file-list">';
+      ui.staged.forEach(function (s, i) {
+        var groups = groupsInFile(s.obj);
+        h += '<li><span><b>' + esc(s.obj.group.name || '(no group name)') + '</b>' + (s.obj.merge ? ' <span class="quiet">(merged wall: ' + esc(groups.join(', ')) + ')</span>' : '') + '<br><span class="quiet">' + esc(s.fileName) + (s.obj.exportedAt ? ' \u00b7 exported ' + esc(new Date(s.obj.exportedAt).toLocaleString('en-GB')) : '') + '</span></span>' +
+          '<button type="button" class="btn btn-danger btn-small" data-unstage="' + i + '">Remove<span class="sr-only"> ' + esc(s.obj.group.name) + '</span></button></li>';
+      });
+      h += '</ul>';
+    }
+    h += '<p class="alert" id="merge-err" role="alert"></p>';
+    h += '<div class="dlg-actions"><button type="button" class="btn btn-accent" data-act="merge"' + (ui.staged.length ? '' : ' disabled') + '>Merge ' + ui.staged.length + (ui.staged.length === 1 ? ' file' : ' files') + '</button><button type="button" class="btn btn-ghost" data-act="cancel">Cancel</button></div>';
+    els.dlgMergeBody.innerHTML = h;
+  }
+  function readFiles(fileList, cb) {
+    var files = Array.prototype.slice.call(fileList || []);
+    var out = new Array(files.length);
+    var left = files.length;
+    if (!left) return cb([]);
+    files.forEach(function (f, i) {
+      var r = new FileReader();
+      r.onload = function () { out[i] = { name: f.name, text: String(r.result) }; if (--left === 0) cb(out); };
+      r.onerror = function () { out[i] = { name: f.name, text: null }; if (--left === 0) cb(out); };
+      r.readAsText(f);
+    });
+  }
+  function parseFile(f) {
+    if (f.text == null) return { errors: [f.name + ': could not be read.'] };
+    var obj;
+    try { obj = JSON.parse(f.text); } catch (e) { return { errors: [f.name + ': not a JSON file. Nothing was changed.'] }; }
+    var v = validateExport(obj);
+    if (v.length) return { errors: v.map(function (m) { return f.name + ': ' + m; }) };
+    return { obj: obj };
+  }
+  function stageFiles(fileList) {
+    readFiles(fileList, function (files) {
+      ui.stagedErrors = [];
+      files.forEach(function (f) {
+        var p = parseFile(f);
+        if (p.errors) { ui.stagedErrors = ui.stagedErrors.concat(p.errors); return; }
+        var have = {};
+        ui.staged.forEach(function (s) { groupsInFile(s.obj).forEach(function (g) { have[normName(g)] = true; }); });
+        var dup = groupsInFile(p.obj).filter(function (g) { return have[normName(g)]; });
+        if (dup.length) { ui.stagedErrors.push(f.name + ': group "' + dup.join('", "') + '" is already in the merge. Remove the other file first.'); return; }
+        ui.staged.push({ fileName: f.name, obj: p.obj });
+      });
+      renderMergeDialog();
+      var inp = byId('merge-files'); if (inp) inp.focus();
+    });
+  }
+  function onMergeDialogClick(e) {
+    var btn = e.target.closest('button');
+    if (!btn) return;
+    var un = btn.getAttribute('data-unstage');
+    if (un != null) { ui.staged.splice(+un, 1); ui.stagedErrors = []; renderMergeDialog(); byId('merge-files').focus(); return; }
+    var act = btn.getAttribute('data-act');
+    if (act === 'cancel') { closeDialog(els.dlgMerge); return; }
+    if (act === 'merge') {
+      var res = mergeFiles(ui.staged.map(function (s) { return s.obj; }), state.group);
+      if (res.errors.length) { byId('merge-err').textContent = res.errors.join(' '); return; }
+      var names = res.state.merge.sources.map(function (r) { return r.group; });
+      if (!window.confirm('Replace the current wall with the merged wall of ' + names.length + ' group records (' + names.join(', ') + ')? Export the current wall first if you want to keep it.')) return;
+      state = res.state;
+      ui.connectA = null;
+      closeDialog(els.dlgMerge);
+      var d = disputedIds(state).length;
+      var warn = state.group.name && names.some(function (n) { return normName(n) === normName(state.group.name); }) ? ' Give this merged wall its own name (for example "Class wall") before exporting.' : '';
+      commit('Merged ' + names.join(', ') + '. ' + d + (d === 1 ? ' card is' : ' cards are') + ' disputed.' + warn);
+    }
+  }
+
+  // ----- Connect mode -----
+  function connectPick(id) {
+    if (!ui.connectA) { ui.connectA = id; render(); say('First card ' + id + '. Now choose the second card.'); restoreFocus(id); return; }
+    if (ui.connectA === id) { ui.connectA = null; render(); say('Selection cleared. Choose the first card.'); restoreFocus(id); return; }
+    var a = ui.connectA;
+    var key = linkKey(a, id);
+    if (connByKey(state, key)) { ui.connectA = null; render(); say(a + ' and ' + id + ' are already linked.'); restoreFocus(id); return; }
+    openLabelDialog(a, id);
+  }
+  function setConnect(on) {
+    ui.connect = on; ui.connectA = null;
+    render();
+    say(on ? CONFIG.text.connectBannerA + '.' : 'Connect mode off.');
+  }
+
+  // ----- Drag and drop (pointer events: mouse, touch, pen) -----
+  function onPointerDown(e) {
+    if (e.button > 0 || isNarrow() || ui.connect) return;
+    var card = e.target.closest('.card');
+    if (!card || !els.board.contains(card)) return;
+    drag = { id: card.getAttribute('data-id'), card: card, x: e.clientX, y: e.clientY, pid: e.pointerId, started: false, float: null, target: null, index: null };
+    try { card.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+  }
+  function onPointerMove(e) {
+    if (!drag || e.pointerId !== drag.pid) return;
+    if (!drag.started) {
+      if (Math.abs(e.clientX - drag.x) + Math.abs(e.clientY - drag.y) < 6) return;
+      drag.started = true;
+      var r = drag.card.getBoundingClientRect();
+      drag.dx = e.clientX - r.left; drag.dy = e.clientY - r.top;
+      var f = drag.card.cloneNode(true);
+      f.removeAttribute('tabindex'); f.removeAttribute('role'); f.setAttribute('aria-hidden', 'true');
+      f.classList.add('drag-float');
+      f.style.width = drag.card.offsetWidth + 'px';
+      document.body.appendChild(f);
+      drag.float = f;
+      drag.card.classList.add('dragging');
+      hideTip();
+    }
+    e.preventDefault();
+    drag.float.style.left = (e.clientX - drag.dx) + 'px';
+    drag.float.style.top = (e.clientY - drag.dy) + 'px';
+    var under = document.elementFromPoint(e.clientX, e.clientY);
+    var cell = under ? under.closest('.cell') : null;
+    if (cell && !els.board.contains(cell)) cell = null;
+    if (drag.target && drag.target !== cell) drag.target.classList.remove('drop-target');
+    drag.target = cell;
+    if (cell) { cell.classList.add('drop-target'); drag.index = dropIndex(cell, e.clientX, e.clientY); }
+    if (e.clientY < 50) window.scrollBy(0, -14); else if (e.clientY > window.innerHeight - 50) window.scrollBy(0, 14);
+  }
+  function dropIndex(cell, x, y) {
+    var cards = Array.prototype.slice.call(cell.querySelectorAll('.card')).filter(function (c) { return c !== drag.card; });
+    for (var i = 0; i < cards.length; i++) {
+      var r = cards[i].getBoundingClientRect();
+      if (y < r.top) return i;
+      if (y <= r.bottom && x < r.left + r.width / 2) return i;
+    }
+    return cards.length;
+  }
+  function endDrag(e, cancelled) {
+    if (!drag || (e && e.pointerId !== drag.pid)) return;
+    var d = drag;
+    drag = null;
+    if (!d.started) return;
+    suppressClick = true;
+    window.setTimeout(function () { suppressClick = false; }, 0);
+    if (d.float && d.float.parentNode) d.float.parentNode.removeChild(d.float);
+    d.card.classList.remove('dragging');
+    if (d.target) d.target.classList.remove('drop-target');
+    if (cancelled || !d.target) { queueDraw(); return; }
+    var to = d.target.getAttribute('data-cell');
+    var from = findCell(state, d.id);
+    // index among the cell's cards excluding the dragged one
+    var list = state.cells[to].filter(function (x) { return x !== d.id; });
+    var before = list[d.index];
+    var idx = before ? state.cells[to].indexOf(before) : state.cells[to].length;
+    if (moveCard(state, d.id, to, idx)) commit(from === to ? d.id + ' reordered.' : d.id + ' moved to ' + cellName(to) + '.');
+    else queueDraw();
+    restoreFocus(d.id);
+  }
+
+  function onBoardClick(e) {
+    if (suppressClick) return;
+    var knot = e.target.closest('[data-link]');
+    if (knot) { openLineDialog(knot.getAttribute('data-link')); return; }
+    var card = e.target.closest('.card');
+    if (!card) return;
+    var id = card.getAttribute('data-id');
+    if (ui.connect) connectPick(id); else openCardDialog(id);
+  }
+  function onBoardKey(e) {
+    var card = e.target.closest('.card');
+    if (!card) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      var id = card.getAttribute('data-id');
+      if (ui.connect) connectPick(id); else openCardDialog(id);
+    }
+  }
+
+  // ----- Toolbar actions -----
+  function download(name, text) {
+    var blob = new Blob([text], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click();
+    window.setTimeout(function () { URL.revokeObjectURL(url); a.parentNode.removeChild(a); }, 500);
+  }
+  function doExport() {
+    var errs = exportBlockers(state);
+    if (errs.length) { say(errs.join(' ')); byId('grp-name').focus(); return; }
+    var obj = buildExport(state);
+    var slug = obj.group.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'group';
+    var t = obj.exportedAt.replace(/[-:]/g, '').replace('T', '-').slice(0, 13);
+    download('claim-wall-' + slug + '-' + t + '.json', JSON.stringify(obj, null, 2));
+    say('Exported ' + obj.group.name + '.');
+  }
+  function doImport(fileList) {
+    readFiles(fileList, function (files) {
+      if (!files.length) return;
+      var p = parseFile(files[0]);
+      if (p.errors) { say(p.errors.join(' ')); return; }
+      if (!window.confirm('Replace the current wall with "' + (p.obj.group.name || files[0].name) + '"? Export the current wall first if you want to keep it.')) { say('Import cancelled. Nothing was changed.'); return; }
+      state = stateFromExport(p.obj);
+      ui.connectA = null;
+      syncGroupFields();
+      commit('Imported ' + (p.obj.group.name || files[0].name) + '.');
+    });
+  }
+  function doCopy() {
+    var text = buildText(state);
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.left = '-9999px';
+      document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      say(ok ? 'Copied the wall as text.' : 'Copy failed: your browser blocked the clipboard.');
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { say('Copied the wall as text.'); }, fallback);
+    } else fallback();
+  }
+  function doReset() {
+    if (!window.confirm('Reset the wall? Every move, new card, red line and merge on this device will be lost. Export first if you want to keep it.')) return;
+    state = blankState();
+    ui.connect = false; ui.connectA = null; ui.onlyDisputed = false; ui.showOriginal = false;
+    syncGroupFields();
+    commit('Wall reset to the starting cards.');
+  }
+  function syncGroupFields() {
+    byId('grp-name').value = state.group.name || '';
+    byId('grp-members').value = state.group.members || '';
+  }
+
+  function init() {
+    els = {
+      board: byId('board'), links: byId('links-panel'), status: byId('status'), banner: byId('connect-banner'),
+      mergePanel: byId('merge-panel'), tip: byId('tip'), printCards: byId('print-cards'), printMeta: byId('cws-print-meta'),
+      connectBtn: byId('btn-connect'), originalBtn: byId('btn-original'), disputedBtn: byId('btn-disputed'),
+      dlgCard: byId('dlg-card'), dlgCardBody: byId('dlg-card-body'), dlgAdd: byId('dlg-add'), dlgAddBody: byId('dlg-add-body'),
+      dlgLink: byId('dlg-link'), dlgLinkBody: byId('dlg-link-body'), dlgMerge: byId('dlg-merge'), dlgMergeBody: byId('dlg-merge-body')
+    };
+    byId('cws-eyebrow').textContent = CONFIG.text.eyebrow;
+    byId('cws-title').textContent = CONFIG.text.title;
+    byId('cws-lede').textContent = CONFIG.text.lede;
+    narrowMq = window.matchMedia('(max-width: ' + (CONFIG.narrowBreakpoint - 0.02) + 'px)');
+    load();
+    syncGroupFields();
+
+    var grpName = byId('grp-name'), grpMembers = byId('grp-members');
+    grpName.oninput = function () { state.group.name = grpName.value; save(); renderChrome(); renderMergePanel(); renderLinks(); };
+    grpMembers.oninput = function () { state.group.members = grpMembers.value; save(); renderChrome(); };
+
+    byId('btn-add').onclick = openAddDialog;
+    els.connectBtn.onclick = function () { setConnect(!ui.connect); };
+    els.originalBtn.onclick = function () { ui.showOriginal = !ui.showOriginal; render(); say(ui.showOriginal ? 'Showing where moved cards started.' : 'Original places hidden.'); };
+    els.disputedBtn.onclick = function () { ui.onlyDisputed = !ui.onlyDisputed; render(); say(ui.onlyDisputed ? 'Showing disputed cards only (' + disputedIds(state).length + ').' : 'Showing all cards.'); };
+    byId('btn-merge').onclick = openMergeDialog;
+    byId('btn-export').onclick = doExport;
+    var importInput = byId('import-file');
+    byId('btn-import').onclick = function () { importInput.value = ''; importInput.click(); };
+    importInput.onchange = function () { doImport(importInput.files); };
+    byId('btn-copy').onclick = doCopy;
+    byId('btn-print').onclick = function () { renderChrome(); window.print(); };
+    byId('btn-reset').onclick = doReset;
+    els.banner.onclick = function (e) { if (e.target.closest('#btn-connect-done')) { setConnect(false); els.connectBtn.focus(); } };
+
+    els.board.onclick = onBoardClick;
+    els.board.onkeydown = onBoardKey;
+    els.board.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointermove', onPointerMove, { passive: false });
+    window.addEventListener('pointerup', function (e) { endDrag(e, false); });
+    window.addEventListener('pointercancel', function (e) { endDrag(e, true); });
+    window.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && drag && drag.started) { endDrag({ pointerId: drag.pid }, true); }
+      else if (e.key === 'Escape' && ui.connect && !document.querySelector('dialog[open]')) { setConnect(false); els.connectBtn.focus(); }
+    });
+    els.board.addEventListener('mouseover', function (e) { var k = e.target.closest('[data-link]'); if (k) showTip(k.getAttribute('data-link'), e.clientX, e.clientY); });
+    els.board.addEventListener('mouseout', function (e) { if (e.target.closest('[data-link]')) hideTip(); });
+    els.board.addEventListener('focusin', function (e) {
+      var k = e.target.closest('.knot');
+      if (!k) return;
+      var r = k.getBoundingClientRect();
+      showTip(k.getAttribute('data-link'), r.left, r.bottom);
+    });
+    els.board.addEventListener('focusout', hideTip);
+
+    els.links.onclick = function (e) {
+      var b = e.target.closest('[data-remove-link]');
+      if (b) { confirmRemoveLink(b.getAttribute('data-remove-link')); var h = byId('links-title'); if (h) { h.setAttribute('tabindex', '-1'); h.focus(); } }
+    };
+    els.dlgCardBody.onclick = onCardDialogClick;
+    els.dlgAddBody.onclick = onAddDialogClick;
+    els.dlgAddBody.oninput = updateAddCount;
+    els.dlgAddBody.onchange = updateAddCount;
+    els.dlgLinkBody.onclick = onLinkDialogClick;
+    els.dlgLinkBody.oninput = updateLinkCount;
+    els.dlgLinkBody.onkeydown = function (e) {
+      if (e.key === 'Enter' && e.target.id === 'link-label') { e.preventDefault(); var b = els.dlgLinkBody.querySelector('[data-act="addlink"]'); if (b && !b.disabled) b.click(); }
+    };
+    els.dlgMergeBody.onclick = onMergeDialogClick;
+    els.dlgMergeBody.onchange = function (e) { if (e.target.id === 'merge-files') stageFiles(e.target.files); };
+    [els.dlgLink].forEach(function (d) {
+      d.addEventListener('close', function () { if (ui.connect && els.dlgLinkBody.dataset.mode === 'add') { ui.connectA = null; render(); } });
+    });
+
+    window.addEventListener('resize', queueDraw);
+    window.addEventListener('scroll', queueDraw, { passive: true });
+    if (window.ResizeObserver) new window.ResizeObserver(queueDraw).observe(els.board);
+    if (narrowMq.addEventListener) narrowMq.addEventListener('change', render);
+    window.addEventListener('beforeprint', renderChrome);
+    render();
+  }
+
+  // Test hook: pure functions and CONFIG exposed for test.html.
+  window.CWS = {
+    CONFIG: CONFIG,
+    CELL_KEYS: CELL_KEYS,
+    cellKey: cellKey,
+    cellName: cellName,
+    blankState: blankState,
+    findCell: findCell,
+    originCell: originCell,
+    isMoved: isMoved,
+    moveCard: moveCard,
+    pickCell: pickCell,
+    addNewCard: addNewCard,
+    deleteNewCard: deleteNewCard,
+    validateNewCard: validateNewCard,
+    addConnection: addConnection,
+    removeConnection: removeConnection,
+    connCount: connCount,
+    linkKey: linkKey,
+    buildExport: buildExport,
+    exportBlockers: exportBlockers,
+    validateExport: validateExport,
+    stateFromExport: stateFromExport,
+    mergeFiles: mergeFiles,
+    votesFor: votesFor,
+    majorityFor: majorityFor,
+    isDisputed: isDisputed,
+    disputedIds: disputedIds,
+    buildText: buildText,
+    buildA6Html: buildA6Html,
+    rotationFor: rotationFor,
+    cardTextHtml: cardTextHtml,
+    wordCount: wordCount
+  };
+
+  if (document.getElementById('cws-app')) init();
+})();
+</script>
