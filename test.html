@@ -102,11 +102,11 @@
 
   function loadScripts(callback) {
     var loaded = 0;
-    var labCode, decoderCode, builderCode, benchCode, w5Code, cwsCode;
+    var labCode, decoderCode, builderCode, benchCode, w5Code, cwsCode, w7Code;
 
     function done() {
       loaded++;
-      if (loaded < 6) return;
+      if (loaded < 7) return;
 
       // Execute decoder in a namespace
       try {
@@ -241,8 +241,23 @@
         assert('week6-claim-wall-sort.html parses without syntax errors', function() { throw e; });
       }
 
+      // Execute week 7 Why Bodo (its init is guarded on #w7-app, absent here; it exposes window.W7)
+      try {
+        var w7Fn = new Function(w7Code);
+        w7Fn();
+      } catch(e) {
+        suite('LOAD ERRORS');
+        assert('week7-bodo-decline.html parses without syntax errors', function() { throw e; });
+      }
+
       callback();
     }
+
+    var xhr7 = new XMLHttpRequest();
+    xhr7.open('GET', 'week7-bodo-decline.html');
+    xhr7.onload = function() { w7Code = extractAndRun(xhr7.responseText, 'w7'); done(); };
+    xhr7.onerror = function() { w7Code = ''; done(); };
+    xhr7.send();
 
     var xhr6 = new XMLHttpRequest();
     xhr6.open('GET', 'week6-claim-wall-sort.html');
@@ -1958,6 +1973,170 @@
 
     assert('no PLACEHOLDER strings remain in week6-claim-wall-sort.html', function() {
       ok(cwsGet('week6-claim-wall-sort.html').indexOf('PLACEHOLDER:') === -1);
+    });
+
+
+    // =====================================================
+    // WHY BODO (week 7)
+    // =====================================================
+
+    suite('Why Bodø — Data and wall');
+
+    var W7_SENT = 'If use is declining in Bodø, it is because club fees rose, so casual members drop out, eroding the regulars, which bites in Bodø because social life runs through clubs.';
+
+    function w7Ready() {
+      var s = W7.blankState();
+      s.group.name = 'Red Team'; s.group.members = 'Ana, Ben'; s.claimRow = 3;
+      return s;
+    }
+    function w7FillMember(s, name) {
+      var m = W7.memberState(s, name);
+      m.claim = 2; m.characteristic = 'rg'; m.card1 = 'S1-022'; m.conditionSource = 'clubs';
+      m.draft = W7_SENT; m.partner = 'Someone from another group';
+      W7.CONFIG.tests.forEach(function(t) { m.tests[t.id] = { verdict: 'pass', reason: 'it names a local condition' }; });
+      m.final = W7_SENT; m.changeNote = 'cut the label and added the club condition';
+      return m;
+    }
+
+    assert('W7 test hook is exposed; embedded cards equal claim-wall/analysis/S1.json', function() {
+      ok(window.W7 && W7.CONFIG, 'missing W7');
+      var s1 = JSON.parse(cwsGet('claim-wall/analysis/S1.json'));
+      eq(W7.CONFIG.cards.length, s1.entries.length);
+      s1.entries.forEach(function(e, i) {
+        var c = W7.CONFIG.cards[i];
+        eq(c.id, e.entry_id); eq(c.text, e.card_text, e.entry_id); eq(c.claim, e.claim_no); eq(c.lens, e.discipline.toLowerCase());
+      });
+    });
+
+    assert('claim row 3 holds its S1 cards in lens order; all cards are listed once', function() {
+      var s = W7.blankState();
+      eq(W7.rowCards(s, 3).map(function(c) { return c.id; }).join(','), 'S1-019,S1-020,S1-021,S1-022,S1-023,S1-024,S1-025,S1-026');
+      eq(W7.allCards(s).length, 39);
+    });
+
+    assert('a Claim Wall Sort export loads: moved and new cards land in their rows', function() {
+      var cw = CWS.blankState(); cw.group.name = 'Class wall';
+      CWS.moveCard(cw, 'S1-001', 'c3-psychology');
+      CWS.addNewCard(cw, { text: 'The cafe near the station had no seating so people left quickly', claim: 3, lens: 'economics' }, function() { return 'n1'; });
+      var file = CWS.buildExport(cw, '2026-10-07T10:00:00.000Z');
+      eq(W7.validateWall(file).length, 0);
+      var s = W7.applyWall(W7.blankState(), JSON.parse(JSON.stringify(file)));
+      var ids = W7.rowCards(s, 3).map(function(c) { return c.id; });
+      ok(ids.indexOf('S1-001') !== -1, 'moved card'); ok(ids.indexOf('CLASSW-n1') !== -1, 'new card ' + ids.join(','));
+      eq(W7.rowCards(s, 1).map(function(c) { return c.id; }).indexOf('S1-001'), -1);
+      eq(W7.allCards(s).length, 40);
+    });
+
+    assert('wall import rejects other tools and unknown cards', function() {
+      ok(W7.validateWall({ tool: 'week6b-adjudication-bench' }).length > 0, 'other tool');
+      var file = CWS.buildExport(CWS.blankState(), '2026-10-07T10:00:00.000Z');
+      file.cells['c1-economics'].push('XX-999');
+      ok(W7.validateWall(file).length > 0, 'unknown card');
+    });
+
+    suite('Why Bodø — Steps and word limits');
+
+    assert('setup needs group name, a member and a claim row; later steps are locked until then', function() {
+      var s = W7.blankState();
+      eq(W7.setupErrors(s).length, 3);
+      ok(!W7.stepEnabled(s, 'audit'));
+      ok(W7.stepEnabled(w7Ready(), 'audit'));
+    });
+
+    assert('audit needs six cards, each with a tag and at least 12 words', function() {
+      var s = w7Ready();
+      W7.rowCards(s, 3).slice(0, 6).forEach(function(c) { s.audit[c.id] = { tags: ['place'], assumes: 'x' }; });
+      ok(W7.auditErrors(s).length > 0, 'one character passed');
+      W7.rowCards(s, 3).slice(0, 6).forEach(function(c) { s.audit[c.id] = { tags: [], assumes: 'the card takes for granted a large city with many commercial cafes' }; });
+      ok(W7.auditErrors(s).length > 0, 'no tag passed');
+      W7.rowCards(s, 3).slice(0, 5).forEach(function(c) { s.audit[c.id].tags = ['place']; });
+      ok(W7.auditErrors(s).length > 0, 'five cards passed');
+      s.audit[W7.rowCards(s, 3)[5].id].tags = ['period'];
+      eq(W7.auditErrors(s).length, 0);
+    });
+
+    assert('ladder needs distinct cards and every rung', function() {
+      var s = w7Ready();
+      ok(W7.ladderErrors(s, 0).length > 0);
+      s.ladders[0] = { cardId: 'S1-022', driver: 'prices of food and rent rose', mechanism: 'people cut spending on drinks out so they visit cafes less often after work', characteristic: 'rg', claim: 2, sign: 'fewer familiar faces at the same cafe each week' };
+      eq(W7.ladderErrors(s, 0).length, 0);
+      s.ladders[1] = JSON.parse(JSON.stringify(s.ladders[0]));
+      ok(W7.ladderErrors(s, 1).some(function(e) { return /different card/.test(e); }), 'duplicate card');
+      s.ladders[0].characteristic = 'zz';
+      ok(W7.ladderErrors(s, 0).length > 0, 'bad characteristic');
+    });
+
+    assert('transfer needs a judgement, an assumption and a 15-word reason', function() {
+      var s = w7Ready();
+      eq(W7.transferErrors(s).length, 6);
+      s.transfer.forEach(function(t) { t.judgement = 'reverses'; t.assumption = 'provider'; t.why = 'x'; });
+      eq(W7.transferErrors(s).length, 2);
+    });
+
+    assert('the sentence must be 15 to 40 words; one character or 41 words is refused', function() {
+      ok(W7.wordProblem('x', 'sentence'), 'one char');
+      ok(W7.wordProblem('word '.repeat(41), 'sentence'), '41 words');
+      eq(W7.wordProblem(W7_SENT, 'sentence'), '');
+      var s = w7Ready(), m = w7FillMember(s, 'Ana');
+      m.final = 'word '.repeat(41);
+      ok(W7.lockMember(s, 'Ana').length > 0 && !m.locked, 'locked with 41 words');
+      m.final = W7_SENT;
+      eq(W7.lockMember(s, 'Ana').length, 0); ok(m.locked);
+    });
+
+    assert('lock needs all three partner tests with reasons', function() {
+      var s = w7Ready(), m = w7FillMember(s, 'Ben');
+      m.tests.specificity = { verdict: '', reason: '' };
+      ok(W7.lockErrors(m).some(function(e) { return /Specificity/.test(e); }));
+    });
+
+    assert('intervention phrasing and a missing Bodø are flagged softly', function() {
+      ok(W7.interventionWarning('The club should build a cafe'));
+      ok(W7.interventionWarning('We recommend longer opening hours'));
+      eq(W7.interventionWarning(W7_SENT), '');
+      ok(W7.mentionsBodo('in Bodo')); ok(W7.mentionsBodo(W7_SENT)); ok(!W7.mentionsBodo('in London'));
+    });
+
+    suite('Why Bodø — Outputs');
+
+    assert('export round-trips through validateImport and normalise; sentences listed per member', function() {
+      var s = w7Ready(); w7FillMember(s, 'Ana'); W7.lockMember(s, 'Ana');
+      var x = JSON.parse(JSON.stringify(W7.buildExport(s, '2026-10-14T10:00:00.000Z')));
+      eq(x.tool, 'week7-bodo-decline'); eq(x.claimRow, 3);
+      eq(x.sentences.length, 2); ok(x.sentences[0].locked); eq(x.sentences[0].final, W7_SENT); eq(x.sentences[1].final, '');
+      eq(W7.validateImport(x).length, 0);
+      var back = W7.normalise(x.state);
+      ok(back.individual.Ana.locked); eq(back.group.name, 'Red Team');
+      ok(W7.validateImport({ tool: 'week6-claim-wall-sort' }).length > 0, 'other tool');
+    });
+
+    assert('one A6 card per locked student, four per sheet; text export lists them', function() {
+      var s = W7.blankState(); s.group.name = 'G'; s.claimRow = 1;
+      var names = ['A', 'B', 'C', 'D', 'E']; s.group.members = names.join(', ');
+      eq(W7.buildA6Html(s), '');
+      names.forEach(function(n) { w7FillMember(s, n); W7.lockMember(s, n); });
+      var h = W7.buildA6Html(s);
+      eq((h.match(/class="a6-sheet"/g) || []).length, 2);
+      eq((h.match(/class="a6"/g) || []).length, 5);
+      ok(W7.buildText(s).indexOf('- C: ' + W7_SENT) !== -1);
+    });
+
+    assert('week7-bodo-decline.html: charset first, favicon, no curly quotes or network calls in script', function() {
+      var t = cwsGet('week7-bodo-decline.html');
+      ok(t.indexOf('<meta charset="utf-8">') === 0, 'charset not first');
+      ok(t.indexOf('<link rel="icon" type="image/png" href="data:image/png;base64,') > t.indexOf('<title>'), 'favicon');
+      var m = t.match(/<script>([\s\S]*?)<\/script>/);
+      ok(m && !/[‘’“”]/.test(m[1]), 'curly quotes found');
+      ok(!/fetch\(|XMLHttpRequest|https?:\/\//.test(m[1]), 'network call found');
+    });
+
+    assert('PLACEHOLDER text appears only in the context pack facts and the model sentence', function() {
+      var c = W7.CONFIG;
+      var flagged = c.contextPack.facts.every(function(f) { return /^PLACEHOLDER:/.test(f.title) && /^PLACEHOLDER:/.test(f.text) && /^PLACEHOLDER:/.test(f.source); });
+      ok(flagged, 'facts not all marked');
+      ok(/^PLACEHOLDER:/.test(c.modelSentence), 'model sentence');
+      var rest = JSON.stringify(Object.assign({}, c, { contextPack: { intro: c.contextPack.intro, dimensions: c.contextPack.dimensions }, modelSentence: '' }));
+      ok(rest.indexOf('PLACEHOLDER') === -1, 'stray PLACEHOLDER');
     });
 
     // =====================================================
