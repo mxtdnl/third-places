@@ -1043,8 +1043,6 @@
   function causesErrors(state) {
     var e = [];
     for (var i = 0; i < state.causes.length; i++) e = e.concat(causeErrors(state, i));
-    var texts = state.causes.map(function (c) { return String(c.text || '').trim().toLowerCase(); }).filter(Boolean);
-    if (texts.some(function (t, i) { return texts.indexOf(t) !== i; })) e.push('Two causes have the same words: merge them and pick another cause.');
     return e;
   }
   function roundsErrors(state) {
