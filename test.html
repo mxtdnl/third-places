@@ -2060,7 +2060,7 @@
       ok(W7.stepEnabled(s, 'class'), 'class reveal always open');
     });
 
-    assert('each cause needs a wall card and 8 to 30 words; one character, duplicates and a repeated card are refused', function() {
+    assert('each cause needs a wall card and 8 to 30 words; one character and a repeated card are refused', function() {
       var s = w7Shortlist(w7Ready());
       eq(W7.causesErrors(s).length, 0);
       s.causes[0].text = 'x';
@@ -2068,7 +2068,7 @@
       s.causes[0].text = 'word '.repeat(31);
       ok(W7.causesErrors(s).length > 0, '31 words');
       s.causes[0].text = s.causes[1].text;
-      ok(W7.causesErrors(s).some(function (e) { return /same words/.test(e); }), 'duplicate');
+      eq(W7.causesErrors(s).length, 0, 'identical wording is allowed');
       s = w7Shortlist(w7Ready()); s.causes[0].card2 = s.causes[0].card1;
       ok(W7.causesErrors(s).length > 0, 'same card twice');
       s.causes[0].card2 = ''; s.causes[0].card1 = '';
