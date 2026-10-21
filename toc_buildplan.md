@@ -1,12 +1,12 @@
 # Build Plan: Weeks 9–13, Theory of Change and Recommendation to FK Bodø/Glimt
 
-Status: **draft for approval**. Nothing in this plan has been built yet.
+Status: **draft for approval**. Nothing in this plan has been built yet. Build prompts for every tool and deck are in `toc_build_prompts.md`.
 
 ## 1. Purpose and end product
 
 Weeks 9–13 turn the course's description, explanation and adjudication into one thing the client can act on: **a recommendation that FK Bodø/Glimt create a third place for the community in its new stadium, saying what that place should be and why it will work.**
 
-The Theory of Change is the argument behind the recommendation. It is not the end product. Every week builds a part of that argument, and week 13 assembles it into a recommendation pack that each group presents to the client in week 15.
+The Theory of Change is the argument behind the recommendation. It is not the end product. Each week builds one part of that argument, following the core reading step by step, and week 13 assembles it into a recommendation pack that each group presents to the client in week 15.
 
 The recommendation has a fixed shape so that it stays a recommendation and does not become a report:
 
@@ -16,274 +16,334 @@ Each group commits to **one** recommendation. Alternatives are considered and re
 
 ## 2. The client brief
 
-The client brief is confidential and is **not** stored in this repository, quoted in this plan, or embedded in any tool, because the repository is public and published on GitHub Pages. Students already have it on the VLE.
+The client brief is confidential. It is **not** stored in this repository, quoted in this plan, or embedded in any tool or deck, because the repository is public and published on GitHub Pages. Students already have it on the VLE.
 
-The tools do not load the brief. Students read it and **enter what they use from it themselves**, citing the slide:
-- the client's claims (week 9);
-- the client's stated ambition;
-- the stakeholders the brief names;
-- any constraints it gives (budget, space, location, operator, timing). Anything the brief does not give, groups state as an assumption;
+Students read the brief and **enter what they use from it themselves**, citing the slide:
+- the client's claims and stated ambition (week 9);
+- the stakeholders it names (week 9);
+- any constraints it gives (week 11);
 - the client's stated values (week 13).
 
-Putting the brief into their own words is part of the week 9 exercise; it is not data entry.
+Putting the brief into their own words is part of the week 9 exercise; it is not data entry. Figures taken from the brief are recorded as evidence of type **client brief**, with the slide number, and are flagged as unsourced unless the brief gives a source.
 
-Figures taken from the brief are recorded as a separate evidence type, **client brief**, with the slide number. Unless the brief gives a source, they are flagged as unsourced and are not treated as verified facts.
+## 3. Core reading
 
-## 3. Constraints carried into this phase
+| Ref | Reading | Course copy | Online |
+|---|---|---|---|
+| **[TC]** | Taplin, D. H. & Clark, H. (2012). *Theory of Change Basics: A Primer on Theory of Change.* New York: ActKnowledge. | [`ToCBasics.pdf`](ToCBasics.pdf) | Publisher: www.actknowledge.org (no deep link checked) |
+| **[GAF]** | Government Analysis Function, Evaluation Support Team. *The Theory of Change Process – Guidance for Outcome Delivery Plans.* Toolkit; course copy saved 17 September 2026. | [`ToCgov.pdf`](ToCgov.pdf) | [analysisfunction.civilservice.gov.uk](https://analysisfunction.civilservice.gov.uk/policy-store/the-analysis-function-theory-of-change-toolkit/) (URL from the PDF footer) |
+| **[A7]** | Course deck *Theory of Change* (Activity 7), built on [TC]. | [`theory-of-change.html`](theory-of-change.html) | n/a |
 
-- **Verb sequence.** Weeks 9–14 are INTERVENE, so these tools may prompt for interventions. Inside the phase, the ActKnowledge discipline still holds: the design of the third place (the interventions) stays locked until the outcome map is complete.
-- **No access to Bodø residents or end users** (`SOCIAL-PHENOMENA-CHALLENGE.md`). Anything the groups assume about what residents want, do or feel is recorded as an assumption, never as a finding. The recommendation must tell the client what to find out first.
-- **"May be", not "is".** Nothing in the course materials establishes that third places in Bodø *are* declining. The recommendation keeps the week 7 hedging.
-- **No invented facts.** Bodø facts come from week 7's sourced `CONFIG.facts`. Students enter all other evidence themselves, with a source; figures from the brief are cited by slide.
-- **Week 10 Reverse Import assignment.** Already fixed in the course design and slotted into week 10 below.
-- **Weeks 14 and 15.** Week 14 is assumed to be pitch rehearsal and class synthesis; week 15 is the client presentation.
+Page numbers refer to the PDFs in this repository.
 
-## 4. Method
+### 3.1 Where to find each part of the method
 
-The plan uses the ActKnowledge outcomes framework already taught in `theory-of-change.html` (Taplin & Clark 2012, `ToCBasics.pdf`):
+| [TC] (ActKnowledge) | Pages | [GAF] (Analysis Function) | Pages |
+|---|---|---|---|
+| ToC stages; definition | 2–3 | Step 1: stakeholders and intended impact | 8–10 |
+| §2 Long-term outcome: problem statement, positive opposite, shared definition, accountability ceiling | 3 | Step 2: evidence and context (includes "alternative strategies") | 11–13 |
+| §3 Causal pathways, backwards mapping, clusters | 4 | Step 3: impacts or long-term goals | 14–15 |
+| Outcomes framework (diagram) | 5 | Step 4: outcomes (SMART; an "and" means split it) | 16–18 |
+| §4 Assumptions and rationales | 6 | Step 5: outputs and activities | 19–20 |
+| §5 Interventions (hold off; place on connectors; don't shoehorn) | 7 | Step 6: inputs | 21–22 |
+| §6 Indicators (four targets) | 8 | Step 7: assumptions | 23–26 |
+| §7 Quality review (plausible, doable, testable) | 9 | Step 8: risks | 27–28 |
+| §8 Narrative (one or two pages; plain-English summary) | 9 | Step 9: causal links | 29–31 |
+| | | Optional: timelines | 31 |
+| | | Step 10: diagram and narrative; nested ToCs | 32–36 |
+| | | Step 11: monitoring and evaluation plan (log frame p. 38; M&E framework p. 39) | 37–42 |
+| | | Workshops (five-session structure p. 44) | 43–46 |
+| | | Quality assurance factors | 47–48 |
 
-- the long-term outcome, with an accountability ceiling;
-- preconditions mapped backwards through intermediate and early outcomes, in several pathways;
-- a rationale for every link, plus the assumptions it rests on;
-- interventions placed on the arrows only after the outcome map is complete, without shoehorning;
-- indicators that answer how many, of whom, reach what level, by when;
-- quality review against three tests: plausible, feasible ("doable") and testable;
-- a written narrative alongside the diagram.
+### 3.2 Terms students will meet in both readings
 
-Four steps come from the UK Government Analysis Function toolkit (`ToCgov.pdf`):
+The tools use [TC]'s terms. Week 9's deck shows this crosswalk once, and the workbench glossary keeps it.
 
-- Step 1, stakeholders and intended impact, used to reconstruct the client's own theory;
-- Step 6, inputs;
-- Step 8, risks, which are kept separate from assumptions;
-- Step 11, the monitoring and evaluation plan.
+| This course (from [TC]) | [GAF] equivalent | Note |
+|---|---|---|
+| Ultimate goal (above the accountability ceiling) | Impact | What the client contributes to but is not held to |
+| Long-term outcome | Impact / long-term goal | What the third place is held to |
+| Intermediate and early outcomes (preconditions) | Medium- and short-term outcomes | |
+| Intervention (with its activities) | Outputs + activities | [TC] p. 7 separates strategy, intervention and activity |
+| Resources for an intervention | Inputs | |
+| Rationale (why X is needed for Y) | Causal link justification | |
+| Assumption (a condition taken as already in place) | Assumption ("underlying conditions") | [TC] is stricter: see §4.2 |
+| Risk | Risk | [GAF] only; [TC] has no separate term |
 
-Students keep the ActKnowledge terms throughout, so they do not have to hold two sets of terms. Step 2's question "are there alternative strategies?" becomes the week 11 options appraisal.
+## 4. Design principles drawn from the reading
 
-The course's analytical spine runs through every stage:
+These principles change the earlier draft. Each is followed in the weekly design in §6.
 
-- **Decline claims.** The problem statement names which of SUPPLY, USE, QUALITY and OUTCOME the recommendation acts on. A single new venue barely touches SUPPLY at city scale, and the tool asks groups to say so if they pick it.
-- **Lenses.** Every outcome and assumption is tagged PSYCHOLOGICAL, POLITICAL or ECONOMIC.
-- **Oldenburg's eight characteristics.** Intermediate outcomes and design features are tagged with the characteristics they produce or protect.
+1. **The long-term outcome comes first and takes time.** "Perhaps the most important step in the entire ToC process is getting the long-term outcome right" ([TC] p. 3). Week 9 is given over to it: problem statement → positive opposite → shared definitions → accountability ceiling ([TC] p. 3), with the client's intended impact and the stakeholders ([GAF] Steps 1 and 3).
+2. **Four objects kept apart.** [TC] p. 6 separates a **precondition** (must be brought about; goes on the map) from an **assumption** ("already in place and do not need to be brought about"; goes in the register). A **rationale** explains why one outcome is needed for another (on the arrow). [GAF] Step 8 adds the **risk**: a factor that may happen, inside or outside the club's control. The workbench enforces the split with one sorting question: *is this already true in Bodø today?*
+   - Yes, with evidence → assumption.
+   - No → precondition, which goes on the map.
+   - We cannot know without access to residents → a "find out first" item.
 
-Two questions recur in every week, because a client's goals and Oldenburg's concept need not coincide:
+   This also corrects a blur in [A7], whose causal pathway slide labels each link's belief "Assumption". Week 10's deck shows the [TC] distinction explicitly (open question 4).
+3. **Assumptions and rationales are captured while mapping.** [TC] p. 6 says to capture them "as they come out" during backwards mapping, then check again once the framework is complete. They move from week 11 into week 10.
+4. **Interventions only after the framework, and only on arrows.** "we deliberately ask groups to hold off on interventions" ([TC] p. 7). The design stays locked until the outcome map passes its checks. Each intervention sits on a connector; an intervention serving no arrow is flagged, because "it's best not to shoehorn them in". The group then walks the framework for arrows with no intervention ([TC] p. 7).
+5. **Outcome wording.** Outcomes are positive conditions ([TC] p. 3), with one change per outcome: "If you need to use the word 'and' this is an indication that you need to create a new, separate outcome" ([GAF] p. 16). The workbench warns on activity verbs and on "and".
+6. **Clusters.** Preconditions that act together can be grouped as a cluster with one arrow out ([TC] p. 4). The map editor supports this, which keeps diagrams readable.
+7. **Evidence quality uses the course's own criteria.** [GAF] Step 7 asks "What is the quality of this evidence and how reliable is it?" (p. 24). Rather than introduce a new hierarchy, the workbench rates key evidence on the four week 6 criteria from `week6b-adjudication-bench.html`: causal identification, scope conditions, observable implications and methodological quality. "Scope conditions" carries the week 7 Bodø verdict (travels, bends, breaks).
+8. **Indicators combine both readings.** [TC]'s four targets ("How many of who or what will reach what level by when?", p. 8) sit inside [GAF]'s M&E framework columns (p. 39): definition, baseline, target, data source, frequency, responsible, reporting. With no access to residents, most baselines are unknown and become "find out first" items, which turns the constraint into the club's first-year plan. Following [TC] p. 9, indicator drafting is shared out among members and then reviewed by the group.
+9. **Quality review runs throughout, with outside reviewers.** [TC] p. 9 frames quality review as "an ongoing process during the construction of your theory" and suggests inviting outside reviewers. Each week ends with a short self-check against plausible, doable and testable. In week 12 another group acts as the outside reviewer, using [TC]'s questions plus [GAF]'s quality factors (p. 47): consistent definitions and terms, stakeholders considered, context and evidence clear.
+10. **Two diagrams, one narrative.** [GAF] p. 32 recommends "multiple versions of your visualisation with different levels of detail for different users". Week 13 produces a full diagram (for the appendix and red team) and a one-page client diagram. The narrative is "one or two pages", led by a plain-English executive summary drafted by one member and reviewed by the group ([TC] p. 9).
+11. **Proportionality.** [GAF] p. 5: the ToC should be proportionate to the intervention. The map has a soft cap (default 15 outcomes, configurable) with a warning, not a block.
+12. **Workshop practice.** [GAF] pp. 43–44 runs ToC development over several sessions, with facilitators and everyone heard. Groups rotate roles each week: Facilitator, Scribe (holds the device), Sceptic (challenges preconditions and assumptions), Evidence lead, and Timekeeper in groups of five. The workbench records who held which role.
+13. **Iteration is visible.** "A good TOC is an iterative process that develops alongside changes in context" ([GAF] p. 47). Every earlier screen stays editable. Changes made after a week's close go into a revision log, which appears in the appendix.
 
-1. **Where is the ceiling?** A client's ambition can reach well beyond what one third place can be held to. Groups say what their third place contributes to and what it can answer for. The red team checks that the recommendation does not claim more than its ceiling allows.
-2. **Whose community?** A client may mean organisations and institutions as well as individuals. Oldenburg's third place concerns informal sociability among individuals, on neutral ground, where status is levelled. Each group states which community its recommendation serves and how it handles any gap between the two, and tells the client plainly.
+## 5. Constraints carried into this phase
 
-## 5. Week by week (90 minutes each, groups of 3–5, one device per group)
+- **Verb sequence.** Weeks 9–14 are INTERVENE, so these tools may prompt for interventions, but only after the outcome map is complete (§4.4).
+- **No access to Bodø residents or end users** (`SOCIAL-PHENOMENA-CHALLENGE.md`). Beliefs about residents are assumptions or "find out first" items, never findings.
+- **"May be", not "is".** Nothing in the course materials establishes that third places in Bodø *are* declining.
+- **No invented facts.** Bodø facts come from week 7's sourced `CONFIG.facts`. Students enter all other evidence, with a source; figures from the brief are cited by slide.
+- **Week 10 Reverse Import assignment** is slotted into week 10.
+- **Weeks 14 and 15:** pitch rehearsal and class synthesis, then the client presentation.
 
-### Week 9 — Where does the client want to go, and where can a third place take it?
+## 6. Week by week (90 minutes each, groups of 3–5, one device per group)
 
-**Steps:** reconstruct the client's theory → problem statement → long-term outcome → accountability ceiling → stakeholders.
+Each week has:
+- **pre-reading**, set the week before;
+- a **deck** that opens the session (about 12 minutes, including a reading check) and then stays on screen as the session spine, with timed "in the workbench" slides;
+- **workbench screens**, unlocked in order;
+- a **close**: a two-minute self-check against plausible, doable and testable ([TC] p. 9), then export.
 
-| Time | Activity |
-|---|---|
-| 0–10 | Set up the group; optionally import the week 7 export, whose locked sentences then appear as draft problem statements. |
-| 10–30 | **Reconstruct the client's theory.** With the brief open, the group writes the client's claims as cards in its own words, each with a slide number, and records the client's stated ambition. It puts the cards in causal order and marks each link: evidence given in the brief, or not given. It then answers in writing: whose community does the client mean, and is that Oldenburg's? |
-| 30–50 | Write one problem statement: which decline claim(s), for whom, where. Turn it into the long-term outcome, a positive condition. Define every key term: for example, belonging for whom, shown how. |
-| 50–60 | Draw the accountability ceiling, and place the client's stated ambition relative to it, with a justification. |
-| 60–85 | Stakeholder map: first the stakeholders the brief names, then the people it does not name. Mark every stakeholder the group cannot ask; each mark adds a "We assume [stakeholder] …" entry to the assumption register. |
-| 85–90 | Print the long-term outcome A6 card for the wall; export JSON. |
+[GAF] p. 44's five sessions map onto weeks 9–13. The one change is that design (outputs, activities, inputs) moves after causal links, as [TC] p. 7 requires.
 
-**Output:** the client's reconstructed theory, problem statement, long-term outcome with definitions and ceiling, stakeholder map, first entries in the assumption register.
+| Week | [GAF] p. 44 session | Steps covered |
+|---|---|---|
+| 9 | 1. Define impacts and outcomes | [TC] §2; [GAF] Steps 1–3 |
+| 10 | 3. Make causal linkages, plus assumptions | [TC] §3–4; [GAF] Steps 4, 7, 9 |
+| 11 | 2. Outputs, activities, inputs, plus risks | [TC] §5; [GAF] Steps 2 (alternatives), 5, 6, 8 |
+| 12 | 5. Metrics and evaluation, plus review | [TC] §6–7; [GAF] Step 11, timelines, quality factors |
+| 13 | Diagram and narrative | [TC] §8; [GAF] Step 10 |
 
-### Week 10 — Backwards mapping
+### Week 9 — The long-term outcome
 
-**Steps:** preconditions, pathways and rationales. The Reverse Import assignment is set this week.
+**Pre-reading:** [TC] pp. 1–3; [GAF] Steps 1–3 (pp. 8–15); the client brief (VLE).
 
-| Time | Activity |
-|---|---|
-| 0–40 | Ask "what must be true for this?" level by level, from the long-term outcome down to early outcomes, with at least two pathways. Groups choose how to organise pathways (by lens, by stakeholder group, or by the client's own framing) and say why. Tag each outcome by lens and by characteristic. Outcomes are conditions, not activities: the tool gives a soft warning on activity verbs ("build", "run", "offer", "host"). |
-| 40–70 | Give every arrow a rationale ("X is needed for Y because …") and attach at least one evidence entry. Evidence types: course reading, week 5 field data, week 6 adjudication, week 7 Bodø fact, client brief (unsourced), parallel-course claim, other. |
-| 70–85 | Reverse Import: each student assigns their imported claim (from microeconomics, political theory, or genes, mind, brain and behaviour) to one link, as support or as challenge. |
-| 85–90 | Export. The design of the third place is still locked. |
+| Time | Activity | Reading applied |
+|---|---|---|
+| 0–12 | Deck: the four weeks ahead, the terms crosswalk, reading check. Assign roles. | §3.2 |
+| 12–30 | **The client's intended impact.** With the brief open, the group writes the client's claims as cards in its own words, each with a slide number, puts them in causal order, and marks each link: evidence given in the brief, or not. It records the client's stated ambition and answers in writing: whose community does the client mean, and is that Oldenburg's? | [GAF] Step 1 "agree intended impact"; Step 2 context |
+| 30–50 | **Problem statement → positive opposite.** Turn the week 7 sentences into one problem statement (which decline claim, where, for whom), then into a long-term outcome phrased as a positive condition. | [TC] p. 3 |
+| 50–60 | **Shared definitions and the ceiling.** Define every key term in the long-term outcome. Draw the accountability ceiling and place the client's ambition above it, at it or below it, with a reason. | [TC] p. 3 |
+| 60–83 | **Stakeholders.** Work through [GAF]'s eight questions; rate influence and interest low, medium or high; mark who the group cannot ask (each mark adds a "find out first" item). | [GAF] p. 8 |
+| 83–90 | Self-check; print the long-term outcome A6 card; export. | [TC] p. 9 |
 
-**Output:** the outcomes framework, drawn automatically as a diagram, with rationales and evidence.
+**Outcome:** client's theory reconstructed; problem statement; long-term outcome with definitions and ceiling; stakeholder map; first "find out first" items; long-term outcome card.
 
-### Week 11 — What must be true, and what should the club build?
+### Week 10 — Backwards mapping: preconditions, rationales, assumptions
 
-**Steps:** assumptions, the stadium stress test, options appraisal, then the design (interventions, inputs, risks).
+**Pre-reading:** [TC] pp. 4–6; [GAF] Steps 4, 7 and 9 (pp. 16–18, 23–26, 29–31).
 
-| Time | Activity |
-|---|---|
-| 0–25 | Surface the assumptions behind each link. Rate each on evidence (strong / partial / none) and on what happens if it is wrong (the chain breaks / weakens / minor). Evidence from outside Bodø carries a Bodø verdict reused from week 7: travels, bends or breaks. Every link from the long-term outcome up to the client's ambition must carry at least one rated assumption. |
-| 25–45 | **Stadium stress test.** For each of the eight characteristics, students write how this setting could threaten it and what would protect it. The tool asks only questions and supplies no answers. The general question bank (in `CONFIG`) includes: "Who might not experience a football club's building as neutral ground?"; "What happens to *the regulars* in a season the team does badly?"; "What happens to *low profile* and *accessibility* on big match days?" Groups add at least one question of their own, drawn from the brief. |
-| 45–60 | **Options appraisal.** Sketch at least two different designs for the third place; location is one variable. Test each against plausible, feasible and testable, then choose one and record why the others were rejected. |
-| 60–85 | Design unlocks once the outcome map passes its checks. Each design feature (what it is, where, opening hours, price, who runs it, programming) is placed on at least one arrow. Features that sit on no arrow are flagged. Inputs (what the club or partners must provide) and risks are recorded for each feature. |
-| 85–90 | Export; print A6 cards for the three riskiest assumptions. |
+| Time | Activity | Reading applied |
+|---|---|---|
+| 0–12 | Deck: backwards mapping, clusters, the four objects (precondition, assumption, rationale, risk), the "already true in Bodø?" test, a sorting exercise. Rotate roles. | [TC] pp. 4, 6 |
+| 12–45 | **Backwards map.** Ask "what must be true for this?" from the long-term outcome down to early outcomes, in at least two pathways. Group preconditions into clusters where they act together. Tag each outcome by lens and characteristic. Warnings for activity verbs and for "and". | [TC] p. 4; [GAF] p. 16 |
+| 45–65 | **Rationales and assumptions as they come out.** Each arrow gets a rationale. Every belief voiced goes through the sorting question: assumption to the register, precondition to the map, unknowable to "find out first". The Sceptic leads. | [TC] p. 6 |
+| 65–80 | **Evidence.** Attach evidence to rationales and assumptions. Key items are rated on the four week 6 criteria, and scope conditions take the Bodø verdict. Reverse Import: each student places their imported claim on one link, as support or challenge. | [GAF] p. 24; §4.7 |
+| 80–90 | Completeness pass on assumptions ([TC] p. 6 "when you think the outcomes framework is complete"); self-check; export. Design is still locked. | [TC] p. 6 |
 
-**Output:** assumption register, stress test, options appraisal, design specification.
+**Outcome:** outcomes framework diagram with clusters; a rationale on every arrow; assumption register with evidence ratings; Reverse Import claims placed; longer "find out first" list.
 
-### Week 12 — Will the club know if it is working?
+### Week 11 — Interventions: what should the club build?
 
-**Steps:** indicators, the monitoring and evaluation plan, and peer review (red team).
+**Pre-reading:** [TC] p. 7; [GAF] Step 2 questions 6–7 (p. 11) and Steps 5, 6 and 8 (pp. 19–22, 27–28).
 
-| Time | Activity |
-|---|---|
-| 0–40 | Indicators for every outcome, each with all four targets (how many, of whom, what level, by when), plus a method and who collects the data. A timing check flags any outcome dated before its preconditions. Indicators that need community access feed a **"find out first"** list: the club's first-year learning plan. |
-| 40–75 | **Red team.** Groups swap export files. In reviewer mode, the tool walks the reviewers through the three tests link by link. They must name the weakest assumption, propose how the club could test it, and say whether the recommendation claims more than its ceiling allows. The review is exported as a file. |
-| 75–90 | The author group imports the review and answers every challenge: accept, revise, or rebut with a reason. Every change made after a week has closed goes into the revision log. |
+| Time | Activity | Reading applied |
+|---|---|---|
+| 0–12 | Deck: hold off, then place interventions on connectors; strategy, intervention and activity; inputs; risks versus assumptions; reading check. Rotate roles. | [TC] p. 7; [GAF] pp. 19–28 |
+| 12–30 | **Options appraisal.** At least two different designs for the third place; location is one variable. Each is tested against plausible, doable and testable; one is chosen, with reasons recorded for rejecting the others. | [GAF] p. 11 Q6–7; [TC] p. 9 |
+| 30–55 | **Place interventions.** Design unlocks. Each design feature (what, where, hours, price, operator, programming) goes on one or more arrows. Unattached features are flagged. Then walk the framework: any arrow with no intervention is either served by something already in place (an assumption) or needs one. | [TC] p. 7 |
+| 55–70 | **Inputs.** For each intervention: resources needed, and [GAF]'s limitation questions (ring-fenced budget? the right skills? time limits on facilities?). Constraints from the brief are cited by slide; everything else is stated as an assumption. | [GAF] p. 21 |
+| 70–85 | **Risks and the stadium stress test.** [GAF]'s three risk questions (p. 27), then the eight characteristics: how could this setting threaten each one, and which intervention protects it? | [GAF] p. 27 |
+| 85–90 | Self-check; print A6 cards for the three riskiest assumptions; export. | [TC] p. 9 |
 
-**Output:** monitoring and evaluation table, "find out first" list, review log.
+**Outcome:** options appraisal; a design specification with every feature on an arrow; inputs; risk register; stress test; riskiest-assumption cards.
 
-### Week 13 — The recommendation
+### Week 12 — Indicators and quality review
 
-**Step:** diagram and narrative, assembled as the client recommendation pack.
+**Pre-reading:** [TC] pp. 8–9 (§6 and §7); [GAF] Step 11 (pp. 37–42) and quality factors (pp. 47–48).
 
-| Time | Activity |
-|---|---|
-| 0–15 | Write the recommendation sentence in the fixed shape of §1, built from the long-term outcome, the design specification, the top assumptions and the headline indicators already in the tool. |
-| 15–55 | Assemble the narrative section by section (§7). A plain-language check flags jargon from a configurable list and enforces word limits written for a club audience. |
-| 55–65 | **Client-values check.** The group enters the client's stated values from the brief. For each one: does the recommendation speak to it, and at what cost? A value may not be bought at the cost of a characteristic without the trade-off being stated. The group also states what in the recommendation is specific to Bodø, as opposed to copied from elsewhere (the week 7 swap test). |
-| 65–80 | Print the pack; copy it as text. |
-| 80–90 | Class view on the projector: compare recommendations, long-term outcomes, designs and riskiest assumptions across groups, ready for week 14. |
+| Time | Activity | Reading applied |
+|---|---|---|
+| 0–10 | Deck: the four targets; the M&E framework columns; baselines and why ours are unknown; the reviewer's questions. Rotate roles. | [TC] p. 8; [GAF] p. 39 |
+| 10–40 | **Indicators, shared out.** The workbench divides outcomes among members. Each drafts indicators: the four targets plus definition, baseline (or "find out first"), data source, frequency, responsible and reporting. The group then reviews them all; a timing check flags an outcome whose "by when" falls before its preconditions'. | [TC] pp. 8–9; [GAF] pp. 31, 39 |
+| 40–72 | **Outside review.** Groups swap exports. Reviewer mode walks [TC]'s plausibility, feasibility and testability questions (p. 9) and [GAF]'s quality factors (p. 47) link by link. Reviewers must name the weakest assumption, say how the club could test it, and flag any claim above the ceiling. The review is exported as a file. | [TC] p. 9; [GAF] p. 47 |
+| 72–90 | **Respond.** Import the review and answer every challenge (accept, revise, or rebut with a reason); revisions go to the log. Export. | [GAF] p. 47 |
 
-**Output:** the client recommendation pack (§7).
+**Outcome:** M&E framework table; complete "find out first" list (the first-year learning plan); review log with every challenge answered; revised ToC.
 
-## 6. Tools to build
+### Week 13 — Diagram, narrative and recommendation
 
-### 6.1 `week9-toc-workbench.html`: Bodø Theory of Change (Activity 15, weeks 9–13)
+**Pre-reading:** [TC] p. 9 (§8); [GAF] Step 10 (pp. 32–36).
 
-One self-contained file that grows across all five weeks, with one export file carried from week to week. It is one file, not five, because Theory of Change is iterative: findings from the week 12 red team must be able to change links made in week 10. As in `week7-bodo-decline.html`, the group tool and the instructor's class view live in the same file.
+| Time | Activity | Reading applied |
+|---|---|---|
+| 0–10 | Deck: two diagrams for two readers; what a narrative contains; the recommendation shape; the values check. | [GAF] p. 32; [TC] p. 9 |
+| 10–20 | **Recommendation sentence** in the §1 shape, built from fields already in the workbench. | §1 |
+| 20–35 | **Two diagrams.** The full diagram is generated. For the client diagram, the group picks the outcomes, the most important arrows and the ceiling to show on one page, and checks that it still reads without the narrative. | [GAF] p. 32 |
+| 35–65 | **Narrative**, at most two pages. One member drafts the plain-English executive summary; the group reviews it. The other sections assemble from the workbench. A plain-language check flags jargon. | [TC] p. 9 |
+| 65–75 | **Client-values check.** The group enters the client's stated values from the brief. For each: does the recommendation speak to it, and at what cost to any characteristic? What is specific to Bodø rather than copied (the week 7 swap test)? | §2 |
+| 75–90 | Print the pack; copy as text; class view on the projector to compare recommendations, ready for week 14. | |
 
-**Screens:**
+**Outcome:** the client recommendation pack (§8).
 
-1. Setup (group name, members; optional week 7 import)
-2. The client's theory
-3. Problem and long-term outcome
-4. Stakeholders
-5. Pathways
-6. Assumptions and stress test
-7. Options and design
-8. Indicators
-9. Red team (author mode and reviewer mode)
-10. Recommendation and outputs
-11. Class view (instructor; loads every group's export)
+## 7. Tools and decks to build
 
-**Pathway editing.** The outcome map is edited as structured lists: each outcome has a level and a "leads to …" selection. The diagram is drawn as inline SVG from that data, laid out by level. There is no drag-and-drop, so the editor works at 360px wide and from the keyboard.
+| Item | File | Activity | Ready by |
+|---|---|---|---|
+| Workbench, core and week 9 screens | `week9-toc-workbench.html` | 15 | Week 9 |
+| Workbench, week 10 screens | same file | 15 | Week 10 |
+| Workbench, week 11 screens | same file | 15 | Week 11 |
+| Workbench, week 12 screens | same file | 15 | Week 12 |
+| Workbench, week 13 screens and class view | same file | 15 | Week 13 |
+| Week 9 deck | `week9-toc-deck.html` | 16 | Week 9 |
+| Week 10 deck | `week10-toc-deck.html` | 17 | Week 10 |
+| Week 11 deck | `week11-toc-deck.html` | 18 | Week 11 |
+| Week 12 deck | `week12-toc-deck.html` | 19 | Week 12 |
+| Week 13 deck | `week13-toc-deck.html` | 20 | Week 13 |
 
-**`CONFIG` content (public, no brief content):**
-- `CONFIG.facts`: reused from week 7, with sources;
-- `CONFIG.stressQuestions`: the general question bank;
-- `CONFIG.jargon`: the plain-language word list;
-- `CONFIG.minWords`: minimum word counts for each field.
+The workbench is one file that grows each week, so earlier screens stay editable (§4.13), and it is built in stages so each week's screens are ready before that class. Decks are one per week, following `SLIDES.md` with `theory-of-change.html` as the reference. No deck contains brief content.
 
-**State shape (export JSON, `tool: "toc-workbench"`, `schemaVersion: 1`, documented in the file header):**
+### 7.1 Workbench screens
+
+| # | Screen | Week | Reading |
+|---|---|---|---|
+| 1 | Setup: group, members, roles; optional week 7 import | 9 | [GAF] pp. 43–44 |
+| 2 | Client's intended impact | 9 | [GAF] Steps 1–2 |
+| 3 | Problem and long-term outcome (positive opposite, definitions, ceiling) | 9 | [TC] p. 3 |
+| 4 | Stakeholders | 9 | [GAF] p. 8 |
+| 5 | Backwards map (outcomes, clusters, arrows with rationales; live SVG diagram) | 10 | [TC] pp. 4–6 |
+| 6 | Assumption register and sorter; evidence log with four-criteria ratings | 10 | [TC] p. 6; [GAF] Step 7 |
+| 7 | Options appraisal | 11 | [GAF] p. 11 |
+| 8 | Interventions on arrows; gap walk; inputs | 11 | [TC] p. 7; [GAF] Steps 5–6 |
+| 9 | Risks and stadium stress test | 11 | [GAF] Step 8 |
+| 10 | Indicators and M&E framework; timeline check | 12 | [TC] p. 8; [GAF] Step 11 |
+| 11 | Outside review (author and reviewer modes) | 12 | [TC] p. 9; [GAF] p. 47 |
+| 12 | Diagrams (full and client) and narrative | 13 | [TC] p. 9; [GAF] Step 10 |
+| 13 | Recommendation, values check and outputs | 13 | §1, §8 |
+| 14 | Class view (instructor; loads every group's export) | 13 | |
+
+A side panel on every screen shows the glossary (§3.2), the week's reading references, and the self-check questions.
+
+### 7.2 State shape (export JSON, `tool: "toc-workbench"`, `schemaVersion: 1`)
 
 ```
 group{name, members[]}
+roles{week9..week13: {memberName: role}}
 imported{week7}
-clientTheory{claims[{id, text, slide}], ambition, order[claimIds], linkEvidence{}, whoseCommunity}
-constraints{budget, space, location, operator, timing, partners}   each {value, slide} or {assumption}
-problem{statement, claims[], forWhom, where}
-lto{text, definitions[{term, meaning}], ceiling{accountable, ultimateGoal, ambitionPosition}}
-stakeholders[{id, name, fromBrief, affected, influence, knowledge, interest, canWeHear}]
-outcomes[{id, text, level, pathway, lenses[], characteristics[], leadsTo[]}]
-links[{from, to, rationale, evidenceIds[]}]
-evidence[{id, summary, source, type, bodoVerdict, member}]
+clientTheory{claims[{id, text, slide}], ambition, ambitionSlide, order[ids], linkEvidence{}, whoseCommunity}
+problem{statement, claims[], where, forWhom}
+lto{text, definitions[{term, meaning}], ceiling{ultimateGoal, ambitionPosition, reason}}
+stakeholders[{id, name, fromBrief, slide, affected, influence, interest, canWeAsk}]
+outcomes[{id, text, level, pathway, clusterId, lenses[], characteristics[], leadsTo[]}]
+clusters[{id, label, leadsTo[]}]
+links[{id, from, to, rationale, evidenceIds[]}]
+assumptions[{id, linkId, text, lens, evidenceIds[], sort: "assumption"}]
+findOutFirst[{id, text, source: "stakeholder"|"sorter"|"baseline", refId}]
+evidence[{id, summary, source, type, slide, ratings{causal, scope, implications, method}, bodoVerdict, member}]
 reverseImport[{member, course, claim, linkId, stance}]
-assumptions[{id, linkId, stakeholderId, text, lens, evidence, consequence, testFirst}]
-stressTest{charId: {threat, protection}}
-options[{id, summary, location, plausible, feasible, testable, chosen, whyNot}]
-design[{id, feature, linkIds[], characteristics[], inputs[], risks[]}]
-indicators[{outcomeId, who, howMany, level, byWhen, method, collector, needsAccess}]
-reviews{given[], received[{fromGroup, items[{target, test, challenge, response, status}]}]}
+options[{id, summary, location, plausible, doable, testable, chosen, whyNot}]
+interventions[{id, name, activities[], linkIds[], characteristics[], inputs[{resource, fromBrief, slide, limitation}]}]
+risks[{id, text, internal, likelihood, mitigation, interventionId}]
+stressTest{charId: {threat, protectedBy}}
+indicators[{id, outcomeId, owner, howMany, who, level, byWhen, definition, baseline, dataSource, frequency, responsible, reporting}]
+reviews{given[], received[{fromGroup, items[{target, question, challenge, response, status}]}]}
+diagrams{clientOutcomeIds[], clientLinkIds[]}
+narrative{execSummary, sections{}}
 valuesCheck[{value, slide, speaksTo, cost}]
-recommendation{sentence, sections{}}
-revisionLog[{at, stage, change}]
+recommendation{sentence}
+selfChecks{week9..week13: {plausible, doable, testable}}
+revisionLog[{at, week, screen, change}]
 ```
 
-Group exports contain students' notes on the brief, so they are course material and are not committed to this repository.
+### 7.3 Structural checks (gates, not scores; nothing is graded right or wrong)
 
-**Structural checks.** These are gates, not scores, and nothing is graded right or wrong:
-
-- The client's theory is ordered, and the "whose community" question is answered.
+- The client's theory is ordered, and "whose community" is answered.
 - Problem statement names at least one decline claim.
-- Long-term outcome is phrased as a condition, and every key term is defined.
-- The client's ambition is placed relative to the ceiling, with a justification.
-- Every outcome connects upward to the long-term outcome; none is left unconnected.
-- Every link has a rationale, at least one evidence entry and at least one assumption.
+- Long-term outcome is phrased as a positive condition, and every key term is defined.
+- The client's ambition is placed relative to the ceiling, with a reason.
+- Every outcome connects upward to the long-term outcome.
+- Every arrow has a rationale.
+- Every assumption has been through the sorter.
 - Design stays locked until the checks above pass.
-- Every design feature sits on at least one arrow.
 - At least two options are appraised, and one is chosen with reasons.
-- Every outcome has an indicator with all four targets.
-- Every red-team challenge has a response.
-- Every value in the values check is answered.
-- The recommendation sentence fills every slot in the §1 shape.
-- Required free-text fields enforce a minimum word count with a live counter. The default is 25 words, configurable per field in `CONFIG`.
+- Every intervention sits on at least one arrow, and every arrow is either served or marked as covered by an assumption.
+- Every outcome has an indicator with all four targets, and every unknown baseline is on "find out first".
+- Every review challenge has a response.
+- The client diagram fits one A4 page.
+- The narrative is within its word limit and has an executive summary.
+- The recommendation sentence fills every slot.
+- Required free-text fields enforce a minimum word count with a live counter (default 25 words, configurable per field).
 
-**House conventions:**
+### 7.4 House conventions
 
-- everything inline, under a single commented `CONFIG`;
+- everything inline, under one commented `CONFIG`;
 - autosave to `localStorage`, namespaced by tool and version, wrapped in try/catch;
 - Reset with a confirm step;
 - Export and Import JSON;
 - Copy as text;
 - A4 print stylesheet;
 - A6 cards, four to a page, with cut lines;
-- responsive to 360px, touch targets of at least 44px, visible focus, labels on every input, WCAG AA contrast, `prefers-reduced-motion` respected;
+- responsive to 360px, touch targets of at least 44px, keyboard navigable, visible focus, labels on all inputs, WCAG AA contrast, `prefers-reduced-motion` respected;
 - UK English;
-- light theme, the eight-characteristic palette and Bauhaus geometry as set out in `CLAUDE.md`;
-- the house favicon.
+- light theme and Bauhaus geometry per `CLAUDE.md`;
+- the house favicon;
+- an `index.html` card and a `CLAUDE.md` entry for each file;
+- tests in `test.html`.
 
-### 6.2 Optional: `week9-intervene-deck.html`
+## 8. The client recommendation pack (week 13 output)
 
-Short opening decks for each week (six to eight slides each), built to `SLIDES.md` with `theory-of-change.html` as the reference. It contains no brief content; the instructor presents the brief from the original.
+A4, with diagrams printable at A3. Available as Copy as text. The narrative is at most two pages ([TC] p. 9); the rest is appendix.
 
-### 6.3 Repository changes
+1. **Executive summary** in plain English, opening with the recommendation sentence.
+2. **Why Bodø, why now:** problem statement, decline claim, the week 7 fact, stated as "may be".
+3. **What the third place is for:** the long-term outcome, its definitions, and the accountability ceiling with the client's ambition placed against it.
+4. **Whose community.**
+5. **How it works:** the client diagram and the pathway narrative.
+6. **What we recommend building:** interventions, where they sit on the map, the characteristics they protect, and the options rejected.
+7. **What must be true:** the riskiest assumptions with their evidence ratings and Bodø verdicts; the main risks with mitigations.
+8. **How the club will know:** the M&E framework.
+9. **What to find out first:** the first-year learning plan.
+10. **What not to do:** design traps from the stress test.
+11. **Fit with the club's values.**
+12. **Appendix:** full diagram, the client's reconstructed theory, stakeholder map, assumption register, review log, revision log.
 
-- A card in `index.html` (Activity 15 · Weeks 9–13) and in the deck, if it is built.
-- Entries in the `CLAUDE.md` Files section.
-- Data-integrity and pure-function tests in `test.html`, as for weeks 5–7.
+## 9. Acceptance criteria
 
-## 7. The client recommendation pack (week 13 output)
+1. Every file opens from the file system and over HTTP, with no network calls.
+2. No brief content appears anywhere in the repository; the diff is checked against a list of brief terms held outside the repository.
+3. The workbench works with or without the week 7 export; an invalid file is refused with a readable message.
+4. Every brief-derived entry requires a slide number.
+5. The sorter routes every belief to assumption, precondition or "find out first", and nothing skips it.
+6. Design stays locked until the framework checks pass.
+7. Every gate in §7.3 blocks with a specific message; one-character entries are rejected.
+8. Export, re-import and the review-file round trip all preserve state exactly.
+9. The class view loads at least 8 group files.
+10. Print: A4 pack, A3/A4 full diagram, one-page client diagram, A6 cards four to a page with cut lines.
+11. 360px with no horizontal scroll; touch targets of at least 44px; full keyboard walk-through; AA contrast.
+12. Decks pass the four `SLIDES.md` §13 harnesses (fit, interactive states, contrast, print).
+13. Every quotation from the readings matches the PDF exactly and carries a page number.
+14. `test.html` passes.
+15. Every `PLACEHOLDER:` string is reported.
 
-Printed A4, with the diagram also printable at A3. Available as Copy as text.
+## 10. Decisions taken (override if wrong)
 
-1. **The recommendation.** The one-sentence form from §1, plus a paragraph of at most 120 words (configurable).
-2. **Why Bodø, why now.** The problem statement, the decline claim(s) it addresses, and the week 7 sentence with its sourced Bodø fact, stated as "may be". The section links the problem to the client's own framing without claiming more than the ceiling allows.
-3. **What the third place is for.** The long-term outcome, its definitions and the accountability ceiling: what the club can be held to, and how it serves the client's ambition.
-4. **Whose community.** Which community the recommendation serves and why.
-5. **How it works.** The Theory of Change diagram and narrative, pathway by pathway.
-6. **What we recommend building.** The design specification. Each feature is shown with the outcome it serves and the characteristic(s) it protects, together with the options considered and why they were rejected.
-7. **What must be true.** The riskiest assumptions, their evidence and Bodø verdicts, and the main risks, each with a mitigation.
-8. **How the club will know.** The indicator table: how many, of whom, what level, by when, measured how.
-9. **What to find out first.** Everything the groups could not test without access to residents, listed as the club's first-year learning plan.
-10. **What not to do.** Design traps found in the stress test: features that would undermine a characteristic.
-11. **Fit with the club's values.** The values check, in the client's own terms.
-12. **Appendix.** The client's reconstructed theory, the stakeholder map, the red-team log and the revision log.
+- [TC]'s terms are the primary vocabulary; [GAF] supplies stakeholders, evidence questions, inputs, risks, the M&E framework, two diagram versions and workshop practice.
+- Assumptions and rationales move to week 10, and risks and inputs to week 11, as the readings sequence them.
+- Evidence quality is rated on the week 6 criteria rather than a new evidence hierarchy.
+- One workbench built in five stages; one deck per week.
+- Group roles rotate weekly.
+- The brief stays out of the repository, the tools and the decks.
+- Week 14 is pitch rehearsal and class synthesis.
 
-The same content gives one A6 card for each group's recommendation, for the wall and the week 14 class synthesis.
-
-## 8. Acceptance criteria (self-test before reporting)
-
-1. The file opens from the file system and over HTTP; there are no network calls.
-2. The tool works with or without the week 7 export. The export (schemaVersion 2) imports, and an invalid file is refused with a readable message.
-3. Every entry taken from the brief requires a slide number.
-4. No brief content appears anywhere in the repository; a grep of the diff against a list of brief terms held outside the repository comes back empty.
-5. Design stays locked until the outcome map passes its checks, and unlocks when it does.
-6. Every gate in §6.1 blocks with a specific message; one-character entries are rejected.
-7. An export and re-import round-trips the full state exactly; a review file exported by one group imports into another.
-8. The class view loads at least 8 group files and aggregates them correctly.
-9. Figures entered as client-brief evidence display as unsourced unless a source is entered.
-10. Print output: a clean A4 pack, an A3/A4 diagram, and A6 cards four to a page with cut lines.
-11. At 360px: no horizontal scroll, touch targets of at least 44px, full keyboard walk-through, visible focus.
-12. Contrast checked to AA on every text/background pair used.
-13. No smart quotes in JavaScript strings; `<meta charset="utf-8">` comes first; the favicon is present.
-14. All `test.html` tests pass, including the new ones.
-15. Every `PLACEHOLDER:` string is listed in the build report.
-
-## 9. Decisions taken (override if wrong)
-
-- The brief stays out of the repository and out of the tools; students read it on the VLE and enter what they use, with slide numbers.
-- Week 14 is pitch rehearsal and class synthesis; weeks 9–13 build the full recommendation.
-- One cumulative workbench rather than five weekly files.
-- Each group delivers its own recommendation; any class-level synthesis happens in week 14 and is not built into these tools.
-- ActKnowledge terms throughout; government toolkit steps are borrowed, not its inputs → outputs → outcomes → impacts vocabulary.
-- `third-place-decoder.html` and `third-place-lab.html` are taken as the week 2–3 reference tools, since no file is labelled by week; newer conventions follow weeks 6–7.
-
-## 10. Open questions
+## 11. Open questions
 
 1. **Client constraints.** Which constraints can the client confirm before week 11?
-2. **Client contact.** Is there a client check-in between weeks 9 and 13? If so, the end of week 11 (design chosen, assumptions rated) is the natural point for one.
-3. **Opening decks.** Build `week9-intervene-deck.html` (§6.2), or not?
+2. **Client contact.** Is there a client check-in between weeks 9 and 13? Week 12's outside review could use the client as a reviewer ([TC] p. 9 suggests "key power brokers").
+3. **Pre-reading load.** Five readings of 3–15 pages each: confirm this suits the course's reading expectations.
+4. **[A7] wording.** The Activity 7 causal pathway slide labels link beliefs "Assumption", which [TC] p. 6 would call rationales. Correct [A7], or address it only in the week 10 deck?
