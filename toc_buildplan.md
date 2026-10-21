@@ -14,27 +14,20 @@ The recommendation has a fixed shape so that it stays a recommendation and does 
 
 Each group commits to **one** recommendation. Alternatives are considered and rejected with reasons (week 11). Groups do not hand the client a menu.
 
-## 2. The client brief stays out of this repository
+## 2. The client brief
 
-The client brief is confidential. It is **not** stored in this repository, quoted in this plan, or embedded in any tool, because the repository is public and published on GitHub Pages.
+The client brief is confidential and is **not** stored in this repository, quoted in this plan, or embedded in any tool, because the repository is public and published on GitHub Pages. Students already have it on the VLE.
 
-The tools reach the brief through a **private brief pack**:
+The tools do not load the brief. Students read it and **enter what they use from it themselves**, citing the slide:
+- the client's claims (week 9);
+- the client's stated ambition;
+- the stakeholders the brief names;
+- any constraints it gives (budget, space, location, operator, timing). Anything the brief does not give, groups state as an assumption;
+- the client's stated values (week 13).
 
-- The instructor prepares `brief-pack.json` from the brief and gives it to students outside the repository (for example, on the course VLE).
-- The workbench imports it in week 9, the same way groups import their week 7 export. It is kept in the group's local state and travels with their export JSON.
-- The repository holds only the pack's **format** (documented in the tool's file header) and a template file containing nothing but `PLACEHOLDER:` text.
-- Without a pack loaded, every brief-dependent screen shows `PLACEHOLDER:` text and still works, so the tool can be tested publicly.
+Putting the brief into their own words is part of the week 9 exercise; it is not data entry.
 
-Pack contents (format only):
-- `claims[]`: the brief's claims in the instructor's wording, each with a slide reference; used for week 9's reconstruction of the client's theory.
-- `ambition`: the client's stated ambition, used as the bridge in the recommendation sentence.
-- `values[]`: the client's stated values, used in week 13's values check.
-- `constraints{}`: budget, floor area, location, operator, opening date, partners, success measures. Any field the brief does not supply stays empty, and groups state it as an assumption.
-- `stakeholders[]`: stakeholders named in the brief, used to seed the week 9 map.
-- `stressQuestions[]`: brief-specific questions added to the week 11 stress test.
-- `presetAssumptions[]`: key assumptions every group must rate in week 11.
-
-Figures taken from the brief are recorded as a separate evidence type, **client brief (unsourced)**, unless the brief gives a source. They are never treated as verified facts. The instructor should check any figure against its primary source before putting it in the pack.
+Figures taken from the brief are recorded as a separate evidence type, **client brief**, with the slide number. Unless the brief gives a source, they are flagged as unsourced and are not treated as verified facts.
 
 ## 3. Constraints carried into this phase
 
@@ -85,11 +78,11 @@ Two questions recur in every week, because a client's goals and Oldenburg's conc
 
 | Time | Activity |
 |---|---|
-| 0–10 | Set up the group; import the week 7 export and the brief pack. The members' locked week 7 sentences appear as draft problem statements. |
-| 10–30 | **Reconstruct the client's theory.** The tool deals the pack's claims as cards. The group puts them in causal order and marks each link: evidence given in the brief, or not given. It then answers in writing: whose community does the client mean, and is that Oldenburg's? |
+| 0–10 | Set up the group; optionally import the week 7 export, whose locked sentences then appear as draft problem statements. |
+| 10–30 | **Reconstruct the client's theory.** With the brief open, the group writes the client's claims as cards in its own words, each with a slide number, and records the client's stated ambition. It puts the cards in causal order and marks each link: evidence given in the brief, or not given. It then answers in writing: whose community does the client mean, and is that Oldenburg's? |
 | 30–50 | Write one problem statement: which decline claim(s), for whom, where. Turn it into the long-term outcome, a positive condition. Define every key term: for example, belonging for whom, shown how. |
 | 50–60 | Draw the accountability ceiling, and place the client's stated ambition relative to it, with a justification. |
-| 60–85 | Stakeholder map, seeded from the pack. The group then adds people the brief does not name. Mark every stakeholder the group cannot ask; each mark adds a "We assume [stakeholder] …" entry to the assumption register. |
+| 60–85 | Stakeholder map: first the stakeholders the brief names, then the people it does not name. Mark every stakeholder the group cannot ask; each mark adds a "We assume [stakeholder] …" entry to the assumption register. |
 | 85–90 | Print the long-term outcome A6 card for the wall; export JSON. |
 
 **Output:** the client's reconstructed theory, problem statement, long-term outcome with definitions and ceiling, stakeholder map, first entries in the assumption register.
@@ -113,8 +106,8 @@ Two questions recur in every week, because a client's goals and Oldenburg's conc
 
 | Time | Activity |
 |---|---|
-| 0–25 | Surface the assumptions behind each link. Rate each on evidence (strong / partial / none) and on what happens if it is wrong (the chain breaks / weakens / minor). Evidence from outside Bodø carries a Bodø verdict reused from week 7: travels, bends or breaks. Preset assumptions from the pack are rated by every group. |
-| 25–45 | **Stadium stress test.** For each of the eight characteristics, students write how this setting could threaten it and what would protect it. The tool asks only questions and supplies no answers. The general question bank (in `CONFIG`) includes: "Who might not experience a football club's building as neutral ground?"; "What happens to *the regulars* in a season the team does badly?"; "What happens to *low profile* and *accessibility* on big match days?" The pack adds brief-specific questions. |
+| 0–25 | Surface the assumptions behind each link. Rate each on evidence (strong / partial / none) and on what happens if it is wrong (the chain breaks / weakens / minor). Evidence from outside Bodø carries a Bodø verdict reused from week 7: travels, bends or breaks. Every link from the long-term outcome up to the client's ambition must carry at least one rated assumption. |
+| 25–45 | **Stadium stress test.** For each of the eight characteristics, students write how this setting could threaten it and what would protect it. The tool asks only questions and supplies no answers. The general question bank (in `CONFIG`) includes: "Who might not experience a football club's building as neutral ground?"; "What happens to *the regulars* in a season the team does badly?"; "What happens to *low profile* and *accessibility* on big match days?" Groups add at least one question of their own, drawn from the brief. |
 | 45–60 | **Options appraisal.** Sketch at least two different designs for the third place; location is one variable. Test each against plausible, feasible and testable, then choose one and record why the others were rejected. |
 | 60–85 | Design unlocks once the outcome map passes its checks. Each design feature (what it is, where, opening hours, price, who runs it, programming) is placed on at least one arrow. Features that sit on no arrow are flagged. Inputs (what the club or partners must provide) and risks are recorded for each feature. |
 | 85–90 | Export; print A6 cards for the three riskiest assumptions. |
@@ -141,7 +134,7 @@ Two questions recur in every week, because a client's goals and Oldenburg's conc
 |---|---|
 | 0–15 | Write the recommendation sentence in the fixed shape of §1, built from the long-term outcome, the design specification, the top assumptions and the headline indicators already in the tool. |
 | 15–55 | Assemble the narrative section by section (§7). A plain-language check flags jargon from a configurable list and enforces word limits written for a club audience. |
-| 55–65 | **Client-values check.** For each value in the pack: does the recommendation speak to it, and at what cost? A value may not be bought at the cost of a characteristic without the trade-off being stated. The group also states what in the recommendation is specific to Bodø, as opposed to copied from elsewhere (the week 7 swap test). |
+| 55–65 | **Client-values check.** The group enters the client's stated values from the brief. For each one: does the recommendation speak to it, and at what cost? A value may not be bought at the cost of a characteristic without the trade-off being stated. The group also states what in the recommendation is specific to Bodø, as opposed to copied from elsewhere (the week 7 swap test). |
 | 65–80 | Print the pack; copy it as text. |
 | 80–90 | Class view on the projector: compare recommendations, long-term outcomes, designs and riskiest assumptions across groups, ready for week 14. |
 
@@ -155,7 +148,7 @@ One self-contained file that grows across all five weeks, with one export file c
 
 **Screens:**
 
-1. Setup (group name, members; week 7 import; brief pack import)
+1. Setup (group name, members; optional week 7 import)
 2. The client's theory
 3. Problem and long-term outcome
 4. Stakeholders
@@ -173,15 +166,15 @@ One self-contained file that grows across all five weeks, with one export file c
 - `CONFIG.facts`: reused from week 7, with sources;
 - `CONFIG.stressQuestions`: the general question bank;
 - `CONFIG.jargon`: the plain-language word list;
-- `CONFIG.minWords`: minimum word counts for each field;
-- `CONFIG.briefPlaceholder`: the `PLACEHOLDER:` fallbacks shown when no pack is loaded.
+- `CONFIG.minWords`: minimum word counts for each field.
 
 **State shape (export JSON, `tool: "toc-workbench"`, `schemaVersion: 1`, documented in the file header):**
 
 ```
 group{name, members[]}
-imported{week7, briefPack}
-clientTheory{order[claimIds], linkEvidence{}, whoseCommunity}
+imported{week7}
+clientTheory{claims[{id, text, slide}], ambition, order[claimIds], linkEvidence{}, whoseCommunity}
+constraints{budget, space, location, operator, timing, partners}   each {value, slide} or {assumption}
 problem{statement, claims[], forWhom, where}
 lto{text, definitions[{term, meaning}], ceiling{accountable, ultimateGoal, ambitionPosition}}
 stakeholders[{id, name, fromBrief, affected, influence, knowledge, interest, canWeHear}]
@@ -189,18 +182,18 @@ outcomes[{id, text, level, pathway, lenses[], characteristics[], leadsTo[]}]
 links[{from, to, rationale, evidenceIds[]}]
 evidence[{id, summary, source, type, bodoVerdict, member}]
 reverseImport[{member, course, claim, linkId, stance}]
-assumptions[{id, linkId, stakeholderId, text, lens, evidence, consequence, testFirst, preset}]
+assumptions[{id, linkId, stakeholderId, text, lens, evidence, consequence, testFirst}]
 stressTest{charId: {threat, protection}}
 options[{id, summary, location, plausible, feasible, testable, chosen, whyNot}]
 design[{id, feature, linkIds[], characteristics[], inputs[], risks[]}]
 indicators[{outcomeId, who, howMany, level, byWhen, method, collector, needsAccess}]
 reviews{given[], received[{fromGroup, items[{target, test, challenge, response, status}]}]}
-valuesCheck[{value, speaksTo, cost}]
+valuesCheck[{value, slide, speaksTo, cost}]
 recommendation{sentence, sections{}}
 revisionLog[{at, stage, change}]
 ```
 
-Group exports include the imported brief pack, so they are private course material and must not be committed to this repository.
+Group exports contain students' notes on the brief, so they are course material and are not committed to this repository.
 
 **Structural checks.** These are gates, not scores, and nothing is graded right or wrong:
 
@@ -233,20 +226,15 @@ Group exports include the imported brief pack, so they are private course materi
 - light theme, the eight-characteristic palette and Bauhaus geometry as set out in `CLAUDE.md`;
 - the house favicon.
 
-### 6.2 `brief-pack.template.json`
-
-A template containing only `PLACEHOLDER:` values, with the format the workbench expects. The instructor copies it outside the repository and fills it in from the brief.
-
-### 6.3 Optional: `week9-intervene-deck.html`
+### 6.2 Optional: `week9-intervene-deck.html`
 
 Short opening decks for each week (six to eight slides each), built to `SLIDES.md` with `theory-of-change.html` as the reference. It contains no brief content; the instructor presents the brief from the original.
 
-### 6.4 Repository changes
+### 6.3 Repository changes
 
 - A card in `index.html` (Activity 15 · Weeks 9–13) and in the deck, if it is built.
 - Entries in the `CLAUDE.md` Files section.
-- Data-integrity and pure-function tests in `test.html`, as for weeks 5–7, run against the template pack only.
-- A `.gitignore` rule for `brief-pack.json` and for exported group files, so a filled-in pack or a group export cannot be committed by accident.
+- Data-integrity and pure-function tests in `test.html`, as for weeks 5–7.
 
 ## 7. The client recommendation pack (week 13 output)
 
@@ -270,14 +258,14 @@ The same content gives one A6 card for each group's recommendation, for the wall
 ## 8. Acceptance criteria (self-test before reporting)
 
 1. The file opens from the file system and over HTTP; there are no network calls.
-2. The week 7 export (schemaVersion 2) and the brief pack both import, and a missing or invalid file is refused with a readable message.
-3. With no pack loaded, every brief-dependent screen shows `PLACEHOLDER:` text and still works.
+2. The tool works with or without the week 7 export. The export (schemaVersion 2) imports, and an invalid file is refused with a readable message.
+3. Every entry taken from the brief requires a slide number.
 4. No brief content appears anywhere in the repository; a grep of the diff against a list of brief terms held outside the repository comes back empty.
 5. Design stays locked until the outcome map passes its checks, and unlocks when it does.
 6. Every gate in §6.1 blocks with a specific message; one-character entries are rejected.
 7. An export and re-import round-trips the full state exactly; a review file exported by one group imports into another.
 8. The class view loads at least 8 group files and aggregates them correctly.
-9. Brief figures always display as "client brief (unsourced)" unless the pack gives a source.
+9. Figures entered as client-brief evidence display as unsourced unless a source is entered.
 10. Print output: a clean A4 pack, an A3/A4 diagram, and A6 cards four to a page with cut lines.
 11. At 360px: no horizontal scroll, touch targets of at least 44px, full keyboard walk-through, visible focus.
 12. Contrast checked to AA on every text/background pair used.
@@ -287,7 +275,7 @@ The same content gives one A6 card for each group's recommendation, for the wall
 
 ## 9. Decisions taken (override if wrong)
 
-- The brief stays out of the repository; students get it through a private brief pack that the workbench imports.
+- The brief stays out of the repository and out of the tools; students read it on the VLE and enter what they use, with slide numbers.
 - Week 14 is pitch rehearsal and class synthesis; weeks 9–13 build the full recommendation.
 - One cumulative workbench rather than five weekly files.
 - Each group delivers its own recommendation; any class-level synthesis happens in week 14 and is not built into these tools.
@@ -296,7 +284,6 @@ The same content gives one A6 card for each group's recommendation, for the wall
 
 ## 10. Open questions
 
-1. **Brief pack.** Is the private pack, distributed through the VLE, acceptable? Who fills it in: the instructor, or Claude in a session that keeps it out of the repository?
-2. **Client constraints.** Which constraints can the client confirm before week 11?
-3. **Client contact.** Is there a client check-in between weeks 9 and 13? If so, the end of week 11 (design chosen, assumptions rated) is the natural point for one.
-4. **Opening decks.** Build `week9-intervene-deck.html` (§6.3), or not?
+1. **Client constraints.** Which constraints can the client confirm before week 11?
+2. **Client contact.** Is there a client check-in between weeks 9 and 13? If so, the end of week 11 (design chosen, assumptions rated) is the natural point for one.
+3. **Opening decks.** Build `week9-intervene-deck.html` (§6.2), or not?
