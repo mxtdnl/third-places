@@ -80,7 +80,7 @@ These principles change the earlier draft. Each is followed in the weekly design
    - No → precondition, which goes on the map.
    - We cannot know without access to residents → a "find out first" item.
 
-   This also corrects a blur in [A7], whose causal pathway slide labels each link's belief "Assumption". Week 10's deck shows the [TC] distinction explicitly (open question 4).
+   [GAF] p. 23 uses "assumption" more broadly, including beliefs about the links themselves; this course follows [TC]. [A7]'s causal pathway and assumptions slides have been corrected to match (links carry rationales; assumptions are conditions already in place).
 3. **Assumptions and rationales are captured while mapping.** [TC] p. 6 says to capture them "as they come out" during backwards mapping, then check again once the framework is complete. They move from week 11 into week 10.
 4. **Interventions only after the framework, and only on arrows.** "we deliberately ask groups to hold off on interventions" ([TC] p. 7). The design stays locked until the outcome map passes its checks. Each intervention sits on a connector; an intervention serving no arrow is flagged, because "it's best not to shoehorn them in". The group then walks the framework for arrows with no intervention ([TC] p. 7).
 5. **Outcome wording.** Outcomes are positive conditions ([TC] p. 3), with one change per outcome: "If you need to use the word 'and' this is an indication that you need to create a new, separate outcome" ([GAF] p. 16). The workbench warns on activity verbs and on "and".
@@ -346,4 +346,3 @@ A4, with diagrams printable at A3. Available as Copy as text. The narrative is a
 1. **Client constraints.** Which constraints can the client confirm before week 11?
 2. **Client contact.** Is there a client check-in between weeks 9 and 13? Week 12's outside review could use the client as a reviewer ([TC] p. 9 suggests "key power brokers").
 3. **Pre-reading load.** Five readings of 3–15 pages each: confirm this suits the course's reading expectations.
-4. **[A7] wording.** The Activity 7 causal pathway slide labels link beliefs "Assumption", which [TC] p. 6 would call rationales. Correct [A7], or address it only in the week 10 deck?
