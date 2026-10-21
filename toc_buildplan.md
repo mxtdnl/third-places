@@ -34,7 +34,7 @@ Figures taken from the brief are recorded as a separate evidence type, **client 
 - **Verb sequence.** Weeks 9–14 are INTERVENE, so these tools may prompt for interventions. Inside the phase, the ActKnowledge discipline still holds: the design of the third place (the interventions) stays locked until the outcome map is complete.
 - **No access to Bodø residents or end users** (`SOCIAL-PHENOMENA-CHALLENGE.md`). Anything the groups assume about what residents want, do or feel is recorded as an assumption, never as a finding. The recommendation must tell the client what to find out first.
 - **"May be", not "is".** Nothing in the course materials establishes that third places in Bodø *are* declining. The recommendation keeps the week 7 hedging.
-- **No invented facts.** Bodø facts come from week 7's sourced `CONFIG.facts` and from the brief pack. Students enter all other evidence themselves, with a source.
+- **No invented facts.** Bodø facts come from week 7's sourced `CONFIG.facts`. Students enter all other evidence themselves, with a source; figures from the brief are cited by slide.
 - **Week 10 Reverse Import assignment.** Already fixed in the course design and slotted into week 10 below.
 - **Weeks 14 and 15.** Week 14 is assumed to be pitch rehearsal and class synthesis; week 15 is the client presentation.
 
