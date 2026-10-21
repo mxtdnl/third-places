@@ -22,7 +22,7 @@ Interactive teaching tools for Ray Oldenburg's third-place theory. Static HTML f
 - `mondi.md` — Deployment, instructor notes, traced baselines, theory map and the calibration record for Quattro Mondi
 - `tests/run.mjs` — Node test harness for `mondi.html` (built-ins only): `node tests/run.mjs`, or `--full` for the 1000-seed calibration checks
 - `SLIDES.md` — Blueprint for building a projection deck: the 16:9 stage model, type scale, slide archetypes, interaction patterns, contrast rules and the verification harnesses. Read before building or editing a deck; `theory-of-change.html` is the reference implementation
-- `toc_buildplan.md` — Build plan (draft, awaiting approval) for weeks 9–13: building a Theory of Change towards the client recommendation that the club create a community third place in its new stadium. Week-by-week run sheets, the planned `week9-toc-workbench.html` (state shape, gates, outputs), the recommendation pack and acceptance criteria
+- `toc_buildplan.md` — Build plan (draft, awaiting approval) for weeks 9–13: building a Theory of Change towards the client recommendation that FK Bodø/Glimt create a community third place in its new stadium. The client brief is confidential and is never committed: tools reach it only through a private brief pack imported at runtime. Week-by-week run sheets, the planned `week9-toc-workbench.html` (state shape, gates, outputs), the recommendation pack and acceptance criteria
 - `third-place-content.md` — Source content and curriculum notes
 - `spec.md` — Mechanics, tuning values and design assumptions for the builder
 - `test.html` — Test suite (187 tests) covering data integrity, pure functions, HTML generators, and encoding
