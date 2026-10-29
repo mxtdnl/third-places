@@ -2573,6 +2573,88 @@
     });
 
     // =====================================================
+    // WEEK 9 TOC DECK
+    // =====================================================
+
+    suite('Week 9 deck — Content and encoding');
+
+    var W9D_HTML = cwsGet('week9-toc-deck.html');
+    var W9D_CONFIG = (function() {
+      var m = W9D_HTML.match(/var CONFIG = (\{[\s\S]*?\});\s*\/\/ END CONFIG/);
+      return m ? new Function('return ' + m[1])() : null;
+    })();
+
+    assert('week9-toc-deck.html: charset first, favicon, no curly quotes or network calls in script, no PLACEHOLDER', function() {
+      ok(W9D_HTML.indexOf('<meta charset="utf-8">') === 0, 'charset not first');
+      ok(W9D_HTML.indexOf('<link rel="icon" type="image/png" href="data:image/png;base64,') > W9D_HTML.indexOf('<title>'), 'favicon');
+      var m = W9D_HTML.match(/<script>([\s\S]*?)<\/script>/);
+      ok(m && !/[‘’“”]/.test(m[1]), 'curly quotes found');
+      ok(!/fetch\(|XMLHttpRequest|https?:\/\//.test(m[1]), 'network call found');
+      ok(W9D_HTML.indexOf('PLACEHOLDER') === -1, 'PLACEHOLDER found');
+    });
+
+    assert('week9-toc-deck.html uses no en or em dashes (SLIDES.md section 11)', function() {
+      ok(!/[–—]|&ndash;|&mdash;/.test(W9D_HTML));
+    });
+
+    assert('17 slides, and no two adjacent slides share an accent', function() {
+      var acc = (W9D_HTML.match(/<section class="slide[^"]*" data-accent="[^"]+"/g) || []).map(function(s) { return s.match(/data-accent="([^"]+)"/)[1]; });
+      eq(acc.length, 17);
+      for (var i = 1; i < acc.length; i++) ok(acc[i] !== acc[i - 1], 'slides ' + i + ' and ' + (i + 1));
+    });
+
+    assert('reading checks: three single-select items, each with a valid answer and page-cited feedback', function() {
+      ok(W9D_CONFIG, 'CONFIG not parsed');
+      eq(W9D_CONFIG.readingChecks.length, 3);
+      W9D_CONFIG.readingChecks.forEach(function(q, i) {
+        eq(Object.keys(q.options).length, 4, 'options ' + i);
+        ok(q.options[q.correct], 'correct key ' + i);
+        ok(/\[(TC|GAF)\] p\. \d+/.test(q.right), 'page reference in feedback ' + i);
+        ok(q.wrong.length > 0, 'wrong feedback ' + i);
+      });
+      eq(W9D_CONFIG.readingChecks.map(function(q) { return q.correct; }).join(''), 'bdc');
+    });
+
+    assert('workbench blocks run in order from minute 12 to 83 on screens 2-4, with 3-5 tasks and known lead roles', function() {
+      var names = W9D_CONFIG.roles.map(function(r) { return r.name; });
+      eq(names.join(','), 'Facilitator,Scribe,Sceptic,Evidence lead,Timekeeper');
+      W9D_CONFIG.roles.forEach(function(r) { ok(r.duty && r.duty.length > 20, 'duty ' + r.name); });
+      var b = W9D_CONFIG.blocks;
+      eq(b.map(function(x) { return x.start + '-' + x.end; }).join(','), '12-30,30-50,50-60,60-83');
+      eq(b.map(function(x) { return x.screen; }).join(','), '2,3,3,4');
+      b.forEach(function(x) {
+        ok(x.tasks.length >= 3 && x.tasks.length <= 5, 'task count ' + x.title);
+        ok(x.leads.length > 0, 'leads ' + x.title);
+        x.leads.forEach(function(l) { ok(names.indexOf(l) !== -1, 'unknown role ' + l); });
+      });
+    });
+
+    assert('stakeholder questions are [GAF] p. 8\'s eight, verbatim', function() {
+      eq(W9D_CONFIG.stakeholderQuestions.length, 8);
+      eq(W9D_CONFIG.stakeholderQuestions[0], 'Who is affected by this programme?');
+      eq(W9D_CONFIG.stakeholderQuestions[7], 'Who can adequately represent those with different viewpoints?');
+    });
+
+    assert('deck blocks and roles match week9-toc-workbench.html (screen numbers, screen names, role names and duties)', function() {
+      ok(typeof TW !== 'undefined' && TW.CONFIG, 'workbench not loaded');
+      W9D_CONFIG.blocks.forEach(function(b) {
+        var s = TW.CONFIG.screens.filter(function(x) { return x.no === b.screen; })[0];
+        ok(s, 'no workbench screen ' + b.screen);
+        eq(s.week, 9, 'screen ' + b.screen + ' week');
+        eq(b.screenName.replace('&rsquo;', '’'), s.title, 'screen ' + b.screen + ' name');
+      });
+      eq(W9D_CONFIG.roles.map(function(r) { return r.name; }).join(','), TW.CONFIG.roles.map(function(r) { return r.name; }).join(','));
+      W9D_CONFIG.roles.forEach(function(r, i) {
+        var d = TW.CONFIG.roles[i].duty.replace(/–/g, '-');
+        ok(r.duty.indexOf(d) !== -1, 'duty for ' + r.name);
+      });
+    });
+
+    assert('narrow layout query keeps the "screen and" prefix', function() {
+      ok(W9D_HTML.indexOf('@media screen and (max-width: 860px), screen and (max-aspect-ratio: 1/1)') !== -1);
+    });
+
+    // =====================================================
     // SUMMARY
     // =====================================================
 

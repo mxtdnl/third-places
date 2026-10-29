@@ -41,7 +41,7 @@ Page numbers refer to the PDFs in this repository.
 | [TC] (ActKnowledge) | Pages | [GAF] (Analysis Function) | Pages |
 |---|---|---|---|
 | ToC stages; definition | 2–3 | Step 1: stakeholders and intended impact | 8–10 |
-| §2 Long-term outcome: problem statement, positive opposite, shared definition, accountability ceiling | 3 | Step 2: evidence and context (includes "alternative strategies") | 11–13 |
+| §2 Long-term outcome: problem statement, positive opposite, shared definition, accountability ceiling | 3–4 | Step 2: evidence and context (includes "alternative strategies") | 11–13 |
 | §3 Causal pathways, backwards mapping, clusters | 4 | Step 3: impacts or long-term goals | 14–15 |
 | Outcomes framework (diagram) | 5 | Step 4: outcomes (SMART; an "and" means split it) | 16–18 |
 | §4 Assumptions and rationales | 6 | Step 5: outputs and activities | 19–20 |
@@ -74,7 +74,7 @@ The tools use [TC]'s terms. Week 9's deck shows this crosswalk once, and the wor
 
 These principles change the earlier draft. Each is followed in the weekly design in §6.
 
-1. **The long-term outcome comes first and takes time.** "Perhaps the most important step in the entire ToC process is getting the long-term outcome right" ([TC] p. 3). Week 9 is given over to it: problem statement → positive opposite → shared definitions → accountability ceiling ([TC] p. 3), with the client's intended impact and the stakeholders ([GAF] Steps 1 and 3).
+1. **The long-term outcome comes first and takes time.** "Perhaps the most important step in the entire ToC process is getting the long-term outcome right" ([TC] p. 3). Week 9 is given over to it: problem statement → positive opposite → shared definitions → accountability ceiling ([TC] pp. 3–4), with the client's intended impact and the stakeholders ([GAF] Steps 1 and 3).
 2. **Four objects kept apart.** [TC] p. 6 separates a **precondition** (must be brought about; goes on the map) from an **assumption** ("already in place and do not need to be brought about"; goes in the register). A **rationale** explains why one outcome is needed for another (on the arrow). [GAF] Step 8 adds the **risk**: a factor that may happen, inside or outside the club's control. The workbench enforces the split with one sorting question: *is this already true in Bodø today?*
    - Yes, with evidence → assumption.
    - No → precondition, which goes on the map.
@@ -83,7 +83,7 @@ These principles change the earlier draft. Each is followed in the weekly design
    [GAF] p. 23 uses "assumption" more broadly, including beliefs about the links themselves; this course follows [TC]. [A7]'s causal pathway and assumptions slides have been corrected to match (links carry rationales; assumptions are conditions already in place).
 3. **Assumptions and rationales are captured while mapping.** [TC] p. 6 says to capture them "as they come out" during backwards mapping, then check again once the framework is complete. They move from week 11 into week 10.
 4. **Interventions only after the framework, and only on arrows.** "we deliberately ask groups to hold off on interventions" ([TC] p. 7). The design stays locked until the outcome map passes its checks. Each intervention sits on a connector; an intervention serving no arrow is flagged, because "it's best not to shoehorn them in". The group then walks the framework for arrows with no intervention ([TC] p. 7).
-5. **Outcome wording.** Outcomes are positive conditions ([TC] p. 3), with one change per outcome: "If you need to use the word 'and' this is an indication that you need to create a new, separate outcome" ([GAF] p. 16). The workbench warns on activity verbs and on "and".
+5. **Outcome wording.** Outcomes are positive conditions ([TC] p. 4), with one change per outcome: "If you need to use the word 'and' this is an indication that you need to create a new, separate outcome" ([GAF] p. 16). The workbench warns on activity verbs and on "and".
 6. **Clusters.** Preconditions that act together can be grouped as a cluster with one arrow out ([TC] p. 4). The map editor supports this, which keeps diagrams readable.
 7. **Evidence quality uses the course's own criteria.** [GAF] Step 7 asks "What is the quality of this evidence and how reliable is it?" (p. 24). Rather than introduce a new hierarchy, the workbench rates key evidence on the four week 6 criteria from `week6b-adjudication-bench.html`: causal identification, scope conditions, observable implications and methodological quality. "Scope conditions" carries the week 7 Bodø verdict (travels, bends, breaks).
 8. **Indicators combine both readings.** [TC]'s four targets ("How many of who or what will reach what level by when?", p. 8) sit inside [GAF]'s M&E framework columns (p. 39): definition, baseline, target, data source, frequency, responsible, reporting. With no access to residents, most baselines are unknown and become "find out first" items, which turns the constraint into the club's first-year plan. Following [TC] p. 9, indicator drafting is shared out among members and then reviewed by the group.
@@ -122,14 +122,14 @@ Each week has:
 
 ### Week 9 — The long-term outcome
 
-**Pre-reading:** [TC] pp. 1–3; [GAF] Steps 1–3 (pp. 8–15); the client brief (VLE).
+**Pre-reading:** [TC] pp. 1–4; [GAF] Steps 1–3 (pp. 8–15); the client brief (VLE).
 
 | Time | Activity | Reading applied |
 |---|---|---|
 | 0–12 | Deck: the four weeks ahead, the terms crosswalk, reading check. Assign roles. | §3.2 |
 | 12–30 | **The client's intended impact.** With the brief open, the group writes the client's claims as cards in its own words, each with a slide number, puts them in causal order, and marks each link: evidence given in the brief, or not. It records the client's stated ambition and answers in writing: whose community does the client mean, and is that Oldenburg's? | [GAF] Step 1 "agree intended impact"; Step 2 context |
-| 30–50 | **Problem statement → positive opposite.** Turn the week 7 sentences into one problem statement (which decline claim, where, for whom), then into a long-term outcome phrased as a positive condition. | [TC] p. 3 |
-| 50–60 | **Shared definitions and the ceiling.** Define every key term in the long-term outcome. Draw the accountability ceiling and place the client's ambition above it, at it or below it, with a reason. | [TC] p. 3 |
+| 30–50 | **Problem statement → positive opposite.** Turn the week 7 sentences into one problem statement (which decline claim, where, for whom), then into a long-term outcome phrased as a positive condition. | [TC] pp. 3–4 |
+| 50–60 | **Shared definitions and the ceiling.** Define every key term in the long-term outcome. Draw the accountability ceiling and place the client's ambition above it, at it or below it, with a reason. | [TC] pp. 3–4 |
 | 60–83 | **Stakeholders.** Work through [GAF]'s eight questions; rate influence and interest low, medium or high; mark who the group cannot ask (each mark adds a "find out first" item). | [GAF] p. 8 |
 | 83–90 | Self-check; print the long-term outcome A6 card; export. | [TC] p. 9 |
 
@@ -215,7 +215,7 @@ The workbench is one file that grows each week, so earlier screens stay editable
 |---|---|---|---|
 | 1 | Setup: group, members, roles; optional week 7 import | 9 | [GAF] pp. 43–44 |
 | 2 | Client's intended impact | 9 | [GAF] Steps 1–2 |
-| 3 | Problem and long-term outcome (positive opposite, definitions, ceiling) | 9 | [TC] p. 3 |
+| 3 | Problem and long-term outcome (positive opposite, definitions, ceiling) | 9 | [TC] pp. 3–4 |
 | 4 | Stakeholders | 9 | [GAF] p. 8 |
 | 5 | Backwards map (outcomes, clusters, arrows with rationales; live SVG diagram) | 10 | [TC] pp. 4–6 |
 | 6 | Assumption register and sorter; evidence log with four-criteria ratings | 10 | [TC] p. 6; [GAF] Step 7 |
