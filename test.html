@@ -2250,7 +2250,7 @@
         s.reading.forEach(function (r) { ok(TW.CONFIG.readings[r.ref] && /^pp?\. \d/.test(r.pages) && r.what, 'ref on screen ' + s.no); });
         ok(s.title && s.summary, 'copy for screen ' + s.no);
       });
-      eq(S.filter(function (s) { return s.built; }).map(function (s) { return s.no; }).join(), '1,2,3,4');
+      eq(S.filter(function (s) { return s.built; }).map(function (s) { return s.no; }).join(), '1,2,3,4,5,6');
     });
 
     assert('glossary crosswalk, self-check, stakeholder questions, lint lists and soft cap are present', function() {
@@ -2401,7 +2401,7 @@
     assert('screens open in order and stay open once reached; unbuilt screens always open', function() {
       var s = TW.defaultState();
       ok(TW.screenEnabled(s, 1)); ok(!TW.screenEnabled(s, 2)); ok(!TW.screenEnabled(s, 4));
-      ok(TW.screenEnabled(s, 5), 'unbuilt'); ok(TW.screenEnabled(s, 14), 'unbuilt');
+      ok(TW.screenEnabled(s, 7), 'unbuilt'); ok(TW.screenEnabled(s, 14), 'unbuilt'); ok(!TW.screenEnabled(s, 5), 'built in stage 2');
       s = twFull(); ok(TW.screenEnabled(s, 4));
       s.group.name = ''; ok(!TW.screenEnabled(s, 3));
       s.ui.reached = 3; ok(TW.screenEnabled(s, 3), 'reached stays open'); ok(!TW.screenEnabled(s, 4));
@@ -2560,6 +2560,338 @@
       eq((h.match(/class="a6-sheet"/g) || []).length, 2); eq((h.match(/class="a6"/g) || []).length, 5);
       ok(TW.buildText(s).indexOf('SELF-CHECKS') !== -1);
       TW.OUTPUT_SECTIONS.forEach(function (sec) { ok(sec.id && sec.title && sec.html && sec.text && sec.has, sec.id); });
+    });
+
+    // =====================================================
+    // BODØ THEORY OF CHANGE WORKBENCH, stage 2 (week 10)
+    // =====================================================
+
+    // A complete week 10 on top of week 9: every week 10 gate passes.
+    function twFull10() {
+      var s = twFull();
+      s.roles.week10 = TW.suggestRoles(TW.members(s), s.roles.week9);
+      var a = TW.addOutcome(s, 'Residents know the space is open to them'); a.level = 'early'; a.pathway = 'Awareness'; a.lenses = ['PSYCHOLOGICAL'];
+      var b = TW.addOutcome(s, 'Residents visit the space outside match days'); b.level = 'intermediate'; b.pathway = 'Awareness'; b.lenses = ['ECONOMIC'];
+      var c = TW.addOutcome(s, 'Prices in the space suit a student budget'); c.level = 'early'; c.pathway = 'Access'; c.lenses = ['ECONOMIC'];
+      TW.setLeadsTo(s, b.id, TW.LTO_ID, true); TW.setLeadsTo(s, a.id, b.id, true); TW.setLeadsTo(s, c.id, b.id, true);
+      s.links.forEach(function (l) { l.rationale = TWW(12, 'because'); });
+      var e = TW.addEvidence(s); e.type = 'reading'; e.summary = TWW(8, 'summary'); e.source = 'test source';
+      var bel = TW.addBelief(s, TWW(5, 'belief'), 6, '2026-11-09T09:30:00.000Z');
+      TW.sortBelief(s, bel.id, 'assumption', { linkId: s.links[0].id, lens: 'POLITICAL', evidenceIds: [e.id] });
+      TW.syncReverse(s);
+      s.reverseImport.forEach(function (r, i) {
+        if (i === 2) r.absent = true;
+        else { r.course = 'test course'; r.claim = TWW(12, 'claim'); r.linkId = s.links[1].id; r.stance = i ? 'challenge' : 'support'; }
+      });
+      s.links.forEach(function (l) { s.sweep[l.id] = 'none'; });
+      return s;
+    }
+    // A small seeded random generator for the layout tests (repeatable).
+    function twRng(seed) { var x = seed >>> 0; return function () { x = (x * 1664525 + 1013904223) >>> 0; return x / 4294967296; }; }
+    // A random map of 1-15 outcomes: arrows only point to the long-term
+    // outcome or to earlier outcomes or clusters, so it has no loops.
+    function twRandomMap(seed) {
+      var r = twRng(seed), s = twFull(), n = 1 + Math.floor(r() * 15), nodes = [TW.LTO_ID];
+      var paths = ['Awareness', 'Access', 'Belonging', 'Trust'];
+      for (var i = 0; i < n; i++) {
+        var words = []; for (var w = 0, nw = 3 + Math.floor(r() * 30); w < nw; w++) words.push(['residents', 'feel', 'welcome', 'in', 'a', 'shared', 'space', 'Thalleåkeren', 'neighbourliness'][Math.floor(r() * 9)]);
+        var o = TW.addOutcome(s, words.join(' '));
+        o.level = r() < 0.5 ? 'early' : 'intermediate'; o.pathway = paths[Math.floor(r() * paths.length)];
+        o.characteristics = TW.CONFIG.characteristics.filter(function () { return r() < 0.3; }).map(function (c) { return c.id; });
+        if (r() < 0.2 && s.outcomes.length > 2) {
+          var k = r() < 0.5 && s.clusters.length ? s.clusters[0] : TW.addCluster(s);
+          k.label = 'cluster'; TW.setCluster(s, o.id, k.id);
+          if (!k.leadsTo.length) TW.setLeadsTo(s, k.id, nodes[Math.floor(r() * nodes.length)], true);
+          if (nodes.indexOf(k.id) === -1) nodes.push(k.id);
+        } else {
+          var m = 1 + Math.floor(r() * 2);
+          for (var j = 0; j < m; j++) TW.setLeadsTo(s, o.id, nodes[Math.floor(r() * nodes.length)], true);
+        }
+        nodes.push(o.id);
+      }
+      return s;
+    }
+
+    suite('ToC Workbench (week 10) — Config');
+
+    assert('screens 5 and 6 are built; week 10 run sheet, lenses, characteristics, evidence types', function() {
+      eq(TW.CONFIG.screens.filter(function (s) { return s.built; }).map(function (s) { return s.no; }).join(), '1,2,3,4,5,6');
+      ok(TW.CONFIG.runSheets[9].length === 6 && TW.CONFIG.runSheets[10].length === 5);
+      eq(TW.CONFIG.lenses.map(function (l) { return l.id; }).join(), 'PSYCHOLOGICAL,POLITICAL,ECONOMIC');
+      eq(TW.CONFIG.characteristics.length, 8);
+      TW.CONFIG.characteristics.forEach(function (c, i) { eq(c.colour, 'var(--char-' + (i + 1) + ')'); ok(/^#[0-9A-F]{6}$/.test(c.hex), c.id); });
+      eq(TW.CONFIG.evidenceTypes.length, 7);
+      eq(TW.CONFIG.evidenceTypes.filter(function (t) { return t.slide; }).map(function (t) { return t.id; }).join(), 'brief');
+      eq(TW.CONFIG.evidenceTypes.filter(function (t) { return t.fact; }).map(function (t) { return t.id; }).join(), 'week7');
+      eq(TW.CONFIG.bodoVerdicts.map(function (v) { return v.id; }).join(), 'travels,bends,breaks,unknown');
+      eq(TW.CONFIG.sorter.answers.map(function (a) { return a.id; }).join(), 'assumption,precondition,fof');
+      eq(TW.CONFIG.sorter.question, 'Is this already true in Bodø today?');
+    });
+
+    assert('the four criteria and the rating scale are copied verbatim from week 6b', function() {
+      eq(JSON.stringify(TW.CONFIG.criteria), JSON.stringify(W6B.CONFIG.criteria));
+      eq(JSON.stringify(TW.CONFIG.ratingScale), JSON.stringify(W6B.CONFIG.ratingScale));
+    });
+
+    suite('ToC Workbench (week 10) — Graph');
+
+    assert('reachability: every outcome must connect upwards to the long-term outcome', function() {
+      var s = twFull10();
+      ok(TW.mapConnected(s)); eq(TW.unconnected(s).length, 0);
+      var d = TW.addOutcome(s, 'a loose outcome here');
+      eq(TW.unconnected(s).map(function (o) { return o.id; }).join(), d.id);
+      ok(!TW.mapConnected(s));
+      TW.setLeadsTo(s, d.id, s.outcomes[0].id, true);
+      ok(TW.mapConnected(s), 'connected through outcome 1');
+      ok(TW.reaches(TW.graph(s), d.id, TW.LTO_ID));
+    });
+
+    assert('cycle detection: loops are refused; a loop in a hand-edited file is found', function() {
+      var s = twFull10(), a = s.outcomes[0], b = s.outcomes[1];
+      ok(TW.wouldCycle(s, b.id, a.id)); ok(TW.wouldCycle(s, a.id, a.id)); ok(!TW.wouldCycle(s, a.id, TW.LTO_ID));
+      ok(/loop/.test(TW.setLeadsTo(s, b.id, a.id, true)));
+      eq(b.leadsTo.join(), TW.LTO_ID, 'refused arrow not added');
+      eq(TW.findCycle(s), null);
+      b.leadsTo.push(a.id);
+      var cyc = TW.findCycle(s);
+      ok(cyc && cyc.indexOf(a.id) !== -1 && cyc.indexOf(b.id) !== -1);
+      ok(!TW.designGate(s).ok);
+      ok(TW.designGate(s).failing.some(function (m) { return /Remove the loop/.test(m); }));
+    });
+
+    assert('clusters: members have no arrows of their own; the cluster carries one arrow; loops refused', function() {
+      var s = twFull10(), a = s.outcomes[0], c = s.outcomes[2], b = s.outcomes[1];
+      var k = TW.addCluster(s); k.label = 'Getting there';
+      eq(TW.setCluster(s, a.id, k.id), ''); eq(TW.setCluster(s, c.id, k.id), '');
+      eq(a.leadsTo.length, 0); eq(c.leadsTo.length, 0);
+      ok(!TW.mapConnected(s), 'cluster has no arrow yet');
+      eq(TW.setLeadsTo(s, k.id, b.id, true), '');
+      ok(TW.mapConnected(s));
+      eq(s.links.filter(function (l) { return l.to === b.id; }).length, 1, 'one arrow from the cluster replaces two');
+      eq(TW.setLeadsTo(s, k.id, TW.LTO_ID, true), ''); eq(k.leadsTo.join(), TW.LTO_ID, 'a cluster keeps one arrow');
+      ok(/cluster carries/.test(TW.setLeadsTo(s, a.id, b.id, true)));
+      var d = TW.addOutcome(s, 'test word word word'); TW.setLeadsTo(s, d.id, a.id, true);
+      ok(TW.reaches(TW.graph(s), d.id, TW.LTO_ID), 'reaches through the cluster');
+      TW.setLeadsTo(s, k.id, b.id, true);
+      ok(/loop/.test(TW.setCluster(s, b.id, k.id)), 'the outcome the cluster leads to cannot join it');
+      eq(TW.setCluster(s, d.id, k.id), '', 'an outcome feeding a member may join');
+      eq(d.leadsTo.length, 0, 'and loses its own arrows'); TW.setCluster(s, d.id, '');
+      TW.removeCluster(s, k.id);
+      eq(a.clusterId, ''); eq(s.clusters.length, 0);
+      ok(!TW.mapConnected(s), 'members are loose again');
+    });
+
+    assert('links follow the arrows and keep their rationale; removals tidy references', function() {
+      var s = twFull10(), l0 = s.links[0], r0 = l0.rationale;
+      var d = TW.addOutcome(s, 'test word word word'); TW.setLeadsTo(s, d.id, TW.LTO_ID, true);
+      eq(s.links[0].id, l0.id); eq(s.links[0].rationale, r0);
+      eq(s.links.length, 4);
+      TW.setLeadsTo(s, s.outcomes[0].id, s.outcomes[1].id, false);
+      eq(s.links.length, 3);
+      eq(s.assumptions[0].linkId, '', 'assumption on a removed arrow is detached');
+      ok(!(l0.id in s.sweep));
+      TW.removeOutcome(s, s.outcomes[0].id);
+      ok(s.links.every(function (l) { return TW.graph(s)[l.from]; }));
+      eq(TW.mapEdges(s).length, s.links.length);
+    });
+
+    suite('ToC Workbench (week 10) — Gates');
+
+    assert('a complete week 10 passes screens 5 and 6, the design gate and the week gate', function() {
+      var s = twFull10();
+      [5, 6].forEach(function (n) { eq(twFailing(s, n).length, 0, 'screen ' + n + ': ' + twFailing(s, n).join(' ')); });
+      ok(TW.designGate(s).ok); ok(TW.gateResult(TW.weekChecks(s, 10)).ok);
+      ok(TW.screenEnabled(s, 6));
+    });
+
+    assert('screen 5: specific messages for wording, level, pathway, lens, connection, pathways, rationale', function() {
+      var s = twFull10(); s.outcomes[0].text = 'x';
+      eq(twFailing(s, 5).join(), 'Outcome 1: needs at least 4 words (1 so far).');
+      s = twFull10(); s.outcomes[2].level = '';
+      eq(twFailing(s, 5).join(), 'Outcome 3: early or intermediate?');
+      s = twFull10(); s.outcomes[2].pathway = 'Awareness';
+      eq(twFailing(s, 5).join(), 'Map at least 2 pathways (1 so far).');
+      s = twFull10(); s.outcomes[1].lenses = [];
+      eq(twFailing(s, 5).join(), 'Outcome 2: tag at least one lens.');
+      s = twFull10(); s.links[2].rationale = 'b';
+      ok(/^Arrow 3 \(outcome 3 → outcome 2\): rationale needs at least 12 words/.test(twFailing(s, 5).join()));
+      s = twFull10(); TW.setLeadsTo(s, s.outcomes[2].id, s.outcomes[1].id, false);
+      ok(twFailing(s, 5).indexOf('Outcome 3: connect it upwards to the long-term outcome.') !== -1);
+      s = twFull10(); delete s.roles.week10.scribe;
+      eq(twFailing(s, 5).join(), 'Assign the Scribe for week 10.');
+      s = twFull10(); var k = TW.addCluster(s);
+      eq(twFailing(s, 5).join('|'), 'Cluster 1: give it a label.|Cluster 1: put at least 2 outcomes in it (0 so far).|Cluster 1: choose the one outcome it leads to.');
+    });
+
+    assert('screen 6: sorter, register, evidence (slide for the brief, fact for week 7), Reverse Import, completeness pass', function() {
+      var s = twFull10(); TW.addBelief(s, TWW(5));
+      eq(twFailing(s, 6).join(), 'Belief 2: answer the sorter question.');
+      ok(/Sort every belief: 1 belief waiting/.test(TW.designGate(s).failing.join()));
+      s = twFull10(); s.evidence[0].type = 'brief';
+      eq(twFailing(s, 6).join(), 'Evidence 1: give the slide of the client brief.');
+      s.evidence[0].slide = '6'; eq(twFailing(s, 6).length, 0);
+      s = twFull10(); s.evidence[0].type = 'week7';
+      eq(twFailing(s, 6).join(), 'Evidence 1: choose the week 7 fact.');
+      s = twFull10(); s.evidence[0].summary = 'x';
+      ok(/^Evidence 1: summary needs at least 8 words/.test(twFailing(s, 6).join()));
+      s = twFull10(); s.assumptions[0].evidenceIds = [];
+      eq(twFailing(s, 6).join(), 'Assumption 1: attach at least one evidence item.');
+      s = twFull10(); s.reverseImport[0].stance = '';
+      eq(twFailing(s, 6).join(), 'Reverse Import, Ana: support or challenge?');
+      s.reverseImport[0].absent = true; eq(twFailing(s, 6).length, 0, 'absent members pass');
+      s = twFull10(); s.reverseImport[1].claim = 'c';
+      ok(/^Reverse Import, Ben: claim needs at least 12 words/.test(twFailing(s, 6).join()));
+      s = twFull10(); delete s.sweep[s.links[1].id];
+      ok(/^Completeness pass: check arrow 2/.test(twFailing(s, 6).join()));
+      s = twFull10(); TW.addOutcome(s, 'test loose outcome here');
+      ok(twFailing(s, 6).indexOf('Completeness pass: it opens when every outcome reaches the long-term outcome (screen 5).') !== -1);
+    });
+
+    assert('design gate lists what is missing; closing week 10 needs both screens and a self-check', function() {
+      var s = twFull10(); s.links[0].rationale = '';
+      ok(/Give every arrow a rationale: arrow 1/.test(TW.designGate(s).failing.join()));
+      s = twFull10(); TW.addOutcome(s, 'test loose outcome here');
+      ok(/outcome 4 do not reach it yet/.test(TW.designGate(s).failing.join()));
+      s = twFull10();
+      ok(TW.closeWeek(s, 10).some(function (m) { return /^Plausible/.test(m); }));
+      twSelfCheck(s, 10);
+      eq(TW.closeWeek(s, 10, '2026-11-09T10:25:00.000Z').length, 0);
+      ok(TW.weekClosed(s, 10));
+      ok(TW.logEdit(s, 5, 'Rationale', '2026-11-16T09:00:00.000Z'), 'edits to week 10 now go to the log');
+      eq(s.revisionLog[0].week, 10);
+    });
+
+    suite('ToC Workbench (week 10) — Sorter');
+
+    assert('yes with evidence → the register, on an arrow; refused without arrow, lens or evidence', function() {
+      var s = twFull10(), b = TW.addBelief(s, TWW(6, 'belief'), 5), n = s.assumptions.length;
+      var r = TW.sortBelief(s, b.id, 'assumption', { linkId: '', lens: '', evidenceIds: ['nope'] });
+      ok(!r.ok); eq(r.errors.length, 3); eq(s.assumptions.length, n, 'nothing entered the register'); eq(b.sort, '');
+      r = TW.sortBelief(s, b.id, 'assumption', { linkId: s.links[2].id, lens: 'PSYCHOLOGICAL', evidenceIds: [s.evidence[0].id] });
+      ok(r.ok); eq(s.assumptions.length, n + 1); eq(b.sort, 'assumption'); eq(b.refId, r.item.id);
+      eq(r.item.linkId, s.links[2].id); eq(r.item.sort, 'assumption'); eq(r.item.text, b.text);
+      ok(/already been sorted/.test(TW.sortBelief(s, b.id, 'fof').errors[0]));
+    });
+
+    assert('no → a new precondition on the map; cannot know → find out first; no answer → refused', function() {
+      var s = twFull10(), n = s.outcomes.length, f = s.findOutFirst.length;
+      var b1 = TW.addBelief(s, TWW(6, 'precondition'));
+      var r = TW.sortBelief(s, b1.id, 'precondition');
+      ok(r.ok); eq(s.outcomes.length, n + 1); eq(s.outcomes[n].text, b1.text); eq(b1.refId, s.outcomes[n].id);
+      ok(!TW.mapConnected(s), 'the new precondition still needs its arrow');
+      var b2 = TW.addBelief(s, TWW(6, 'unknown'));
+      ok(TW.sortBelief(s, b2.id, 'fof').ok);
+      eq(s.findOutFirst.length, f + 1); eq(s.findOutFirst[f].source, 'sorter'); eq(s.findOutFirst[f].refId, b2.id);
+      var b3 = TW.addBelief(s, TWW(6, 'x'));
+      ok(/three answers/.test(TW.sortBelief(s, b3.id, '').errors[0])); eq(b3.sort, '');
+    });
+
+    suite('ToC Workbench (week 10) — Lint, evidence, layout');
+
+    assert('outcome lint warns on activity verbs and "and", and never on a clean condition', function() {
+      var l = TW.outcomeLint('The club hosts quiz nights and runs a cafe');
+      ok(!l.ok); eq(l.activity.join(), 'run,host'); eq(l.and.join(), 'and');
+      ok(TW.outcomeLint('Residents feel welcome in the space').ok);
+      ok(TW.outcomeLint('Band members land a standing slot').ok, 'no partial matches');
+    });
+
+    assert('evidence: a week 7 fact fills summary and source; removal detaches it everywhere', function() {
+      var s = twFull10(), e = TW.addEvidence(s); e.type = 'week7';
+      TW.setEvidenceFact(s, e.id, 'library');
+      var f = TW.CONFIG.facts.filter(function (x) { return x.id === 'library'; })[0];
+      eq(e.summary, f.text); eq(e.source, f.source); eq(e.factId, 'library');
+      TW.setEvidenceFact(s, e.id, 'stadium'); eq(e.factId, 'stadium'); ok(e.summary.indexOf('Arctic Arena') !== -1, 'unchanged text follows the fact');
+      e.summary = 'our own words about it here now'; TW.setEvidenceFact(s, e.id, 'pop'); eq(e.summary, 'our own words about it here now');
+      ok(TW.attachEvidence(s, e.id, 'link', s.links[0].id, true));
+      ok(TW.attachEvidence(s, e.id, 'assumption', s.assumptions[0].id, true));
+      TW.removeEvidence(s, e.id);
+      ok(s.links[0].evidenceIds.indexOf(e.id) === -1 && s.assumptions[0].evidenceIds.indexOf(e.id) === -1);
+    });
+
+    assert('Reverse Import keeps one entry per member, in member order', function() {
+      var s = twFull10(); s.group.members = ['Ana', 'Ben', 'Cai', 'Dee', ''];
+      ok(TW.syncReverse(s)); eq(s.reverseImport.map(function (r) { return r.member; }).join(), 'Ana,Ben,Cai,Dee');
+      eq(s.reverseImport[0].course, 'test course', 'kept'); eq(s.reverseImport[3].claim, '');
+      ok(!TW.syncReverse(s), 'no change the second time');
+      ok(/Reverse Import, Dee: name the course/.test(twFailing(s, 6).join()));
+    });
+
+    assert('layout: no overlapping boxes, and no arrow through a box, across 30 random maps of up to 15 outcomes', function() {
+      for (var seed = 1; seed <= 30; seed++) {
+        var s = twRandomMap(seed), lay = TW.layoutMap(s);
+        eq(TW.layoutOverlaps(lay).length, 0, 'seed ' + seed + ' overlaps ' + JSON.stringify(TW.layoutOverlaps(lay)));
+        lay.nodes.forEach(function (n) { ok(n.x >= 0 && n.y >= 0 && n.x + n.w <= lay.width && n.y + n.h <= lay.height, 'seed ' + seed + ' box outside'); });
+        eq(lay.nodes.filter(function (n) { return n.kind === 'outcome' || n.kind === 'member'; }).length, s.outcomes.length, 'seed ' + seed + ' every outcome drawn');
+        lay.edges.forEach(function (e) { ok(e.y1 > e.y2, 'seed ' + seed + ' arrow points upwards'); });
+        (lay.waypoints || []).forEach(function (d) {
+          lay.nodes.forEach(function (n) {
+            ok(!(d.x < n.x + n.w && n.x < d.x + d.w && d.rowTop < n.y + n.h && n.y < d.rowBottom), 'seed ' + seed + ' an arrow crosses box ' + n.id);
+          });
+        });
+        eq(lay.edges.length, s.links.length);
+      }
+    });
+
+    assert('layout: long-term outcome at the top, ceiling above it, early preconditions below what they feed', function() {
+      var s = twFull10(), lay = TW.layoutMap(s), by = {};
+      lay.nodes.forEach(function (n) { by[n.id] = n; });
+      ok(by.goal.y < lay.ceilingY && lay.ceilingY < by[TW.LTO_ID].y);
+      ok(by[s.outcomes[1].id].y > by[TW.LTO_ID].y);
+      ok(by[s.outcomes[0].id].y > by[s.outcomes[1].id].y && by[s.outcomes[2].id].y === by[s.outcomes[0].id].y);
+    });
+
+    assert('diagram: every outcome, cluster and arrow is a focusable button; the ceiling is dashed', function() {
+      var s = twFull10(), k = TW.addCluster(s); k.label = 'test'; TW.setCluster(s, s.outcomes[0].id, k.id); TW.setLeadsTo(s, k.id, s.outcomes[1].id, true);
+      var svg = TW.diagramSvg(s, { interactive: true });
+      eq((svg.match(/tabindex="0" role="button"/g) || []).length, s.outcomes.length + s.clusters.length + s.links.length + 2);
+      s.links.forEach(function (l) { ok(svg.indexOf('data-arg="' + l.id + '"') !== -1, 'arrow ' + l.id); });
+      ok(svg.indexOf('class="dg-ceiling"') !== -1 && svg.indexOf('ACCOUNTABILITY CEILING') !== -1);
+      ok(TW.diagramSvg(s).indexOf('tabindex') === -1, 'print version is not interactive');
+    });
+
+    suite('ToC Workbench (week 10) — migrate() and outputs');
+
+    assert('migrate() upgrades a stage 1 export: new fields filled, nothing lost', function() {
+      // A week 9 export as stage 1 wrote it: no beliefs, sweep, factId or absent.
+      var stage1 = { tool: 'toc-workbench', schemaVersion: 1, state: {
+        meta: { exportId: 'x1stage', createdAt: '2026-11-02T09:00:00.000Z' }, group: { name: 'Stage One', members: ['Ana', 'Ben', 'Cai', '', ''] },
+        lto: { text: 'Residents feel they belong', lintReason: '', definitions: [{ term: 'belong', meaning: 'm' }], ceiling: { ultimateGoal: 'g', ambitionPosition: 'above', reason: 'r' } },
+        outcomes: [], clusters: [], links: [], assumptions: [], findOutFirst: [{ id: 'f1', text: 't', source: 'stakeholder', refId: 's1' }],
+        evidence: [{ id: 'e1', summary: 'kept', source: 'src', type: 'reading', slide: '', ratings: { causal: 'weak', scope: '', implications: '', method: '' }, bodoVerdict: '', member: 'Ana' }],
+        reverseImport: [{ member: 'Ana', course: 'c', claim: 'k', linkId: '', stance: '' }],
+        selfChecks: { week9: { plausible: 'p', doable: 'd', testable: 't', completedAt: '2026-11-02T10:25:00.000Z' } }, ui: { screen: 4, reached: 4 } } };
+      eq(TW.validateImport(stage1).length, 0);
+      var s = TW.migrate(JSON.parse(JSON.stringify(stage1.state)));
+      ok(Array.isArray(s.beliefs) && s.beliefs.length === 0); eq(JSON.stringify(s.sweep), '{}');
+      eq(s.evidence[0].factId, ''); eq(s.evidence[0].summary, 'kept'); eq(s.evidence[0].ratings.causal, 'weak');
+      eq(s.reverseImport[0].absent, false); eq(s.reverseImport[0].course, 'c');
+      eq(s.findOutFirst[0].refId, 's1'); ok(TW.weekClosed(s, 9)); eq(s.lto.text, 'Residents feel they belong');
+      eq(TW.migrate(JSON.parse(JSON.stringify(s))).sweep.constructor, Object);
+    });
+
+    assert('migrate() tidies a damaged map: dangling arrows, members with arrows, two arrows from a cluster', function() {
+      var s = TW.migrate({ outcomes: [{ id: 'o1', text: 'a', leadsTo: ['lto', 'gone', 'lto', 'o1'] }, { id: 'o2', clusterId: 'k1', leadsTo: ['lto'] }, { id: 'o3', clusterId: 'nope' }],
+        clusters: [{ id: 'k1', label: 'k', leadsTo: ['o1', 'lto'] }], links: [{ id: 'old', from: 'o1', to: 'lto', rationale: 'kept', evidenceIds: ['none'] }] });
+      eq(s.outcomes[0].leadsTo.join(), 'lto'); eq(s.outcomes[1].leadsTo.length, 0); eq(s.outcomes[2].clusterId, '');
+      eq(s.clusters[0].leadsTo.join(), 'o1');
+      eq(s.links.length, 2); eq(s.links[0].id, 'old'); eq(s.links[0].rationale, 'kept'); eq(s.links[0].evidenceIds.length, 0);
+    });
+
+    assert('week 10 export and re-import preserve the state exactly', function() {
+      var s = twFull10(); twSelfCheck(s, 10); TW.closeWeek(s, 10, '2026-11-09T10:25:00.000Z');
+      var x = JSON.parse(JSON.stringify(TW.buildExport(s, '2026-11-09T10:30:00.000Z')));
+      eq(TW.validateImport(x).length, 0);
+      eq(JSON.stringify(TW.migrate(x.state)), JSON.stringify(s));
+    });
+
+    assert('Copy as text and the report include the framework and the assumption register', function() {
+      var s = twFull10(), txt = TW.buildText(s), rep = TW.buildReportHtml(s);
+      ok(txt.indexOf('OUTCOMES FRAMEWORK (SCREEN 5)') !== -1 && txt.indexOf('ASSUMPTIONS AND EVIDENCE (SCREEN 6)') !== -1);
+      ok(txt.indexOf('Pathway: Awareness') !== -1 && txt.indexOf('Pathway: Access') !== -1);
+      ok(txt.indexOf('“Residents visit the space outside match days” is needed for “Residents of all ages feel they belong in a shared space” because') !== -1);
+      ok(/A1\. belief word/.test(txt) && txt.indexOf('Cai: absent') !== -1 && txt.indexOf('Completeness pass: 3 of 3 arrows checked.') !== -1);
+      ok(rep.indexOf('<svg class="dg"') !== -1 && rep.indexOf('Assumption register') !== -1);
+      ok(TW.mapText(s).length > 6 && TW.registerText(s).length > 6);
     });
 
     assert('week9-toc-workbench.html: charset first, favicon, no curly quotes or network calls in script, no PLACEHOLDER, no brief content marker', function() {

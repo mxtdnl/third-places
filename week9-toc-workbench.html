@@ -12,10 +12,13 @@
   club create a community third place in its new stadium. Plan:
   toc_buildplan.md. Build prompts: toc_build_prompts.md.
 
-  BUILD STAGE: 1 of 5 (core and week 9 screens). Screens 5-14 show "Arrives in
-  week N" with their reading until their stage is built. Later stages add
-  screens, output sections and A6 card types; they do not change the state
-  shape below except by adding defaults through migrate().
+  BUILD STAGE: 2 of 5 (core, week 9 and week 10 screens). Screens 7-14 show
+  "Arrives in week N" with their reading until their stage is built. Later
+  stages add screens, output sections and A6 card types; they do not change
+  the state shape below except by adding defaults through migrate(). Stage 2
+  added "beliefs", "sweep", evidence "factId" and Reverse Import "absent".
+  Stage 3 locks screens 7-9 on designGate(state): every outcome reaches the
+  long-term outcome, every arrow has a rationale, every belief is sorted.
 
   Core reading (page numbers refer to the course PDFs):
     [TC]  Taplin, D. H. & Clark, H. (2012). Theory of Change Basics: A Primer
@@ -44,6 +47,25 @@
   50-60  Screen 3: definitions and the accountability ceiling.
   60-83  Screen 4: stakeholders.
   83-90  Week 9 close: self-check, print the long-term outcome card, export.
+
+  RUN SHEET, WEEK 10 (90 minutes)
+   0-12  Deck (week 10). Screen 5: rotate roles for week 10.
+  12-45  Screen 5: backwards map, at least two pathways; clusters; tag each
+         outcome by lens and characteristic.
+  45-65  Screens 5-6: a rationale on every arrow; every belief through the
+         sorter. The Sceptic leads.
+  65-80  Screen 6: evidence, rated on the week 6 criteria; Reverse Import.
+  80-90  Screen 6: completeness pass; week 10 self-check; export.
+
+  THE BACKWARDS MAP (screen 5). The long-term outcome is node "lto" (its text
+  is lto.text). An outcome's "leadsTo" lists the outcomes, clusters or "lto"
+  it is needed for (arrows run upwards). An outcome in a cluster has no
+  arrows of its own; the cluster's single "leadsTo" carries them ([TC] p. 4).
+  "links" is derived from the leadsTo lists by syncLinks(): one link per
+  arrow, keeping its rationale and evidence while the arrow exists. Loops
+  are refused. The diagram is laid out by layoutMap(): each outcome one row
+  below the highest outcome it leads to; arrows that skip rows pass through
+  a reserved gap in every row they cross.
 
   ============================================================================
   SOURCES FOR THE BODØ FACTS (CONFIG.facts, copied from week7-bodo-decline.html)
@@ -132,6 +154,10 @@
                           "interest": ""|"low"|"medium"|"high",
                           "canWeAsk": ""|"yes"|"no" } ],    screen 4
       LATER STAGES (present and empty from week 9 onwards):
+      Week 10 (screens 5-6): outcomes, clusters, links, assumptions, beliefs,
+      sweep, evidence, reverseImport. level = "early"|"intermediate";
+      lenses = PSYCHOLOGICAL|POLITICAL|ECONOMIC; characteristics = ids of
+      CONFIG.characteristics; leadsTo = outcome, cluster or "lto" ids.
       "outcomes": [ { "id", "text", "level", "pathway", "clusterId",
                       "lenses": [], "characteristics": [], "leadsTo": [] } ],
       "clusters": [ { "id", "label", "leadsTo": [] } ],
@@ -141,11 +167,22 @@
       "findOutFirst": [ { "id", "text",
                           "source": "stakeholder"|"sorter"|"baseline"|"manual",
                           "refId" } ],           stakeholder items follow the
-                                                 stakeholder's "can we ask?"
+                                                 stakeholder's "can we ask?";
+                                                 sorter items: refId = belief id
+      "beliefs": [ { "id", "text", "screen": 5|6, "at": ISO,       (stage 2)
+                     "sort": ""|"assumption"|"precondition"|"fof",
+                     "refId" } ],                the item the sorter made
+      "sweep": { "<linkId>": "none"|"added" },   completeness pass (stage 2)
       "evidence": [ { "id", "summary", "source", "type", "slide",
                       "ratings": { "causal", "scope", "implications", "method" },
-                      "bodoVerdict", "member" } ],
-      "reverseImport": [ { "member", "course", "claim", "linkId", "stance" } ],
+                      "bodoVerdict", "member", "factId" } ],
+                      type = reading|week5|week6|week7|brief|parallel|other;
+                      ratings "" | strong|moderate|weak|none (week 6 scale);
+                      bodoVerdict "" | travels|bends|breaks|unknown;
+                      factId = a CONFIG.facts id when type is week7 (stage 2)
+      "reverseImport": [ { "member", "course", "claim", "linkId",
+                           "stance": ""|"support"|"challenge",
+                           "absent": bool } ],   one per member (absent: stage 2)
       "options": [ { "id", "summary", "location", "plausible", "doable",
                      "testable", "chosen": bool, "whyNot" } ],
       "interventions": [ { "id", "name", "activities": [], "linkIds": [],
@@ -511,6 +548,53 @@
   .a6-detail p { margin-bottom: 0.3rem; }
   .a6-foot { margin-top: auto; padding-top: 0.5rem; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; border-top: 2px solid #2A1F18; }
 
+  /* ── Week 10: backwards map, diagram, sorter, evidence ── */
+  .map-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 0.75rem; }
+  .map-top > div { padding: 0.6rem 0.8rem; border: 2px dashed var(--char-1); background: #fff; }
+  .map-top .lto-box { border: 0; background: var(--char-2); color: #fff; font-weight: 700; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .map-top .k { display: block; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 0.2rem; opacity: 0.9; }
+  .dg-wrap { overflow-x: auto; overflow-y: hidden; max-width: 100%; margin: 0.5rem 0; background: #fff; border: 2px solid var(--border); border-left: 6px solid var(--char-6); }
+  .dg-wrap:focus-visible { outline: 3px solid var(--char-1); outline-offset: 2px; }
+  svg.dg { display: block; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+  .dg rect { fill: #fff; stroke: #2A1F18; stroke-width: 2; }
+  .dg .dg-goal rect { fill: #FFFAF2; stroke: #5C3A96; }
+  .dg .dg-lto rect { fill: #B52838; stroke: #B52838; }
+  .dg .dg-lto text { fill: #fff; }
+  .dg .dg-cluster rect { fill: #F4EFF9; stroke: #5C3A96; stroke-width: 3; }
+  .dg .dg-loose > rect:first-child { stroke: #B82828; stroke-dasharray: 7 4; }
+  .dg .dg-accent, .dg .dg-pip { stroke: none; }
+  .dg .dg-head { font-size: 9px; font-weight: 800; letter-spacing: 0.08em; fill: #4A3828; }
+  .dg .dg-goal .dg-head { fill: #5C3A96; }
+  .dg .dg-txt { font-size: 12px; fill: #2A1F18; }
+  .dg .dg-big { font-size: 13px; font-weight: 700; }
+  .dg .dg-lens { font-size: 8.5px; font-weight: 800; letter-spacing: 0.06em; fill: #4A3828; }
+  .dg .dg-ceiling { stroke: #2A1F18; stroke-width: 2; stroke-dasharray: 9 6; }
+  .dg .dg-ceiling-label { font-size: 9px; font-weight: 800; letter-spacing: 0.14em; fill: #2A1F18; }
+  .dg .dg-line { fill: none; stroke-width: 2.5; }
+  .dg .dg-norat .dg-line { stroke-dasharray: 6 5; }
+  .dg .dg-hit { fill: none; stroke: transparent; stroke-width: 14; }
+  .dg .dg-badge { fill: #2A1F18; stroke: none; }
+  .dg .dg-badge-t { font-size: 10px; font-weight: 800; fill: #fff; }
+  .dg [role="button"] { cursor: pointer; outline: none; }
+  .dg [role="button"]:hover > rect:first-child { stroke: #5C3A96; }
+  .dg [role="button"]:focus-visible > rect:first-child { stroke: #5C3A96; stroke-width: 5; }
+  .dg .dg-arrow:hover .dg-hit, .dg .dg-arrow:focus-visible .dg-hit { stroke: rgba(212,160,32,0.55); }
+  .dg .dg-arrow:focus-visible .dg-badge { fill: #5C3A96; }
+  .dg-legend { list-style: none; display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; font-size: 0.8rem; margin-bottom: 0.5rem; }
+  .dg-legend li { display: inline-flex; align-items: center; gap: 0.35rem; }
+  .dg-legend .sw { width: 14px; height: 14px; display: inline-block; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .dg-legend .sw.dashed { height: 0; border-top: 3px dashed #2A1F18; }
+  .dg-legend .sw.loose { border: 2px dashed #B82828; background: #fff; }
+  .choice.mini > span { min-height: 44px; padding: 0.3rem 0.55rem; font-size: 0.7rem; letter-spacing: 0.04em; }
+  .choices.targets .choice.block > span { text-transform: none; font-size: 0.86rem; }
+  .choice input:disabled + span { opacity: 0.45; cursor: not-allowed; }
+  .stem { font-size: 0.9rem; font-style: italic; margin-bottom: 0.4rem; }
+  .loose-note { color: var(--incorrect); font-weight: 700; font-size: 0.86rem; }
+  .sorter-q { font-size: 0.95rem !important; color: var(--text) !important; letter-spacing: 0.04em !important; }
+  .label-sm { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin: 0.5rem 0 0.25rem; }
+  fieldset.crit { border-left: 5px solid var(--crit, var(--char-1)); padding-left: 0.6rem; }
+  .sweep-row legend { text-transform: none; letter-spacing: 0; font-size: 0.88rem; color: var(--text); }
+
   .print-only { display: none; }
 
   @media (max-width: 900px) {
@@ -522,7 +606,7 @@
     .page-header { padding-right: 0; }
     .page-header .deco-bar { right: 12px; top: 4px; width: 80px; }
     .page-header .deco-tri { right: 60px; }
-    .two-col, .part { grid-template-columns: minmax(0, 1fr); }
+    .two-col, .part, .map-top { grid-template-columns: minmax(0, 1fr); }
     .panel { padding: 1rem; }
     .role-row { grid-template-columns: minmax(0, 1fr); }
     .chain-card { grid-template-columns: minmax(0, 1fr); }
@@ -562,6 +646,14 @@
     .a6-text { font-size: 14pt; }
     .a6-detail { font-size: 8pt; }
     .a6-foot { font-size: 7pt; border-top-width: 0.4mm; }
+    .rep-sub { font-size: 9pt; margin: 2mm 0 1mm; }
+    .rep-diagram { break-inside: avoid; margin-bottom: 2mm; }
+    .rep-diagram svg { width: 100%; height: auto; max-height: 250mm; }
+    body.print-diagram .page-header { display: none; }
+    .dg-print h2 { font-size: 13pt; margin: 0; }
+    .dg-print svg { width: 100%; height: auto; max-height: 172mm; }
+    body.print-a3 .dg-print svg { max-height: 262mm; }
+    .dg .dg-hit { stroke: none; }
   }
 </style>
 
@@ -595,6 +687,7 @@
     <aside class="side" id="side" aria-label="Glossary, reading and self-check"></aside>
   </div>
   <div id="print-area" class="print-only"></div>
+  <style id="page-size"></style>
 </div>
 
 <script>
@@ -630,15 +723,26 @@
       laterLead: 'This screen opens in a later week. Read ahead:'
     },
 
-    // The week 9 run sheet (90 minutes), shown in "How this session runs".
-    runSheet: [
-      { t: '0–12', what: 'Deck. Screen 1: group, members and week 9 roles. Load your week 7 export if you have it.' },
-      { t: '12–30', what: 'Screen 2: the client\u2019s intended impact, with the client brief (on the VLE) open.' },
-      { t: '30–50', what: 'Screen 3: problem statement, then the long-term outcome.' },
-      { t: '50–60', what: 'Screen 3: definitions and the accountability ceiling.' },
-      { t: '60–83', what: 'Screen 4: stakeholders.' },
-      { t: '83–90', what: 'Week 9 close: self-check, print the long-term outcome card, export.' }
-    ],
+    // Run sheets (90 minutes each), keyed by week. "How this session runs"
+    // shows the sheet for the group's current week (the first week not yet
+    // closed), or the latest sheet built.
+    runSheets: {
+      10: [
+        { t: '0–12', what: 'Deck. Screen 5: rotate roles for week 10.' },
+        { t: '12–45', what: 'Screen 5: backwards map. From the long-term outcome down, ask what must be true for each outcome, in at least two pathways. Group preconditions that act together into clusters. Tag each outcome by lens and characteristic.' },
+        { t: '45–65', what: 'Screens 5 and 6: a rationale on every arrow. Every belief anyone voices goes through the sorter. The Sceptic leads.' },
+        { t: '65–80', what: 'Screen 6: evidence, rated on the week 6 criteria where it matters. Reverse Import: each member places their claim on one arrow.' },
+        { t: '80–90', what: 'Screen 6: completeness pass on assumptions, then the week 10 self-check and export. Design stays locked until week 11.' }
+      ],
+      9: [
+        { t: '0–12', what: 'Deck. Screen 1: group, members and week 9 roles. Load your week 7 export if you have it.' },
+        { t: '12–30', what: 'Screen 2: the client\u2019s intended impact, with the client brief (on the VLE) open.' },
+        { t: '30–50', what: 'Screen 3: problem statement, then the long-term outcome.' },
+        { t: '50–60', what: 'Screen 3: definitions and the accountability ceiling.' },
+        { t: '60–83', what: 'Screen 4: stakeholders.' },
+        { t: '83–90', what: 'Week 9 close: self-check, print the long-term outcome card, export.' }
+      ]
+    },
 
     // The readings. Page numbers in every reference refer to these PDFs.
     readings: {
@@ -674,14 +778,16 @@
       { no: 4, week: 9, built: true, title: 'Stakeholders', colour: 'var(--char-8)',
         summary: 'Who is affected or has influence; who we can ask; and the week 9 close.',
         reading: [{ ref: 'GAF', pages: 'p. 8', what: 'Step 1: the eight stakeholder questions; low, medium, high' }] },
-      { no: 5, week: 10, built: false, title: 'Backwards map', colour: 'var(--char-6)',
+      { no: 5, week: 10, built: true, title: 'Backwards map', colour: 'var(--char-6)',
         summary: 'Outcomes, clusters and arrows with rationales, drawn as a live diagram.',
-        reading: [{ ref: 'TC', pages: 'pp. 4–6', what: '§3 Causal pathways, backwards mapping, clusters; the outcomes framework' },
-                  { ref: 'GAF', pages: 'pp. 16–18', what: 'Step 4: outcomes' }] },
-      { no: 6, week: 10, built: false, title: 'Assumptions and evidence', colour: 'var(--char-5)',
+        reading: [{ ref: 'TC', pages: 'pp. 4–6', what: '§3 Causal pathways, backwards mapping, clusters; the outcomes framework; §4 rationales' },
+                  { ref: 'GAF', pages: 'pp. 16–18', what: 'Step 4: outcomes (one change per outcome)' },
+                  { ref: 'GAF', pages: 'pp. 29–31', what: 'Step 9: causal links' },
+                  { ref: 'GAF', pages: 'p. 5', what: 'Proportionality' }] },
+      { no: 6, week: 10, built: true, title: 'Assumptions and evidence', colour: 'var(--char-5)',
         summary: 'The sorter, the assumption register and the evidence log with the week 6 criteria.',
         reading: [{ ref: 'TC', pages: 'p. 6', what: '§4 Assumptions and rationales' },
-                  { ref: 'GAF', pages: 'pp. 23–26', what: 'Step 7: assumptions' }] },
+                  { ref: 'GAF', pages: 'pp. 23–26', what: 'Step 7: assumptions; the quality of evidence (p. 24)' }] },
       { no: 7, week: 11, built: false, title: 'Options appraisal', colour: 'var(--char-1)',
         summary: 'At least two designs, tested as plausible, doable and testable; one chosen.',
         reading: [{ ref: 'GAF', pages: 'p. 11', what: 'Step 2, questions 6–7: alternative strategies' }] },
@@ -758,7 +864,16 @@
       ultimateGoal: 4,     // the ultimate goal above the ceiling
       ceilingReason: 25,   // why the ambition sits above, at or below
       selfCheck: 15,       // each self-check answer
-      fof: 4               // a find-out-first item added by hand
+      fof: 4,              // a find-out-first item added by hand
+      outcome: 4,          // an outcome on the backwards map (week 10)
+      clusterLabel: 1,     // a cluster's label (also needs 2 characters)
+      rationale: 12,       // "X is needed for Y because ..."
+      belief: 5,           // a belief put through the sorter
+      assumption: 5,       // an assumption in the register
+      evidenceSummary: 8,  // what the evidence says
+      evidenceSource: 2,   // where it comes from
+      reverseCourse: 1,    // the parallel course (also needs 2 characters)
+      reverseClaim: 12     // the imported claim
     },
     // Shortest name accepted (group, members, terms, stakeholders).
     minNameChars: 2,
@@ -772,6 +887,14 @@
     // Edits to the same field of a closed week within this many minutes make
     // one revision-log entry, not one per keystroke.
     logCoalesceMinutes: 5,
+    // What the close of each week offers once the week is closed: buttons,
+    // and the A6 card types previewed there (CARD_TYPES ids).
+    closeActions: {
+      9: [{ action: 'print-cards', arg: 'lto', label: 'Print the long-term outcome card' }],
+      10: [{ action: 'print-diagram', arg: 'a4', label: 'Print diagram · A4 landscape' },
+           { action: 'print-diagram', arg: 'a3', label: 'Print diagram · A3 landscape' }]
+    },
+    weekCards: { 9: ['lto'], 10: [] },
 
     // Group roles ([GAF] pp. 43–44). minGroup = the smallest group that uses
     // the role. Each week, roles rotate: the suggestion never gives a member
@@ -812,7 +935,8 @@
     lintMessages: {
       activity: 'reads as an activity. A long-term outcome is a condition, not something the club does: activities come in week 11.',
       negative: 'describes the problem. Phrase the outcome as the positive condition that remains once the problem is removed.',
-      and: 'suggests more than one change. Consider splitting it into separate outcomes.'
+      and: 'suggests more than one change. Consider splitting it into separate outcomes.',
+      outcomeActivity: 'reads as an activity. An outcome is a condition that holds once something has been done: activities come in week 11.'
     },
 
     // Where the client's ambition sits against the accountability ceiling.
@@ -884,6 +1008,132 @@
     ],
     stakeholderQuestionsRef: '[GAF] p. 8',
 
+    // ── WEEK 10 (screens 5 and 6) ──────────────────────────────────────────
+    // The three lenses and the eight characteristics, used to tag outcomes.
+    // Characteristic ids are also the keys of state.stressTest (week 11).
+    lenses: [
+      { id: 'PSYCHOLOGICAL', label: 'Psychological', colour: 'var(--char-1)' },
+      { id: 'POLITICAL', label: 'Political', colour: 'var(--char-2)' },
+      { id: 'ECONOMIC', label: 'Economic', colour: 'var(--char-4)' }
+    ],
+    characteristics: [
+      { id: 'neutral', label: 'Neutral ground', colour: 'var(--char-1)', hex: '#5C3A96' },
+      { id: 'leveller', label: 'The leveller', colour: 'var(--char-2)', hex: '#B52838' },
+      { id: 'conversation', label: 'Conversation is the main activity', colour: 'var(--char-3)', hex: '#C85218' },
+      { id: 'access', label: 'Accessibility and accommodation', colour: 'var(--char-4)', hex: '#D4A020' },
+      { id: 'regulars', label: 'The regulars', colour: 'var(--char-5)', hex: '#7A5828' },
+      { id: 'lowProfile', label: 'A low profile', colour: 'var(--char-6)', hex: '#B83068' },
+      { id: 'playful', label: 'The mood is playful', colour: 'var(--char-7)', hex: '#CC6830' },
+      { id: 'home', label: 'A home away from home', colour: 'var(--char-8)', hex: '#7E58A8' }
+    ],
+    // Outcome levels below the long-term outcome ([TC] p. 4: early outcomes
+    // at the bottom, longer-term outcomes at the top).
+    outcomeLevels: [
+      { id: 'early', label: 'Early' },
+      { id: 'intermediate', label: 'Intermediate' }
+    ],
+    // Pathway accents on the diagram, in order of first use: a contrasting
+    // sequence of the characteristic colours (hex, for the SVG).
+    pathwayColours: ['#5C3A96', '#D4A020', '#B52838', '#C85218', '#B83068', '#7A5828', '#7E58A8', '#CC6830'],
+    minPathways: 2,        // plan §6, week 10: "in at least two pathways"
+    minClusterMembers: 2,  // a cluster groups at least two preconditions
+
+    // The sorter ([TC] p. 6; plan §4.2). Every belief goes through it.
+    sorter: {
+      question: 'Is this already true in Bodø today?',
+      answers: [
+        { id: 'assumption', label: 'Yes, and we have evidence', help: 'It goes in the assumption register, on the arrow it supports, with its evidence.', colour: 'var(--correct)' },
+        { id: 'precondition', label: 'No', help: 'It has to be brought about, so it is a precondition: it goes on the map as an outcome.', colour: 'var(--char-2)' },
+        { id: 'fof', label: 'We cannot know without access to residents', help: 'It goes on Find out first.', colour: 'var(--char-5)' }
+      ]
+    },
+
+    // Evidence ([GAF] p. 24; plan §4.7). slide: the type needs a slide
+    // number; fact: the item is one of CONFIG.facts.
+    evidenceTypes: [
+      { id: 'reading', label: 'Course reading' },
+      { id: 'week5', label: 'Week 5 field data' },
+      { id: 'week6', label: 'Week 6 adjudication' },
+      { id: 'week7', label: 'Week 7 Bodø fact', fact: true },
+      { id: 'brief', label: 'Client brief', slide: true },
+      { id: 'parallel', label: 'Parallel-course claim' },
+      { id: 'other', label: 'Other' }
+    ],
+    // The four week 6 criteria, copied verbatim from
+    // week6b-adjudication-bench.html CONFIG.criteria. Keep in step.
+    criteria: [
+      { id: 'causal', label: 'Causal identification',
+        definition: 'Whether the evidence shows that the proposed cause produces the outcome, rather than merely accompanying it.',
+        questions: ['Does this show cause or only association?', 'What else would produce the same pattern?', 'Could the causal arrow run the other way?'],
+        color: 'var(--char-1)' },
+      { id: 'scope', label: 'Scope conditions',
+        definition: 'The range of places, periods and populations in which the mechanism has been shown to operate.',
+        questions: ['Where, when and for whom was this shown?', 'What must be true of a context for the mechanism to operate?'],
+        color: 'var(--char-4)' },
+      { id: 'implications', label: 'Observable implications',
+        definition: 'What else must be true if the explanation is correct, and whether those things are observed.',
+        questions: ['If this were true, what else should we see?', 'Do we see it?'],
+        color: 'var(--char-2)' },
+      { id: 'method', label: 'Methodological quality',
+        definition: 'Whether the design and measurement are adequate to support the claim being made.',
+        questions: ['Is the key concept measured validly?', 'Is the design fit for the claim?', 'Has it been replicated or survived challenge?'],
+        color: 'var(--char-7)' }
+    ],
+    // The week 6 rating scale (week6b-adjudication-bench.html CONFIG.ratingScale).
+    // Ratings are optional: "" means not rated.
+    ratingScale: [
+      { id: 'strong', label: 'Strong' },
+      { id: 'moderate', label: 'Moderate' },
+      { id: 'weak', label: 'Weak' },
+      { id: 'none', label: 'No evidence' }
+    ],
+    // The week 7 verdict, carried by scope conditions: does it hold in Bodø?
+    // Travels, bends and breaks as defined in week7-bodo-decline.html.
+    bodoVerdicts: [
+      { id: 'travels', label: 'Travels', help: 'Works the same way in Bodø.', colour: 'var(--correct)' },
+      { id: 'bends', label: 'Bends', help: 'Works in Bodø, but differently.', colour: 'var(--ambiguous)' },
+      { id: 'breaks', label: 'Breaks', help: 'Unlikely to hold in Bodø.', colour: 'var(--incorrect)' },
+      { id: 'unknown', label: 'Unknown', help: 'We cannot tell yet whether it holds in Bodø.', colour: 'var(--char-5)' }
+    ],
+    // Reverse Import (week 10 assignment): one entry per member.
+    stances: [
+      { id: 'support', label: 'Supports the arrow', colour: 'var(--correct)' },
+      { id: 'challenge', label: 'Challenges the arrow', colour: 'var(--char-2)' }
+    ],
+    // Completeness pass ([TC] p. 6), one answer per arrow.
+    sweepAnswers: [
+      { id: 'none', label: 'No further assumptions' },
+      { id: 'added', label: 'We added a belief to the sorter' }
+    ],
+
+    // Week 10 guidance. Quotations are exact, with the page.
+    map: {
+      lead: 'Start at the long-term outcome and work down. For each outcome ask what must already be true for it, and add those as preconditions below it. Activities come in week 11.',
+      question: 'What preconditions must exist for the long-term outcome to be reached?', questionRef: '[TC] p. 4',
+      pathways: 'Pathways are depicted by vertical chains of outcomes connected to one another by arrows, proceeding from early outcomes at the bottom to longer-term outcomes at the top.', pathwaysRef: '[TC] p. 4',
+      multiple: 'Most initiatives have multiple pathways that lead to the long-term outcome.', multipleRef: '[TC] p. 4',
+      cluster: 'The clustering shows a group of preconditions that belong together conceptually and that interact with one another. All together, they function as a joint precondition to outcomes farther along on the framework.', clusterRef: '[TC] p. 4',
+      and: 'If you need to use the word \u2018and\u2019 this is an indication that you need to create a new, separate outcome.', andRef: '[GAF] p. 16',
+      proportion: 'Your TOC should be designed in proportion to the size of the intervention, its significance, and the risk associated with it. This is known as proportionality.', proportionRef: '[GAF] p. 5',
+      rationale: 'Rationales explain the logic behind each causal relationship on the pathway. Many of these will come out naturally in conversation when someone suggests a precondition. Try to capture these as they come out.', rationaleRef: '[TC] p. 6',
+      causal: 'Causal links show how one thing causes another thing to happen.', causalRef: '[GAF] p. 29',
+      rows: 'The diagram places each outcome one row below the highest outcome it leads to, so a chain of preconditions reads upwards. The level (early or intermediate) is your label.'
+    },
+    assumptions: {
+      quote: 'Assumptions and preconditions are both conditions that are necessary for your program\u2019s success. The difference between them is that assumptions are already in place and do not need to be brought about--in other words, conditions you take for granted.', quoteRef: '[TC] p. 6',
+      gaf: 'Assumptions are the underlying conditions that are necessary for intended change to occur.', gafRef: '[GAF] p. 23',
+      gafNote: '[GAF] uses \u201Cassumption\u201D more broadly. This course follows [TC]: a belief about why one outcome leads to another is a rationale, on the arrow.',
+      sorterLead: 'Any belief the group voices, on this screen or the backwards map, goes here first. Nothing enters the assumption register without passing the sorter.',
+      registerLead: 'Assumptions enter only through the sorter. Each sits on the arrow it supports and needs at least one evidence item.',
+      evidenceQuote: 'What is the quality of this evidence and how reliable is it?', evidenceQuoteRef: '[GAF] p. 24',
+      evidenceLinks: 'What evidence is there to support the links you are including in your plan?', evidenceLinksRef: '[GAF] p. 24',
+      evidenceLead: 'Log the evidence behind your rationales and assumptions. Ratings on the four week 6 criteria are optional: rate the items that carry most weight. Figures from the client brief need the slide, and are unsourced unless the brief gives a source.',
+      reverseLead: 'Reverse Import: each member places the claim they imported from their parallel course on one arrow, as support or challenge. Mark a member absent if they missed the session.',
+      sweep: 'You should also do this when you think the outcomes framework is complete, as a check on the logic of the pathways and as another chance to make clear the assumptions your group is making about the world for your theory to be successful.', sweepRef: '[TC] p. 6',
+      sweepLead: 'Every outcome now reaches the long-term outcome. Walk each arrow once more: is anything taken for granted? Put any new belief through the sorter.',
+      sweepLocked: 'The completeness pass opens when every outcome on the backwards map reaches the long-term outcome.'
+    },
+
     // THE BODØ FACTS, copied verbatim from week7-bodo-decline.html
     // CONFIG.facts (full web addresses in the file header). Keep in step.
     facts: [
@@ -939,7 +1189,7 @@
   var WEEKS = [9, 10, 11, 12, 13];
   var SCREEN = {}; CONFIG.screens.forEach(function (s) { SCREEN[s.no] = s; });
   var ROLE = {}; CONFIG.roles.forEach(function (r) { ROLE[r.id] = r; });
-  var DARK_INK = { 'var(--char-4)': '#2A1F18', 'var(--char-7)': '#2A1F18' };
+  var DARK_INK = { 'var(--char-4)': '#2A1F18', 'var(--char-7)': '#2A1F18', 'var(--ambiguous)': '#2A1F18' };
   function inkFor(colour) { return DARK_INK[colour] || '#fff'; }
   // Text colour safe on cream for an accent (gold and orange are too light).
   var TEXT_SAFE = { 'var(--char-4)': '#7A5800', 'var(--char-7)': '#9A4A1A' };
@@ -1044,8 +1294,10 @@
       links: [],
       assumptions: [],
       findOutFirst: [],
+      beliefs: [],
       evidence: [],
       reverseImport: [],
+      sweep: {},
       options: [],
       interventions: [],
       risks: [],
@@ -1072,8 +1324,9 @@
     'links': { id: '', from: '', to: '', rationale: '', evidenceIds: [] },
     'assumptions': { id: '', linkId: '', text: '', lens: '', evidenceIds: [], sort: 'assumption' },
     'findOutFirst': { id: '', text: '', source: 'manual', refId: '' },
-    'evidence': { id: '', summary: '', source: '', type: '', slide: '', ratings: { causal: '', scope: '', implications: '', method: '' }, bodoVerdict: '', member: '' },
-    'reverseImport': { member: '', course: '', claim: '', linkId: '', stance: '' },
+    'beliefs': { id: '', text: '', screen: 0, sort: '', refId: '', at: '' },
+    'evidence': { id: '', summary: '', source: '', type: '', slide: '', ratings: { causal: '', scope: '', implications: '', method: '' }, bodoVerdict: '', member: '', factId: '' },
+    'reverseImport': { member: '', course: '', claim: '', linkId: '', stance: '', absent: false },
     'options': { id: '', summary: '', location: '', plausible: '', doable: '', testable: '', chosen: false, whyNot: '' },
     'interventions': { id: '', name: '', activities: [], linkIds: [], characteristics: [], inputs: [] },
     'risks': { id: '', text: '', internal: '', likelihood: '', mitigation: '', interventionId: '' },
@@ -1084,7 +1337,7 @@
   };
   // Objects whose keys are chosen at run time (kept as they are, if objects).
   var FREE_KEYS = { 'roles.week9': 1, 'roles.week10': 1, 'roles.week11': 1, 'roles.week12': 1, 'roles.week13': 1,
-    'clientTheory.linkEvidence': 1, 'stressTest': 1, 'narrative.sections': 1 };
+    'clientTheory.linkEvidence': 1, 'sweep': 1, 'stressTest': 1, 'narrative.sections': 1 };
 
   function sameKind(a, b) {
     if (Array.isArray(a)) return Array.isArray(b);
@@ -1121,6 +1374,7 @@
     if (typeof s.ui.reached !== 'number') s.ui.reached = 1;
     var ids = s.clientTheory.claims.map(function (c) { return c.id; });
     s.clientTheory.order = s.clientTheory.order.filter(function (id, i, o) { return ids.indexOf(id) !== -1 && o.indexOf(id) === i; });
+    normaliseMap(s);
     return s;
   }
 
@@ -1251,7 +1505,89 @@
     return c;
   }
 
-  var SCREEN_CHECKS = { 1: screen1Checks, 2: screen2Checks, 3: screen3Checks, 4: screen4Checks };
+  // Week 10, screen 5: the backwards map.
+  function screen5Checks(s) {
+    var adj = graph(s), paths = pathwayList(s);
+    var c = roleChecks(s, 10).concat([
+      check(s.outcomes.length > 0, 'Add the first outcome below the long-term outcome.'),
+      check(paths.length >= CONFIG.minPathways, 'Map at least ' + CONFIG.minPathways + ' pathways (' + paths.length + ' so far).')
+    ]);
+    s.outcomes.forEach(function (o, i) {
+      var who = 'Outcome ' + (i + 1), w = wordCheck(o.text, CONFIG.words.outcome);
+      c.push(check(w.ok, who + ': ' + (w.msg || 'done') + '.'));
+      c.push(check(o.level === 'early' || o.level === 'intermediate', who + ': early or intermediate?'));
+      c.push(check(nameOk(o.pathway), who + ': name its pathway.'));
+      c.push(check(o.lenses.some(lensOk), who + ': tag at least one lens.'));
+      c.push(check(reaches(adj, o.id, LTO_ID), who + ': connect it upwards to the long-term outcome.'));
+    });
+    s.clusters.forEach(function (k, i) {
+      var who = 'Cluster ' + (i + 1), n = clusterMembers(s, k).length;
+      c.push(check(nameOk(k.label), who + ': give it a label.'));
+      c.push(check(n >= CONFIG.minClusterMembers, who + ': put at least ' + CONFIG.minClusterMembers + ' outcomes in it (' + n + ' so far).'));
+      c.push(check(k.leadsTo.length === 1 && isTarget(s, k.leadsTo[0]), who + ': choose the one outcome it leads to.'));
+    });
+    s.links.forEach(function (l, i) {
+      var w = wordCheck(l.rationale, CONFIG.words.rationale);
+      c.push(check(w.ok, 'Arrow ' + (i + 1) + ' (' + linkName(s, l) + '): rationale ' + (w.msg || 'done') + '.'));
+    });
+    return c;
+  }
+  // Week 10, screen 6: the sorter, the register, evidence, Reverse Import
+  // and the completeness pass.
+  function screen6Checks(s) {
+    var c = [];
+    s.beliefs.forEach(function (b, i) { if (!b.sort) c.push(check(false, 'Belief ' + (i + 1) + ': answer the sorter question.')); });
+    s.assumptions.forEach(function (a, i) {
+      var who = 'Assumption ' + (i + 1), w = wordCheck(a.text, CONFIG.words.assumption);
+      c.push(check(w.ok, who + ': ' + (w.msg || 'done') + '.'));
+      c.push(check(!!linkById(s, a.linkId), who + ': choose the arrow it supports.'));
+      c.push(check(lensOk(a.lens), who + ': choose its lens.'));
+      c.push(check(a.evidenceIds.some(function (x) { return evidenceById(s, x); }), who + ': attach at least one evidence item.'));
+    });
+    s.evidence.forEach(function (e, i) {
+      var who = 'Evidence ' + (i + 1), t = evType(e.type), w = wordCheck(e.summary, CONFIG.words.evidenceSummary);
+      c.push(check(!!t, who + ': choose its type.'));
+      if (t && t.fact) c.push(check(!!factById(e.factId), who + ': choose the week 7 fact.'));
+      c.push(check(w.ok, who + ': summary ' + (w.msg || 'done') + '.'));
+      c.push(check(wordCheck(e.source, CONFIG.words.evidenceSource).ok, who + ': say where it comes from (at least ' + plural(CONFIG.words.evidenceSource, 'word') + ').'));
+      if (t && t.slide) c.push(check(validSlide(e.slide), who + ': give the slide of the client brief.'));
+    });
+    members(s).forEach(function (m) {
+      var r = reverseFor(s, m), who = 'Reverse Import, ' + m;
+      if (!r) { c.push(check(false, who + ': fill in the entry or mark them absent.')); return; }
+      if (r.absent) return;
+      c.push(check(nameOk(r.course) && wordCheck(r.course, CONFIG.words.reverseCourse).ok, who + ': name the course.'));
+      var w = wordCheck(r.claim, CONFIG.words.reverseClaim);
+      c.push(check(w.ok, who + ': claim ' + (w.msg || 'done') + '.'));
+      c.push(check(!!linkById(s, r.linkId), who + ': choose the arrow.'));
+      c.push(check(r.stance === 'support' || r.stance === 'challenge', who + ': support or challenge?'));
+    });
+    if (!mapConnected(s)) c.push(check(false, 'Completeness pass: it opens when every outcome reaches the long-term outcome (screen 5).'));
+    else s.links.forEach(function (l, i) {
+      c.push(check(s.sweep[l.id] === 'none' || s.sweep[l.id] === 'added', 'Completeness pass: check arrow ' + (i + 1) + ' (' + linkName(s, l) + ') for assumptions.'));
+    });
+    return c;
+  }
+  // The week 10 gate that later stages need before design opens (plan §7.3):
+  // every outcome reaches the long-term outcome, every arrow has a
+  // rationale, every belief has been sorted. Stage 3 locks screens 7-9 on it.
+  function designChecks(s) {
+    var un = unconnected(s), unK = unconnectedClusters(s);
+    var noRat = s.links.filter(function (l) { return !wordCheck(l.rationale, CONFIG.words.rationale).ok; });
+    var waiting = s.beliefs.filter(function (b) { return !b.sort; });
+    var cyc = findCycle(s);
+    return [
+      check(s.outcomes.length > 0, 'The backwards map has no outcomes yet (screen 5).'),
+      check(!un.length && !unK.length, 'Connect every outcome to the long-term outcome: ' +
+        un.map(function (o) { return nodeName(s, o.id); }).concat(unK.map(function (k) { return nodeName(s, k.id); })).join(', ') + ' do not reach it yet (screen 5).'),
+      check(!noRat.length, 'Give every arrow a rationale: ' + noRat.map(function (l) { return 'arrow ' + arrowNo(s, l.id); }).join(', ') + ' (screen 5).'),
+      check(!waiting.length, 'Sort every belief: ' + plural(waiting.length, 'belief') + ' waiting (screen 6).'),
+      check(!cyc, 'Remove the loop on the map (' + (cyc || []).map(function (id) { return nodeName(s, id); }).join(' → ') + ').')
+    ];
+  }
+  function designGate(s) { return gateResult(designChecks(s)); }
+
+  var SCREEN_CHECKS = { 1: screen1Checks, 2: screen2Checks, 3: screen3Checks, 4: screen4Checks, 5: screen5Checks, 6: screen6Checks };
   function screenChecks(s, no) { return SCREEN_CHECKS[no] ? SCREEN_CHECKS[no](s) : []; }
   // Every check of a week's built screens. Later stages add their screens to
   // SCREEN_CHECKS and to CONFIG.screens.
@@ -1362,6 +1698,489 @@
   }
 
   // ==========================================================================
+  // Week 10: the backwards map as a graph. Nodes are outcomes, clusters and
+  // the long-term outcome (LTO_ID, whose text is lto.text from screen 3).
+  // Arrows run upwards, from a precondition to the outcome it is needed for.
+  // An outcome in a cluster has no arrows of its own: the cluster carries one
+  // arrow for all its members ([TC] p. 4). state.links is derived from the
+  // "leads to" lists by syncLinks(); a link keeps its rationale and evidence
+  // for as long as its arrow exists.
+  // ==========================================================================
+  var LTO_ID = 'lto';
+  function byId(list, id) { for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i]; return null; }
+  function outcomeById(s, id) { return byId(s.outcomes, id); }
+  function clusterById(s, id) { return byId(s.clusters, id); }
+  function linkById(s, id) { return id ? byId(s.links, id) : null; }
+  function evidenceById(s, id) { return byId(s.evidence, id); }
+  function inCluster(s, o) { return !!(o && o.clusterId && clusterById(s, o.clusterId)); }
+  function clusterMembers(s, k) { return s.outcomes.filter(function (o) { return o.clusterId === k.id; }); }
+  function isTarget(s, id) { return id === LTO_ID || !!outcomeById(s, id) || !!clusterById(s, id); }
+
+  // The arrows the map draws, { from, to }, in a stable order: outcomes in
+  // list order, then clusters. Self-arrows and unknown targets are dropped.
+  function mapEdges(s) {
+    var out = [], seen = {};
+    function add(from, to) {
+      var k = from + '>' + to;
+      if (from !== to && isTarget(s, to) && !seen[k]) { seen[k] = 1; out.push({ from: from, to: to }); }
+    }
+    s.outcomes.forEach(function (o) { if (!inCluster(s, o)) o.leadsTo.forEach(function (t) { add(o.id, t); }); });
+    s.clusters.forEach(function (k) { k.leadsTo.slice(0, 1).forEach(function (t) { add(k.id, t); }); });
+    return out;
+  }
+  // Successors of every node: arrows, plus membership (member -> cluster).
+  function graph(s) {
+    var adj = {};
+    adj[LTO_ID] = [];
+    s.outcomes.forEach(function (o) { adj[o.id] = []; });
+    s.clusters.forEach(function (k) { adj[k.id] = []; });
+    mapEdges(s).forEach(function (e) { adj[e.from].push(e.to); });
+    s.outcomes.forEach(function (o) { if (inCluster(s, o)) adj[o.id] = [o.clusterId]; });
+    return adj;
+  }
+  function reaches(adj, from, to) {
+    var seen = {}, stack = [from];
+    while (stack.length) {
+      var n = stack.pop();
+      if (n === to) return true;
+      if (seen[n]) continue;
+      seen[n] = 1;
+      (adj[n] || []).forEach(function (m) { stack.push(m); });
+    }
+    return false;
+  }
+  // Outcomes (and clusters) that do not yet reach the long-term outcome.
+  function unconnected(s) {
+    var adj = graph(s);
+    return s.outcomes.filter(function (o) { return !reaches(adj, o.id, LTO_ID); });
+  }
+  function unconnectedClusters(s) {
+    var adj = graph(s);
+    return s.clusters.filter(function (k) { return !reaches(adj, k.id, LTO_ID); });
+  }
+  function mapConnected(s) { return s.outcomes.length > 0 && unconnected(s).length === 0 && unconnectedClusters(s).length === 0; }
+  // Would an arrow from `from` to `to` (or `from` joining cluster `to`) make
+  // a loop? True when `to` already reaches `from`.
+  function wouldCycle(s, from, to) { return from === to || reaches(graph(s), to, from); }
+  // One loop on the map as a list of ids, or null. The editors refuse loops,
+  // so this only finds one in a hand-edited file.
+  function findCycle(s) {
+    var adj = graph(s), colour = {}, stack = [], found = null;
+    function visit(n) {
+      if (found) return;
+      colour[n] = 1; stack.push(n);
+      (adj[n] || []).forEach(function (m) {
+        if (found) return;
+        if (colour[m] === 1) found = stack.slice(stack.indexOf(m));
+        else if (!colour[m]) visit(m);
+      });
+      stack.pop(); colour[n] = 2;
+    }
+    Object.keys(adj).forEach(function (n) { if (!colour[n]) visit(n); });
+    return found;
+  }
+
+  // Keep links in step with the arrows; drop references to arrows and
+  // evidence that no longer exist.
+  function syncLinks(s) {
+    var old = {}, ids = {}, ev = {};
+    s.links.forEach(function (l) { old[l.from + '>' + l.to] = l; });
+    s.links = mapEdges(s).map(function (e) {
+      return old[e.from + '>' + e.to] || { id: uid('l'), from: e.from, to: e.to, rationale: '', evidenceIds: [] };
+    });
+    s.links.forEach(function (l) { ids[l.id] = 1; });
+    s.evidence.forEach(function (e) { ev[e.id] = 1; });
+    function keepEv(x) { x.evidenceIds = x.evidenceIds.filter(function (id, i, a) { return ev[id] && a.indexOf(id) === i; }); }
+    s.links.forEach(keepEv);
+    s.assumptions.forEach(function (a) { if (a.linkId && !ids[a.linkId]) a.linkId = ''; keepEv(a); });
+    s.reverseImport.forEach(function (r) { if (r.linkId && !ids[r.linkId]) r.linkId = ''; });
+    var sw = {};
+    Object.keys(s.sweep).forEach(function (k) { if (ids[k]) sw[k] = s.sweep[k]; });
+    s.sweep = sw;
+  }
+  // Tidy the map after a load: valid cluster ids, no arrows from members, one
+  // arrow per cluster, no duplicate or dangling "leads to".
+  function normaliseMap(s) {
+    s.outcomes.forEach(function (o) {
+      if (o.clusterId && !clusterById(s, o.clusterId)) o.clusterId = '';
+      if (o.clusterId) o.leadsTo = [];
+      o.leadsTo = o.leadsTo.filter(function (t, i, a) { return typeof t === 'string' && t !== o.id && isTarget(s, t) && a.indexOf(t) === i; });
+    });
+    s.clusters.forEach(function (k) {
+      k.leadsTo = k.leadsTo.filter(function (t) { return typeof t === 'string' && t !== k.id && isTarget(s, t); }).slice(0, 1);
+    });
+    syncLinks(s);
+  }
+
+  function newOutcome(text) {
+    return { id: uid('o'), text: String(text || ''), level: '', pathway: '', clusterId: '', lenses: [], characteristics: [], leadsTo: [] };
+  }
+  function addOutcome(s, text) { var o = newOutcome(text); s.outcomes.push(o); return o; }
+  function dropTarget(s, id) {
+    s.outcomes.forEach(function (o) { o.leadsTo = o.leadsTo.filter(function (t) { return t !== id; }); });
+    s.clusters.forEach(function (k) { k.leadsTo = k.leadsTo.filter(function (t) { return t !== id; }); });
+  }
+  function removeOutcome(s, id) {
+    s.outcomes = s.outcomes.filter(function (o) { return o.id !== id; });
+    dropTarget(s, id);
+    syncLinks(s);
+  }
+  function addCluster(s) { var k = { id: uid('k'), label: '', leadsTo: [] }; s.clusters.push(k); return k; }
+  function removeCluster(s, id) {
+    s.clusters = s.clusters.filter(function (k) { return k.id !== id; });
+    s.outcomes.forEach(function (o) { if (o.clusterId === id) o.clusterId = ''; });
+    dropTarget(s, id);
+    syncLinks(s);
+  }
+  var LOOP_MSG = 'That arrow would make a loop: the outcome it points to already leads back here.';
+  // Turn one arrow on or off. Returns '' or a message saying why not.
+  function setLeadsTo(s, fromId, toId, on) {
+    var o = outcomeById(s, fromId), k = clusterById(s, fromId), node = o || k;
+    if (!node) return 'That outcome no longer exists.';
+    if (o && inCluster(s, o)) return 'This outcome is in a cluster: the cluster carries the arrow.';
+    if (!on) { node.leadsTo = node.leadsTo.filter(function (t) { return t !== toId; }); syncLinks(s); return ''; }
+    if (!isTarget(s, toId)) return 'That outcome no longer exists.';
+    if (wouldCycle(s, fromId, toId)) return LOOP_MSG;
+    if (k) k.leadsTo = [toId];
+    else if (node.leadsTo.indexOf(toId) === -1) node.leadsTo.push(toId);
+    syncLinks(s);
+    return '';
+  }
+  // Put an outcome in a cluster ('' takes it out). Its own arrows go: the
+  // cluster's arrow replaces them.
+  function setCluster(s, outcomeId, clusterId) {
+    var o = outcomeById(s, outcomeId);
+    if (!o) return 'That outcome no longer exists.';
+    if (clusterId && !clusterById(s, clusterId)) return 'That cluster no longer exists.';
+    if (clusterId && wouldCycle(s, outcomeId, clusterId)) return 'That would make a loop: the cluster already leads to this outcome.';
+    o.clusterId = clusterId || '';
+    if (clusterId) o.leadsTo = [];
+    syncLinks(s);
+    return '';
+  }
+  // Pathways in order of first use (names compared without case).
+  function pathwayList(s) {
+    var seen = {}, out = [];
+    s.outcomes.forEach(function (o) {
+      var n = String(o.pathway || '').trim().replace(/\s+/g, ' '), k = n.toLowerCase();
+      if (n && !seen[k]) { seen[k] = 1; out.push(n); }
+    });
+    return out;
+  }
+  function pathwayIndex(s, name) {
+    var k = String(name || '').trim().replace(/\s+/g, ' ').toLowerCase(), list = pathwayList(s);
+    for (var i = 0; i < list.length; i++) if (list[i].toLowerCase() === k) return i;
+    return -1;
+  }
+  function pathwayColour(s, name) { var i = pathwayIndex(s, name); return i === -1 ? '#8A7A62' : CONFIG.pathwayColours[i % CONFIG.pathwayColours.length]; }
+  // Short names used in lists and gate messages.
+  function nodeName(s, id) {
+    if (id === LTO_ID) return 'the long-term outcome';
+    var i = s.outcomes.map(function (o) { return o.id; }).indexOf(id);
+    if (i !== -1) return 'outcome ' + (i + 1);
+    i = s.clusters.map(function (k) { return k.id; }).indexOf(id);
+    return i !== -1 ? 'cluster ' + (i + 1) : 'a removed outcome';
+  }
+  function nodeText(s, id) {
+    if (id === LTO_ID) return String(s.lto.text || '').trim() || 'the long-term outcome';
+    var o = outcomeById(s, id); if (o) return String(o.text || '').trim() || nodeName(s, id);
+    var k = clusterById(s, id); if (k) return String(k.label || '').trim() || nodeName(s, id);
+    return nodeName(s, id);
+  }
+  function linkName(s, l) { return nodeName(s, l.from) + ' → ' + nodeName(s, l.to); }
+  function arrowNo(s, id) { return s.links.map(function (l) { return l.id; }).indexOf(id) + 1; }
+
+  // Outcome wording lint: activity verbs and "and" ([GAF] p. 16). Warnings
+  // only: they never block.
+  function outcomeLint(text) {
+    var a = lintActivity(text), n = lintAnd(text);
+    return { activity: a, and: n, ok: !a.length && !n.length };
+  }
+  function outcomeLintWarnings(l) {
+    var out = [];
+    l.activity.forEach(function (v) { out.push('\u201C' + v + '\u201D ' + CONFIG.lintMessages.outcomeActivity); });
+    l.and.forEach(function (v) { out.push('\u201C' + v + '\u201D ' + CONFIG.lintMessages.and); });
+    return out;
+  }
+
+  // ==========================================================================
+  // Week 10: the sorter. Every belief is recorded, then routed by one
+  // question ([TC] p. 6): already true in Bodø, with evidence -> assumption
+  // register; not yet true -> a precondition on the map; cannot know
+  // without residents -> find out first.
+  // ==========================================================================
+  function beliefById(s, id) { return byId(s.beliefs, id); }
+  function addBelief(s, text, screenNo, now) {
+    var b = { id: uid('b'), text: String(text || '').trim(), screen: screenNo || 0, sort: '', refId: '', at: nowIso(now) };
+    s.beliefs.push(b);
+    return b;
+  }
+  function lensOk(id) { return CONFIG.lenses.some(function (l) { return l.id === id; }); }
+  // Route one belief. answer = 'assumption' | 'precondition' | 'fof'.
+  // opts (assumption only) = { linkId, lens, evidenceIds }. Returns
+  // { ok, errors: [], item }.
+  function sortBelief(s, id, answer, opts) {
+    var b = beliefById(s, id);
+    if (!b) return { ok: false, errors: ['That belief no longer exists.'] };
+    if (b.sort) return { ok: false, errors: ['This belief has already been sorted.'] };
+    var item;
+    if (answer === 'assumption') {
+      opts = opts || {};
+      var errs = [], ev = (opts.evidenceIds || []).filter(function (x, i, a) { return evidenceById(s, x) && a.indexOf(x) === i; });
+      if (!linkById(s, opts.linkId)) errs.push('Choose the arrow this assumption supports.');
+      if (!lensOk(opts.lens)) errs.push('Choose the lens it belongs to.');
+      if (!ev.length) errs.push('Attach at least one evidence item: \u201Cyes\u201D needs evidence. Add it to the evidence log first.');
+      if (errs.length) return { ok: false, errors: errs };
+      item = { id: uid('a'), linkId: opts.linkId, text: b.text, lens: opts.lens, evidenceIds: ev, sort: 'assumption' };
+      s.assumptions.push(item);
+    } else if (answer === 'precondition') {
+      item = addOutcome(s, b.text);
+    } else if (answer === 'fof') {
+      item = addFof(s, b.text, 'sorter', b.id);
+    } else {
+      return { ok: false, errors: ['Choose one of the three answers.'] };
+    }
+    b.sort = answer; b.refId = item.id;
+    return { ok: true, errors: [], item: item };
+  }
+  function removeBelief(s, id) { s.beliefs = s.beliefs.filter(function (b) { return b.id !== id || b.sort; }); }
+  function sortLabel(id) { var a = CONFIG.sorter.answers.filter(function (x) { return x.id === id; })[0]; return a ? a.label : 'Not sorted yet'; }
+
+  // ==========================================================================
+  // Week 10: evidence and Reverse Import
+  // ==========================================================================
+  function newEvidence() {
+    return { id: uid('e'), summary: '', source: '', type: '', slide: '', ratings: { causal: '', scope: '', implications: '', method: '' }, bodoVerdict: '', member: '', factId: '' };
+  }
+  function addEvidence(s) { var e = newEvidence(); s.evidence.push(e); return e; }
+  function removeEvidence(s, id) { s.evidence = s.evidence.filter(function (e) { return e.id !== id; }); syncLinks(s); }
+  function evType(id) { return CONFIG.evidenceTypes.filter(function (t) { return t.id === id; })[0] || null; }
+  function factById(id) { return CONFIG.facts.filter(function (f) { return f.id === id; })[0] || null; }
+  // Choose a week 7 fact: its text and source fill the item, unless the
+  // group has already written its own.
+  function setEvidenceFact(s, evId, factId) {
+    var e = evidenceById(s, evId), f = factById(factId), prev = factById(e && e.factId);
+    if (!e) return;
+    e.factId = f ? f.id : '';
+    if (!f) return;
+    if (!String(e.summary).trim() || (prev && e.summary === prev.text)) e.summary = f.text;
+    if (!String(e.source).trim() || (prev && e.source === prev.source)) e.source = f.source;
+  }
+  // Attach or detach an evidence item on a rationale (kind 'link') or an
+  // assumption (kind 'assumption').
+  function attachEvidence(s, evId, kind, targetId, on) {
+    var t = kind === 'link' ? linkById(s, targetId) : byId(s.assumptions, targetId);
+    if (!t || !evidenceById(s, evId)) return false;
+    t.evidenceIds = t.evidenceIds.filter(function (x) { return x !== evId; });
+    if (on) t.evidenceIds.push(evId);
+    return true;
+  }
+  function evidenceUses(s, evId) {
+    var out = [];
+    s.links.forEach(function (l, i) { if (l.evidenceIds.indexOf(evId) !== -1) out.push('arrow ' + (i + 1)); });
+    s.assumptions.forEach(function (a, i) { if (a.evidenceIds.indexOf(evId) !== -1) out.push('assumption ' + (i + 1)); });
+    return out;
+  }
+  function newReverse(member) { return { member: member, course: '', claim: '', linkId: '', stance: '', absent: false }; }
+  function reverseFor(s, member) { return s.reverseImport.filter(function (r) { return r.member === member; })[0] || null; }
+  // One Reverse Import entry per member, in member order. Entries of members
+  // no longer in the group are dropped.
+  function syncReverse(s) {
+    var before = JSON.stringify(s.reverseImport);
+    s.reverseImport = members(s).map(function (m) { return reverseFor(s, m) || newReverse(m); });
+    return JSON.stringify(s.reverseImport) !== before;
+  }
+
+  // ==========================================================================
+  // Week 10: diagram layout. Deterministic and independent of screen width
+  // (the diagram scrolls inside its own box). Each outcome sits one row below
+  // the highest outcome it leads to, so rows read upwards ([TC] p. 4); the
+  // long-term outcome is on top, with the ultimate goal above a dashed
+  // accountability ceiling ([TC] p. 3). Boxes in a row are placed left to
+  // right with a gap, so no two boxes overlap.
+  // ==========================================================================
+  var DG = { nodeW: 176, ltoW: 360, gapX: 24, gapY: 52, gapIn: 12, pad: 9, lineH: 15, headH: 15, pipH: 14,
+    chars: 22, ltoChars: 46, clusterHead: 22, margin: 24, ceilingGap: 40 };
+  // Greedy word wrap; a word longer than a line is broken.
+  function wrapText(text, n) {
+    var words = String(text || '').trim().split(/\s+/).filter(Boolean), lines = [], cur = '';
+    words.forEach(function (w) {
+      while (w.length > n) { if (cur) { lines.push(cur); cur = ''; } lines.push(w.slice(0, n)); w = w.slice(n); }
+      if (!w) return;
+      if (!cur) cur = w;
+      else if ((cur + ' ' + w).length <= n) cur += ' ' + w;
+      else { lines.push(cur); cur = w; }
+    });
+    if (cur) lines.push(cur);
+    return lines.length ? lines : ['—'];
+  }
+  function outcomeBoxH(lines) { return DG.pad * 2 + DG.headH + lines.length * DG.lineH + DG.pipH; }
+
+  function layoutMap(s) {
+    var adj = graph(s), rank = {}, busy = {};
+    function rankOf(id) {
+      if (id === LTO_ID) return 0;
+      if (rank[id] !== undefined) return rank[id];
+      if (busy[id]) return 0;
+      busy[id] = 1;
+      var o = outcomeById(s, id), r;
+      if (o && inCluster(s, o)) r = rankOf(o.clusterId);
+      else {
+        var t = adj[id] || [];
+        r = t.length ? 1 + Math.max.apply(null, t.map(rankOf)) : 1;
+      }
+      busy[id] = 0;
+      rank[id] = r;
+      return r;
+    }
+    var nodes = [], byNode = {}, rows = [], dummies = [];
+    // The ultimate goal and the long-term outcome.
+    var goalLines = wrapText(s.lto.ceiling.ultimateGoal || 'Ultimate goal (screen 3)', DG.ltoChars);
+    var ltoLines = wrapText(s.lto.text || 'Long-term outcome (screen 3)', DG.ltoChars);
+    var goal = { id: 'goal', kind: 'goal', w: DG.ltoW, h: DG.pad * 2 + DG.headH + goalLines.length * DG.lineH, lines: goalLines };
+    var lto = { id: LTO_ID, kind: 'lto', w: DG.ltoW, h: DG.pad * 2 + DG.headH + ltoLines.length * DG.lineH, lines: ltoLines };
+    // Items: free outcomes and clusters (a cluster carries its members).
+    var items = [], itemOf = {};
+    s.outcomes.forEach(function (o, i) {
+      if (inCluster(s, o)) return;
+      var lines = wrapText(o.text, DG.chars);
+      items.push({ id: o.id, kind: 'outcome', idx: i, w: DG.nodeW, h: outcomeBoxH(lines), lines: lines, path: pathwayIndex(s, o.pathway) });
+    });
+    s.clusters.forEach(function (k, i) {
+      var mem = clusterMembers(s, k).map(function (o) {
+        var lines = wrapText(o.text, DG.chars);
+        return { id: o.id, kind: 'member', idx: s.outcomes.indexOf(o), w: DG.nodeW, h: outcomeBoxH(lines), lines: lines, cluster: k.id };
+      });
+      var inner = mem.length ? Math.max.apply(null, mem.map(function (m) { return m.h; })) : 24;
+      var w = mem.length ? mem.length * DG.nodeW + (mem.length - 1) * DG.gapIn + DG.pad * 2 : DG.nodeW;
+      var paths = mem.map(function (m) { return pathwayIndex(s, outcomeById(s, m.id).pathway); }).filter(function (p) { return p !== -1; });
+      items.push({ id: k.id, kind: 'cluster', idx: s.outcomes.length + i, w: w, h: DG.clusterHead + inner + DG.pad, members: mem, path: paths.length ? Math.min.apply(null, paths) : -1 });
+    });
+    items.forEach(function (it) {
+      itemOf[it.id] = it; it.up = [];
+      var r = rankOf(it.id);
+      (rows[r] = rows[r] || []).push(it);
+    });
+    // Arrows. One that skips rows gets a waypoint in every row it crosses;
+    // the waypoint takes its own slot in the row, so the arrow runs through
+    // a gap between boxes, never over one.
+    var edges = s.links.filter(function (l) { return itemOf[l.from] && isTarget(s, l.to); }).map(function (l) {
+      var e = { id: l.id, from: l.from, to: l.to, rationale: !!wordCheck(l.rationale, CONFIG.words.rationale).ok, way: [] };
+      var rs = rankOf(l.from), rt = rankOf(l.to), prev = l.to;
+      for (var r = rt + 1; r < rs; r++) {
+        var d = { id: l.id + '@' + r, kind: 'dummy', idx: 1e6 + r, w: 4, h: 0, up: [prev], path: itemOf[l.from].path };
+        (rows[r] = rows[r] || []).push(d);
+        dummies.push(d); e.way.push(d);
+        prev = d.id;
+      }
+      e.hopUp = prev;
+      e.hopDown = e.way.length ? e.way[0].id : l.from;
+      itemOf[l.from].up.push(prev);
+      return e;
+    });
+    // Place the top: goal, ceiling, long-term outcome (centred on x = 0).
+    var y = DG.margin;
+    goal.x = -DG.ltoW / 2; goal.y = y; y += goal.h + DG.ceilingGap;
+    var ceilingY = goal.y + goal.h + DG.ceilingGap / 2;
+    lto.x = -DG.ltoW / 2; lto.y = y; y += lto.h;
+    nodes.push(goal, lto); byNode.goal = goal; byNode[LTO_ID] = lto;
+    function centreOf(id) {
+      var n = byNode[id];
+      return n ? n.x + n.w / 2 : 0;
+    }
+    for (var r = 1; r < rows.length; r++) {
+      var row = rows[r] || [];
+      if (!row.length) continue;
+      y += DG.gapY;
+      row.forEach(function (it) {
+        var t = it.up.filter(function (id) { return byNode[id]; });
+        it.want = t.length ? t.reduce(function (a, id) { return a + centreOf(id); }, 0) / t.length : 0;
+      });
+      row.sort(function (a, b) {
+        return (a.want - b.want) || ((a.path === -1 ? 99 : a.path) - (b.path === -1 ? 99 : b.path)) || (a.idx - b.idx);
+      });
+      var right = -Infinity, rowH = 0;
+      row.forEach(function (it) {
+        it.x = Math.max(it.want - it.w / 2, right + DG.gapX);
+        right = it.x + it.w;
+        rowH = Math.max(rowH, it.h);
+      });
+      // Centre the row on what its boxes want (a shift keeps the gaps).
+      var wantMid = row.reduce(function (a, it) { return a + it.want; }, 0) / row.length;
+      var shift = wantMid - (row[0].x + right) / 2;
+      row.forEach(function (it) {
+        it.x += shift; it.y = y; it.rowTop = y; it.rowBottom = y + Math.max(rowH, 1);
+        byNode[it.id] = it;
+        if (it.kind === 'dummy') return;
+        nodes.push(it);
+        if (it.kind === 'cluster') {
+          it.members.forEach(function (m, j) {
+            m.x = it.x + DG.pad + j * (DG.nodeW + DG.gapIn); m.y = it.y + DG.clusterHead;
+            nodes.push(m); byNode[m.id] = m;
+          });
+        }
+      });
+      y += rowH;
+    }
+    // Normalise to positive coordinates.
+    var all = nodes.concat(dummies);
+    var dx = DG.margin - Math.min.apply(null, all.map(function (n) { return n.x; }));
+    all.forEach(function (n) { n.x += dx; });
+    var width = Math.max.apply(null, all.map(function (n) { return n.x + n.w; })) + DG.margin;
+    var height = y + DG.margin;
+    // Arrow ends: from the top of the source box to the bottom of the target
+    // box; several arrows at one box are spread along its edge.
+    edges = edges.filter(function (e) { return byNode[e.from] && byNode[e.to]; });
+    function spread(key, end, other) {
+      var groups = {};
+      edges.forEach(function (e) { (groups[e[key]] = groups[e[key]] || []).push(e); });
+      Object.keys(groups).forEach(function (id) {
+        var g = groups[id], n = byNode[id];
+        g.sort(function (a, b) { return centreOf(a[other]) - centreOf(b[other]); });
+        var step = Math.min(16, (n.w - 20) / Math.max(1, g.length));
+        g.forEach(function (e, i) { e[end] = n.x + n.w / 2 + (i - (g.length - 1) / 2) * step; });
+      });
+    }
+    spread('from', 'x1', 'hopUp');
+    spread('to', 'x2', 'hopDown');
+    edges.forEach(function (e) {
+      var a = byNode[e.from], b = byNode[e.to];
+      e.y1 = a.y; e.y2 = b.y + b.h;
+      // Points from the source upwards: through each waypoint's row.
+      e.points = [[e.x1, e.y1]];
+      e.way.slice().reverse().forEach(function (d) {
+        var cx = d.x + d.w / 2;
+        e.points.push([cx, d.rowBottom], [cx, d.rowTop]);
+      });
+      e.points.push([e.x2, e.y2]);
+    });
+    return { width: Math.ceil(width), height: Math.ceil(height), nodes: nodes, edges: edges, ceilingY: ceilingY, waypoints: dummies };
+  }
+  // The SVG path of an arrow: curves between rows, straight through the
+  // rows it crosses.
+  function edgePath(e) {
+    var p = e.points, d = 'M' + p[0][0] + ',' + p[0][1];
+    for (var i = 1; i < p.length; i++) {
+      var a = p[i - 1], b = p[i];
+      if (a[0] === b[0] && i % 2 === 0) { d += ' L' + b[0] + ',' + b[1]; continue; }
+      var dy = Math.max(12, a[1] - b[1]) * 0.45;
+      d += ' C' + a[0] + ',' + (a[1] - dy) + ' ' + b[0] + ',' + (b[1] + dy) + ' ' + b[0] + ',' + (i === p.length - 1 ? b[1] + 1 : b[1]);
+    }
+    return d;
+  }
+  // Pairs of boxes that overlap (a member sits inside its own cluster, which
+  // is not an overlap). Used by the tests; an empty list is the rule.
+  function layoutOverlaps(lay) {
+    var out = [], n = lay.nodes;
+    for (var i = 0; i < n.length; i++) for (var j = i + 1; j < n.length; j++) {
+      var a = n[i], b = n[j];
+      if ((a.kind === 'member' && a.cluster === b.id) || (b.kind === 'member' && b.cluster === a.id)) continue;
+      if (a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h) out.push([a.id, b.id]);
+    }
+    return out;
+  }
+
+  // ==========================================================================
   // Week 7 import
   // ==========================================================================
   function validateWeek7(obj) {
@@ -1404,6 +2223,82 @@
     return [];
   }
 
+  // The outcomes framework as inline SVG. opts.interactive: every outcome,
+  // cluster and arrow is a focusable button (Enter or Space opens its
+  // editor). Without it (print, report) the SVG is a plain picture.
+  function charHex(id) { var c = CONFIG.characteristics.filter(function (x) { return x.id === id; })[0]; return c ? c.hex : '#8A7A62'; }
+  function lensShort(id) { var l = CONFIG.lenses.filter(function (x) { return x.id === id; })[0]; return l ? l.label.slice(0, 3).toUpperCase() : ''; }
+  function svgText(lines, x, y, cls) {
+    return '<text class="' + cls + '" x="' + x + '" y="' + y + '">' + lines.map(function (l, i) {
+      return '<tspan x="' + x + '" dy="' + (i ? DG.lineH : 0) + '">' + esc(l) + '</tspan>';
+    }).join('') + '</text>';
+  }
+  function diagramSvg(s, opts) {
+    opts = opts || {};
+    var lay = layoutMap(s), live = !!opts.interactive, adj = graph(s), h = '';
+    function btn(action, arg, label) {
+      return live ? ' tabindex="0" role="button" data-action="' + action + '" data-arg="' + esc(arg) + '" aria-label="' + esc(label) + '"' : '';
+    }
+    h += '<svg class="dg" viewBox="0 0 ' + lay.width + ' ' + lay.height + '" width="' + lay.width + '" height="' + lay.height + '"' +
+      ' role="' + (live ? 'group' : 'img') + '" aria-label="Outcomes framework: ' + plural(s.outcomes.length, 'outcome') + ', ' + plural(s.links.length, 'arrow') + '">' +
+      '<defs><marker id="dg-head' + (live ? '' : '-p') + '" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">' +
+      '<path d="M0,0 L10,5 L0,10 z" fill="#2A1F18"/></marker></defs>';
+    // Accountability ceiling.
+    h += '<line class="dg-ceiling" x1="' + DG.margin / 2 + '" x2="' + (lay.width - DG.margin / 2) + '" y1="' + lay.ceilingY + '" y2="' + lay.ceilingY + '"/>' +
+      '<text class="dg-ceiling-label" x="' + DG.margin / 2 + '" y="' + (lay.ceilingY - 6) + '">ACCOUNTABILITY CEILING</text>';
+    // Boxes.
+    lay.nodes.forEach(function (n) {
+      if (n.kind === 'goal' || n.kind === 'lto') {
+        var top = n.kind === 'goal' ? 'ULTIMATE GOAL · ABOVE THE CEILING' : 'LONG-TERM OUTCOME';
+        h += '<g class="dg-node dg-' + n.kind + '"' + btn('dg-open', n.id, (n.kind === 'goal' ? 'Ultimate goal: ' : 'Long-term outcome: ') + n.lines.join(' ') + '. Edit on screen 3.') + '>' +
+          '<rect x="' + n.x + '" y="' + n.y + '" width="' + n.w + '" height="' + n.h + '"/>' +
+          '<text class="dg-head" x="' + (n.x + DG.pad) + '" y="' + (n.y + DG.pad + 9) + '">' + top + '</text>' +
+          svgText(n.lines, n.x + DG.pad, n.y + DG.pad + DG.headH + 11, 'dg-txt dg-big') + '</g>';
+        return;
+      }
+      if (n.kind === 'cluster') {
+        var k = clusterById(s, n.id), kNo = s.clusters.indexOf(k) + 1, kOk = reaches(adj, k.id, LTO_ID);
+        h += '<g class="dg-node dg-cluster' + (kOk ? '' : ' dg-loose') + '"' + btn('dg-open', n.id, 'Cluster ' + kNo + ': ' + (k.label || 'no label') + ', ' + plural(n.members.length, 'outcome') + (kOk ? '' : ', not yet connected')) + '>' +
+          '<rect x="' + n.x + '" y="' + n.y + '" width="' + n.w + '" height="' + n.h + '"/>' +
+          '<text class="dg-head" x="' + (n.x + DG.pad) + '" y="' + (n.y + 15) + '">' + esc(('Cluster ' + kNo + ' · ' + (k.label || '')).toUpperCase().slice(0, Math.max(24, Math.floor(n.w / 6.5)))) + '</text></g>';
+        return;
+      }
+      var o = outcomeById(s, n.id), no = s.outcomes.indexOf(o) + 1, ok = reaches(adj, o.id, LTO_ID);
+      var col = pathwayColour(s, o.pathway), lv = CONFIG.outcomeLevels.filter(function (x) { return x.id === o.level; })[0];
+      var head = short((no + ' · ' + (lv ? lv.label : '?') + (o.pathway ? ' · ' + o.pathway : '')).toUpperCase(), 26);
+      h += '<g class="dg-node dg-outcome' + (ok ? '' : ' dg-loose') + '"' + btn('dg-open', n.id, 'Outcome ' + no + ': ' + (o.text || 'no text yet') + (o.pathway ? ', pathway ' + o.pathway : '') + (ok ? '' : ', not yet connected to the long-term outcome')) + '>' +
+        '<rect x="' + n.x + '" y="' + n.y + '" width="' + n.w + '" height="' + n.h + '"/>' +
+        '<rect class="dg-accent" x="' + n.x + '" y="' + n.y + '" width="6" height="' + n.h + '" style="fill:' + col + '"/>' +
+        '<text class="dg-head" x="' + (n.x + DG.pad + 2) + '" y="' + (n.y + DG.pad + 9) + '">' + esc(head) + '</text>' +
+        svgText(n.lines, n.x + DG.pad + 2, n.y + DG.pad + DG.headH + 10, 'dg-txt');
+      var py = n.y + n.h - DG.pad - 8;
+      o.characteristics.forEach(function (cid, j) { h += '<rect class="dg-pip" x="' + (n.x + DG.pad + 2 + j * 11) + '" y="' + py + '" width="8" height="8" style="fill:' + charHex(cid) + '"/>'; });
+      var lens = o.lenses.map(lensShort).filter(Boolean).join(' ');
+      if (lens) h += '<text class="dg-lens" x="' + (n.x + n.w - DG.pad) + '" y="' + (py + 8) + '" text-anchor="end">' + esc(lens) + '</text>';
+      h += '</g>';
+    });
+    // Arrows, drawn last so they stay visible; a dashed arrow has no
+    // rationale yet. The number sits just above the source box.
+    lay.edges.forEach(function (e) {
+      var no = arrowNo(s, e.id), d = edgePath(e);
+      // Gold and orange are darkened on arrows, for contrast on white.
+      var src = outcomeById(s, e.from), col = src ? pathwayColour(s, src.pathway) : '#2A1F18';
+      col = { '#D4A020': '#7A5800', '#CC6830': '#9A4A1A', '#C85218': '#9A4A1A' }[col] || col;
+      h += '<g class="dg-arrow' + (e.rationale ? '' : ' dg-norat') + '"' + btn('dg-open', e.id, 'Arrow ' + no + ': ' + nodeName(s, e.from) + ' leads to ' + nodeName(s, e.to) + (e.rationale ? '' : ', rationale missing')) + '>' +
+        '<path class="dg-hit" d="' + d + '"/>' +
+        '<path class="dg-line" d="' + d + '" style="stroke:' + col + '" marker-end="url(#dg-head' + (live ? '' : '-p') + ')"/>' +
+        '<rect class="dg-badge" x="' + (e.x1 - 9) + '" y="' + (e.y1 - 22) + '" width="18" height="15"/>' +
+        '<text class="dg-badge-t" x="' + e.x1 + '" y="' + (e.y1 - 11) + '" text-anchor="middle">' + no + '</text></g>';
+    });
+    return h + '</svg>';
+  }
+  function diagramLegend(s) {
+    var p = pathwayList(s);
+    return '<ul class="dg-legend">' + p.map(function (name) {
+      return '<li><span class="sw" style="background:' + pathwayColour(s, name) + '"></span>' + esc(name) + '</li>';
+    }).join('') + '<li><span class="sw dashed"></span>Dashed arrow: no rationale yet</li><li><span class="sw loose"></span>Dashed box: not yet connected</li></ul>';
+  }
+
   // ==========================================================================
   // Outputs: registries. Later stages add sections and card types here; the
   // report, Copy as text and the A6 printer read only these lists.
@@ -1431,6 +2326,74 @@
     });
     var unplaced = ct.claims.filter(function (c) { return ct.order.indexOf(c.id) === -1; });
     unplaced.forEach(function (c) { out.push('(not placed) ' + dash(c.text) + ' (slide ' + dash(c.slide) + ')'); });
+    return out;
+  }
+
+  function lensLabel(id) { var l = CONFIG.lenses.filter(function (x) { return x.id === id; })[0]; return l ? l.label : ''; }
+  function charLabel(id) { var c = CONFIG.characteristics.filter(function (x) { return x.id === id; })[0]; return c ? c.label : ''; }
+  function verdictLabel(id) { var v = CONFIG.bodoVerdicts.filter(function (x) { return x.id === id; })[0]; return v ? v.label : ''; }
+  function stanceLabel(id) { var v = CONFIG.stances.filter(function (x) { return x.id === id; })[0]; return v ? v.label : ''; }
+  function ratingLabel(id) { var v = CONFIG.ratingScale.filter(function (x) { return x.id === id; })[0]; return v ? v.label : ''; }
+  function evRefs(s, ids) { return ids.map(function (x) { var e = evidenceById(s, x); return e ? 'E' + (s.evidence.indexOf(e) + 1) : ''; }).filter(Boolean).join(', '); }
+  function evSourceText(e) {
+    var t = evType(e.type);
+    return (t ? t.label : 'Type not chosen') + ': ' + dash(e.source) + (t && t.slide ? ', slide ' + dash(e.slide) : '') + (e.member ? ' (logged by ' + e.member + ')' : '');
+  }
+  function ratingsText(e) {
+    var r = CONFIG.criteria.filter(function (c) { return e.ratings[c.id]; }).map(function (c) { return c.label + ' ' + ratingLabel(e.ratings[c.id]); });
+    return r.length ? r.join('; ') : 'Not rated';
+  }
+  function outcomeLine(s, o) {
+    var i = s.outcomes.indexOf(o), lv = CONFIG.outcomeLevels.filter(function (x) { return x.id === o.level; })[0];
+    var tags = [lv ? lv.label : 'level not set'].concat(o.lenses.map(lensLabel), o.characteristics.map(charLabel)).filter(Boolean).join('; ');
+    var to = inCluster(s, o) ? 'in ' + nodeName(s, o.clusterId) : (o.leadsTo.length ? 'leads to ' + o.leadsTo.map(function (t) { return nodeName(s, t); }).join(', ') : 'not connected');
+    return 'Outcome ' + (i + 1) + ': ' + dash(o.text) + ' [' + tags + '] (' + to + ')';
+  }
+  // The framework as text: the top of the map, each pathway's outcomes,
+  // the clusters, then every arrow with its rationale.
+  function mapText(s) {
+    var out = ['Ultimate goal (above the accountability ceiling): ' + dash(s.lto.ceiling.ultimateGoal), 'Long-term outcome: ' + dash(s.lto.text)];
+    var paths = pathwayList(s);
+    paths.concat(['']).forEach(function (p) {
+      var list = s.outcomes.filter(function (o) { return pathwayIndex(s, o.pathway) === (p ? pathwayIndex(s, p) : -1); });
+      if (!list.length) return;
+      out.push('Pathway: ' + (p || '(not named)'));
+      list.forEach(function (o) { out.push('  ' + outcomeLine(s, o)); });
+    });
+    s.clusters.forEach(function (k, i) {
+      out.push('Cluster ' + (i + 1) + ': ' + dash(k.label) + ' (' + clusterMembers(s, k).map(function (o) { return nodeName(s, o.id); }).join(', ') +
+        '; leads to ' + (k.leadsTo.length ? nodeName(s, k.leadsTo[0]) : 'nothing yet') + ')');
+    });
+    out.push('Arrows and rationales:');
+    s.links.forEach(function (l, i) {
+      out.push('  ' + (i + 1) + '. \u201C' + nodeText(s, l.from) + '\u201D is needed for \u201C' + nodeText(s, l.to) + '\u201D because ' + dash(l.rationale) +
+        (l.evidenceIds.length ? ' [evidence ' + evRefs(s, l.evidenceIds) + ']' : ''));
+    });
+    if (!s.links.length) out.push('  —');
+    return out;
+  }
+  function registerText(s) {
+    var out = ['Assumption register:'];
+    s.assumptions.forEach(function (a, i) {
+      var l = linkById(s, a.linkId);
+      out.push('  A' + (i + 1) + '. ' + dash(a.text) + ' (arrow ' + (l ? arrowNo(s, l.id) + ', ' + linkName(s, l) : 'not chosen') + '; ' + dash(lensLabel(a.lens)) + '; evidence ' + dash(evRefs(s, a.evidenceIds)) + ')');
+    });
+    if (!s.assumptions.length) out.push('  —');
+    out.push('Evidence log:');
+    s.evidence.forEach(function (e, i) {
+      out.push('  E' + (i + 1) + '. ' + dash(e.summary) + ' (' + evSourceText(e) + '). Ratings: ' + ratingsText(e) + '. Bodø: ' + dash(verdictLabel(e.bodoVerdict)));
+    });
+    if (!s.evidence.length) out.push('  —');
+    out.push('Reverse Import:');
+    s.reverseImport.forEach(function (r) {
+      var l = linkById(s, r.linkId);
+      out.push('  ' + r.member + ': ' + (r.absent ? 'absent' : dash(r.course) + ', ' + dash(r.claim) + ' (' + dash(stanceLabel(r.stance)) + ' arrow ' + (l ? arrowNo(s, l.id) : '—') + ')'));
+    });
+    out.push('Sorter:');
+    s.beliefs.forEach(function (b, i) { out.push('  ' + (i + 1) + '. ' + dash(b.text) + ' → ' + sortLabel(b.sort)); });
+    if (!s.beliefs.length) out.push('  —');
+    var swept = s.links.filter(function (l) { return s.sweep[l.id]; }).length;
+    out.push('Completeness pass: ' + swept + ' of ' + s.links.length + ' arrows checked.');
     return out;
   }
 
@@ -1501,6 +2464,41 @@
             return '<tr><td>' + esc(dash(x.name)) + '</td><td>' + esc(dash(yesNo(x.affected))) + '</td><td>' + esc(dash(levelLabel(x.influence))) +
               '</td><td>' + esc(dash(levelLabel(x.interest))) + '</td><td>' + esc(dash(yesNo(x.canWeAsk))) + '</td><td>' + esc(x.fromBrief ? dash(x.slide) : '—') + '</td></tr>';
           }).join('') + '</tbody></table>';
+      } },
+    { id: 'map', week: 10, title: 'Outcomes framework (screen 5)', colour: '#B83068',
+      has: function (s) { return s.outcomes.length > 0 || s.clusters.length > 0; },
+      text: function (s) { return mapText(s); },
+      html: function (s) {
+        return '<div class="rep-diagram">' + diagramSvg(s) + '</div>' +
+          '<table class="rep-table"><thead><tr><th>Arrow</th><th>Rationale</th><th>Evidence</th></tr></thead><tbody>' +
+          s.links.map(function (l, i) {
+            return '<tr><td>' + (i + 1) + '. ' + esc(nodeText(s, l.from)) + ' → ' + esc(nodeText(s, l.to)) + '</td><td>' + esc(dash(l.rationale)) + '</td><td>' +
+              esc(dash(l.evidenceIds.map(function (x) { return 'E' + (s.evidence.indexOf(evidenceById(s, x)) + 1); }).join(', '))) + '</td></tr>';
+          }).join('') + '</tbody></table>';
+      } },
+    { id: 'register', week: 10, title: 'Assumptions and evidence (screen 6)', colour: '#C85218',
+      has: function (s) { return s.beliefs.length > 0 || s.assumptions.length > 0 || s.evidence.length > 0 || s.reverseImport.some(function (r) { return r.claim || r.absent; }); },
+      text: function (s) { return registerText(s); },
+      html: function (s) {
+        var h = '<h3 class="rep-sub">Assumption register</h3>';
+        h += s.assumptions.length ? '<table class="rep-table"><thead><tr><th>Assumption</th><th>On arrow</th><th>Lens</th><th>Evidence</th></tr></thead><tbody>' +
+          s.assumptions.map(function (a, i) {
+            var l = linkById(s, a.linkId);
+            return '<tr><td>A' + (i + 1) + '. ' + esc(dash(a.text)) + '</td><td>' + esc(l ? arrowNo(s, l.id) + '. ' + linkName(s, l) : '—') + '</td><td>' + esc(dash(lensLabel(a.lens))) + '</td><td>' + esc(dash(evRefs(s, a.evidenceIds))) + '</td></tr>';
+          }).join('') + '</tbody></table>' : '<div class="rep-item">—</div>';
+        h += '<h3 class="rep-sub">Evidence log</h3>';
+        h += s.evidence.length ? '<table class="rep-table"><thead><tr><th>Evidence</th><th>Type and source</th><th>Ratings (week 6 criteria)</th><th>Bodø</th></tr></thead><tbody>' +
+          s.evidence.map(function (e, i) {
+            return '<tr><td>E' + (i + 1) + '. ' + esc(dash(e.summary)) + '</td><td>' + esc(evSourceText(e)) + '</td><td>' + esc(ratingsText(e)) + '</td><td>' + esc(dash(verdictLabel(e.bodoVerdict))) + '</td></tr>';
+          }).join('') + '</tbody></table>' : '<div class="rep-item">—</div>';
+        h += '<h3 class="rep-sub">Reverse Import</h3><table class="rep-table"><thead><tr><th>Member</th><th>Course and claim</th><th>Arrow</th><th>Stance</th></tr></thead><tbody>' +
+          s.reverseImport.map(function (r) {
+            var l = linkById(s, r.linkId);
+            return r.absent ? '<tr><td>' + esc(r.member) + '</td><td colspan="3">Absent</td></tr>' :
+              '<tr><td>' + esc(r.member) + '</td><td>' + esc(dash(r.course)) + ': ' + esc(dash(r.claim)) + '</td><td>' + esc(l ? arrowNo(s, l.id) + '. ' + linkName(s, l) : '—') + '</td><td>' + esc(dash(stanceLabel(r.stance))) + '</td></tr>';
+          }).join('') + '</tbody></table>';
+        h += '<h3 class="rep-sub">Sorter</h3>' + s.beliefs.map(function (b, i) { return repItem('Belief ' + (i + 1) + ' · ' + sortLabel(b.sort), b.text); }).join('');
+        return h;
       } },
     { id: 'fof', week: 9, title: 'Find out first', colour: '#7A5828',
       has: function (s) { return s.findOutFirst.length > 0; },
@@ -1613,7 +2611,7 @@
       (opts.short ? ' class="short"' : '') + (opts.lint ? ' data-lint="' + opts.lint + '"' : '') + (opts.readonly ? ' readonly' : '') +
       ' aria-describedby="' + id + '-wc' + (opts.hint ? ' ' + id + '-hint' : '') + '">' + esc(value) + '</textarea>' +
       '<div class="word-count ' + (wordCheck(value, min).ok ? 'ok' : 'bad') + '" id="' + id + '-wc" aria-live="polite">' + wordLabel(value, min) + '</div>' +
-      (opts.lint ? '<div class="warn" id="' + id + '-warn" aria-live="polite">' + lintHtml(value) + '</div>' : '') +
+      (opts.lint ? '<div class="warn" id="' + id + '-warn" aria-live="polite">' + (opts.lint === 'outcome' ? outcomeLintHtml(value) : lintHtml(value)) + '</div>' : '') +
       '</div>';
   }
   function lintHtml(v) {
@@ -1624,7 +2622,8 @@
     opts = opts || {};
     return '<div class="field' + (opts.cls ? ' ' + opts.cls : '') + '"><label for="' + id + '">' + esc(label) + '</label>' +
       '<input type="text" id="' + id + '" data-f="' + esc(path) + '" data-label="' + esc(opts.logLabel || label) + '" value="' + esc(value) + '"' +
-      (opts.slide ? ' class="slide" inputmode="numeric" autocomplete="off"' : '') + (opts.max ? ' maxlength="' + opts.max + '"' : '') + '></div>';
+      (opts.slide ? ' class="slide" inputmode="numeric" autocomplete="off"' : '') + (opts.max ? ' maxlength="' + opts.max + '"' : '') +
+      (opts.list ? ' list="' + opts.list + '" autocomplete="off"' : '') + '></div>';
   }
   function choice(name, value, label, checked, colour, type, path, extraCls) {
     return '<label class="choice' + (extraCls || '') + '"' + (colour ? ' style="--choice-colour:' + colour + ';--choice-ink:' + inkFor(colour) + '"' : '') + '>' +
@@ -1882,13 +2881,309 @@
     });
     if (closed) {
       h += '<div class="closed-box"><p><b>Week ' + week + ' closed</b> on ' + esc(sc.completedAt.slice(0, 10)) + '. Later edits to its screens go into the revision log.</p>' +
-        '<div class="actions"><button type="button" class="btn btn-primary" data-action="print-cards" data-arg="lto">Print the long-term outcome card</button>' +
-        '<button type="button" class="btn btn-ghost" data-action="export">Export JSON</button></div>' +
-        '<div class="card-grid">' + readyCards(state, ['lto']).map(a6Html).join('') + '</div></div>';
+        '<div class="actions">' + (CONFIG.closeActions[week] || []).map(function (a) {
+          return '<button type="button" class="btn btn-primary" data-action="' + a.action + '" data-arg="' + esc(a.arg) + '">' + esc(a.label) + '</button>';
+        }).join('') + '<button type="button" class="btn btn-ghost" data-action="export">Export JSON</button></div>' +
+        (CONFIG.weekCards[week] && CONFIG.weekCards[week].length ? '<div class="card-grid">' + readyCards(state, CONFIG.weekCards[week]).map(a6Html).join('') + '</div>' : '') + '</div>';
     } else {
       h += gateHtml('gate-close' + week, selfCheckChecks(state, week), { action: 'close-week', arg: String(week), label: 'Close week ' + week });
     }
     return h + '</section>';
+  }
+
+  // ── Week 10 helpers ──
+  // A chip (radio or checkbox) with its own data attributes.
+  // Burnt orange is darkened on chips so white text keeps AA contrast.
+  function chip(o) {
+    var col = o.colour === 'var(--char-3)' ? '#9A4A1A' : o.colour || 'var(--char-1)';
+    return '<label class="choice' + (o.cls || '') + '" style="--choice-colour:' + col + ';--choice-ink:' + inkFor(col) + '">' +
+      '<input type="' + (o.type || 'checkbox') + '"' + (o.id ? ' id="' + esc(o.id) + '"' : '') + (o.name ? ' name="' + esc(o.name) + '"' : '') +
+      ' value="' + esc(o.value) + '"' + (o.attrs || '') + (o.checked ? ' checked' : '') + (o.disabled ? ' disabled' : '') + '><span><span>' + o.label + '</span></span></label>';
+  }
+  function selectHtml(id, label, attrs, options, value, first) {
+    return '<div class="field"><label for="' + id + '">' + esc(label) + '</label><select id="' + id + '"' + attrs + '>' +
+      (first ? '<option value="">' + esc(first) + '</option>' : '') +
+      options.map(function (o) { return '<option value="' + esc(o.value) + '"' + (o.value === value ? ' selected' : '') + (o.disabled ? ' disabled' : '') + '>' + esc(o.label) + '</option>'; }).join('') +
+      '</select></div>';
+  }
+  function short(t, n) { t = String(t || '').trim().replace(/\s+/g, ' '); return t.length > n ? t.slice(0, n - 1) + '…' : t; }
+  function linkOptions(s) {
+    return s.links.map(function (l, i) { return { value: l.id, label: (i + 1) + '. ' + short(nodeText(s, l.from), 40) + ' → ' + short(nodeText(s, l.to), 40) }; });
+  }
+  function otext(id) { return '<span data-otext="' + esc(id) + '">' + esc(short(nodeText(state, id), 90)) + '</span>'; }
+  function outcomeLintHtml(v) {
+    var w = outcomeLintWarnings(outcomeLint(v));
+    return w.length ? '<ul>' + w.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' : '';
+  }
+  function capWarning() {
+    if (state.outcomes.length <= CONFIG.maxOutcomes) return '';
+    return '<div class="warn"><b>' + state.outcomes.length + ' outcomes:</b> more than the guide of ' + CONFIG.maxOutcomes + '. This is a warning, not a block. ' +
+      '<q>' + esc(CONFIG.map.proportion) + '</q> ' + esc(CONFIG.map.proportionRef) + '</div>';
+  }
+  var dgTimer = null;
+  function refreshDiagram() {
+    clearTimeout(dgTimer);
+    dgTimer = setTimeout(function () {
+      var w = $('dg-wrap');
+      if (!w) return;
+      var left = w.scrollLeft;
+      w.innerHTML = diagramSvg(state, { interactive: true });
+      w.scrollLeft = left;
+      var lg = $('dg-legend'); if (lg) lg.innerHTML = diagramLegend(state);
+      var cap = $('dg-cap'); if (cap) cap.innerHTML = capWarning();
+    }, 120);
+  }
+  function refreshOtext(id) {
+    var list = document.querySelectorAll('[data-otext="' + id + '"]');
+    for (var i = 0; i < list.length; i++) list[i].textContent = short(nodeText(state, id), 90);
+  }
+
+  // ── Screen 5: backwards map ──
+  function outcomeEditor(o, i) {
+    var base = 'outcomes.' + i + '.', id = o.id, inK = inCluster(state, o), adj = graph(state), ok = reaches(adj, id, LTO_ID);
+    var h = '<div class="item oc" id="oc-' + id + '" style="--item-colour:' + pathwayColour(state, o.pathway) + '"><div class="item-head"><span class="tag">' + (i + 1) + '</span>' +
+      '<span class="grow ' + (ok ? 'quiet' : 'loose-note') + '">' + (ok ? 'Reaches the long-term outcome' : 'Not yet connected to the long-term outcome') + '</span>' +
+      '<button type="button" class="btn btn-danger btn-small" data-action="oc-remove" data-arg="' + id + '" aria-label="Remove outcome ' + (i + 1) + '">Remove</button></div>';
+    h += wcText('oc-text-' + id, 'Outcome ' + (i + 1) + ': a condition, one change', base + 'text', o.text, CONFIG.words.outcome, { short: true, lint: 'outcome', logLabel: 'Outcome text' });
+    h += '<div class="two-col">' + textInput('oc-path-' + id, 'Pathway', base + 'pathway', o.pathway, { max: 40, list: 'pathway-list', logLabel: 'Outcome pathway' }) +
+      '<fieldset role="radiogroup"><legend>Level</legend><div class="choices">' +
+      CONFIG.outcomeLevels.map(function (lv) {
+        return chip({ type: 'radio', name: 'oc-lv|' + id, value: lv.id, label: esc(lv.label), checked: o.level === lv.id, colour: 'var(--char-6)', attrs: ' data-f="' + base + 'level" data-label="Outcome level"' });
+      }).join('') + '</div></fieldset></div>';
+    h += '<fieldset><legend>Lens</legend><div class="choices">' + CONFIG.lenses.map(function (l) {
+      return chip({ id: 'oc-lens-' + id + '-' + l.id, value: l.id, label: esc(l.label), checked: o.lenses.indexOf(l.id) !== -1, colour: l.colour, attrs: ' data-toggle="' + base + 'lenses" data-label="Outcome lenses"' });
+    }).join('') + '</div></fieldset>';
+    h += '<fieldset><legend>Characteristics it concerns (optional)</legend><div class="choices">' + CONFIG.characteristics.map(function (c) {
+      return chip({ id: 'oc-ch-' + id + '-' + c.id, value: c.id, label: esc(c.label), checked: o.characteristics.indexOf(c.id) !== -1, colour: c.colour, cls: ' mini', attrs: ' data-toggle="' + base + 'characteristics" data-label="Outcome characteristics"' });
+    }).join('') + '</div></fieldset>';
+    if (state.clusters.length) {
+      h += selectHtml('oc-cl-' + id, 'Cluster', ' data-cluster="' + id + '"', state.clusters.map(function (k, j) {
+        return { value: k.id, label: 'Cluster ' + (j + 1) + ': ' + (k.label || 'no label yet'), disabled: k.id !== o.clusterId && wouldCycle(state, id, k.id) };
+      }), o.clusterId, 'Not in a cluster');
+    }
+    if (inK) {
+      h += '<p class="quiet">Leads to: the one arrow of ' + esc(nodeName(state, o.clusterId)) + '. Take it out of the cluster to give it arrows of its own.</p>';
+    } else {
+      var targets = [LTO_ID].concat(state.outcomes.filter(function (x) { return x.id !== id; }).map(function (x) { return x.id; }), state.clusters.map(function (k) { return k.id; }));
+      h += '<fieldset><legend>Leads to: what is this outcome needed for?</legend><div class="choices targets">' + targets.map(function (t) {
+        var on = o.leadsTo.indexOf(t) !== -1, loop = !on && wouldCycle(state, id, t);
+        var nm = nodeName(state, t);
+        return chip({ id: 'oc-to-' + id + '-' + t, value: t, checked: on, disabled: loop, colour: 'var(--char-1)', cls: ' block',
+          label: '<b>' + esc(nm.charAt(0).toUpperCase() + nm.slice(1)) + '</b>&nbsp;' + otext(t) + (loop ? ' <i>(would make a loop)</i>' : ''),
+          attrs: ' data-lead="' + id + '"' });
+      }).join('') + '</div></fieldset>';
+    }
+    return h + '</div>';
+  }
+  function clusterEditor(k, i) {
+    var mem = clusterMembers(state, k), cur = k.leadsTo[0] || '';
+    var opts = [{ value: LTO_ID, label: 'The long-term outcome' }]
+      .concat(state.outcomes.filter(function (o) { return o.clusterId !== k.id; }).map(function (o) {
+        return { value: o.id, label: nodeName(state, o.id) + ': ' + short(o.text, 50), disabled: o.id !== cur && wouldCycle(state, k.id, o.id) };
+      }), state.clusters.filter(function (x) { return x.id !== k.id; }).map(function (x) {
+        return { value: x.id, label: nodeName(state, x.id) + ': ' + short(x.label, 50), disabled: x.id !== cur && wouldCycle(state, k.id, x.id) };
+      }));
+    return '<div class="item" id="cl-' + k.id + '" style="--item-colour:var(--char-1)"><div class="item-head"><span class="tag">K' + (i + 1) + '</span><span class="grow"></span>' +
+      '<button type="button" class="btn btn-danger btn-small" data-action="cl-remove" data-arg="' + k.id + '" aria-label="Remove cluster ' + (i + 1) + '">Remove</button></div>' +
+      textInput('cl-label-' + k.id, 'Cluster ' + (i + 1) + ' label', 'clusters.' + i + '.label', k.label, { max: 60, logLabel: 'Cluster label' }) +
+      '<p class="quiet">In this cluster: ' + (mem.length ? esc(mem.map(function (o) { return nodeName(state, o.id); }).join(', ')) : 'nothing yet. Choose the cluster on each outcome above.') + '</p>' +
+      selectHtml('cl-to-' + k.id, 'Its one arrow leads to', ' data-cluster-to="' + k.id + '"', opts, cur, 'Choose…') + '</div>';
+  }
+  function arrowEditor(l, i) {
+    var src = outcomeById(state, l.from);
+    var h = '<div class="item" id="ar-' + l.id + '" style="--item-colour:' + (src ? pathwayColour(state, src.pathway) : 'var(--char-1)') + '"><div class="item-head"><span class="tag">' + (i + 1) + '</span>' +
+      '<span class="grow"><b>Arrow ' + (i + 1) + '</b> · ' + esc(nodeName(state, l.from)) + ' → ' + esc(nodeName(state, l.to)) + '</span></div>' +
+      '<p class="stem">\u201C' + otext(l.from) + '\u201D is needed for \u201C' + otext(l.to) + '\u201D because …</p>' +
+      wcText('rat-' + l.id, 'Rationale for arrow ' + (i + 1), 'links.' + i + '.rationale', l.rationale, CONFIG.words.rationale, { short: true, logLabel: 'Rationale' });
+    if (state.evidence.length) {
+      h += '<fieldset><legend>Evidence for this rationale (screen 6)</legend><div class="choices">' + state.evidence.map(function (e, j) {
+        return chip({ id: 'ar-ev-' + l.id + '-' + e.id, value: e.id, checked: l.evidenceIds.indexOf(e.id) !== -1, colour: 'var(--char-5)', cls: ' mini', label: 'E' + (j + 1) + ' ' + esc(short(e.summary, 40)), attrs: ' data-attach="link|' + l.id + '" data-label="Evidence attached"' });
+      }).join('') + '</div></fieldset>';
+    }
+    var ri = state.reverseImport.filter(function (r) { return !r.absent && r.linkId === l.id; });
+    if (ri.length) h += '<p class="quiet">Reverse Import: ' + esc(ri.map(function (r) { return r.member + ' (' + stanceLabel(r.stance).toLowerCase() + ')'; }).join('; ')) + '</p>';
+    return h + '</div>';
+  }
+
+  // The sorter: add a belief, then answer the one question. Shown on
+  // screens 5 and 6. Choices made before confirming live in sortDraft.
+  var sortDraft = {};
+  function renderSorter(no) {
+    var h = '<div class="sorter">' +
+      '<div class="field"><label for="belief-new">Add a belief: something the group thinks must be true for the theory to work</label>' +
+      '<textarea id="belief-new" class="short" data-min="' + CONFIG.words.belief + '" aria-describedby="belief-new-wc"></textarea>' +
+      '<div class="word-count bad" id="belief-new-wc" aria-live="polite">' + wordLabel('', CONFIG.words.belief) + '</div></div>' +
+      '<div class="actions" style="margin-top:0"><button type="button" class="btn btn-accent" data-action="belief-add" data-arg="' + no + '">Add to the sorter</button></div>';
+    var pending = state.beliefs.filter(function (b) { return !b.sort; });
+    if (!pending.length) h += '<p class="quiet" style="margin-top:0.6rem">No belief waiting. ' + (state.beliefs.length ? plural(state.beliefs.length, 'belief') + ' sorted so far.' : '') + '</p>';
+    pending.forEach(function (b) {
+      var n = state.beliefs.indexOf(b) + 1, d = sortDraft[b.id] || {};
+      h += '<div class="item belief" id="bel-' + b.id + '" style="--item-colour:var(--char-5)"><div class="item-head"><span class="tag">B' + n + '</span><span class="grow"><b>' + esc(b.text) + '</b></span>' +
+        '<button type="button" class="btn btn-danger btn-small" data-action="belief-remove" data-arg="' + b.id + '" aria-label="Remove belief ' + n + '">Remove</button></div>' +
+        '<fieldset role="radiogroup"><legend class="sorter-q">' + esc(CONFIG.sorter.question) + '</legend><div class="choices">' +
+        CONFIG.sorter.answers.map(function (a) {
+          return chip({ type: 'radio', id: 'sd-' + b.id + '-' + a.id, name: 'sd|' + b.id, value: a.id, checked: d.answer === a.id, colour: a.colour, cls: ' block', label: '<b>' + esc(a.label) + '</b>&nbsp;· ' + esc(a.help), attrs: ' data-sd="' + b.id + '|answer"' });
+        }).join('') + '</div></fieldset>';
+      if (d.answer === 'assumption') {
+        h += '<div class="two-col">' + selectHtml('sd-link-' + b.id, 'The arrow it supports', ' data-sd="' + b.id + '|linkId"', linkOptions(state), d.linkId || '', state.links.length ? 'Choose an arrow…' : 'No arrows on the map yet') +
+          selectHtml('sd-lens-' + b.id, 'Lens', ' data-sd="' + b.id + '|lens"', CONFIG.lenses.map(function (l) { return { value: l.id, label: l.label }; }), d.lens || '', 'Choose a lens…') + '</div>';
+        h += state.evidence.length ? '<fieldset><legend>Its evidence</legend><div class="choices">' + state.evidence.map(function (e, j) {
+          return chip({ id: 'sd-ev-' + b.id + '-' + e.id, value: e.id, checked: (d.evidenceIds || []).indexOf(e.id) !== -1, colour: 'var(--char-5)', cls: ' mini', label: 'E' + (j + 1) + ' ' + esc(short(e.summary, 40)), attrs: ' data-sde="' + b.id + '"' });
+        }).join('') + '</div></fieldset>' : '<p class="warn">No evidence in the log yet. \u201CYes\u201D needs evidence: add it to the evidence log on screen 6 first.</p>';
+      }
+      if (d.answer) {
+        var lab = d.answer === 'assumption' ? 'Add to the assumption register' : d.answer === 'precondition' ? 'Add to the map as a precondition' : 'Add to Find out first';
+        h += '<div class="actions"><button type="button" class="btn btn-primary" id="sd-go-' + b.id + '" data-action="belief-sort" data-arg="' + b.id + '">' + lab + '</button></div>';
+      }
+      h += '</div>';
+    });
+    return h + '</div>';
+  }
+
+  function renderMap(sc) {
+    var M = CONFIG.map, h = screenHead(sc, M.lead);
+    h += '<div id="roles-panel" data-week="10">' + renderRoles(10) + '</div>';
+    h += '<section class="panel" style="--panel-colour:var(--char-2)"><p class="eyebrow panel-eyebrow">The top of the map · from screen 3</p>' +
+      '<div class="map-top"><div><span class="k">Ultimate goal · above the accountability ceiling</span>' + esc(dash(state.lto.ceiling.ultimateGoal)) + '</div>' +
+      '<div class="lto-box"><span class="k">Long-term outcome</span>' + esc(dash(state.lto.text)) + '</div></div>' +
+      '<div class="guide" style="margin-top:0.75rem">' + quote(M.question, M.questionRef) + '</div></section>';
+    h += '<section class="panel" style="--panel-colour:var(--char-6)"><p class="eyebrow panel-eyebrow">Outcomes framework · live</p>' +
+      '<div id="dg-cap">' + capWarning() + '</div>' +
+      '<div class="dg-wrap" id="dg-wrap" tabindex="0" role="region" aria-label="Outcomes framework diagram. It scrolls sideways inside this box.">' + diagramSvg(state, { interactive: true }) + '</div>' +
+      '<div id="dg-legend">' + diagramLegend(state) + '</div>' +
+      '<p class="quiet">' + esc(M.rows) + ' Tab to a box or an arrow and press Enter to open its editor.</p>' +
+      '<div class="actions no-print"><button type="button" class="btn btn-ghost" data-action="print-diagram" data-arg="a4">Print diagram · A4 landscape</button>' +
+      '<button type="button" class="btn btn-ghost" data-action="print-diagram" data-arg="a3">Print diagram · A3 landscape</button></div></section>';
+
+    h += '<section class="panel" style="' + panelStyle(sc) + '">';
+    h += '<datalist id="pathway-list">' + pathwayList(state).map(function (p) { return '<option value="' + esc(p) + '">'; }).join('') + '</datalist>';
+    h += '<div class="part" style="--part-colour:var(--char-6)"><h3>1. Outcomes, from the top down</h3><div>' +
+      state.outcomes.map(outcomeEditor).join('') +
+      '<button type="button" class="btn btn-accent" data-action="oc-add">Add an outcome</button></div>' +
+      guide('Pathways', quote(M.pathways, M.pathwaysRef) + '<p style="margin-top:0.4rem">' + quote(M.multiple, M.multipleRef) + '</p>') + '</div>';
+    h += '<div class="part" style="--part-colour:var(--char-1)"><h3>2. Clusters</h3><div>' +
+      state.clusters.map(clusterEditor).join('') +
+      (state.clusters.length ? '' : '<p class="quiet">Optional. Group preconditions that only work together, then give the cluster its one arrow.</p>') +
+      '<button type="button" class="btn btn-accent" data-action="cl-add">Add a cluster</button></div>' +
+      guide('Clusters', quote(M.cluster, M.clusterRef)) + '</div>';
+    h += '<div class="part" style="--part-colour:var(--char-4)"><h3>3. Arrows and rationales</h3><div>' +
+      (state.links.length ? state.links.map(arrowEditor).join('') : '<p class="quiet">Arrows appear here when an outcome leads to another.</p>') + '</div>' +
+      guide('Rationales', quote(M.rationale, M.rationaleRef) + '<p style="margin-top:0.4rem">' + quote(M.causal, M.causalRef) + '</p>') + '</div>';
+    h += '<div class="part" style="--part-colour:var(--char-5)"><h3>4. Beliefs: through the sorter</h3><div>' + renderSorter(5) + '</div>' +
+      guide('Assumption or precondition?', quote(CONFIG.assumptions.quote, CONFIG.assumptions.quoteRef)) + '</div>';
+    h += '<div class="part" style="--part-colour:var(--char-2)"><h3>Outcome wording</h3><div><p class="quiet">Each outcome is a condition with one change. The tool warns on activity verbs and on \u201Cand\u201D; the warnings never block.</p></div>' +
+      guide('One change', quote(M.and, M.andRef)) + '</div>';
+    h += '</section>' + screenGate(5);
+    return h;
+  }
+
+  // ── Screen 6: assumptions and evidence ──
+  function assumptionEditor(a, i) {
+    var base = 'assumptions.' + i + '.';
+    return '<div class="item" id="as-' + a.id + '" style="--item-colour:var(--char-5)"><div class="item-head"><span class="tag">A' + (i + 1) + '</span><span class="grow"></span>' +
+      '<button type="button" class="btn btn-danger btn-small" data-action="as-remove" data-arg="' + a.id + '" aria-label="Remove assumption ' + (i + 1) + '">Remove</button></div>' +
+      wcText('as-text-' + a.id, 'Assumption ' + (i + 1) + ': already true in Bodø', base + 'text', a.text, CONFIG.words.assumption, { short: true, logLabel: 'Assumption text' }) +
+      '<div class="two-col">' + selectHtml('as-link-' + a.id, 'On arrow', ' data-f="' + base + 'linkId" data-label="Assumption arrow"', linkOptions(state), a.linkId, 'Choose an arrow…') +
+      selectHtml('as-lens-' + a.id, 'Lens', ' data-f="' + base + 'lens" data-label="Assumption lens"', CONFIG.lenses.map(function (l) { return { value: l.id, label: l.label }; }), a.lens, 'Choose a lens…') + '</div>' +
+      '<fieldset><legend>Evidence</legend><div class="choices">' + (state.evidence.length ? state.evidence.map(function (e, j) {
+        return chip({ id: 'as-ev-' + a.id + '-' + e.id, value: e.id, checked: a.evidenceIds.indexOf(e.id) !== -1, colour: 'var(--char-5)', cls: ' mini', label: 'E' + (j + 1) + ' ' + esc(short(e.summary, 40)), attrs: ' data-attach="assumption|' + a.id + '" data-label="Evidence attached"' });
+      }).join('') : '<span class="quiet">No evidence logged.</span>') + '</div></fieldset></div>';
+  }
+  function evidenceEditor(e, i) {
+    var base = 'evidence.' + i + '.', t = evType(e.type), uses = evidenceUses(state, e.id);
+    var h = '<div class="item" id="ev-' + e.id + '" style="--item-colour:var(--char-6)"><div class="item-head"><span class="tag">E' + (i + 1) + '</span>' +
+      '<span class="grow quiet">' + (uses.length ? 'Supports ' + esc(uses.join(', ')) : 'Not attached yet') + '</span>' +
+      '<button type="button" class="btn btn-danger btn-small" data-action="ev-remove" data-arg="' + e.id + '" aria-label="Remove evidence ' + (i + 1) + '">Remove</button></div>';
+    h += '<div class="two-col">' + selectHtml('ev-type-' + e.id, 'Type', ' data-f="' + base + 'type" data-label="Evidence type"', CONFIG.evidenceTypes.map(function (x) { return { value: x.id, label: x.label }; }), e.type, 'Choose a type…') +
+      selectHtml('ev-mem-' + e.id, 'Logged by', ' data-f="' + base + 'member" data-label="Evidence member"', members(state).map(function (m) { return { value: m, label: m }; }), e.member, 'Choose a member…') + '</div>';
+    if (t && t.fact) {
+      h += selectHtml('ev-fact-' + e.id, 'Week 7 Bodø fact', ' data-fact="' + e.id + '"', CONFIG.facts.map(function (f) { return { value: f.id, label: f.title + ' (' + CONFIG.scopeLabels[f.scope] + ')' }; }), e.factId, 'Choose a fact…');
+    }
+    h += wcText('ev-sum-' + e.id, 'What it says', base + 'summary', e.summary, CONFIG.words.evidenceSummary, { short: true, logLabel: 'Evidence summary' });
+    h += '<div class="row"><div class="grow">' + textInput('ev-src-' + e.id, 'Source', base + 'source', e.source, { max: 200, logLabel: 'Evidence source' }) + '</div>' +
+      (t && t.slide ? textInput('ev-slide-' + e.id, 'Slide number', base + 'slide', e.slide, { slide: true, max: 3, logLabel: 'Evidence slide' }) : '') + '</div>';
+    if (t && t.slide) h += '<p class="quiet">Figures from the client brief are unsourced unless the brief gives a source.</p>';
+    h += '<details class="drawer"><summary>Rate on the week 6 criteria (optional)' + (CONFIG.criteria.some(function (c) { return e.ratings[c.id]; }) ? ' · rated' : '') + '</summary><div>';
+    CONFIG.criteria.forEach(function (c) {
+      h += '<fieldset role="radiogroup" class="crit" style="--crit:' + c.color + '"><legend>' + esc(c.label) + '</legend><p class="quiet">' + esc(c.definition) + ' <i>' + esc(c.questions.join(' ')) + '</i></p><div class="choices">' +
+        [{ id: '', label: 'Not rated' }].concat(CONFIG.ratingScale).map(function (r) {
+          return chip({ type: 'radio', name: 'ev|' + e.id + '|' + c.id, value: r.id, label: esc(r.label), checked: e.ratings[c.id] === r.id, colour: 'var(--char-1)', attrs: ' data-f="' + base + 'ratings.' + c.id + '" data-label="Evidence ratings"' });
+        }).join('') + '</div>';
+      if (c.id === 'scope') {
+        h += '<p class="label-sm">Does it hold in Bodø? (the week 7 verdict)</p><div class="choices">' +
+          [{ id: '', label: 'Not judged', colour: 'var(--char-1)' }].concat(CONFIG.bodoVerdicts).map(function (v) {
+            return chip({ type: 'radio', name: 'ev|' + e.id + '|bodo', value: v.id, label: esc(v.label) + (v.help ? '<span class="sr-only">: ' + esc(v.help) + '</span>' : ''), checked: e.bodoVerdict === v.id, colour: v.colour, attrs: ' data-f="' + base + 'bodoVerdict" data-label="Bodø verdict"' });
+          }).join('') + '</div>';
+      }
+      h += '</fieldset>';
+    });
+    return h + '</div></details></div>';
+  }
+  function reverseEditor(r, i) {
+    var base = 'reverseImport.' + i + '.';
+    var h = '<div class="item" id="ri-' + i + '" style="--item-colour:var(--char-8)"><div class="item-head"><span class="tag">' + esc(r.member.charAt(0).toUpperCase()) + '</span><span class="grow"><b>' + esc(r.member) + '</b></span>' +
+      '<label class="choice"><input type="checkbox" id="ri-abs-' + i + '" data-f="' + base + 'absent" data-label="Reverse Import"' + (r.absent ? ' checked' : '') + '><span>Absent this week</span></label></div>';
+    if (r.absent) return h + '</div>';
+    h += textInput('ri-course-' + i, 'Parallel course', base + 'course', r.course, { max: 80, logLabel: 'Reverse Import' }) +
+      wcText('ri-claim-' + i, 'The claim, in your own words', base + 'claim', r.claim, CONFIG.words.reverseClaim, { short: true, logLabel: 'Reverse Import' }) +
+      '<div class="two-col">' + selectHtml('ri-link-' + i, 'Placed on arrow', ' data-f="' + base + 'linkId" data-label="Reverse Import"', linkOptions(state), r.linkId, 'Choose an arrow…') +
+      '<fieldset role="radiogroup"><legend>Stance</legend><div class="choices">' + CONFIG.stances.map(function (st) {
+        return chip({ type: 'radio', name: 'ri|' + i, value: st.id, label: esc(st.label), checked: r.stance === st.id, colour: st.colour, attrs: ' data-f="' + base + 'stance" data-label="Reverse Import"' });
+      }).join('') + '</div></fieldset></div>';
+    return h + '</div>';
+  }
+  function renderEvidence(sc) {
+    var A = CONFIG.assumptions, h = screenHead(sc, A.sorterLead);
+    if (syncReverse(state)) save();
+    h += '<section class="panel" style="' + panelStyle(sc) + '">';
+    h += '<div class="part" style="--part-colour:var(--char-5)"><h3>1. The sorter</h3><div>' + renderSorter(6);
+    var done = state.beliefs.filter(function (b) { return b.sort; });
+    if (done.length) {
+      h += '<details class="drawer"><summary>Sorted beliefs (' + done.length + ')</summary><div>' + done.map(function (b) {
+        var to = b.sort === 'assumption' ? 'assumption A' + (state.assumptions.indexOf(byId(state.assumptions, b.refId)) + 1) :
+          b.sort === 'precondition' ? (outcomeById(state, b.refId) ? nodeName(state, b.refId) : 'a precondition since removed') : 'Find out first';
+        return '<div class="draft"><span class="who">B' + (state.beliefs.indexOf(b) + 1) + ' → ' + esc(to) + '</span><p>' + esc(b.text) + '</p></div>';
+      }).join('') + '</div></details>';
+    }
+    h += '</div>' + guide('[TC]: the difference', quote(A.quote, A.quoteRef) + '<p style="margin-top:0.4rem">' + quote(A.gaf, A.gafRef) + '</p><p style="margin-top:0.4rem">' + esc(A.gafNote) + '</p>') + '</div>';
+    h += '<div class="part" style="--part-colour:var(--char-4)"><h3>2. Assumption register</h3><div><p class="quiet">' + esc(A.registerLead) + '</p>' +
+      (state.assumptions.length ? state.assumptions.map(assumptionEditor).join('') : '<p class="quiet">Empty. Answer \u201CYes, and we have evidence\u201D in the sorter to add one.</p>') + '</div>' +
+      guide('Assumptions', quote(A.evidenceLinks, A.evidenceLinksRef)) + '</div>';
+    h += '<div class="part" style="--part-colour:var(--char-3)"><h3>3. Evidence log</h3><div><p class="quiet">' + esc(A.evidenceLead) + '</p>' +
+      state.evidence.map(evidenceEditor).join('') +
+      '<button type="button" class="btn btn-accent" data-action="ev-add">Add evidence</button></div>' +
+      guide('Quality', quote(A.evidenceQuote, A.evidenceQuoteRef) + '<p style="margin-top:0.4rem">The criteria and scale are week 6\u2019s, from the Adjudication Bench.</p>') + '</div>';
+    h += '<div class="part" style="--part-colour:var(--char-8)"><h3>4. Reverse Import</h3><div><p class="quiet">' + esc(A.reverseLead) + '</p>' +
+      (state.reverseImport.length ? state.reverseImport.map(reverseEditor).join('') : '<p class="quiet">Enter members on screen 1.</p>') + '</div>' +
+      guide('One claim each', '<p>Place your claim where it bears on the theory: on the arrow whose rationale it supports or challenges.</p>') + '</div>';
+    h += '<div class="part" style="--part-colour:var(--char-2)"><h3>5. Completeness pass</h3><div>';
+    if (!mapConnected(state)) h += '<p class="quiet">' + esc(A.sweepLocked) + '</p>';
+    else {
+      h += '<p>' + esc(A.sweepLead) + '</p>' + state.links.map(function (l, i) {
+        return '<fieldset role="radiogroup" class="sweep-row"><legend>Arrow ' + (i + 1) + ': ' + otext(l.from) + ' → ' + otext(l.to) + '</legend><div class="choices">' +
+          CONFIG.sweepAnswers.map(function (a) {
+            return chip({ type: 'radio', name: 'sweep|' + l.id, value: a.id, label: esc(a.label), checked: state.sweep[l.id] === a.id, colour: a.id === 'none' ? 'var(--correct)' : 'var(--char-5)', attrs: ' data-f="sweep.' + l.id + '" data-label="Completeness pass"' });
+          }).join('') + '</div></fieldset>';
+      }).join('');
+    }
+    h += '</div>' + guide('Once more', quote(A.sweep, A.sweepRef)) + '</div>';
+    h += '</section>' + screenGate(6);
+    h += renderClose(10);
+    return h;
+  }
+
+  // Open the editor of a diagram box or arrow.
+  function openEditor(id) {
+    if (id === LTO_ID || id === 'goal') { goto(3); refocus(id === 'goal' ? 'ce-goal' : 'lto-text'); return; }
+    var target = outcomeById(state, id) ? 'oc-text-' + id : clusterById(state, id) ? 'cl-label-' + id : linkById(state, id) ? 'rat-' + id : '';
+    var el = target && $(target);
+    if (!el) return;
+    if (el.scrollIntoView) el.scrollIntoView({ block: 'center' });
+    el.focus();
+  }
+  function diagramPrintHtml() {
+    return '<section class="dg-print"><h2>Outcomes framework</h2><p class="quiet">' + esc(dash(state.group.name)) + ' · ' + esc(members(state).join(', ')) + ' · ' + nowIso().slice(0, 10) + '</p>' +
+      diagramSvg(state) + diagramLegend(state) + '</section>';
   }
 
   function renderLater(sc) {
@@ -1900,7 +3195,7 @@
     return h;
   }
 
-  var RENDER = { 1: renderSetup, 2: renderClient, 3: renderProblem, 4: renderStakeholders };
+  var RENDER = { 1: renderSetup, 2: renderClient, 3: renderProblem, 4: renderStakeholders, 5: renderMap, 6: renderEvidence };
 
   function renderSide() {
     var sc = SCREEN[state.ui.screen], week = sc.week, sChk = state.selfChecks['week' + week], list = members(state);
@@ -1915,7 +3210,7 @@
       '<p><q>' + esc(CONFIG.selfCheck.intro) + '</q> ' + esc(CONFIG.selfCheck.introRef) + '</p><ul class="plain refs">' +
       CONFIG.selfCheck.questions.map(function (q) {
         return '<li><b>' + esc(q.label) + '</b> ' + (wordCheck(sChk[q.id], CONFIG.words.selfCheck).ok ? '✓ answered' : 'not yet answered') + '<br><span class="quiet">' + esc(q.quote) + '</span></li>';
-      }).join('') + '</ul><p class="quiet">Answer it at the close of week ' + week + (week === 9 ? ' (end of screen 4)' : '') + '.</p></div></details>';
+      }).join('') + '</ul><p class="quiet">Answer it at the close of week ' + week + (lastBuiltScreen(week) ? ' (end of screen ' + lastBuiltScreen(week) + ')' : '') + '.</p></div></details>';
     h += '<details class="side-sec" style="--sec-colour:var(--char-8);--sec-ink:var(--char-8)"><summary>Find out first <span class="count-badge">' + state.findOutFirst.length + '</span></summary><div>';
     state.findOutFirst.forEach(function (f) {
       h += '<div class="fof-item"><div><span class="src">' + esc(CONFIG.fofSources[f.source]) + (f.source === 'manual' && f.refId ? ' · screen ' + esc(f.refId) : '') + '</span>' + esc(f.text) + '</div>' +
@@ -1930,10 +3225,24 @@
     els.side.innerHTML = h;
   }
 
+  function lastBuiltScreen(week) {
+    var l = CONFIG.screens.filter(function (sc) { return sc.week === week && sc.built; });
+    return l.length ? l[l.length - 1].no : 0;
+  }
+  // The run sheet of the current week, or the latest one built.
+  function renderRunSheet() {
+    var keys = Object.keys(CONFIG.runSheets).map(Number).sort(function (a, b) { return a - b; });
+    var w = currentWeek(state), week = CONFIG.runSheets[w] ? w : keys[keys.length - 1];
+    $('tw-runsheet').innerHTML = '<summary>How week ' + week + ' runs (90 minutes)</summary><ol>' +
+      CONFIG.runSheets[week].map(function (r) { return '<li><span class="t">' + esc(r.t) + '</span><span>' + esc(r.what) + '</span></li>'; }).join('') + '</ol>';
+  }
   function render(focusMain) {
     var sc = SCREEN[state.ui.screen];
+    renderRunSheet();
     renderRail();
     els.main.innerHTML = sc.built && RENDER[sc.no] ? RENDER[sc.no](sc) : renderLater(sc);
+    // Open the diagram centred on the long-term outcome (it scrolls sideways).
+    var dw = $('dg-wrap'); if (dw) dw.scrollLeft = Math.max(0, (dw.scrollWidth - dw.clientWidth) / 2);
     renderSide();
     if (focusMain) els.main.focus();
   }
@@ -1943,6 +3252,9 @@
     if (el && el.dataset.min) {
       var wc = $(el.id + '-wc'), min = +el.dataset.min;
       if (wc) { wc.textContent = wordLabel(el.value, min); wc.className = 'word-count ' + (wordCheck(el.value, min).ok ? 'ok' : 'bad'); }
+    }
+    if (el && el.dataset.lint === 'outcome') {
+      var ow = $(el.id + '-warn'); if (ow) ow.innerHTML = outcomeLintHtml(el.value);
     }
     if (el && el.dataset.lint === 'lto') {
       var warn = $(el.id + '-warn'); if (warn) warn.innerHTML = lintHtml(el.value);
@@ -1961,6 +3273,7 @@
       t2.innerHTML = gateHtml('gate-close' + w, selfCheckChecks(state, w), { action: 'close-week', arg: String(w), label: 'Close week ' + w });
       cg.parentNode.replaceChild(t2.firstChild, cg);
     }
+    if (no === 5) refreshDiagram();
     renderRail();
   }
 
@@ -1973,7 +3286,7 @@
       var key = members(state).join('|');
       if (key === membersKey) return;
       membersKey = key;
-      var rp = $('roles-panel'); if (rp) rp.innerHTML = renderRoles(9);
+      var rp = $('roles-panel'); if (rp) rp.innerHTML = renderRoles(+(rp.getAttribute('data-week') || 9));
       renderSide();
     }, 350);
   }
@@ -2035,8 +3348,13 @@
   function preparePrint() {
     var meta = dash(state.group.name) + ' · ' + members(state).join(', ');
     $('tw-print-meta').textContent = meta;
-    document.body.classList.toggle('print-cards', printMode !== 'report');
-    $('print-area').innerHTML = printMode === 'report' ? buildReportHtml(state) + buildA6Html(readyCards(state)) : buildA6Html(readyCards(state, [printMode]));
+    var dia = printMode.indexOf('diagram-') === 0;
+    document.body.classList.toggle('print-cards', printMode !== 'report' && !dia);
+    document.body.classList.toggle('print-diagram', dia);
+    document.body.classList.toggle('print-a3', printMode === 'diagram-a3');
+    $('page-size').textContent = dia ? '@page { size: ' + (printMode === 'diagram-a3' ? 'A3' : 'A4') + ' landscape; margin: 8mm; }' : '';
+    $('print-area').innerHTML = printMode === 'report' ? buildReportHtml(state) + buildA6Html(readyCards(state)) :
+      dia ? diagramPrintHtml() : buildA6Html(readyCards(state, [printMode]));
   }
   // The mode is reset after printing (afterprint), so a later beforeprint
   // keeps it while the print dialog is open.
@@ -2057,25 +3375,77 @@
     $('tw-eyebrow').textContent = CONFIG.text.eyebrow;
     $('tw-title').textContent = CONFIG.text.title;
     $('tw-lede').textContent = CONFIG.text.lede;
-    $('tw-runsheet').innerHTML = '<summary>How week 9 runs (90 minutes)</summary><ol>' +
-      CONFIG.runSheet.map(function (r) { return '<li><span class="t">' + esc(r.t) + '</span><span>' + esc(r.what) + '</span></li>'; }).join('') + '</ol>';
     state = load();
     var app = $('tw-app');
 
     app.addEventListener('input', function (ev) {
       var el = ev.target;
-      if (el.id === 'fof-new') { refreshLive(el); return; }
+      if (el.id === 'fof-new' || el.id === 'belief-new') { refreshLive(el); return; }
       if (!el.dataset || !el.dataset.f || el.type === 'radio' || el.type === 'checkbox' || el.tagName === 'SELECT') return;
       setPath(el.dataset.f, el.value);
       edited(el);
       if (/^stakeholders\.\d+\.name$/.test(el.dataset.f)) { syncStakeholderFof(state); renderSide(); }
       if (el.dataset.f === 'group.name' || el.dataset.f.indexOf('group.members.') === 0) membersChanged();
+      var om = el.dataset.f.match(/^(outcomes|clusters)\.(\d+)\.(text|label)$/);
+      if (om) refreshOtext(state[om[1]][+om[2]].id);
       save(); refreshLive(el);
     });
     app.addEventListener('change', function (ev) {
-      var el = ev.target;
+      var el = ev.target, sNo = state.ui.screen, err;
+      // Week 10: arrows, clusters, tags, evidence, the sorter's choices.
+      if (el.dataset.lead) {
+        var fromId = el.dataset.lead, link = state.links.filter(function (l) { return l.from === fromId && l.to === el.value; })[0];
+        if (!el.checked && link && String(link.rationale).trim() && !window.confirm('Remove this arrow? Its rationale will be lost.')) { el.checked = true; return; }
+        err = setLeadsTo(state, fromId, el.value, el.checked);
+        if (err) { setStatus(err); el.checked = !el.checked; return; }
+        logEdit(state, sNo, 'Arrows'); save(); render(); refocus(el.id); return;
+      }
+      if (el.dataset.cluster) {
+        var o = outcomeById(state, el.dataset.cluster);
+        if (el.value && o && o.leadsTo.length && !window.confirm('In a cluster, this outcome\u2019s own arrows are replaced by the cluster\u2019s one arrow. Continue?')) { el.value = o.clusterId; return; }
+        err = setCluster(state, el.dataset.cluster, el.value);
+        if (err) { setStatus(err); render(); return; }
+        logEdit(state, sNo, 'Clusters'); save(); render(); refocus(el.id); return;
+      }
+      if (el.dataset.clusterTo) {
+        err = el.value ? setLeadsTo(state, el.dataset.clusterTo, el.value, true) : '';
+        if (!el.value) { var k = clusterById(state, el.dataset.clusterTo); if (k) { k.leadsTo = []; syncLinks(state); } }
+        if (err) { setStatus(err); render(); return; }
+        logEdit(state, sNo, 'Clusters'); save(); render(); refocus(el.id); return;
+      }
+      if (el.dataset.toggle) {
+        var parts = el.dataset.toggle.split('.'), arr = state[parts[0]][+parts[1]][parts[2]];
+        var keep = arr.filter(function (x) { return x !== el.value; });
+        if (el.checked) keep.push(el.value);
+        var order = (parts[2] === 'lenses' ? CONFIG.lenses : CONFIG.characteristics).map(function (x) { return x.id; });
+        state[parts[0]][+parts[1]][parts[2]] = order.filter(function (id) { return keep.indexOf(id) !== -1; });
+        logEdit(state, sNo, el.dataset.label || 'Tags'); save(); refreshLive(null); return;
+      }
+      if (el.dataset.attach) {
+        var at = el.dataset.attach.split('|');
+        attachEvidence(state, el.value, at[0], at[1], el.checked);
+        logEdit(state, sNo, 'Evidence attached'); save(); refreshLive(null); return;
+      }
+      if (el.dataset.fact) {
+        setEvidenceFact(state, el.dataset.fact, el.value);
+        logEdit(state, sNo, 'Evidence summary'); save(); render(); refocus(el.id); return;
+      }
+      if (el.dataset.sd) {
+        var sd = el.dataset.sd.split('|'), d = sortDraft[sd[0]] = sortDraft[sd[0]] || { evidenceIds: [] };
+        d[sd[1]] = el.value;
+        render(); refocus(el.id); return;
+      }
+      if (el.dataset.sde) {
+        var dd = sortDraft[el.dataset.sde] = sortDraft[el.dataset.sde] || { evidenceIds: [] };
+        dd.evidenceIds = dd.evidenceIds.filter(function (x) { return x !== el.value; });
+        if (el.checked) dd.evidenceIds.push(el.value);
+        return;
+      }
       if (el.tagName === 'SELECT' && el.dataset.f) {
         setPath(el.dataset.f, el.value); edited(el); save(); render(); refocus(el.id); return;
+      }
+      if (el.type === 'checkbox' && el.dataset.f && el.dataset.label) {
+        setPath(el.dataset.f, el.checked); edited(el); save(); render(); refocus(el.id); return;
       }
       if (el.type === 'checkbox' && el.name === 'pclaim') {
         var arr = state.problem.claims.filter(function (x) { return x !== el.value; });
@@ -2095,7 +3465,7 @@
         }
         if (el.dataset.f) {
           setPath(el.dataset.f, el.value);
-          logEdit(state, state.ui.screen, el.name.indexOf('st|') === 0 ? 'Stakeholder ratings' : 'Ceiling placement');
+          logEdit(state, state.ui.screen, el.dataset.label || (el.name.indexOf('st|') === 0 ? 'Stakeholder ratings' : 'Ceiling placement'));
           if (/canWeAsk$/.test(el.dataset.f)) { syncStakeholderFof(state); save(); renderSide(); }
           save(); refreshLive(null);
           if (/canWeAsk$/.test(el.dataset.f)) { render(); var r = document.querySelector('input[name="' + el.name + '"][value="' + el.value + '"]'); if (r) r.focus(); }
@@ -2149,11 +3519,55 @@
         else { save(); render(); refocus('close-' + arg); setStatus('Week ' + arg + ' closed. Print your card and export.'); }
       }
       else if (act === 'print-cards') printNow(arg);
+      else if (act === 'print-diagram') printNow('diagram-' + arg);
+      else if (act === 'dg-open') openEditor(arg);
+      else if (act === 'oc-add') { var no = addOutcome(state); log('Outcomes added or removed'); save(); render(); refocus('oc-text-' + no.id); }
+      else if (act === 'oc-remove') {
+        if (window.confirm('Remove this outcome, and every arrow to and from it?')) { removeOutcome(state, arg); log('Outcomes added or removed'); save(); render(); }
+      }
+      else if (act === 'cl-add') { var nk = addCluster(state); log('Clusters'); save(); render(); refocus('cl-label-' + nk.id); }
+      else if (act === 'cl-remove') {
+        if (window.confirm('Remove this cluster? Its outcomes stay on the map without arrows.')) { removeCluster(state, arg); log('Clusters'); save(); render(); }
+      }
+      else if (act === 'belief-add') {
+        var bt = $('belief-new'), bw = wordCheck(bt.value, CONFIG.words.belief);
+        if (!bw.ok) { setStatus('Belief: ' + bw.msg + '.'); bt.focus(); return; }
+        var nb = addBelief(state, bt.value, +arg || sNo); log('Beliefs'); save(); render();
+        refocus('sd-' + nb.id + '-assumption'); setStatus('Belief added. Now answer: ' + CONFIG.sorter.question);
+      }
+      else if (act === 'belief-remove') {
+        if (window.confirm('Remove this belief before sorting it?')) { removeBelief(state, arg); delete sortDraft[arg]; log('Beliefs'); save(); render(); }
+      }
+      else if (act === 'belief-sort') {
+        var res = sortBelief(state, arg, (sortDraft[arg] || {}).answer, sortDraft[arg]);
+        if (!res.ok) { setStatus('Not sorted yet: ' + res.errors.join(' ')); return; }
+        delete sortDraft[arg]; log('Sorter'); save(); render();
+        var b2 = beliefById(state, arg);
+        setStatus(b2.sort === 'assumption' ? 'Added to the assumption register as A' + state.assumptions.length + '.' :
+          b2.sort === 'precondition' ? 'Added to the map as ' + nodeName(state, b2.refId) + ': give it a level, a pathway and an arrow on screen 5.' : 'Added to Find out first.');
+        if (b2.sort === 'precondition' && sNo === 5) refocus('oc-text-' + b2.refId); else refocus('belief-new');
+      }
+      else if (act === 'as-remove') {
+        if (window.confirm('Remove this assumption from the register?')) { state.assumptions = state.assumptions.filter(function (a) { return a.id !== arg; }); log('Assumptions'); save(); render(); }
+      }
+      else if (act === 'ev-add') { var ne = addEvidence(state); log('Evidence added or removed'); save(); render(); refocus('ev-type-' + ne.id); }
+      else if (act === 'ev-remove') {
+        if (window.confirm('Remove this evidence item? It is detached from every arrow and assumption.')) { removeEvidence(state, arg); log('Evidence added or removed'); save(); render(); }
+      }
       else if (act === 'export') exportNow();
       else if (act === 'week7-load') $('week7-file').click();
       else if (act === 'week7-clear') { if (window.confirm('Remove the week 7 sentences from this workbench?')) { state.imported.week7 = null; save(); render(); } }
     });
 
+    // Diagram boxes and arrows are SVG elements with role="button": Enter
+    // and Space open their editor.
+    app.addEventListener('keydown', function (ev) {
+      var el = ev.target;
+      if ((ev.key === 'Enter' || ev.key === ' ') && el.getAttribute && el.getAttribute('role') === 'button' && el.dataset && el.dataset.action && !(el instanceof HTMLElement)) {
+        ev.preventDefault();
+        openEditor(el.dataset.arg);
+      }
+    });
     $('week7-file').addEventListener('change', function () {
       readJsonFile(this, function (obj) {
         var errs = validateWeek7(obj);
@@ -2183,7 +3597,7 @@
       render(); setStatus('Reset.');
     });
     window.addEventListener('beforeprint', preparePrint);
-    window.addEventListener('afterprint', function () { printMode = 'report'; });
+    window.addEventListener('afterprint', function () { printMode = 'report'; $('page-size').textContent = ''; document.body.classList.remove('print-diagram', 'print-a3'); });
     render();
   }
 
@@ -2230,7 +3644,40 @@
     buildReportHtml: buildReportHtml,
     buildText: buildText,
     readyCards: readyCards,
-    buildA6Html: buildA6Html
+    buildA6Html: buildA6Html,
+    // week 10
+    LTO_ID: LTO_ID,
+    mapEdges: mapEdges,
+    graph: graph,
+    reaches: reaches,
+    unconnected: unconnected,
+    mapConnected: mapConnected,
+    wouldCycle: wouldCycle,
+    findCycle: findCycle,
+    syncLinks: syncLinks,
+    normaliseMap: normaliseMap,
+    addOutcome: addOutcome,
+    removeOutcome: removeOutcome,
+    addCluster: addCluster,
+    removeCluster: removeCluster,
+    setLeadsTo: setLeadsTo,
+    setCluster: setCluster,
+    pathwayList: pathwayList,
+    outcomeLint: outcomeLint,
+    addBelief: addBelief,
+    sortBelief: sortBelief,
+    addEvidence: addEvidence,
+    removeEvidence: removeEvidence,
+    setEvidenceFact: setEvidenceFact,
+    attachEvidence: attachEvidence,
+    syncReverse: syncReverse,
+    designChecks: designChecks,
+    designGate: designGate,
+    layoutMap: layoutMap,
+    layoutOverlaps: layoutOverlaps,
+    diagramSvg: diagramSvg,
+    mapText: mapText,
+    registerText: registerText
   };
 
   if (document.getElementById('tw-app')) init();
