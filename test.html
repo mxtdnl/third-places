@@ -102,11 +102,11 @@
 
   function loadScripts(callback) {
     var loaded = 0;
-    var labCode, decoderCode, builderCode, benchCode, w5Code, cwsCode, w7Code;
+    var labCode, decoderCode, builderCode, benchCode, w5Code, cwsCode, w7Code, twCode;
 
     function done() {
       loaded++;
-      if (loaded < 7) return;
+      if (loaded < 8) return;
 
       // Execute decoder in a namespace
       try {
@@ -250,8 +250,23 @@
         assert('week7-bodo-decline.html parses without syntax errors', function() { throw e; });
       }
 
+      // Execute the weeks 9-13 workbench (init guarded on #tw-app; exposes window.TW)
+      try {
+        var twFn = new Function(twCode);
+        twFn();
+      } catch(e) {
+        suite('LOAD ERRORS');
+        assert('week9-toc-workbench.html parses without syntax errors', function() { throw e; });
+      }
+
       callback();
     }
+
+    var xhr9 = new XMLHttpRequest();
+    xhr9.open('GET', 'week9-toc-workbench.html');
+    xhr9.onload = function() { twCode = extractAndRun(xhr9.responseText, 'tw'); done(); };
+    xhr9.onerror = function() { twCode = ''; done(); };
+    xhr9.send();
 
     var xhr7 = new XMLHttpRequest();
     xhr7.open('GET', 'week7-bodo-decline.html');
@@ -2184,6 +2199,377 @@
       ok(m && !/[‘’“”]/.test(m[1]), 'curly quotes found');
       ok(!/fetch\(|XMLHttpRequest|https?:\/\//.test(m[1]), 'network call found');
       ok(JSON.stringify(W7.CONFIG).indexOf('PLACEHOLDER') === -1, 'PLACEHOLDER left in CONFIG');
+    });
+
+
+    // =====================================================
+    // BODØ THEORY OF CHANGE WORKBENCH (weeks 9-13), stage 1
+    // =====================================================
+
+    var TWW = function (n, p) { return (p || 'test') + ' ' + 'word '.repeat(n).trim(); };
+    // A complete week 9 state: every week 9 gate passes.
+    function twFull() {
+      var s = TW.defaultState('2026-11-02T09:00:00.000Z');
+      s.group.name = 'Test Group'; s.group.members = ['Ana', 'Ben', 'Cai', '', ''];
+      s.roles.week9 = TW.suggestRoles(TW.members(s), null);
+      for (var i = 0; i < 3; i++) { var c = TW.addClaim(s); c.text = TWW(9, 'claim ' + i); c.slide = String(i + 2); TW.placeClaim(s, c.id); }
+      TW.chainLinks(s).forEach(function (l) { s.clientTheory.linkEvidence[l.key] = 'not'; });
+      s.clientTheory.ambition = TWW(9, 'ambition'); s.clientTheory.ambitionSlide = '7';
+      s.clientTheory.whoseCommunity = TWW(26, 'community');
+      s.problem.statement = TWW(26, 'problem'); s.problem.claims = ['USE']; s.problem.where = 'Bodø centre'; s.problem.forWhom = 'young adults';
+      s.lto.text = 'Residents of all ages feel they belong in a shared space';
+      s.lto.definitions = [{ term: 'belong', meaning: TWW(11, 'meaning') }];
+      s.lto.ceiling = { ultimateGoal: 'a more trusting Bodø community', ambitionPosition: 'above', reason: TWW(26, 'reason') };
+      ['Season ticket holders', 'Residents nearby', 'Club staff'].forEach(function (n, i) {
+        s.stakeholders.push({ id: 'sx' + i, name: n, fromBrief: i === 2, slide: i === 2 ? '4' : '', affected: 'yes', influence: 'high', interest: 'medium', canWeAsk: i === 1 ? 'no' : 'yes' });
+      });
+      TW.syncStakeholderFof(s);
+      return s;
+    }
+    function twSelfCheck(s, week) {
+      TW.CONFIG.selfCheck.questions.forEach(function (q) { s.selfChecks['week' + week][q.id] = TWW(16, q.id); });
+    }
+    function twFailing(s, no) { return TW.gateResult(TW.screenChecks(s, no)).failing; }
+
+    suite('ToC Workbench — Config integrity');
+
+    assert('every role has a name and a one-line duty; Timekeeper only in groups of five', function() {
+      var R = TW.CONFIG.roles;
+      eq(R.map(function (r) { return r.name; }).join(), 'Facilitator,Scribe,Sceptic,Evidence lead,Timekeeper');
+      R.forEach(function (r) { ok(r.id && r.duty && r.duty.trim().length > 10 && r.duty.indexOf('\n') === -1, r.id); });
+      eq(TW.rolesFor(3).length, 4); eq(TW.rolesFor(4).length, 4); eq(TW.rolesFor(5).length, 5);
+    });
+
+    assert('14 screens numbered 1-14 in weeks 9-13, each with reading references to a known reading', function() {
+      var S = TW.CONFIG.screens;
+      eq(S.length, 14);
+      S.forEach(function (s, i) {
+        eq(s.no, i + 1);
+        ok([9, 10, 11, 12, 13].indexOf(s.week) !== -1, 'week of ' + s.no);
+        ok(Array.isArray(s.reading) && s.reading.length > 0, 'reading for screen ' + s.no);
+        s.reading.forEach(function (r) { ok(TW.CONFIG.readings[r.ref] && /^pp?\. \d/.test(r.pages) && r.what, 'ref on screen ' + s.no); });
+        ok(s.title && s.summary, 'copy for screen ' + s.no);
+      });
+      eq(S.filter(function (s) { return s.built; }).map(function (s) { return s.no; }).join(), '1,2,3,4');
+    });
+
+    assert('glossary crosswalk, self-check, stakeholder questions, lint lists and soft cap are present', function() {
+      eq(TW.CONFIG.glossary.length, 8);
+      TW.CONFIG.glossary.forEach(function (g) { ok(g.term && g.gaf, g.term); });
+      eq(TW.CONFIG.selfCheck.questions.map(function (q) { return q.id; }).join(), 'plausible,doable,testable');
+      TW.CONFIG.selfCheck.questions.forEach(function (q) { eq(q.ref, '[TC] p. 9'); ok(q.quote.length > 60); });
+      eq(TW.CONFIG.stakeholderQuestions.length, 8);
+      ok(TW.CONFIG.lint.activityVerbs.length > 10 && TW.CONFIG.lint.negativeWords.length > 5 && TW.CONFIG.lint.andWords.indexOf('and') !== -1);
+      eq(TW.CONFIG.maxOutcomes, 15);
+      Object.keys(TW.CONFIG.words).forEach(function (k) { ok(TW.CONFIG.words[k] >= 1, k); });
+    });
+
+    assert('Bodø facts are copied verbatim from week 7, each with a source', function() {
+      var a = TW.CONFIG.facts, b = W7.CONFIG.facts;
+      eq(a.length, b.length);
+      a.forEach(function (f, i) {
+        eq(f.id, b[i].id); eq(f.title, b[i].title); eq(f.text, b[i].text); eq(f.source, b[i].source);
+        ok(f.source.trim().length > 5, f.id);
+      });
+    });
+
+    suite('ToC Workbench — Word counter');
+
+    assert('counts words; one character never passes; minimums are exact', function() {
+      eq(TW.wordCount(''), 0); eq(TW.wordCount('  one two-part don’t  '), 3); eq(TW.wordCount('Bodø og Mørkved'), 3);
+      ok(!TW.wordCheck('x', 1).ok, 'one character with min 1');
+      ok(!TW.wordCheck('x', 0).ok, 'one character with min 0');
+      ok(!TW.wordCheck('', 1).ok);
+      ok(TW.wordCheck('ok', 1).ok);
+      ok(!TW.wordCheck(TWW(23), 25).ok, '24 words'); ok(TW.wordCheck(TWW(24), 25).ok, '25 words');
+      ok(/at least 25 words \(24 so far\)/.test(TW.wordCheck(TWW(23), 25).msg));
+    });
+
+    assert('slide numbers: whole numbers 1-999 only', function() {
+      ['1', '12', ' 7 ', '999'].forEach(function (v) { ok(TW.validSlide(v), v); });
+      ['', '0', 'x', '1a', '1000', '-3', '2.5'].forEach(function (v) { ok(!TW.validSlide(v), v); });
+    });
+
+    suite('ToC Workbench — Lint');
+
+    assert('activity verbs: base, inflected and irregular forms; no match inside other words', function() {
+      eq(TW.lintActivity('The club builds a cafe').join(), 'build');
+      eq(TW.lintActivity('running events and hosting quizzes').join(), 'run,host');
+      ok(TW.lintActivity('a space built for fans').indexOf('built') !== -1);
+      ok(TW.lintActivity('we will set up a kiosk').indexOf('set up') !== -1);
+      eq(TW.lintActivity('Residents feel they belong in a shared space').length, 0);
+      eq(TW.lintActivity('a rebuilder of trust, the brunt of it').length, 0, 'no partial matches');
+    });
+
+    assert('negatives and problem words, including contractions', function() {
+      eq(TW.lintNegative('Fewer people are lonely').join(), 'fewer,lonely');
+      ok(TW.lintNegative('People don’t meet').indexOf('don\'t') !== -1, 'curly contraction');
+      ok(TW.lintNegative('No isolation').indexOf('no') !== -1);
+      eq(TW.lintNegative('Notable knowledge of nobody’s business').join(), 'nobody', 'notable and knowledge pass');
+    });
+
+    assert('"and" lint, and the long-term outcome lint result', function() {
+      eq(TW.lintAnd('Residents meet and talk').join(), 'and');
+      eq(TW.lintAnd('Fans & neighbours').join(), '&');
+      eq(TW.lintAnd('a band plays in Sandnessjøen').length, 0);
+      ok(TW.ltoLint('Residents of all ages feel they belong').ok);
+      var l = TW.ltoLint('The club offers fewer barriers');
+      ok(!l.ok); eq(l.activity.join(), 'offer'); eq(l.negative.join(), 'fewer');
+    });
+
+    suite('ToC Workbench — Gates');
+
+    assert('gate result lists the specific failing messages; nothing is scored', function() {
+      var g = TW.gateResult([{ ok: true, msg: 'a' }, { ok: false, msg: 'Do b.' }, { ok: false, msg: 'Do c.' }]);
+      ok(!g.ok); eq(g.failing.join('|'), 'Do b.|Do c.'); eq(g.total, 3);
+      ok(TW.gateResult([]).ok);
+      ok(!('score' in g));
+    });
+
+    assert('a complete week 9 passes every screen gate and the week gate', function() {
+      var s = twFull();
+      [1, 2, 3, 4].forEach(function (n) { eq(twFailing(s, n).length, 0, 'screen ' + n + ': ' + twFailing(s, n).join(' ')); });
+      ok(TW.gateResult(TW.weekChecks(s, 9)).ok);
+    });
+
+    assert('screen 1: name, 3-5 distinct members, roles; one-character names refused', function() {
+      var s = twFull(); s.group.name = 'x';
+      ok(/group a name/.test(twFailing(s, 1)[0]));
+      s = twFull(); s.group.members = ['Ana', 'Ben', '', '', ''];
+      ok(twFailing(s, 1).some(function (m) { return /Enter 3 to 5 members \(2 so far\)/.test(m); }));
+      s = twFull(); s.group.members = ['Ana', 'ana', 'Ben', 'Cai', ''];
+      ok(twFailing(s, 1).some(function (m) { return /different name/.test(m); }));
+      s = twFull(); s.group.members = ['Ana', 'Ben', 'C', 'Dee', ''];
+      ok(twFailing(s, 1).some(function (m) { return /at least 2 characters/.test(m); }));
+      s = twFull(); delete s.roles.week9.sceptic;
+      eq(twFailing(s, 1).join(), 'Assign the Sceptic for week 9.');
+      s = twFull(); s.group.members[1] = 'Bea';
+      ok(twFailing(s, 1).some(function (m) { return /Assign the Scribe/.test(m); }), 'renamed member no longer holds a role');
+    });
+
+    assert('screen 2: slide numbers required, every claim placed, every link marked', function() {
+      var s = twFull(); s.clientTheory.claims[1].slide = '';
+      eq(twFailing(s, 2).join(), 'Claim 2: give the slide number it comes from.');
+      s = twFull(); s.clientTheory.ambitionSlide = 'x';
+      eq(twFailing(s, 2).join(), 'Give the slide number of the client’s stated ambition.');
+      s = twFull(); var c = TW.addClaim(s); c.text = TWW(9); c.slide = '9';
+      eq(twFailing(s, 2).join('|'), 'Place every claim in the chain (3 of 4 placed).');
+      TW.placeClaim(s, c.id);
+      eq(twFailing(s, 2).join('|'), 'Mark every link in the chain as evidence given or not (2 of 3).');
+      s = twFull(); s.clientTheory.whoseCommunity = 'x';
+      ok(/Whose community\?: needs at least 25 words/.test(twFailing(s, 2)[0]));
+      s = twFull(); s.clientTheory.claims[0].text = 'c';
+      ok(/Claim 1: needs at least 8 words/.test(twFailing(s, 2)[0]));
+    });
+
+    assert('screen 2: moving a claim drops marks for links that no longer exist', function() {
+      var s = twFull(), o = s.clientTheory.order.slice();
+      ok(TW.moveClaim(s, o[2], -1));
+      eq(s.clientTheory.order.join(), [o[0], o[2], o[1]].join());
+      eq(Object.keys(s.clientTheory.linkEvidence).length, 0, 'both links changed');
+      ok(!TW.moveClaim(s, o[0], -1), 'first cannot move up');
+      TW.removeClaim(s, o[1]);
+      eq(s.clientTheory.order.join(), [o[0], o[2]].join());
+    });
+
+    assert('screen 3: decline claim, positive wording (or a reason), definitions, ceiling', function() {
+      var s = twFull(); s.problem.claims = [];
+      eq(twFailing(s, 3).join(), 'Tick at least one decline claim (Supply, Use, Quality, Outcome).');
+      s = twFull(); s.lto.text = 'The club runs a cafe with fewer barriers';
+      ok(/rephrase the flagged words/.test(twFailing(s, 3).join()));
+      s.lto.lintReason = TWW(15, 'reason');
+      eq(twFailing(s, 3).length, 0, 'a reason lets the wording stand');
+      s = twFull(); s.lto.definitions = [];
+      eq(twFailing(s, 3).join(), 'Define at least one key term in the long-term outcome.');
+      s = twFull(); s.lto.ceiling.ambitionPosition = '';
+      eq(twFailing(s, 3).join(), 'Place the client’s ambition above, at or below the ceiling.');
+      s = twFull(); s.problem.where = 'x';
+      eq(twFailing(s, 3).join(), 'Say where the problem is.');
+    });
+
+    assert('screen 4: minimum stakeholders, every rating, slide when named in the brief', function() {
+      var s = twFull(); s.stakeholders.pop();
+      eq(twFailing(s, 4).join(), 'Add at least 3 stakeholders (2 so far).');
+      s = twFull(); s.stakeholders[0].interest = '';
+      eq(twFailing(s, 4).join(), 'Stakeholder 1: rate interest.');
+      s = twFull(); s.stakeholders[2].slide = '';
+      eq(twFailing(s, 4).join(), 'Stakeholder 3: give the slide of the client brief that names them.');
+      s.stakeholders[2].fromBrief = false;
+      eq(twFailing(s, 4).length, 0);
+    });
+
+    assert('screens open in order and stay open once reached; unbuilt screens always open', function() {
+      var s = TW.defaultState();
+      ok(TW.screenEnabled(s, 1)); ok(!TW.screenEnabled(s, 2)); ok(!TW.screenEnabled(s, 4));
+      ok(TW.screenEnabled(s, 5), 'unbuilt'); ok(TW.screenEnabled(s, 14), 'unbuilt');
+      s = twFull(); ok(TW.screenEnabled(s, 4));
+      s.group.name = ''; ok(!TW.screenEnabled(s, 3));
+      s.ui.reached = 3; ok(TW.screenEnabled(s, 3), 'reached stays open'); ok(!TW.screenEnabled(s, 4));
+    });
+
+    assert('closing week 9 needs the week gate and a full self-check', function() {
+      var s = twFull();
+      ok(TW.closeWeek(s, 9).some(function (m) { return /^Plausible: needs at least 15 words/.test(m); }));
+      ok(!TW.weekClosed(s, 9));
+      twSelfCheck(s, 9); s.stakeholders[0].influence = '';
+      eq(TW.closeWeek(s, 9).join(), 'Screen 4: Stakeholder 1: rate influence.');
+      s.stakeholders[0].influence = 'low';
+      eq(TW.closeWeek(s, 9, '2026-11-02T10:25:00.000Z').length, 0);
+      ok(TW.weekClosed(s, 9)); eq(s.selfChecks.week9.completedAt, '2026-11-02T10:25:00.000Z');
+      eq(TW.currentWeek(s), 10);
+    });
+
+    suite('ToC Workbench — Roles');
+
+    assert('suggested roles: 3 members cover 4 roles; rotation never repeats a role the next week', function() {
+      var m3 = ['Ana', 'Ben', 'Cai'], w9 = TW.suggestRoles(m3, null);
+      eq(Object.keys(w9).join(), 'facilitator,scribe,sceptic,evidence');
+      eq(w9.facilitator, 'Ana'); eq(w9.evidence, 'Ana');
+      var prev = w9;
+      for (var w = 10; w <= 13; w++) {
+        var now = TW.suggestRoles(m3, prev);
+        Object.keys(now).forEach(function (r) { ok(now[r] !== prev[r], r + ' repeated in week ' + w); });
+        prev = now;
+      }
+      var m5 = ['A1', 'B2', 'C3', 'D4', 'E5'], f = TW.suggestRoles(m5, null);
+      eq(Object.keys(f).length, 5); eq(f.timekeeper, 'E5');
+      var g = TW.suggestRoles(m5, f);
+      Object.keys(g).forEach(function (r) { ok(g[r] !== f[r]); });
+    });
+
+    assert('a repeated role is reported as a warning, not a block', function() {
+      var s = twFull(); s.roles.week10 = JSON.parse(JSON.stringify(s.roles.week9));
+      var rep = TW.rotationRepeats(s, 10);
+      eq(rep.length, 4); ok(/Ana was Facilitator last week too/.test(rep[0]));
+      eq(TW.rotationRepeats(s, 9).length, 0);
+    });
+
+    suite('ToC Workbench — Find out first and revision log');
+
+    assert('"can we ask?: No" adds a stakeholder item; Yes or removal takes it away; manual items keep their source', function() {
+      var s = twFull();
+      eq(s.findOutFirst.length, 1); eq(s.findOutFirst[0].source, 'stakeholder'); eq(s.findOutFirst[0].refId, 'sx1');
+      ok(s.findOutFirst[0].text.indexOf('Residents nearby') !== -1);
+      s.stakeholders[1].name = 'Neighbours'; TW.syncStakeholderFof(s);
+      eq(s.findOutFirst.length, 1); ok(s.findOutFirst[0].text.indexOf('Neighbours') !== -1, 'text follows the name');
+      var m = TW.addFof(s, 'What do students want', 'manual', '3');
+      eq(m.source, 'manual'); eq(m.refId, '3');
+      eq(TW.addFof(s, 'x y z w', 'nonsense').source, 'manual');
+      s.stakeholders[1].canWeAsk = 'yes'; TW.syncStakeholderFof(s);
+      eq(s.findOutFirst.filter(function (f) { return f.source === 'stakeholder'; }).length, 0);
+      s.stakeholders[0].canWeAsk = 'no'; TW.syncStakeholderFof(s);
+      s.stakeholders.shift(); TW.syncStakeholderFof(s);
+      eq(s.findOutFirst.filter(function (f) { return f.source === 'stakeholder'; }).length, 0, 'removed with its stakeholder');
+      TW.removeFof(s, m.id); eq(s.findOutFirst.length, 1);
+    });
+
+    assert('edits are logged only after the week closes; repeat edits to one field coalesce', function() {
+      var s = twFull();
+      ok(!TW.logEdit(s, 3, 'Long-term outcome', '2026-11-02T10:00:00.000Z')); eq(s.revisionLog.length, 0);
+      twSelfCheck(s, 9); TW.closeWeek(s, 9, '2026-11-02T10:25:00.000Z');
+      ok(TW.logEdit(s, 3, 'Long-term outcome', '2026-11-09T09:10:00.000Z'));
+      TW.logEdit(s, 3, 'Long-term outcome', '2026-11-09T09:12:00.000Z');
+      eq(s.revisionLog.length, 1); eq(s.revisionLog[0].at, '2026-11-09T09:12:00.000Z'); eq(s.revisionLog[0].week, 9); eq(s.revisionLog[0].screen, 3);
+      TW.logEdit(s, 3, 'Long-term outcome', '2026-11-09T09:30:00.000Z');
+      TW.logEdit(s, 4, 'Stakeholder name', '2026-11-09T09:31:00.000Z');
+      eq(s.revisionLog.length, 3);
+      ok(!TW.logEdit(s, 5, 'Outcome', '2026-11-09T09:32:00.000Z'), 'week 10 is open');
+    });
+
+    suite('ToC Workbench — migrate() and export/import');
+
+    assert('migrate() fills every field of the full state shape from nothing', function() {
+      var s = TW.migrate({}), d = TW.defaultState();
+      Object.keys(d).forEach(function (k) { ok(k in s, k); });
+      ['outcomes', 'clusters', 'links', 'assumptions', 'findOutFirst', 'evidence', 'reverseImport', 'options', 'interventions', 'risks', 'indicators', 'valuesCheck', 'revisionLog']
+        .forEach(function (k) { ok(Array.isArray(s[k]) && s[k].length === 0, k); });
+      eq(Object.keys(s.selfChecks).join(), 'week9,week10,week11,week12,week13');
+      eq(Object.keys(s.roles).join(), 'week9,week10,week11,week12,week13');
+      ok(s.meta.exportId.length > 3); eq(s.group.members.length, 5);
+      eq(TW.migrate(null).lto.ceiling.ambitionPosition, '');
+    });
+
+    assert('migrate() keeps values, replaces wrong types, fills partial list items, keeps extra keys', function() {
+      var s = TW.migrate({ group: { name: 'Keep', members: ['A1', 'B2'] }, lto: { text: 'kept', ceiling: 'broken' },
+        stakeholders: [{ name: 'Only a name' }, 'junk'], outcomes: [{ text: 'o' }], findOutFirst: 'not a list', extra: { x: 1 },
+        roles: { week9: { scribe: 'A1' } }, clientTheory: { claims: [{ id: 'c1', text: 't' }], order: ['c1', 'gone', 'c1'] } });
+      eq(s.group.name, 'Keep'); eq(s.group.members.join(), 'A1,B2,,,'); eq(s.lto.text, 'kept');
+      eq(s.lto.ceiling.reason, ''); eq(s.stakeholders.length, 1); eq(s.stakeholders[0].canWeAsk, ''); eq(s.stakeholders[0].fromBrief, false);
+      eq(s.outcomes[0].leadsTo.length, 0); eq(s.outcomes[0].text, 'o');
+      ok(Array.isArray(s.findOutFirst)); eq(s.extra.x, 1); eq(s.roles.week9.scribe, 'A1'); eq(s.clientTheory.order.join(), 'c1');
+    });
+
+    assert('export and re-import preserve the state exactly', function() {
+      var s = twFull(); twSelfCheck(s, 9); TW.closeWeek(s, 9, '2026-11-02T10:25:00.000Z'); TW.logEdit(s, 2, 'Client claim', '2026-11-03T08:00:00.000Z');
+      var x = JSON.parse(JSON.stringify(TW.buildExport(s, '2026-11-02T10:30:00.000Z')));
+      eq(x.tool, 'toc-workbench'); eq(x.schemaVersion, 1); eq(x.exportId, s.meta.exportId);
+      eq(x.group.members.join(), 'Ana,Ben,Cai'); eq(x.exportedAt, '2026-11-02T10:30:00.000Z');
+      eq(TW.validateImport(x).length, 0);
+      eq(JSON.stringify(TW.migrate(x.state)), JSON.stringify(s));
+    });
+
+    assert('an export made in week 9 imports with every later-stage field present and empty', function() {
+      var x = JSON.parse(JSON.stringify(TW.buildExport(twFull())));
+      var s = TW.migrate(x.state);
+      ['outcomes', 'clusters', 'links', 'assumptions', 'evidence', 'reverseImport', 'options', 'interventions', 'risks', 'indicators', 'valuesCheck']
+        .forEach(function (k) { ok(Array.isArray(s[k]) && s[k].length === 0, k); });
+      eq(JSON.stringify(s.stressTest), '{}');
+      eq(JSON.stringify(s.reviews), '{"given":[],"received":[]}');
+      eq(JSON.stringify(s.diagrams), '{"clientOutcomeIds":[],"clientLinkIds":[]}');
+      eq(JSON.stringify(s.narrative), '{"execSummary":"","sections":{}}');
+      eq(s.recommendation.sentence, '');
+      [10, 11, 12, 13].forEach(function (w) { eq(JSON.stringify(s.selfChecks['week' + w]), '{"plausible":"","doable":"","testable":"","completedAt":""}'); });
+    });
+
+    assert('invalid files are refused with readable messages', function() {
+      ok(/not a workbench export/.test(TW.validateImport('text')[0]));
+      ok(/not a Bodø Theory of Change export/.test(TW.validateImport({ tool: 'week6b-adjudication-bench' })[0]));
+      ok(/week 7 file/.test(TW.validateImport({ tool: 'week7-bodo-decline' })[0]));
+      ok(/newer version/.test(TW.validateImport({ tool: 'toc-workbench', schemaVersion: 2, state: {} })[0]));
+      ok(/no schema version/.test(TW.validateImport({ tool: 'toc-workbench', state: {} })[0]));
+      ok(/missing/.test(TW.validateImport({ tool: 'toc-workbench', schemaVersion: 1 })[0]));
+      ok(/damaged/.test(TW.validateImport({ tool: 'toc-workbench', schemaVersion: 1, state: { group: [] } })[0]));
+    });
+
+    assert('week 7 import: schemaVersion 2 locked sentences become drafts; other files refused', function() {
+      var w = W7.blankState(); w.group.name = 'Red Team'; w.group.members = 'Ana, Ben'; w.claimRow = 2;
+      var x = JSON.parse(JSON.stringify(W7.buildExport(w)));
+      x.sentences = [{ member: 'Ana', final: 'Third places in Bodø may be used less because of prices.', locked: true }, { member: 'Ben', final: '', locked: false }];
+      eq(TW.validateWeek7(x).length, 0);
+      var sum = TW.week7Summary(x, '2026-11-02T09:05:00.000Z');
+      eq(sum.group, 'Red Team'); eq(sum.sentences.length, 1); eq(sum.sentences[0].member, 'Ana');
+      ok(/different version/.test(TW.validateWeek7({ tool: 'week7-bodo-decline', schemaVersion: 1, sentences: [] })[0]));
+      ok(/not a week 7/.test(TW.validateWeek7({ tool: 'toc-workbench' })[0]));
+      ok(/no sentences/.test(TW.validateWeek7({ tool: 'week7-bodo-decline', schemaVersion: 2 })[0]));
+    });
+
+    suite('ToC Workbench — Outputs');
+
+    assert('report and text come from the section registry; the A6 card prints only after the close', function() {
+      var s = twFull();
+      eq(TW.readyCards(s).length, 0);
+      var txt = TW.buildText(s);
+      ok(txt.indexOf('Residents of all ages feel they belong in a shared space') !== -1);
+      ok(txt.indexOf('Decline claims: USE') !== -1);
+      ok(txt.indexOf('Residents nearby') !== -1 && txt.indexOf('FIND OUT FIRST') !== -1);
+      ok(TW.buildReportHtml(s).indexOf('<table class="rep-table">') !== -1);
+      twSelfCheck(s, 9); TW.closeWeek(s, 9);
+      var cards = TW.readyCards(s, ['lto']);
+      eq(cards.length, 1); eq(cards[0].text, s.lto.text);
+      var h = TW.buildA6Html(cards.concat(cards, cards, cards, cards));
+      eq((h.match(/class="a6-sheet"/g) || []).length, 2); eq((h.match(/class="a6"/g) || []).length, 5);
+      ok(TW.buildText(s).indexOf('SELF-CHECKS') !== -1);
+      TW.OUTPUT_SECTIONS.forEach(function (sec) { ok(sec.id && sec.title && sec.html && sec.text && sec.has, sec.id); });
+    });
+
+    assert('week9-toc-workbench.html: charset first, favicon, no curly quotes or network calls in script, no PLACEHOLDER, no brief content marker', function() {
+      var t = cwsGet('week9-toc-workbench.html');
+      ok(t.indexOf('<meta charset="utf-8">') === 0, 'charset not first');
+      ok(t.indexOf('<link rel="icon" type="image/png" href="data:image/png;base64,') > t.indexOf('<title>'), 'favicon');
+      var m = t.match(/<script>([\s\S]*?)<\/script>/);
+      ok(m && !/[‘’“”]/.test(m[1]), 'curly quotes found');
+      ok(!/fetch\(|XMLHttpRequest|https?:\/\//.test(m[1]), 'network call found');
+      ok(JSON.stringify(TW.CONFIG).indexOf('PLACEHOLDER') === -1, 'PLACEHOLDER left in CONFIG');
     });
 
     // =====================================================
