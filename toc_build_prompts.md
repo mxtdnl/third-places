@@ -44,7 +44,7 @@ Each prompt begins "Follow the standing instructions in `toc_build_prompts.md` �
 ```
 Follow the standing instructions in toc_build_prompts.md §0.
 
-Build week9-toc-workbench.html (Activity 15, "Bodø Theory of Change"), stage 1 of 5: the core of the tool plus the week 9 screens. Spec: toc_buildplan.md §4, §6 (Week 9), §7. Reading: [TC] pp. 1–3; [GAF] pp. 8–15 and 43–44.
+Build week9-toc-workbench.html (Activity 15, "Bodø Theory of Change"), stage 1 of 5: the core of the tool plus the week 9 screens. Spec: toc_buildplan.md §4, §6 (Week 9), §7. Reading: [TC] pp. 1–4; [GAF] pp. 8–15 and 43–44.
 
 Match the visual language of third-place-decoder.html and third-place-lab.html (the week 2–3 tools) and the newer conventions in week6b-adjudication-bench.html and week7-bodo-decline.html (header and footer, CONFIG pattern, export header documentation, A6 card printing). Light theme.
 
@@ -82,7 +82,7 @@ WEEK 9 SCREENS (plan §6 Week 9):
    - positive opposite: a long-term outcome phrased as a condition, with a lint for activity verbs and negatives;
    - definitions: each key term with its meaning, and at least one required;
    - accountability ceiling: ultimate goal, and the client's ambition placed above, at or below it, with a reason.
-   Show [TC] p. 3's guidance beside each part.
+   Show the guidance from [TC] pp. 3–4 beside each part.
 4. Stakeholders: [GAF] p. 8's eight questions as prompts; each stakeholder has affected yes/no, influence and interest (low/medium/high), "from the brief" with slide, and "can we ask?". Every "no" adds a find-out-first item.
 - Week 9 close: self-check, then print the long-term outcome A6 card.
 
@@ -268,7 +268,7 @@ Every deck prompt below includes this paragraph. It is repeated in each prompt s
 ```
 Follow the standing instructions in toc_build_prompts.md §0, and the deck brief in the "Deck prompts: shared brief" section of that file.
 
-Build week9-toc-deck.html (Activity 16). Spec: toc_buildplan.md §3, §4 (principles 1, 12), §6 Week 9. Reading: [TC] pp. 1–3; [GAF] pp. 8–15, 43–44.
+Build week9-toc-deck.html (Activity 16). Spec: toc_buildplan.md §3, §4 (principles 1, 12), §6 Week 9. Reading: [TC] pp. 1–4; [GAF] pp. 8–15, 43–44.
 
 SLIDES (about 15):
 1. Title poster. Eyebrow "Week 9 · Intervene". Title "Where Are We Going?". Lede: the next five weeks build one recommendation to the client.
@@ -281,7 +281,7 @@ SLIDES (about 15):
    - (c) Who counts as a stakeholder? Correct: everyone directly or indirectly affected by, or with influence on, the outcomes ([GAF] p. 8).
    Distractors must be plausible and clearly wrong on the page.
 8. Quote plus commentary: "Perhaps the most important step in the entire ToC process is getting the long-term outcome right." ([TC] p. 3). Commentary: why today is spent on one sentence.
-9. Horizontal chain: problem statement → positive opposite → shared definitions → accountability ceiling, with direction labels. Use [TC] p. 3's own example (neighbourhood violent crime → a safe neighbourhood → agree what "safe" means and the boundaries).
+9. Horizontal chain: problem statement → positive opposite → shared definitions → accountability ceiling, with direction labels. Use [TC] p. 4's own example (neighbourhood violent crime → a safe neighbourhood → agree what "safe" means and the boundaries).
 10. Split with panel, "Whose community?": Oldenburg's third place (informal sociability among individuals; neutral ground; the leveller) beside the question every group must answer about the client's meaning. No brief content.
 11. Card grid: [GAF] p. 8's eight stakeholder questions, plus the rule that a stakeholder we cannot ask creates a find-out-first item.
 12. Card grid: the five group roles and their duties ([GAF] pp. 43–44: facilitators, everyone heard).
@@ -316,7 +316,7 @@ SLIDES (about 16):
 8. Quote plus commentary: "assumptions are already in place and do not need to be brought about" ([TC] p. 6). Commentary: [GAF] p. 23 uses "assumption" more broadly, including beliefs about links; this course follows Taplin and Clark, as Activity 7 does: the "why" on each arrow is a rationale, and an assumption is a condition already in place. Today we keep them apart.
 9. The sorter, as a chain: "Is this already true in Bodø today?" Yes → assumption register; No → precondition on the map; Can't know without residents → find out first.
 10. Sorting practice, single-select per item, using [TC] p. 6's employment example: "suitable, decent-paying jobs exist" (precondition) and "existing public transportation will continue to operate" (assumption). Add at most two further items about a hypothetical third place, each prefixed PLACEHOLDER: for instructor review, including one that sorts to "find out first".
-11. Split with panel: outcome wording. Positive conditions ([TC] p. 3); one change per outcome (quote [GAF] p. 16 exactly); activity verbs belong to interventions in week 11.
+11. Split with panel: outcome wording. Positive conditions ([TC] p. 4); one change per outcome (quote [GAF] p. 16 exactly); activity verbs belong to interventions in week 11.
 12. Card grid of four: the week 6 adjudication criteria (labels and definitions copied from week6b-adjudication-bench.html CONFIG.criteria). Scope conditions carry the week 7 Bodø verdict.
 13. Reverse Import: each student places one claim from a parallel course on one link, as support or challenge.
 14–17. In the workbench:
