@@ -588,6 +588,25 @@
   .choice.mini > span { min-height: 44px; padding: 0.3rem 0.55rem; font-size: 0.7rem; letter-spacing: 0.04em; }
   .choices.targets .choice.block > span { text-transform: none; font-size: 0.86rem; }
   .choice input:disabled + span { opacity: 0.45; cursor: not-allowed; }
+  details.oc { padding: 0; }
+  .oc-sum {
+    cursor: pointer; list-style: none; display: flex; align-items: center; gap: 0.6rem;
+    min-height: 44px; padding: 0.55rem 1rem;
+  }
+  .oc-sum::-webkit-details-marker { display: none; }
+  .oc-sum::after { content: '+'; flex: 0 0 auto; font-weight: 800; font-size: 1.2rem; color: var(--char-1); }
+  details.oc[open] > .oc-sum::after { content: '\2212'; }
+  details.oc[open] > .oc-sum { border-bottom: 2px solid var(--border); }
+  .oc-sum .tag {
+    display: inline-flex; align-items: center; justify-content: center; min-width: 2rem; height: 2rem; padding: 0 0.4rem;
+    background: var(--item-colour, var(--char-1)); color: #fff; font-weight: 800; font-size: 0.8rem; flex: 0 0 auto;
+  }
+  .oc-sum .grow { flex: 1 1 auto; min-width: 0; }
+  .oc-title { display: block; font-weight: 700; overflow-wrap: anywhere; }
+  .oc-state { display: block; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+  .oc-state.ok { color: var(--correct); }
+  .oc-state.todo { color: var(--incorrect); }
+  .oc-body { padding: 0.85rem 1rem; }
   .stem { font-size: 0.9rem; font-style: italic; margin-bottom: 0.4rem; }
   .loose-note { color: var(--incorrect); font-weight: 700; font-size: 0.86rem; }
   .sorter-q { font-size: 0.95rem !important; color: var(--text) !important; letter-spacing: 0.04em !important; }
@@ -2939,10 +2958,23 @@
   }
 
   // ── Screen 5: backwards map ──
+  // Each outcome editor folds away. An outcome opens by default while any of
+  // its own checks fails; after that, open or closed is remembered for the
+  // session (ocOpen), and opening its box on the diagram opens it.
+  var ocOpen = {};
+  function outcomeDone(o, ok) {
+    return ok && wordCheck(o.text, CONFIG.words.outcome).ok && (o.level === 'early' || o.level === 'intermediate') && nameOk(o.pathway) && o.lenses.some(lensOk);
+  }
   function outcomeEditor(o, i) {
-    var base = 'outcomes.' + i + '.', id = o.id, inK = inCluster(state, o), adj = graph(state), ok = reaches(adj, id, LTO_ID);
-    var h = '<div class="item oc" id="oc-' + id + '" style="--item-colour:' + pathwayColour(state, o.pathway) + '"><div class="item-head"><span class="tag">' + (i + 1) + '</span>' +
-      '<span class="grow ' + (ok ? 'quiet' : 'loose-note') + '">' + (ok ? 'Reaches the long-term outcome' : 'Not yet connected to the long-term outcome') + '</span>' +
+    var base = 'outcomes.' + i + '.', id = o.id, inK = inCluster(state, o), adj = graph(state), ok = reaches(adj, id, LTO_ID), done = outcomeDone(o, ok);
+    // First seen this session: open if anything is missing. Remembered after
+    // that, so an editor never folds away while the group is working in it.
+    if (ocOpen[id] === undefined) ocOpen[id] = !done;
+    var open = ocOpen[id], col = pathwayColour(state, o.pathway);
+    var h = '<details class="item oc" id="oc-' + id + '" data-oc="' + id + '" style="--item-colour:' + col + '"' + (open ? ' open' : '') + '>' +
+      '<summary class="oc-sum"><span class="tag" style="color:' + ({ '#D4A020': '#2A1F18', '#CC6830': '#2A1F18' }[col] || '#fff') + '">' + (i + 1) + '</span><span class="grow"><span class="oc-title">' + otext(id) + '</span>' +
+      '<span class="oc-state ' + (done ? 'ok' : 'todo') + '">' + (done ? 'Complete' : ok ? 'Still to do' : 'Not yet connected to the long-term outcome') + '</span></span></summary>' +
+      '<div class="oc-body"><div class="item-head"><span class="grow ' + (ok ? 'quiet' : 'loose-note') + '">' + (ok ? 'Reaches the long-term outcome' : 'Not yet connected to the long-term outcome') + '</span>' +
       '<button type="button" class="btn btn-danger btn-small" data-action="oc-remove" data-arg="' + id + '" aria-label="Remove outcome ' + (i + 1) + '">Remove</button></div>';
     h += wcText('oc-text-' + id, 'Outcome ' + (i + 1) + ': a condition, one change', base + 'text', o.text, CONFIG.words.outcome, { short: true, lint: 'outcome', logLabel: 'Outcome text' });
     h += '<div class="two-col">' + textInput('oc-path-' + id, 'Pathway', base + 'pathway', o.pathway, { max: 40, list: 'pathway-list', logLabel: 'Outcome pathway' }) +
@@ -2973,7 +3005,7 @@
           attrs: ' data-lead="' + id + '"' });
       }).join('') + '</div></fieldset>';
     }
-    return h + '</div>';
+    return h + '</div></details>';
   }
   function clusterEditor(k, i) {
     var mem = clusterMembers(state, k), cur = k.leadsTo[0] || '';
@@ -3058,6 +3090,8 @@
     h += '<section class="panel" style="' + panelStyle(sc) + '">';
     h += '<datalist id="pathway-list">' + pathwayList(state).map(function (p) { return '<option value="' + esc(p) + '">'; }).join('') + '</datalist>';
     h += '<div class="part" style="--part-colour:var(--char-6)"><h3>1. Outcomes, from the top down</h3><div>' +
+      (state.outcomes.length > 1 ? '<div class="actions" style="margin:0 0 0.6rem"><button type="button" class="btn btn-ghost btn-small" data-action="oc-fold" data-arg="open">Open all</button>' +
+        '<button type="button" class="btn btn-ghost btn-small" data-action="oc-fold" data-arg="close">Close all</button></div>' : '') +
       state.outcomes.map(outcomeEditor).join('') +
       '<button type="button" class="btn btn-accent" data-action="oc-add">Add an outcome</button></div>' +
       guide('Pathways', quote(M.pathways, M.pathwaysRef) + '<p style="margin-top:0.4rem">' + quote(M.multiple, M.multipleRef) + '</p>') + '</div>';
@@ -3176,6 +3210,8 @@
   function openEditor(id) {
     if (id === LTO_ID || id === 'goal') { goto(3); refocus(id === 'goal' ? 'ce-goal' : 'lto-text'); return; }
     var target = outcomeById(state, id) ? 'oc-text-' + id : clusterById(state, id) ? 'cl-label-' + id : linkById(state, id) ? 'rat-' + id : '';
+    var oc = $('oc-' + id);
+    if (oc && oc.tagName === 'DETAILS' && !oc.open) { oc.open = true; ocOpen[id] = true; }
     var el = target && $(target);
     if (!el) return;
     if (el.scrollIntoView) el.scrollIntoView({ block: 'center' });
@@ -3521,7 +3557,12 @@
       else if (act === 'print-cards') printNow(arg);
       else if (act === 'print-diagram') printNow('diagram-' + arg);
       else if (act === 'dg-open') openEditor(arg);
-      else if (act === 'oc-add') { var no = addOutcome(state); log('Outcomes added or removed'); save(); render(); refocus('oc-text-' + no.id); }
+      else if (act === 'oc-fold') {
+        state.outcomes.forEach(function (o) { ocOpen[o.id] = arg === 'open'; });
+        var all = document.querySelectorAll('details[data-oc]');
+        for (var i = 0; i < all.length; i++) all[i].open = arg === 'open';
+      }
+      else if (act === 'oc-add') { var no = addOutcome(state); ocOpen[no.id] = true; log('Outcomes added or removed'); save(); render(); refocus('oc-text-' + no.id); }
       else if (act === 'oc-remove') {
         if (window.confirm('Remove this outcome, and every arrow to and from it?')) { removeOutcome(state, arg); log('Outcomes added or removed'); save(); render(); }
       }
@@ -3559,6 +3600,11 @@
       else if (act === 'week7-clear') { if (window.confirm('Remove the week 7 sentences from this workbench?')) { state.imported.week7 = null; save(); render(); } }
     });
 
+    // Remember which outcome editors are open (toggle does not bubble).
+    app.addEventListener('toggle', function (ev) {
+      var d = ev.target;
+      if (d && d.dataset && d.dataset.oc) ocOpen[d.dataset.oc] = d.open;
+    }, true);
     // Diagram boxes and arrows are SVG elements with role="button": Enter
     // and Space open their editor.
     app.addEventListener('keydown', function (ev) {
