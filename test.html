@@ -2987,6 +2987,111 @@
     });
 
     // =====================================================
+    // WEEK 10 TOC DECK
+    // =====================================================
+
+    suite('Week 10 deck — Content and encoding');
+
+    var W10D_HTML = cwsGet('week10-toc-deck.html');
+    var W10D_CONFIG = (function() {
+      var m = W10D_HTML.match(/var CONFIG = (\{[\s\S]*?\});\s*\/\/ END CONFIG/);
+      return m ? new Function('return ' + m[1])() : null;
+    })();
+
+    assert('week10-toc-deck.html: charset first, favicon, no curly quotes or network calls in script', function() {
+      ok(W10D_HTML.indexOf('<meta charset="utf-8">') === 0, 'charset not first');
+      ok(W10D_HTML.indexOf('<link rel="icon" type="image/png" href="data:image/png;base64,') > W10D_HTML.indexOf('<title>'), 'favicon');
+      var m = W10D_HTML.match(/<script>([\s\S]*?)<\/script>/);
+      ok(m && !/[‘’“”]/.test(m[1]), 'curly quotes found');
+      ok(!/fetch\(|XMLHttpRequest|https?:\/\//.test(m[1]), 'network call found');
+    });
+
+    assert('PLACEHOLDER text appears only in the two invented sorting items (D10 slide 10)', function() {
+      ok(W10D_CONFIG, 'CONFIG not parsed');
+      var inItems = 0;
+      W10D_CONFIG.sortItems.forEach(function(it) {
+        if (it.text.indexOf('PLACEHOLDER:') === 0) { inItems++; ok(it.right.indexOf('PLACEHOLDER:') === 0, 'feedback for a placeholder item is marked'); }
+      });
+      eq(inItems, 2);
+      // 2 items x (text + feedback), plus the editing note in the CONFIG header
+      eq((W10D_HTML.match(/PLACEHOLDER/g) || []).length, 5);
+    });
+
+    assert('week10-toc-deck.html uses no en or em dashes (SLIDES.md section 11)', function() {
+      ok(!/[–—]|&ndash;|&mdash;/.test(W10D_HTML));
+    });
+
+    assert('18 slides, and no two adjacent slides share an accent', function() {
+      var acc = (W10D_HTML.match(/<section class="slide[^"]*" data-accent="[^"]+"/g) || []).map(function(s) { return s.match(/data-accent="([^"]+)"/)[1]; });
+      eq(acc.length, 18);
+      for (var i = 1; i < acc.length; i++) ok(acc[i] !== acc[i - 1], 'slides ' + i + ' and ' + (i + 1));
+    });
+
+    assert('reading checks: three single-select items, each with a valid answer and page-cited feedback', function() {
+      eq(W10D_CONFIG.readingChecks.length, 3);
+      W10D_CONFIG.readingChecks.forEach(function(q, i) {
+        eq(Object.keys(q.options).length, 4, 'options ' + i);
+        ok(q.options[q.correct], 'correct key ' + i);
+        ok(/\[(TC|GAF)\] p\. \d+/.test(q.right), 'page reference in feedback ' + i);
+        ok(q.wrong.length > 0, 'wrong feedback ' + i);
+      });
+      eq(W10D_CONFIG.readingChecks.map(function(q) { return q.correct; }).join(''), 'acd');
+    });
+
+    assert('sorting practice: [TC] p. 6\'s two items first, at most two more, one sorting to find out first', function() {
+      var items = W10D_CONFIG.sortItems, keys = Object.keys(W10D_CONFIG.sortLabels);
+      eq(keys.join(','), 'assumption,precondition,fof');
+      ok(items.length >= 2 && items.length <= 4, 'item count');
+      items.forEach(function(it, i) { ok(keys.indexOf(it.answer) !== -1, 'answer ' + i); ok(it.right.length > 20, 'feedback ' + i); });
+      eq(items[0].answer, 'precondition');
+      eq(items[1].answer, 'assumption');
+      ok(/\[TC\] p\. 6/.test(items[0].right) && /\[TC\] p\. 6/.test(items[1].right), 'page cited');
+      ok(items.some(function(it) { return it.answer === 'fof'; }), 'a find-out-first item');
+    });
+
+    assert('workbench blocks run 12-45, 45-65, 65-80, 80-90 on screens 5-6, with 3-5 tasks and known lead roles', function() {
+      var names = W10D_CONFIG.roles.map(function(r) { return r.name; });
+      var b = W10D_CONFIG.blocks;
+      eq(b.map(function(x) { return x.start + '-' + x.end; }).join(','), '12-45,45-65,65-80,80-90');
+      eq(b.map(function(x) { return x.screens.join('+'); }).join(','), '5,5+6,6,6');
+      b.forEach(function(x) {
+        ok(x.tasks.length >= 3 && x.tasks.length <= 5, 'task count ' + x.title);
+        ok(x.leads.length > 0, 'leads ' + x.title);
+        x.leads.forEach(function(l) { ok(names.indexOf(l) !== -1, 'unknown role ' + l); });
+      });
+      ok(b[1].leads.indexOf('Sceptic') === 0, 'Sceptic leads rationales and assumptions');
+      ok(b[2].leads.indexOf('Evidence lead') === 0, 'Evidence lead leads evidence');
+    });
+
+    assert('deck matches week9-toc-workbench.html: screens, roles, sorter routes, Bodø verdicts, activity verbs', function() {
+      ok(typeof TW !== 'undefined' && TW.CONFIG, 'workbench not loaded');
+      Object.keys(W10D_CONFIG.screenNames).forEach(function(n) {
+        var s = TW.CONFIG.screens.filter(function(x) { return x.no === +n; })[0];
+        ok(s && s.week === 10 && s.built, 'screen ' + n);
+        eq(W10D_CONFIG.screenNames[n], s.title, 'screen ' + n + ' name');
+      });
+      eq(W10D_CONFIG.roles.map(function(r) { return r.name; }).join(','), TW.CONFIG.roles.map(function(r) { return r.name; }).join(','));
+      eq(W10D_CONFIG.routes.map(function(r) { return r.answer; }).join('|'), TW.CONFIG.sorter.answers.map(function(a) { return a.label; }).join('|'));
+      eq(W10D_CONFIG.verdicts.map(function(v) { return v.label; }).join(','), TW.CONFIG.bodoVerdicts.map(function(v) { return v.label; }).join(','));
+      W10D_CONFIG.activityVerbs.forEach(function(v) { ok(TW.CONFIG.lint.activityVerbs.indexOf(v) !== -1, 'verb ' + v); });
+    });
+
+    assert('criteria and rating scale are copied verbatim from week6b-adjudication-bench.html', function() {
+      ok(typeof W6B !== 'undefined' && W6B.CONFIG, 'week 6b not loaded');
+      eq(W10D_CONFIG.criteria.length, 4);
+      W10D_CONFIG.criteria.forEach(function(c, i) {
+        var w = W6B.CONFIG.criteria[i];
+        eq(c.id, w.id); eq(c.label, w.label); eq(c.definition, w.definition);
+        eq(c.question, w.questions[0]);
+      });
+      eq(W10D_CONFIG.ratingScale.join(','), W6B.CONFIG.ratingScale.map(function(r) { return r.label; }).join(','));
+    });
+
+    assert('narrow layout query keeps the "screen and" prefix', function() {
+      ok(W10D_HTML.indexOf('@media screen and (max-width: 860px), screen and (max-aspect-ratio: 1/1)') !== -1);
+    });
+
+    // =====================================================
     // SUMMARY
     // =====================================================
 
