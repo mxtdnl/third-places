@@ -12,13 +12,20 @@
   club create a community third place in its new stadium. Plan:
   toc_buildplan.md. Build prompts: toc_build_prompts.md.
 
-  BUILD STAGE: 2 of 5 (core, week 9 and week 10 screens). Screens 7-14 show
-  "Arrives in week N" with their reading until their stage is built. Later
-  stages add screens, output sections and A6 card types; they do not change
-  the state shape below except by adding defaults through migrate(). Stage 2
-  added "beliefs", "sweep", evidence "factId" and Reverse Import "absent".
-  Stage 3 locks screens 7-9 on designGate(state): every outcome reaches the
-  long-term outcome, every arrow has a rationale, every belief is sorted.
+  BUILD STAGE: 3 of 5 (core, week 9, week 10 and week 11 screens). Screens
+  10-14 show "Arrives in week N" with their reading until their stage is
+  built. Later stages add screens, output sections and A6 card types; they do
+  not change the state shape below except by adding defaults through
+  migrate(). Stage 2 added "beliefs", "sweep", evidence "factId" and Reverse
+  Import "absent". Stage 3 added "gapWalk", "stressOwn", assumption
+  "riskiest", intervention "feature", input "basis", "limits" and "beliefId",
+  and risk "stressCharId".
+
+  THE DESIGN LOCK (screens 7-9, week 11). The design screens open only while
+  designGate(state) passes: every outcome reaches the long-term outcome,
+  every arrow has a rationale, every belief is sorted, no loop ([TC] p. 7:
+  hold off on interventions until the framework is complete). If the map
+  later breaks, the lock returns until it is fixed; nothing is lost.
 
   Core reading (page numbers refer to the course PDFs):
     [TC]  Taplin, D. H. & Clark, H. (2012). Theory of Change Basics: A Primer
@@ -56,6 +63,24 @@
          sorter. The Sceptic leads.
   65-80  Screen 6: evidence, rated on the week 6 criteria; Reverse Import.
   80-90  Screen 6: completeness pass; week 10 self-check; export.
+
+  RUN SHEET, WEEK 11 (90 minutes)
+   0-12  Deck (week 11). Screen 7: rotate roles for week 11.
+  12-30  Screen 7: options appraisal; choose one, say why not the others.
+  30-55  Screen 8: interventions on arrows; the gap walk.
+  55-70  Screen 8: inputs for each intervention.
+  70-85  Screen 9: risks and the stadium stress test.
+  85-90  Screen 9: mark the three riskiest assumptions; week 11 self-check;
+         print the riskiest-assumption cards; export.
+
+  INTERVENTIONS (screen 8). An intervention sits on one or more arrows
+  (linkIds), as a marker drawn on each arrow ([TC] p. 7). An intervention
+  with no arrow is flagged (shoehorn check). The gap walk lists every arrow
+  with no intervention; each is marked in gapWalk as "needs" (blocks until
+  an intervention is placed on it) or "assumption" (an assumption from the
+  register that sits on that arrow). Stress test rows marked "none yet"
+  each keep one risk in the register (risk.stressCharId = the
+  characteristic), kept in step by syncStressRisks().
 
   THE BACKWARDS MAP (screen 5). The long-term outcome is node "lto" (its text
   is lto.text). An outcome's "leadsTo" lists the outcomes, clusters or "lto"
@@ -183,13 +208,32 @@
       "reverseImport": [ { "member", "course", "claim", "linkId",
                            "stance": ""|"support"|"challenge",
                            "absent": bool } ],   one per member (absent: stage 2)
+      Week 11 (screens 7-9):
       "options": [ { "id", "summary", "location", "plausible", "doable",
                      "testable", "chosen": bool, "whyNot" } ],
-      "interventions": [ { "id", "name", "activities": [], "linkIds": [],
-                           "characteristics": [],
-                           "inputs": [ { "resource", "fromBrief", "slide", "limitation" } ] } ],
-      "risks": [ { "id", "text", "internal", "likelihood", "mitigation", "interventionId" } ],
-      "stressTest": { "<charId>": { "threat", "protectedBy" } },
+                     exactly one chosen; whyNot for every other option
+      "interventions": [ { "id", "name", "activities": ["string"],
+                           "linkIds": [], "characteristics": [],
+                           "feature": ""|"what"|"where"|"hours"|"price"|
+                                      "operator"|"programming"|"other",
+                           "inputs": [ { "resource",
+                             "basis": ""|"brief"|"assumption",   (stage 3)
+                             "fromBrief": bool,  = basis is "brief"
+                             "slide", "limitation",
+                             "limits": { "ringFenced", "skills", "timeLimit" },
+                                       each ""|"yes"|"no"|"unknown" (stage 3)
+                             "beliefId" } ] } ],  a belief made from it (stage 3)
+      "gapWalk": { "<linkId>": { "status": ""|"needs"|"assumption",
+                                 "assumptionId" } },               (stage 3)
+      "risks": [ { "id", "text", "internal": ""|"internal"|"external",
+                   "likelihood": ""|"low"|"medium"|"high", "mitigation",
+                   "interventionId": ""|interventionId|"whole",
+                   "stressCharId" } ],   set when made by the stress test
+      "stressTest": { "<charId>": { "threat",
+                      "protectedBy": ""|interventionId|"none" } },
+      "stressOwn": [ { "id", "question", "slide", "charId", "answer" } ],
+                     the group's own questions from the brief (stage 3)
+      assumptions[].riskiest: bool        the three riskiest (stage 3)
       "indicators": [ { "id", "outcomeId", "owner", "howMany", "who", "level",
                         "byWhen", "definition", "baseline", "dataSource",
                         "frequency", "responsible", "reporting" } ],
@@ -585,6 +629,16 @@
   .dg-legend .sw { width: 14px; height: 14px; display: inline-block; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .dg-legend .sw.dashed { height: 0; border-top: 3px dashed #2A1F18; }
   .dg-legend .sw.loose { border: 2px dashed #B82828; background: #fff; }
+  .dg-legend .sw.marker { width: 18px; background: #C85218; color: #fff; font-size: 9px; font-weight: 800; text-align: center; line-height: 14px; }
+  .dg .dg-marker rect { fill: #9A4A1A; stroke: #fff; stroke-width: 1.5; }
+  .dg .dg-marker text { font-size: 9px; font-weight: 800; fill: #fff; }
+  .dg .dg-marker:focus-visible > rect:first-child, .dg .dg-marker:hover > rect:first-child { fill: #5C3A96; stroke: #2A1F18; stroke-width: 2; }
+  .lock-box { border: 3px solid var(--char-2); padding: 1.25rem 1.5rem; background: var(--bg-card); position: relative; overflow: hidden; }
+  .lock-box .big { font-size: clamp(1.3rem, 3vw, 1.8rem); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+  .rail-btn.locked { border-style: dotted; }
+  .shoehorn { background: var(--incorrect-bg); border-left: 5px solid var(--incorrect); padding: 0.5rem 0.75rem; margin: 0.5rem 0; font-size: 0.9rem; }
+  .stress-qs { margin: 0.25rem 0 0.5rem 1.1rem; font-size: 0.9rem; }
+  .stress-qs li { margin-bottom: 0.2rem; }
   .choice.mini > span { min-height: 44px; padding: 0.3rem 0.55rem; font-size: 0.7rem; letter-spacing: 0.04em; }
   .choices.targets .choice.block > span { text-transform: none; font-size: 0.86rem; }
   .choice input:disabled + span { opacity: 0.45; cursor: not-allowed; }
@@ -746,6 +800,14 @@
     // shows the sheet for the group's current week (the first week not yet
     // closed), or the latest sheet built.
     runSheets: {
+      11: [
+        { t: '0–12', what: 'Deck. Screen 7: rotate roles for week 11.' },
+        { t: '12–30', what: 'Screen 7: options appraisal. At least two different designs; test each as plausible, doable and testable; choose one and say why not the others.' },
+        { t: '30–55', what: 'Screen 8: place each intervention on the arrows it serves. Then the gap walk: every arrow with no intervention needs one, or is covered by an assumption.' },
+        { t: '55–70', what: 'Screen 8: inputs for each intervention. Constraints from the client brief (on the VLE) are cited by slide; everything else is our assumption.' },
+        { t: '70–85', what: 'Screen 9: risks, then the stadium stress test against the eight characteristics.' },
+        { t: '85–90', what: 'Screen 9: mark the three riskiest assumptions; week 11 self-check; print their cards; export.' }
+      ],
       10: [
         { t: '0–12', what: 'Deck. Screen 5: rotate roles for week 10.' },
         { t: '12–45', what: 'Screen 5: backwards map. From the long-term outcome down, ask what must be true for each outcome, in at least two pathways. Group preconditions that act together into clusters. Tag each outcome by lens and characteristic.' },
@@ -807,16 +869,18 @@
         summary: 'The sorter, the assumption register and the evidence log with the week 6 criteria.',
         reading: [{ ref: 'TC', pages: 'p. 6', what: '§4 Assumptions and rationales' },
                   { ref: 'GAF', pages: 'pp. 23–26', what: 'Step 7: assumptions; the quality of evidence (p. 24)' }] },
-      { no: 7, week: 11, built: false, title: 'Options appraisal', colour: 'var(--char-1)',
+      { no: 7, week: 11, built: true, design: true, title: 'Options appraisal', colour: 'var(--char-1)',
         summary: 'At least two designs, tested as plausible, doable and testable; one chosen.',
-        reading: [{ ref: 'GAF', pages: 'p. 11', what: 'Step 2, questions 6–7: alternative strategies' }] },
-      { no: 8, week: 11, built: false, title: 'Interventions', colour: 'var(--char-4)',
+        reading: [{ ref: 'GAF', pages: 'p. 11', what: 'Step 2, questions 6–7: alternative strategies' },
+                  { ref: 'TC', pages: 'p. 9', what: '§7 Quality review: plausible, doable, testable' }] },
+      { no: 8, week: 11, built: true, design: true, title: 'Interventions', colour: 'var(--char-4)',
         summary: 'Interventions on arrows, the gap walk, and inputs.',
         reading: [{ ref: 'TC', pages: 'p. 7', what: '§5 Interventions' },
                   { ref: 'GAF', pages: 'pp. 19–22', what: 'Steps 5–6: outputs, activities and inputs' }] },
-      { no: 9, week: 11, built: false, title: 'Risks and stress test', colour: 'var(--char-2)',
+      { no: 9, week: 11, built: true, design: true, title: 'Risks and stress test', colour: 'var(--char-2)',
         summary: 'The risk register and the stadium stress test against the eight characteristics.',
-        reading: [{ ref: 'GAF', pages: 'pp. 27–28', what: 'Step 8: risks' }] },
+        reading: [{ ref: 'GAF', pages: 'pp. 27–28', what: 'Step 8: risks' },
+                  { ref: 'TC', pages: 'p. 6', what: '§4 Assumptions: conditions already in place' }] },
       { no: 10, week: 12, built: false, title: 'Indicators', colour: 'var(--char-8)',
         summary: 'Indicators with the four targets, the M&E framework and the timeline check.',
         reading: [{ ref: 'TC', pages: 'p. 8', what: '§6 Indicators' },
@@ -892,7 +956,20 @@
       evidenceSummary: 8,  // what the evidence says
       evidenceSource: 2,   // where it comes from
       reverseCourse: 1,    // the parallel course (also needs 2 characters)
-      reverseClaim: 12     // the imported claim
+      reverseClaim: 12,    // the imported claim
+      // Week 11 (screens 7-9)
+      optionSummary: 10,   // what the design is
+      optionLocation: 2,   // where it is, in or around the stadium
+      appraisal: 15,       // each of plausible, doable, testable, per option
+      whyNot: 15,          // why an option was rejected
+      activity: 3,         // one activity of an intervention
+      resource: 3,         // an input (resource)
+      limitation: 8,       // what limits the resource
+      riskText: 8,         // a risk
+      mitigation: 10,      // what the club can do about it
+      threat: 12,          // stress test: how the setting could threaten a characteristic
+      ownQuestion: 6,      // the group's own stress-test question, from the brief
+      ownAnswer: 12        // its answer
     },
     // Shortest name accepted (group, members, terms, stakeholders).
     minNameChars: 2,
@@ -903,6 +980,10 @@
     minClaims: 3,          // client claims on screen 2
     minStakeholders: 3,    // stakeholders on screen 4
     maxOutcomes: 15,       // soft cap on the backwards map (week 10): a warning, not a block
+    minOptions: 2,         // options appraised on screen 7 (week 11)
+    minInterventions: 1,   // interventions on screen 8
+    minRisks: 1,           // risks on screen 9 (stress-test risks count)
+    riskiestCount: 3,      // assumptions marked riskiest (all of them if fewer)
     // Edits to the same field of a closed week within this many minutes make
     // one revision-log entry, not one per keystroke.
     logCoalesceMinutes: 5,
@@ -911,9 +992,11 @@
     closeActions: {
       9: [{ action: 'print-cards', arg: 'lto', label: 'Print the long-term outcome card' }],
       10: [{ action: 'print-diagram', arg: 'a4', label: 'Print diagram · A4 landscape' },
-           { action: 'print-diagram', arg: 'a3', label: 'Print diagram · A3 landscape' }]
+           { action: 'print-diagram', arg: 'a3', label: 'Print diagram · A3 landscape' }],
+      11: [{ action: 'print-cards', arg: 'riskiest', label: 'Print the riskiest-assumption cards' },
+           { action: 'print-diagram', arg: 'a4', label: 'Print diagram · A4 landscape' }]
     },
-    weekCards: { 9: ['lto'], 10: [] },
+    weekCards: { 9: ['lto'], 10: [], 11: ['riskiest'] },
 
     // Group roles ([GAF] pp. 43–44). minGroup = the smallest group that uses
     // the role. Each week, roles rotate: the suggestion never gives a member
@@ -1153,6 +1236,124 @@
       sweepLocked: 'The completeness pass opens when every outcome on the backwards map reaches the long-term outcome.'
     },
 
+    // ── WEEK 11 (screens 7-9) ──────────────────────────────────────────────
+    // Quotations are exact, with the page. [TC] p. 7, [GAF] pp. 11, 19, 21, 27.
+    design: {
+      holdOff: 'In the TOC process, we deliberately ask groups to hold off on interventions—i.e., what they\u2019re going to do--until they have identified what needs to happen (what outcomes need to be produced).',
+      holdOffRef: '[TC] p. 7',
+      lockLead: 'Design opens when the outcomes framework is complete. Still to do on screens 5 and 6:',
+      lockAfter: 'Your work on this screen is kept. It opens again as soon as the list above is clear.'
+    },
+    options: {
+      lead: 'Appraise at least two different designs for the third place before choosing one. Location is one variable: the designs can differ in what the place is, who runs it, when it opens, what it costs, as well as where it is.',
+      q6: 'What is the most appropriate intervention for this process of change?',
+      q7: 'Are there alternative strategies to meet your aims?',
+      qRef: '[GAF] p. 11',
+      testLead: 'Test each option against [TC]\u2019s three questions, applied to this design. Nothing is scored: say where it is strong and where it is thin.',
+      chooseLead: 'Choose one. For every other option, record why it was rejected. The recommendation in week 13 is this one design, not a menu.'
+    },
+    interventions: {
+      lead: 'Each intervention is something the club would do. Place it on every arrow it helps to produce: on the connector from the precondition to the outcome it serves.',
+      definition: 'We use activity to describe all the specific actions that make up an intervention.', definitionRef: '[TC] p. 7',
+      connector: 'The appropriate place to locate an intervention symbol is on the connector that leads from the precondition to the outcome that precondition helps to produce.', connectorRef: '[TC] p. 7',
+      multiple: 'Some interventions may contribute to multiple outcomes. In that case, you should locate those interventions in all the appropriate places.', multipleRef: '[TC] p. 7',
+      shoehorn: 'Existing programs may find a home in the theory but if they don\u2019t, it\u2019s best not to shoehorn them in.', shoehornRef: '[TC] p. 7',
+      shoehornFlag: 'This intervention sits on no arrow. Place it on the arrows it serves, or remove it.',
+      activities: 'Activities are what you do to provide a product or service.', activitiesRef: '[GAF] p. 19',
+      gapWalk: 'walk through the framework to identify places where an intervention is necessary and decide which intervention would best accomplish this.', gapWalkRef: '[TC] p. 7',
+      gapLead: 'Every arrow below has no intervention yet. Either it needs one (place an intervention on it above), or what it needs is already in place: an assumption from the register that sits on this arrow.',
+      gapNone: 'Every arrow carries at least one intervention.',
+      inputsLead: 'For each intervention: what resources it needs, and the limits on them. A constraint from the client brief (on the VLE) is cited by slide; anything else is our assumption, which can be put through the sorter.',
+      inputs: 'Inputs could include resources such as funding, existing structures, people and partners, intelligence, and policies.', inputsRef: '[GAF] p. 21',
+      inputQuestions: ['What resources do you have available?', 'What limitations are there on your resources?'],
+      limitsLead: 'When you are thinking about the limitations on resources you might consider secondary questions like:'
+    },
+    // The design feature an intervention settles (plan §6, week 11); optional.
+    // Week 13's recommendation sentence draws on what, where, hours and operator.
+    designFeatures: [
+      { id: 'what', label: 'What the space is' },
+      { id: 'where', label: 'Where it is' },
+      { id: 'hours', label: 'When it opens' },
+      { id: 'price', label: 'What it costs' },
+      { id: 'operator', label: 'Who runs it' },
+      { id: 'programming', label: 'What happens there' },
+      { id: 'other', label: 'Other' }
+    ],
+    // Where an input comes from. "brief" needs a slide number.
+    inputBasis: [
+      { id: 'brief', label: 'From the client brief', colour: 'var(--char-4)' },
+      { id: 'assumption', label: 'Our assumption', colour: 'var(--char-5)' }
+    ],
+    // [GAF] p. 21's secondary questions on the limits of resources, exact.
+    inputLimits: [
+      { id: 'ringFenced', q: 'Is your budget ring-fenced for a specific purpose?' },
+      { id: 'skills', q: 'Do the people you can deploy have the correct skills?' },
+      { id: 'timeLimit', q: 'Is there a time-constraint on the availability of facilities?' }
+    ],
+    limitAnswers: [
+      { id: 'yes', label: 'Yes' }, { id: 'no', label: 'No' }, { id: 'unknown', label: 'Not known yet' }
+    ],
+    // Gap walk answers for an arrow with no intervention.
+    gapAnswers: [
+      { id: 'needs', label: 'Needs an intervention', help: 'Blocks until an intervention is placed on this arrow.', colour: 'var(--char-2)' },
+      { id: 'assumption', label: 'Covered by an assumption', help: 'What this arrow needs is already in place: choose the assumption.', colour: 'var(--correct)' }
+    ],
+    risks: {
+      lead: 'Risks are things that may happen, inside or outside the club\u2019s control, that could help or harm the theory. Each has a likelihood, a mitigation and the intervention it bears on.',
+      definition: 'Risks are internal or external factors that can influence your programme or project either positively or negatively.', definitionRef: '[GAF] p. 27',
+      questions: ['What is going on outside of our control that we need to be aware of?', 'What other work is happening in this area?', 'What can we do to ensure this does not disrupt our causal chains?'],
+      questionsRef: '[GAF] p. 27',
+      outside: 'External influences may affect your logic and some assumptions might be outside your control.', outsideRef: '[GAF] p. 27',
+      difference: 'An assumption is a condition the group takes as already in place in Bodø today, backed by evidence; it sits in the register on the arrow it supports. A risk is something that may or may not happen; it has a likelihood and a mitigation. If an assumption could stop being true, that possibility is a risk.',
+      stressLead: 'The stadium stress test. For each of the eight characteristics: how could this setting, a football club\u2019s stadium, threaten it, and which intervention protects it? \u201CNone yet\u201D adds the threat to the risk register.',
+      ownLead: 'Add your own question drawn from the client brief (on the VLE), with its slide number. Write the question in your own words.',
+      riskiestLead: 'Mark the assumptions that carry the most weight and would do the most damage if they turned out false. They become the \u201Cit will work if\u201D of the recommendation and are printed as cards.',
+      whole: 'The whole design'
+    },
+    // General stress-test questions, one set per characteristic (keys are
+    // CONFIG.characteristics ids). Written for any football club's stadium,
+    // from the definitions and counter-indicators in third-place-content.md
+    // (Oldenburg 1999). They contain nothing from the client brief and no
+    // facts about Bodø; groups add their own brief-drawn questions on screen 9.
+    stressQuestions: {
+      neutral: { note: 'People come and go freely, without obligation, invitation or the need to play host.',
+        questions: ['Does anyone have to buy a ticket, hold a membership or book in order to be there? Does that change between match days and other days?',
+          'Can someone stay a long time without spending money, or will they feel expected to buy something?',
+          'Is the club always the host here, so that visitors are guests on the club\u2019s ground rather than on shared ground?'] },
+      leveller: { note: 'Status in the outside world carries no weight.',
+        questions: ['Does the stadium already sort people by what they pay: season-ticket holders, hospitality guests, sponsors, players, ordinary visitors? Would any of that sorting carry over into this space?',
+          'Is there a reserved area, a VIP entrance or a dress code that signals who matters?',
+          'Would a supporter of another club, or someone with no interest in football, be treated the same as a lifelong fan?'] },
+      conversation: { note: 'Talk, valued for its own sake, is the main thing people do.',
+        questions: ['Will screens, music, announcements or match coverage drown out conversation, or replace it?',
+          'Do the layout and seating let strangers talk, or do they face everyone the same way, as stands do?',
+          'Would staff or design (turnover pressure, short time limits) push people to leave once they have bought something?'] },
+      access: { note: 'Easy to reach, open when people want it, possible to go alone at almost any time.',
+        questions: ['Will it be open on the days and at the hours people are free, and not only around fixtures and events?',
+          'Is it on people\u2019s everyday routes, or a trip to make specially? Can it be reached on foot, by bike or by public transport?',
+          'On match days, will crowds, security and closed roads keep away the people who use it the rest of the week?'] },
+      regulars: { note: 'A core group sets the tone and draws newcomers in.',
+        questions: ['Who could become the regulars on an ordinary weekday, as opposed to match days?',
+          'If the regulars are mostly committed fans, will newcomers who are not fans feel welcome or feel like outsiders?',
+          'Does anything make regular visits worthwhile when there is no match, so the same faces return?'] },
+      lowProfile: { note: 'Plain and unpretentious, without airs.',
+        questions: ['Will club branding, sponsors\u2019 logos and the stadium\u2019s architecture make the space feel like a showpiece rather than an everyday place?',
+          'Will it be designed to be photographed, or to be lived in?',
+          'Can the regulars change it and wear it in over time, or will its look stay controlled by the club?'] },
+      playful: { note: 'Humour, wit and light-heartedness are the norm.',
+        questions: ['Will results set the mood, so that the space is flat or tense after a defeat?',
+          'Will rules, staffing or rivalry keep play to a script or make it hostile, rather than letting it be spontaneous and good-humoured?',
+          'Is there room for banter that includes people who do not follow football?'] },
+      home: { note: 'Rootedness, ownership without title, ease and warmth.',
+        questions: ['Can people feel it is partly theirs, or will it always feel like the club\u2019s commercial property?',
+          'Would anyone notice if a regular stopped coming?',
+          'Can someone be at ease there, free to be themselves, without performing as a fan or a customer?'] }
+    },
+    riskTypes: [
+      { id: 'internal', label: 'Internal', colour: 'var(--char-1)' },
+      { id: 'external', label: 'External', colour: 'var(--char-2)' }
+    ],
+
     // THE BODØ FACTS, copied verbatim from week7-bodo-decline.html
     // CONFIG.facts (full web addresses in the file header). Keep in step.
     facts: [
@@ -1319,8 +1520,10 @@
       sweep: {},
       options: [],
       interventions: [],
+      gapWalk: {},
       risks: [],
       stressTest: {},
+      stressOwn: [],
       indicators: [],
       reviews: { given: [], received: [] },
       diagrams: { clientOutcomeIds: [], clientLinkIds: [] },
@@ -1341,14 +1544,16 @@
     'outcomes': { id: '', text: '', level: '', pathway: '', clusterId: '', lenses: [], characteristics: [], leadsTo: [] },
     'clusters': { id: '', label: '', leadsTo: [] },
     'links': { id: '', from: '', to: '', rationale: '', evidenceIds: [] },
-    'assumptions': { id: '', linkId: '', text: '', lens: '', evidenceIds: [], sort: 'assumption' },
+    'assumptions': { id: '', linkId: '', text: '', lens: '', evidenceIds: [], sort: 'assumption', riskiest: false },
     'findOutFirst': { id: '', text: '', source: 'manual', refId: '' },
     'beliefs': { id: '', text: '', screen: 0, sort: '', refId: '', at: '' },
     'evidence': { id: '', summary: '', source: '', type: '', slide: '', ratings: { causal: '', scope: '', implications: '', method: '' }, bodoVerdict: '', member: '', factId: '' },
     'reverseImport': { member: '', course: '', claim: '', linkId: '', stance: '', absent: false },
     'options': { id: '', summary: '', location: '', plausible: '', doable: '', testable: '', chosen: false, whyNot: '' },
-    'interventions': { id: '', name: '', activities: [], linkIds: [], characteristics: [], inputs: [] },
-    'risks': { id: '', text: '', internal: '', likelihood: '', mitigation: '', interventionId: '' },
+    'interventions': { id: '', name: '', activities: [], linkIds: [], characteristics: [], feature: '', inputs: [] },
+    'interventions[].inputs': { resource: '', basis: '', fromBrief: false, slide: '', limitation: '', limits: { ringFenced: '', skills: '', timeLimit: '' }, beliefId: '' },
+    'risks': { id: '', text: '', internal: '', likelihood: '', mitigation: '', interventionId: '', stressCharId: '' },
+    'stressOwn': { id: '', question: '', slide: '', charId: '', answer: '' },
     'indicators': { id: '', outcomeId: '', owner: '', howMany: '', who: '', level: '', byWhen: '', definition: '', baseline: '', dataSource: '', frequency: '', responsible: '', reporting: '' },
     'reviews.received': { fromGroup: '', items: [] },
     'valuesCheck': { value: '', slide: '', speaksTo: '', cost: '' },
@@ -1356,7 +1561,7 @@
   };
   // Objects whose keys are chosen at run time (kept as they are, if objects).
   var FREE_KEYS = { 'roles.week9': 1, 'roles.week10': 1, 'roles.week11': 1, 'roles.week12': 1, 'roles.week13': 1,
-    'clientTheory.linkEvidence': 1, 'sweep': 1, 'stressTest': 1, 'narrative.sections': 1 };
+    'clientTheory.linkEvidence': 1, 'sweep': 1, 'stressTest': 1, 'gapWalk': 1, 'narrative.sections': 1 };
 
   function sameKind(a, b) {
     if (Array.isArray(a)) return Array.isArray(b);
@@ -1394,6 +1599,7 @@
     var ids = s.clientTheory.claims.map(function (c) { return c.id; });
     s.clientTheory.order = s.clientTheory.order.filter(function (id, i, o) { return ids.indexOf(id) !== -1 && o.indexOf(id) === i; });
     normaliseMap(s);
+    normaliseDesign(s);
     return s;
   }
 
@@ -1605,8 +1811,87 @@
     ];
   }
   function designGate(s) { return gateResult(designChecks(s)); }
+  // Screens 7-9 (design) are locked while the design gate fails.
+  function designLocked(s) { return !designGate(s).ok; }
 
-  var SCREEN_CHECKS = { 1: screen1Checks, 2: screen2Checks, 3: screen3Checks, 4: screen4Checks, 5: screen5Checks, 6: screen6Checks };
+  // Week 11, screen 7: options appraisal.
+  function screen7Checks(s) {
+    var c = roleChecks(s, 11).concat([
+      check(s.options.length >= CONFIG.minOptions, 'Appraise at least ' + CONFIG.minOptions + ' options (' + s.options.length + ' so far).')
+    ]);
+    s.options.forEach(function (o, i) {
+      var who = 'Option ' + (i + 1);
+      c.push(wordMsg(who + ' summary', o.summary, 'optionSummary'));
+      c.push(check(wordsOk(o.location, 'optionLocation') && String(o.location).trim().length >= CONFIG.minNameChars, who + ': say where it is (at least ' + plural(CONFIG.words.optionLocation, 'word') + ').'));
+      ['plausible', 'doable', 'testable'].forEach(function (k) {
+        c.push(wordMsg(who + ', ' + k, o[k], 'appraisal'));
+      });
+    });
+    var chosen = s.options.filter(function (o) { return o.chosen; }).length;
+    c.push(check(chosen === 1, 'Choose one option to take forward.'));
+    if (chosen === 1) s.options.forEach(function (o, i) {
+      if (!o.chosen) c.push(wordMsg('Option ' + (i + 1) + ': why it was rejected', o.whyNot, 'whyNot'));
+    });
+    return c;
+  }
+  // Week 11, screen 8: interventions on arrows, the gap walk, inputs.
+  function screen8Checks(s) {
+    var c = [check(s.interventions.length >= CONFIG.minInterventions, 'Add at least ' + plural(CONFIG.minInterventions, 'intervention') + '.')];
+    s.interventions.forEach(function (iv, i) {
+      var who = 'Intervention ' + (i + 1) + (String(iv.name).trim() ? ' (' + String(iv.name).trim() + ')' : '');
+      c.push(check(nameOk(iv.name), 'Intervention ' + (i + 1) + ': give it a name.'));
+      c.push(check(iv.activities.length > 0, who + ': list at least one activity.'));
+      iv.activities.forEach(function (a, j) {
+        var w = wordCheck(a, CONFIG.words.activity);
+        c.push(check(w.ok, who + ', activity ' + (j + 1) + ': ' + (w.msg || 'done') + '.'));
+      });
+      c.push(check(iv.linkIds.length > 0, who + ': it sits on no arrow. Place it on the arrows it serves, or remove it: it\u2019s best not to shoehorn it in.'));
+      c.push(check(iv.characteristics.length > 0, who + ': tick the characteristics it protects or produces.'));
+      c.push(check(iv.inputs.length > 0, who + ': add at least one input.'));
+      iv.inputs.forEach(function (inp, j) {
+        var wi = who + ', input ' + (j + 1);
+        c.push(wordMsg(wi + ' resource', inp.resource, 'resource'));
+        c.push(check(inp.basis === 'brief' || inp.basis === 'assumption', wi + ': from the client brief, or our assumption?'));
+        if (inp.basis === 'brief') c.push(check(validSlide(inp.slide), wi + ': give the slide of the client brief.'));
+        c.push(wordMsg(wi + ' limitation', inp.limitation, 'limitation'));
+        CONFIG.inputLimits.forEach(function (q) {
+          c.push(check(!!inp.limits[q.id], wi + ': answer \u201C' + q.q + '\u201D'));
+        });
+      });
+    });
+    s.links.forEach(function (l) { var p = gapProblem(s, l); if (p) c.push(check(false, p)); });
+    return c;
+  }
+  // Week 11, screen 9: risks, the stress test and the riskiest assumptions.
+  function screen9Checks(s) {
+    var c = [check(s.risks.length >= CONFIG.minRisks, 'Add at least ' + plural(CONFIG.minRisks, 'risk') + '.')];
+    s.risks.forEach(function (r, i) {
+      var who = 'Risk ' + (i + 1) + (r.stressCharId ? ' (stress test, ' + charLabelOf(r.stressCharId).toLowerCase() + ')' : '');
+      c.push(wordMsg(who, r.text, 'riskText'));
+      c.push(check(r.internal === 'internal' || r.internal === 'external', who + ': internal or external?'));
+      c.push(check(!!r.likelihood, who + ': rate its likelihood.'));
+      c.push(wordMsg(who + ' mitigation', r.mitigation, 'mitigation'));
+      c.push(check(r.interventionId === 'whole' || !!interventionById(s, r.interventionId), who + ': choose the intervention it bears on.'));
+    });
+    CONFIG.characteristics.forEach(function (ch) {
+      var row = stressRow(s, ch.id);
+      c.push(wordMsg('Stress test, ' + ch.label.toLowerCase(), row.threat, 'threat'));
+      c.push(check(row.protectedBy === 'none' || !!interventionById(s, row.protectedBy), 'Stress test, ' + ch.label.toLowerCase() + ': which intervention protects it? (or \u201Cnone yet\u201D)'));
+    });
+    s.stressOwn.forEach(function (q, i) {
+      var who = 'Your question ' + (i + 1);
+      c.push(wordMsg(who, q.question, 'ownQuestion'));
+      c.push(check(validSlide(q.slide), who + ': give the slide of the client brief it comes from.'));
+      c.push(wordMsg(who + ' answer', q.answer, 'ownAnswer'));
+    });
+    var need = riskiestNeeded(s), got = riskiest(s).length;
+    c.push(check(s.assumptions.length > 0, 'The assumption register is empty: put at least one belief through the sorter (screen 6).'));
+    if (need) c.push(check(got === need, 'Mark the ' + (need === 1 ? 'riskiest assumption' : need + ' riskiest assumptions') + ' (' + got + ' marked).'));
+    return c;
+  }
+
+  var SCREEN_CHECKS = { 1: screen1Checks, 2: screen2Checks, 3: screen3Checks, 4: screen4Checks, 5: screen5Checks, 6: screen6Checks,
+    7: screen7Checks, 8: screen8Checks, 9: screen9Checks };
   function screenChecks(s, no) { return SCREEN_CHECKS[no] ? SCREEN_CHECKS[no](s) : []; }
   // Every check of a week's built screens. Later stages add their screens to
   // SCREEN_CHECKS and to CONFIG.screens.
@@ -1636,10 +1921,17 @@
   // Which screens can be opened. Built screens open once the screens before
   // them pass, and stay open once reached. Unbuilt screens always open (they
   // show what is coming and the reading).
+  // Design screens (7-9) open while locked, to show what is missing; once
+  // unlocked they open in order among themselves.
   function screenEnabled(s, no) {
     var sc = SCREEN[no];
     if (!sc) return false;
     if (!sc.built || no === 1 || no <= s.ui.reached) return true;
+    if (sc.design) {
+      if (designLocked(s)) return true;
+      for (var j = 1; j < no; j++) if (SCREEN[j].design && !gateResult(screenChecks(s, j)).ok) return false;
+      return true;
+    }
     for (var i = 1; i < no; i++) if (SCREEN[i].built && !gateResult(screenChecks(s, i)).ok) return false;
     return true;
   }
@@ -1816,6 +2108,7 @@
     var sw = {};
     Object.keys(s.sweep).forEach(function (k) { if (ids[k]) sw[k] = s.sweep[k]; });
     s.sweep = sw;
+    normaliseDesign(s);
   }
   // Tidy the map after a load: valid cluster ids, no arrows from members, one
   // arrow per cluster, no duplicate or dangling "leads to".
@@ -1950,7 +2243,7 @@
       if (!lensOk(opts.lens)) errs.push('Choose the lens it belongs to.');
       if (!ev.length) errs.push('Attach at least one evidence item: \u201Cyes\u201D needs evidence. Add it to the evidence log first.');
       if (errs.length) return { ok: false, errors: errs };
-      item = { id: uid('a'), linkId: opts.linkId, text: b.text, lens: opts.lens, evidenceIds: ev, sort: 'assumption' };
+      item = { id: uid('a'), linkId: opts.linkId, text: b.text, lens: opts.lens, evidenceIds: ev, sort: 'assumption', riskiest: false };
       s.assumptions.push(item);
     } else if (answer === 'precondition') {
       item = addOutcome(s, b.text);
@@ -2009,6 +2302,154 @@
     s.reverseImport = members(s).map(function (m) { return reverseFor(s, m) || newReverse(m); });
     return JSON.stringify(s.reverseImport) !== before;
   }
+
+  // ==========================================================================
+  // Week 11: options, interventions, the gap walk, inputs, risks and the
+  // stress test. normaliseDesign() keeps every reference valid; it runs
+  // whenever the arrows change (syncLinks) and after every load (migrate).
+  // ==========================================================================
+  function isStr(x) { return typeof x === 'string'; }
+  function interventionById(s, id) { return id ? byId(s.interventions, id) : null; }
+  function assumptionById(s, id) { return id ? byId(s.assumptions, id) : null; }
+  function charOk(id) { return CONFIG.characteristics.some(function (c) { return c.id === id; }); }
+  function newStressRow() { return { threat: '', protectedBy: '' }; }
+  function normaliseDesign(s) {
+    if (!Array.isArray(s.interventions) || !isObj(s.gapWalk) || !isObj(s.stressTest) || !Array.isArray(s.risks)) return;
+    var ids = {};
+    s.links.forEach(function (l) { ids[l.id] = 1; });
+    s.interventions.forEach(function (iv) {
+      iv.activities = iv.activities.filter(isStr);
+      iv.linkIds = iv.linkIds.filter(function (x, i, a) { return ids[x] && a.indexOf(x) === i; });
+      iv.characteristics = CONFIG.characteristics.map(function (c) { return c.id; }).filter(function (c) { return iv.characteristics.indexOf(c) !== -1; });
+      iv.inputs.forEach(function (inp) {
+        if (inp.basis !== 'brief' && inp.basis !== 'assumption') inp.basis = inp.fromBrief === true ? 'brief' : '';
+        inp.fromBrief = inp.basis === 'brief';
+        if (inp.beliefId && !beliefById(s, inp.beliefId)) inp.beliefId = '';
+      });
+    });
+    var gw = {};
+    Object.keys(s.gapWalk).forEach(function (k) {
+      var g = s.gapWalk[k];
+      if (!ids[k] || !isObj(g)) return;
+      gw[k] = { status: g.status === 'needs' || g.status === 'assumption' ? g.status : '', assumptionId: assumptionById(s, g.assumptionId) ? g.assumptionId : '' };
+    });
+    s.gapWalk = gw;
+    var st = {};
+    CONFIG.characteristics.forEach(function (c) {
+      var r = s.stressTest[c.id];
+      if (!isObj(r)) return;
+      var by = isStr(r.protectedBy) && (r.protectedBy === 'none' || interventionById(s, r.protectedBy)) ? r.protectedBy : '';
+      st[c.id] = { threat: isStr(r.threat) ? r.threat : '', protectedBy: by };
+    });
+    s.stressTest = st;
+    s.risks.forEach(function (r) {
+      if (r.interventionId && r.interventionId !== 'whole' && !interventionById(s, r.interventionId)) r.interventionId = '';
+      if (r.stressCharId && !charOk(r.stressCharId)) r.stressCharId = '';
+    });
+    var seen = false;
+    s.options.forEach(function (o) { if (o.chosen && seen) o.chosen = false; if (o.chosen) seen = true; });
+    syncStressRisks(s);
+  }
+
+  // Options (screen 7). Exactly one is chosen.
+  function addOption(s) { var o = { id: uid('p'), summary: '', location: '', plausible: '', doable: '', testable: '', chosen: false, whyNot: '' }; s.options.push(o); return o; }
+  function removeOption(s, id) { s.options = s.options.filter(function (o) { return o.id !== id; }); }
+  function chooseOption(s, id) {
+    if (!byId(s.options, id)) return false;
+    s.options.forEach(function (o) { o.chosen = o.id === id; });
+    return true;
+  }
+  function chosenOption(s) { return s.options.filter(function (o) { return o.chosen; })[0] || null; }
+
+  // Interventions (screen 8).
+  function newInput() { return { resource: '', basis: '', fromBrief: false, slide: '', limitation: '', limits: { ringFenced: '', skills: '', timeLimit: '' }, beliefId: '' }; }
+  function addIntervention(s) {
+    var iv = { id: uid('i'), name: '', activities: [''], linkIds: [], characteristics: [], feature: '', inputs: [newInput()] };
+    s.interventions.push(iv);
+    return iv;
+  }
+  function removeIntervention(s, id) {
+    s.interventions = s.interventions.filter(function (iv) { return iv.id !== id; });
+    normaliseDesign(s);
+  }
+  // Put an intervention on an arrow, or take it off.
+  function setInterventionLink(s, ivId, linkId, on) {
+    var iv = interventionById(s, ivId);
+    if (!iv || !linkById(s, linkId)) return false;
+    iv.linkIds = iv.linkIds.filter(function (x) { return x !== linkId; });
+    if (on) iv.linkIds.push(linkId);
+    iv.linkIds = s.links.map(function (l) { return l.id; }).filter(function (x) { return iv.linkIds.indexOf(x) !== -1; });
+    return true;
+  }
+  function interventionsOn(s, linkId) { return s.interventions.filter(function (iv) { return iv.linkIds.indexOf(linkId) !== -1; }); }
+  // The shoehorn check: interventions that sit on no arrow ([TC] p. 7).
+  function shoehorned(s) { return s.interventions.filter(function (iv) { return !iv.linkIds.length; }); }
+  // The gap walk: arrows that carry no intervention.
+  function gapLinks(s) { return s.links.filter(function (l) { return !interventionsOn(s, l.id).length; }); }
+  function gapEntry(s, linkId) { return s.gapWalk[linkId] || { status: '', assumptionId: '' }; }
+  function setGap(s, linkId, status, assumptionId) {
+    if (!linkById(s, linkId)) return false;
+    var g = s.gapWalk[linkId] = s.gapWalk[linkId] || { status: '', assumptionId: '' };
+    if (status !== undefined) g.status = status === 'needs' || status === 'assumption' ? status : '';
+    if (assumptionId !== undefined) g.assumptionId = assumptionById(s, assumptionId) ? assumptionId : '';
+    return true;
+  }
+  // The checks of one arrow in the gap walk ('' = fine).
+  function gapProblem(s, l) {
+    if (interventionsOn(s, l.id).length) return '';
+    var g = gapEntry(s, l.id), no = arrowNo(s, l.id), name = 'Gap walk, arrow ' + no + ' (' + linkName(s, l) + ')';
+    if (g.status === 'needs') return name + ': needs an intervention. Place one on it, or mark it covered by an assumption.';
+    if (g.status === 'assumption') {
+      var a = assumptionById(s, g.assumptionId);
+      if (!a) return name + ': choose the assumption that covers it.';
+      if (a.linkId !== l.id) return name + ': the chosen assumption no longer sits on this arrow. Choose one that does.';
+      return '';
+    }
+    return name + ': no intervention. Mark it \u201Cneeds an intervention\u201D or \u201Ccovered by an assumption\u201D.';
+  }
+  function addInput(s, ivId) { var iv = interventionById(s, ivId); if (!iv) return null; var x = newInput(); iv.inputs.push(x); return x; }
+
+  // Risks and the stress test (screen 9).
+  function charLabelOf(id) { var c = CONFIG.characteristics.filter(function (x) { return x.id === id; })[0]; return c ? c.label : ''; }
+  function newRisk() { return { id: uid('r'), text: '', internal: '', likelihood: '', mitigation: '', interventionId: '', stressCharId: '' }; }
+  function addRisk(s) { var r = newRisk(); s.risks.push(r); return r; }
+  function removeRisk(s, id) {
+    var r = byId(s.risks, id);
+    if (!r || r.stressCharId) return false;
+    s.risks = s.risks.filter(function (x) { return x.id !== id; });
+    return true;
+  }
+  function stressRow(s, charId) { return s.stressTest[charId] || newStressRow(); }
+  function setStress(s, charId, field, value) {
+    if (!charOk(charId) || (field !== 'threat' && field !== 'protectedBy')) return false;
+    var r = s.stressTest[charId] = s.stressTest[charId] || newStressRow();
+    r[field] = String(value == null ? '' : value);
+    syncStressRisks(s);
+    return true;
+  }
+  // One risk per stress-test row marked "none yet"; it goes when the row
+  // gains a protecting intervention. Its text starts as the threat.
+  function syncStressRisks(s) {
+    var want = {};
+    CONFIG.characteristics.forEach(function (c) { var r = s.stressTest[c.id]; if (r && r.protectedBy === 'none') want[c.id] = r; });
+    var have = {};
+    s.risks = s.risks.filter(function (r) {
+      if (!r.stressCharId) return true;
+      if (!want[r.stressCharId] || have[r.stressCharId]) return false;
+      have[r.stressCharId] = 1;
+      return true;
+    });
+    Object.keys(want).forEach(function (cid) {
+      if (have[cid]) return;
+      var r = newRisk();
+      r.stressCharId = cid;
+      r.text = String(want[cid].threat || '').trim();
+      s.risks.push(r);
+    });
+  }
+  function addStressOwn(s) { var q = { id: uid('q'), question: '', slide: '', charId: '', answer: '' }; s.stressOwn.push(q); return q; }
+  function riskiestNeeded(s) { return Math.min(CONFIG.riskiestCount, s.assumptions.length); }
+  function riskiest(s) { return s.assumptions.filter(function (a) { return a.riskiest; }); }
 
   // ==========================================================================
   // Week 10: diagram layout. Deterministic and independent of screen width
@@ -2187,6 +2628,33 @@
     }
     return d;
   }
+  // A point on an arrow's first curve (source box up to the next row), at
+  // parameter t, using the same control points as edgePath().
+  function edgePoint(e, t) {
+    var p = e.points, a = p[0], b = p[1];
+    var dy = Math.max(12, a[1] - b[1]) * 0.45, endY = p.length === 2 ? b[1] + 1 : b[1];
+    var q = [[a[0], a[1]], [a[0], a[1] - dy], [b[0], b[1] + dy], [b[0], endY]], u = 1 - t;
+    function at(k) { return u * u * u * q[0][k] + 3 * u * u * t * q[1][k] + 3 * u * t * t * q[2][k] + t * t * t * q[3][k]; }
+    return [at(0), at(1)];
+  }
+  // Intervention markers ([TC] p. 7: symbols positioned along the
+  // connectors). The markers of one arrow sit side by side, centred on a
+  // point of the arrow above its number badge. Returns
+  // [{ linkId, ivId, no, cx, cy, x, y, w, h }].
+  var MK = { w: 22, h: 14, gap: 2, t: 0.65 };
+  function markerLayout(s, lay) {
+    var out = [];
+    lay.edges.forEach(function (e) {
+      var list = interventionsOn(s, e.id);
+      if (!list.length) return;
+      var pt = edgePoint(e, MK.t), total = list.length * MK.w + (list.length - 1) * MK.gap;
+      list.forEach(function (iv, i) {
+        var x = pt[0] - total / 2 + i * (MK.w + MK.gap);
+        out.push({ linkId: e.id, ivId: iv.id, no: s.interventions.indexOf(iv) + 1, cx: pt[0], cy: pt[1], x: x, y: pt[1] - MK.h / 2, w: MK.w, h: MK.h });
+      });
+    });
+    return out;
+  }
   // Pairs of boxes that overlap (a member sits inside its own cluster, which
   // is not an overlap). Used by the tests; an empty list is the rule.
   function layoutOverlaps(lay) {
@@ -2309,13 +2777,20 @@
         '<rect class="dg-badge" x="' + (e.x1 - 9) + '" y="' + (e.y1 - 22) + '" width="18" height="15"/>' +
         '<text class="dg-badge-t" x="' + e.x1 + '" y="' + (e.y1 - 11) + '" text-anchor="middle">' + no + '</text></g>';
     });
+    // Intervention markers on their arrows (week 11).
+    markerLayout(s, lay).forEach(function (m) {
+      var iv = interventionById(s, m.ivId);
+      h += '<g class="dg-marker"' + btn('dg-open', m.ivId, 'Intervention ' + m.no + ': ' + (String(iv.name).trim() || 'no name yet') + ', on arrow ' + arrowNo(s, m.linkId)) + '>' +
+        '<rect x="' + m.x + '" y="' + m.y + '" width="' + m.w + '" height="' + m.h + '"/>' +
+        '<text x="' + (m.x + m.w / 2) + '" y="' + (m.y + m.h - 3.5) + '" text-anchor="middle">I' + m.no + '</text></g>';
+    });
     return h + '</svg>';
   }
   function diagramLegend(s) {
     var p = pathwayList(s);
     return '<ul class="dg-legend">' + p.map(function (name) {
       return '<li><span class="sw" style="background:' + pathwayColour(s, name) + '"></span>' + esc(name) + '</li>';
-    }).join('') + '<li><span class="sw dashed"></span>Dashed arrow: no rationale yet</li><li><span class="sw loose"></span>Dashed box: not yet connected</li></ul>';
+    }).join('') + (s.interventions.some(function (iv) { return iv.linkIds.length; }) ? '<li><span class="sw marker">I</span>Intervention on an arrow</li>' : '') + '<li><span class="sw dashed"></span>Dashed arrow: no rationale yet</li><li><span class="sw loose"></span>Dashed box: not yet connected</li></ul>';
   }
 
   // ==========================================================================
@@ -2413,6 +2888,69 @@
     if (!s.beliefs.length) out.push('  —');
     var swept = s.links.filter(function (l) { return s.sweep[l.id]; }).length;
     out.push('Completeness pass: ' + swept + ' of ' + s.links.length + ' arrows checked.');
+    return out;
+  }
+
+  function optLabel(list, id) { var x = list.filter(function (v) { return v.id === id; })[0]; return x ? x.label : ''; }
+  function ivName(s, id) {
+    if (id === 'whole') return CONFIG.risks.whole;
+    if (id === 'none') return 'None yet';
+    var iv = interventionById(s, id);
+    return iv ? 'I' + (s.interventions.indexOf(iv) + 1) + ' ' + (String(iv.name).trim() || '(no name)') : '';
+  }
+  function inputText(inp) {
+    var lim = CONFIG.inputLimits.map(function (q) { return q.q + ' ' + dash(optLabel(CONFIG.limitAnswers, inp.limits[q.id])); }).join(' ');
+    return dash(inp.resource) + ' [' + (inp.basis === 'brief' ? 'client brief, slide ' + dash(inp.slide) : inp.basis === 'assumption' ? 'our assumption' : 'source not set') + ']. Limitation: ' + dash(inp.limitation) + '. ' + lim;
+  }
+  // Options, interventions, inputs and the gap walk, as text.
+  function designText(s) {
+    var out = ['Options appraised:'];
+    s.options.forEach(function (o, i) {
+      out.push('  Option ' + (i + 1) + (o.chosen ? ' (CHOSEN)' : '') + ': ' + dash(o.summary) + ' Where: ' + dash(o.location));
+      out.push('    Plausible: ' + dash(o.plausible));
+      out.push('    Doable: ' + dash(o.doable));
+      out.push('    Testable: ' + dash(o.testable));
+      if (!o.chosen) out.push('    Rejected because: ' + dash(o.whyNot));
+    });
+    if (!s.options.length) out.push('  —');
+    out.push('Interventions:');
+    s.interventions.forEach(function (iv, i) {
+      out.push('  I' + (i + 1) + '. ' + dash(iv.name) + (iv.feature ? ' [' + optLabel(CONFIG.designFeatures, iv.feature) + ']' : ''));
+      out.push('    Activities: ' + dash(iv.activities.map(function (a) { return String(a).trim(); }).filter(Boolean).join('; ')));
+      out.push('    On arrows: ' + (iv.linkIds.length ? iv.linkIds.map(function (x) { var l = linkById(s, x); return arrowNo(s, x) + ' (' + linkName(s, l) + ')'; }).join(', ') : 'none: not on the framework'));
+      out.push('    Characteristics: ' + dash(iv.characteristics.map(charLabelOf).join(', ')));
+      iv.inputs.forEach(function (inp, j) { out.push('    Input ' + (j + 1) + ': ' + inputText(inp)); });
+    });
+    if (!s.interventions.length) out.push('  —');
+    out.push('Gap walk (arrows with no intervention):');
+    var gaps = gapLinks(s);
+    gaps.forEach(function (l) {
+      var g = gapEntry(s, l.id), a = assumptionById(s, g.assumptionId);
+      out.push('  Arrow ' + arrowNo(s, l.id) + ' (' + linkName(s, l) + '): ' + (g.status === 'needs' ? 'needs an intervention' :
+        g.status === 'assumption' ? 'covered by assumption ' + (a ? 'A' + (s.assumptions.indexOf(a) + 1) + ', ' + dash(a.text) : '(not chosen)') : 'not marked'));
+    });
+    if (!gaps.length) out.push('  Every arrow carries an intervention.');
+    return out;
+  }
+  // Risks, the stress test and the riskiest assumptions, as text.
+  function riskText(s) {
+    var out = ['Risk register:'];
+    s.risks.forEach(function (r, i) {
+      out.push('  R' + (i + 1) + '. ' + dash(r.text) + ' (' + dash(optLabel(CONFIG.riskTypes, r.internal)) + '; likelihood ' + dash(levelLabel(r.likelihood)) +
+        '; bears on ' + dash(ivName(s, r.interventionId)) + (r.stressCharId ? '; from the stress test, ' + charLabelOf(r.stressCharId).toLowerCase() : '') + '). Mitigation: ' + dash(r.mitigation));
+    });
+    if (!s.risks.length) out.push('  —');
+    out.push('Stadium stress test:');
+    CONFIG.characteristics.forEach(function (c) {
+      var row = stressRow(s, c.id);
+      out.push('  ' + c.label + ': ' + dash(row.threat) + ' Protected by: ' + dash(ivName(s, row.protectedBy)));
+    });
+    s.stressOwn.forEach(function (q, i) {
+      out.push('  Our question ' + (i + 1) + ' (brief slide ' + dash(q.slide) + (q.charId ? '; ' + charLabelOf(q.charId).toLowerCase() : '') + '): ' + dash(q.question) + ' ' + dash(q.answer));
+    });
+    out.push('Riskiest assumptions:');
+    riskiest(s).forEach(function (a) { out.push('  A' + (s.assumptions.indexOf(a) + 1) + '. ' + dash(a.text)); });
+    if (!riskiest(s).length) out.push('  —');
     return out;
   }
 
@@ -2519,6 +3057,46 @@
         h += '<h3 class="rep-sub">Sorter</h3>' + s.beliefs.map(function (b, i) { return repItem('Belief ' + (i + 1) + ' · ' + sortLabel(b.sort), b.text); }).join('');
         return h;
       } },
+    { id: 'design', week: 11, title: 'Options and interventions (screens 7 and 8)', colour: '#D4A020',
+      has: function (s) { return s.options.length > 0 || s.interventions.length > 0; },
+      text: function (s) { return designText(s); },
+      html: function (s) {
+        var h = '<h3 class="rep-sub">Options appraisal</h3>';
+        h += s.options.length ? '<table class="rep-table"><thead><tr><th>Option</th><th>Plausible</th><th>Doable</th><th>Testable</th><th>Decision</th></tr></thead><tbody>' +
+          s.options.map(function (o, i) {
+            return '<tr><td>' + (i + 1) + '. ' + esc(dash(o.summary)) + '<br><i>' + esc(dash(o.location)) + '</i></td><td>' + esc(dash(o.plausible)) + '</td><td>' + esc(dash(o.doable)) + '</td><td>' +
+              esc(dash(o.testable)) + '</td><td>' + (o.chosen ? '<b>Chosen</b>' : 'Rejected: ' + esc(dash(o.whyNot))) + '</td></tr>';
+          }).join('') + '</tbody></table>' : '<div class="rep-item">—</div>';
+        h += '<h3 class="rep-sub">Interventions</h3>';
+        h += s.interventions.length ? '<table class="rep-table"><thead><tr><th>Intervention</th><th>Activities</th><th>On arrows</th><th>Characteristics</th><th>Inputs</th></tr></thead><tbody>' +
+          s.interventions.map(function (iv, i) {
+            return '<tr><td>I' + (i + 1) + '. ' + esc(dash(iv.name)) + (iv.feature ? '<br><i>' + esc(optLabel(CONFIG.designFeatures, iv.feature)) + '</i>' : '') + '</td><td>' +
+              esc(dash(iv.activities.map(function (a) { return String(a).trim(); }).filter(Boolean).join('; '))) + '</td><td>' +
+              esc(iv.linkIds.length ? iv.linkIds.map(function (x) { return arrowNo(s, x); }).join(', ') : 'none') + '</td><td>' + esc(dash(iv.characteristics.map(charLabelOf).join(', '))) + '</td><td>' +
+              iv.inputs.map(function (inp) { return esc(inputText(inp)); }).join('<br>') + '</td></tr>';
+          }).join('') + '</tbody></table>' : '<div class="rep-item">—</div>';
+        h += '<h3 class="rep-sub">Gap walk</h3>' + designText(s).slice(designText(s).indexOf('Gap walk (arrows with no intervention):') + 1).map(function (l) { return '<div class="rep-item">' + esc(l.trim()) + '</div>'; }).join('');
+        return h;
+      } },
+    { id: 'risks', week: 11, title: 'Risks and stress test (screen 9)', colour: '#B52838',
+      has: function (s) { return s.risks.length > 0 || Object.keys(s.stressTest).length > 0 || riskiest(s).length > 0; },
+      text: function (s) { return riskText(s); },
+      html: function (s) {
+        var h = '<h3 class="rep-sub">Risk register</h3>';
+        h += s.risks.length ? '<table class="rep-table"><thead><tr><th>Risk</th><th>Type</th><th>Likelihood</th><th>Bears on</th><th>Mitigation</th></tr></thead><tbody>' +
+          s.risks.map(function (r, i) {
+            return '<tr><td>R' + (i + 1) + '. ' + esc(dash(r.text)) + (r.stressCharId ? '<br><i>Stress test: ' + esc(charLabelOf(r.stressCharId)) + '</i>' : '') + '</td><td>' + esc(dash(optLabel(CONFIG.riskTypes, r.internal))) + '</td><td>' +
+              esc(dash(levelLabel(r.likelihood))) + '</td><td>' + esc(dash(ivName(s, r.interventionId))) + '</td><td>' + esc(dash(r.mitigation)) + '</td></tr>';
+          }).join('') + '</tbody></table>' : '<div class="rep-item">—</div>';
+        h += '<h3 class="rep-sub">Stadium stress test</h3><table class="rep-table"><thead><tr><th>Characteristic</th><th>How this setting could threaten it</th><th>Protected by</th></tr></thead><tbody>' +
+          CONFIG.characteristics.map(function (c) {
+            var row = stressRow(s, c.id);
+            return '<tr><td>' + esc(c.label) + '</td><td>' + esc(dash(row.threat)) + '</td><td>' + esc(dash(ivName(s, row.protectedBy))) + '</td></tr>';
+          }).join('') + '</tbody></table>';
+        h += s.stressOwn.map(function (q, i) { return repItem('Our question ' + (i + 1) + ' (brief slide ' + dash(q.slide) + '): ' + dash(q.question), q.answer); }).join('');
+        h += '<h3 class="rep-sub">Riskiest assumptions</h3>' + (riskiest(s).length ? riskiest(s).map(function (a) { return repItem('A' + (s.assumptions.indexOf(a) + 1), a.text); }).join('') : '<div class="rep-item">—</div>');
+        return h;
+      } },
     { id: 'fof', week: 9, title: 'Find out first', colour: '#7A5828',
       has: function (s) { return s.findOutFirst.length > 0; },
       text: function (s) { return s.findOutFirst.map(function (f) { return '- ' + dash(f.text) + ' [' + CONFIG.fofSources[f.source] + ']'; }); },
@@ -2563,6 +3141,24 @@
             .concat(['Ultimate goal, above the ceiling: ' + dash(l.ceiling.ultimateGoal)]),
           foot: dash(s.group.name) + ' · ' + members(s).join(', ')
         }];
+      } },
+    { id: 'riskiest', title: 'Riskiest-assumption cards',
+      ready: function (s) { return weekClosed(s, 11) && riskiest(s).length > 0; },
+      cards: function (s) {
+        return riskiest(s).map(function (a) {
+          var l = linkById(s, a.linkId);
+          return {
+            eyebrow: 'Riskiest assumption A' + (s.assumptions.indexOf(a) + 1) + ' · Week 11',
+            colour: '#7A5828',
+            text: dash(a.text),
+            details: ['On arrow ' + (l ? arrowNo(s, l.id) + ': ' + nodeText(s, l.from) + ' → ' + nodeText(s, l.to) : '—'),
+              'Lens: ' + dash(lensLabel(a.lens))].concat(a.evidenceIds.map(function (x) {
+                var e = evidenceById(s, x);
+                return e ? 'E' + (s.evidence.indexOf(e) + 1) + ': ' + short(e.summary, 90) + ' (' + ratingsText(e) + '; Bodø: ' + dash(verdictLabel(e.bodoVerdict)) + ')' : '';
+              }).filter(Boolean)),
+            foot: dash(s.group.name) + ' · ' + members(s).join(', ')
+          };
+        });
       } }
   ];
 
@@ -2670,10 +3266,10 @@
       h += '<div class="rail-week"><span class="wk">Week ' + w + (weekClosed(state, w) ? ' ✓' : '') + '</span>';
       CONFIG.screens.filter(function (sc) { return sc.week === w; }).forEach(function (sc) {
         var on = state.ui.screen === sc.no, en = screenEnabled(state, sc.no);
-        var done = sc.built && gateResult(screenChecks(state, sc.no)).ok;
-        h += '<button type="button" class="rail-btn' + (sc.built ? '' : ' later') + (done ? ' done' : '') + '" data-action="goto" data-arg="' + sc.no + '"' +
+        var locked = sc.design && designLocked(state), done = sc.built && !locked && gateResult(screenChecks(state, sc.no)).ok;
+        h += '<button type="button" class="rail-btn' + (sc.built ? '' : ' later') + (locked ? ' locked' : '') + (done ? ' done' : '') + '" data-action="goto" data-arg="' + sc.no + '"' +
           ' style="--rail-colour:' + sc.colour + ';--rail-ink:' + inkFor(sc.colour) + '"' + (on ? ' aria-current="page"' : '') + (en ? '' : ' disabled') +
-          ' title="' + esc(sc.title) + '" aria-label="Screen ' + sc.no + ': ' + esc(sc.title) + (sc.built ? (done ? ', complete' : '') : ', arrives in week ' + sc.week) + '">' +
+          ' title="' + esc(sc.title) + '" aria-label="Screen ' + sc.no + ': ' + esc(sc.title) + (sc.built ? (locked ? ', locked until the framework is complete' : done ? ', complete' : '') : ', arrives in week ' + sc.week) + '">' +
           (sc.built ? '<span class="pip" aria-hidden="true"></span>' : '') + sc.no + '</button>';
       });
       h += '</div>';
@@ -3206,9 +3802,230 @@
     return h;
   }
 
+  // ── Week 11: the design lock ──
+  function renderLock(sc) {
+    var D = CONFIG.design, h = screenHead(sc, sc.summary);
+    h += '<div class="lock-box"><p class="big">Design is locked</p><div class="guide" style="margin-bottom:0.75rem">' + quote(D.holdOff, D.holdOffRef) + '</div>' +
+      '<p>' + esc(D.lockLead) + '</p>' + gateHtml('gate-lock', designChecks(state).filter(function (c) { return !c.ok; })) +
+      '<p class="quiet">' + esc(D.lockAfter) + '</p><div class="actions">' +
+      '<button type="button" class="btn btn-primary" data-action="goto" data-arg="5">Screen 5: backwards map</button>' +
+      '<button type="button" class="btn btn-ghost" data-action="goto" data-arg="6">Screen 6: assumptions and evidence</button></div></div>';
+    return h;
+  }
+
+  // ── Screen 7: options appraisal ──
+  function optionEditor(o, i) {
+    var base = 'options.' + i + '.', n = i + 1;
+    var h = '<div class="item" id="op-' + o.id + '" style="--item-colour:' + (o.chosen ? 'var(--correct)' : 'var(--char-1)') + '"><div class="item-head"><span class="tag">O' + n + '</span>' +
+      '<span class="grow">' + (o.chosen ? '<b>Chosen</b>' : '') + '</span>' +
+      '<button type="button" class="btn btn-danger btn-small" data-action="opt-remove" data-arg="' + o.id + '" aria-label="Remove option ' + n + '">Remove</button></div>';
+    h += wcText('op-sum-' + o.id, 'Option ' + n + ': what the third place is', base + 'summary', o.summary, CONFIG.words.optionSummary, { short: true, logLabel: 'Option summary' });
+    h += wcText('op-loc-' + o.id, 'Where it is, in or around the stadium', base + 'location', o.location, CONFIG.words.optionLocation, { short: true, logLabel: 'Option location' });
+    CONFIG.selfCheck.questions.forEach(function (q) {
+      h += wcText('op-' + q.id + '-' + o.id, q.label + ': for this design', base + q.id, o[q.id], CONFIG.words.appraisal, { short: true, logLabel: 'Option appraisal' });
+    });
+    return h + '</div>';
+  }
+  function renderOptions(sc) {
+    if (designLocked(state)) return renderLock(sc);
+    var O = CONFIG.options, h = screenHead(sc, O.lead);
+    h += '<div id="roles-panel" data-week="11">' + renderRoles(11) + '</div>';
+    h += '<section class="panel" style="' + panelStyle(sc) + '">';
+    h += '<div class="part" style="--part-colour:var(--char-1)"><h3>1. Options</h3><div><p class="quiet">' + esc(O.testLead) + '</p>' +
+      state.options.map(optionEditor).join('') +
+      '<button type="button" class="btn btn-accent" data-action="opt-add">Add an option</button></div>' +
+      guide('Alternatives', '<p>' + quote(O.q6, O.qRef) + '</p><p style="margin-top:0.4rem">' + quote(O.q7, O.qRef) + '</p>') + '</div>';
+    h += '<div class="part" style="--part-colour:var(--char-4)"><h3>2. Choose one</h3><div><p class="quiet">' + esc(O.chooseLead) + '</p>';
+    if (state.options.length) {
+      h += '<fieldset role="radiogroup"><legend>The option we take forward</legend><div class="choices">' + state.options.map(function (o, i) {
+        return chip({ type: 'radio', id: 'op-choose-' + o.id, name: 'opt-chosen', value: o.id, checked: o.chosen, colour: 'var(--correct)', cls: ' block',
+          label: '<b>Option ' + (i + 1) + '</b>&nbsp;' + esc(short(o.summary, 80) || 'no summary yet'), attrs: ' data-choose="1"' });
+      }).join('') + '</div></fieldset>';
+      if (chosenOption(state)) state.options.forEach(function (o, i) {
+        if (!o.chosen) h += wcText('op-why-' + o.id, 'Option ' + (i + 1) + ': why we rejected it', 'options.' + i + '.whyNot', o.whyNot, CONFIG.words.whyNot, { short: true, logLabel: 'Why an option was rejected' });
+      });
+    } else h += '<p class="quiet">Add the options first.</p>';
+    h += '</div>' + guide('Quality review', CONFIG.selfCheck.questions.map(function (q) { return '<p style="margin-bottom:0.4rem"><b>' + esc(q.label) + '.</b> ' + quote(q.quote, q.ref) + '</p>'; }).join('')) + '</div>';
+    h += '</section>' + screenGate(7);
+    return h;
+  }
+
+  // ── Screen 8: interventions, the gap walk and inputs ──
+  function interventionEditor(iv, i) {
+    var base = 'interventions.' + i + '.', n = i + 1, I = CONFIG.interventions;
+    var h = '<div class="item" id="iv-' + iv.id + '" style="--item-colour:var(--char-4)"><div class="item-head"><span class="tag">I' + n + '</span><span class="grow"></span>' +
+      '<button type="button" class="btn btn-danger btn-small" data-action="iv-remove" data-arg="' + iv.id + '" aria-label="Remove intervention ' + n + '">Remove</button></div>';
+    h += '<div class="two-col">' + textInput('iv-name-' + iv.id, 'Intervention ' + n + ': name', base + 'name', iv.name, { max: 80, logLabel: 'Intervention name' }) +
+      selectHtml('iv-feat-' + iv.id, 'Design feature it settles (optional)', ' data-f="' + base + 'feature" data-label="Intervention feature"', CONFIG.designFeatures.map(function (f) { return { value: f.id, label: f.label }; }), iv.feature, 'None') + '</div>';
+    h += '<fieldset><legend>Activities: the specific actions that make it up</legend>';
+    iv.activities.forEach(function (a, j) {
+      h += '<div class="row"><div class="grow">' + wcText('iv-act-' + iv.id + '-' + j, 'Activity ' + (j + 1), base + 'activities.' + j, a, CONFIG.words.activity, { short: true, logLabel: 'Intervention activities' }) + '</div>' +
+        (iv.activities.length > 1 ? '<button type="button" class="btn btn-danger btn-small" data-action="act-remove" data-arg="' + iv.id + '|' + j + '" aria-label="Remove activity ' + (j + 1) + ' of intervention ' + n + '">×</button>' : '') + '</div>';
+    });
+    h += '<button type="button" class="btn btn-ghost btn-small" data-action="act-add" data-arg="' + iv.id + '">Add an activity</button></fieldset>';
+    h += '<fieldset><legend>On which arrows? The connector from the precondition to the outcome it helps produce</legend>' +
+      (state.links.length ? '<div class="choices targets">' + state.links.map(function (l, j) {
+        return chip({ id: 'iv-ln-' + iv.id + '-' + l.id, value: l.id, checked: iv.linkIds.indexOf(l.id) !== -1, colour: 'var(--char-1)', cls: ' block',
+          label: '<b>Arrow ' + (j + 1) + '</b>&nbsp;' + esc(short(nodeText(state, l.from), 50)) + ' → ' + esc(short(nodeText(state, l.to), 50)), attrs: ' data-ivlink="' + iv.id + '"' });
+      }).join('') + '</div>' : '<p class="quiet">No arrows on the map.</p>') + '</fieldset>';
+    if (!iv.linkIds.length) h += '<div class="shoehorn" role="note"><b>Shoehorn check.</b> ' + esc(I.shoehornFlag) + ' ' + quote(I.shoehorn, I.shoehornRef) + '</div>';
+    h += '<fieldset><legend>Characteristics it protects or produces</legend><div class="choices">' + CONFIG.characteristics.map(function (c) {
+      return chip({ id: 'iv-ch-' + iv.id + '-' + c.id, value: c.id, label: esc(c.label), checked: iv.characteristics.indexOf(c.id) !== -1, colour: c.colour, cls: ' mini', attrs: ' data-toggle="' + base + 'characteristics" data-label="Intervention characteristics"' });
+    }).join('') + '</div></fieldset>';
+    return h + '</div>';
+  }
+  function inputEditor(iv, i, inp, j) {
+    var base = 'interventions.' + i + '.inputs.' + j + '.', key = iv.id + '-' + j, who = 'I' + (i + 1) + ', input ' + (j + 1);
+    var h = '<div class="item" id="in-' + key + '" style="--item-colour:var(--char-5)"><div class="item-head"><span class="tag">' + (j + 1) + '</span><span class="grow"><b>' + esc(who) + '</b></span>' +
+      '<button type="button" class="btn btn-danger btn-small" data-action="in-remove" data-arg="' + iv.id + '|' + j + '" aria-label="Remove ' + esc(who) + '">Remove</button></div>';
+    h += wcText('in-res-' + key, 'Resource needed', base + 'resource', inp.resource, CONFIG.words.resource, { short: true, logLabel: 'Inputs' });
+    h += '<fieldset role="radiogroup"><legend>Where does it come from?</legend><div class="choices">' + CONFIG.inputBasis.map(function (b) {
+      return chip({ type: 'radio', id: 'in-b-' + key + '-' + b.id, name: 'inb|' + key, value: b.id, label: esc(b.label), checked: inp.basis === b.id, colour: b.colour, attrs: ' data-f="' + base + 'basis" data-label="Inputs" data-rerender="1"' });
+    }).join('') + '</div></fieldset>';
+    if (inp.basis === 'brief') h += textInput('in-sl-' + key, 'Slide number in the client brief', base + 'slide', inp.slide, { slide: true, max: 3, logLabel: 'Inputs' });
+    if (inp.basis === 'assumption') {
+      var b = beliefById(state, inp.beliefId);
+      h += b ? '<p class="quiet">In the sorter as belief B' + (state.beliefs.indexOf(b) + 1) + ' (' + esc(sortLabel(b.sort).toLowerCase()) + ').</p>' :
+        '<p class="quiet">An assumption about resources is a belief: put it through the sorter so it reaches the register only if it is already true, with evidence.</p>' +
+        '<button type="button" class="btn btn-ghost btn-small" data-action="in-sorter" data-arg="' + iv.id + '|' + j + '">Put through the sorter</button>';
+    }
+    h += wcText('in-lim-' + key, 'What limits it?', base + 'limitation', inp.limitation, CONFIG.words.limitation, { short: true, logLabel: 'Inputs' });
+    CONFIG.inputLimits.forEach(function (q) {
+      h += '<fieldset role="radiogroup"><legend>' + esc(q.q) + '</legend><div class="choices">' + CONFIG.limitAnswers.map(function (a) {
+        return chip({ type: 'radio', name: 'inl|' + key + '|' + q.id, value: a.id, label: esc(a.label), checked: inp.limits[q.id] === a.id, colour: 'var(--char-5)', attrs: ' data-f="' + base + 'limits.' + q.id + '" data-label="Inputs"' });
+      }).join('') + '</div></fieldset>';
+    });
+    return h + '</div>';
+  }
+  function gapRow(l) {
+    var g = gapEntry(state, l.id), no = arrowNo(state, l.id);
+    var h = '<div class="item" id="gap-' + l.id + '" style="--item-colour:' + (gapProblem(state, l) ? 'var(--char-2)' : 'var(--correct)') + '"><div class="item-head"><span class="tag">' + no + '</span>' +
+      '<span class="grow"><b>Arrow ' + no + '</b> · ' + otext(l.from) + ' → ' + otext(l.to) + '</span></div>' +
+      '<fieldset role="radiogroup"><legend>No intervention sits on this arrow</legend><div class="choices">' + CONFIG.gapAnswers.map(function (a) {
+        return chip({ type: 'radio', id: 'gap-' + l.id + '-' + a.id, name: 'gap|' + l.id, value: a.id, checked: g.status === a.id, colour: a.colour, cls: ' block', label: '<b>' + esc(a.label) + '</b>&nbsp;· ' + esc(a.help), attrs: ' data-gap="' + l.id + '"' });
+      }).join('') + '</div></fieldset>';
+    if (g.status === 'assumption') {
+      var on = state.assumptions.filter(function (a) { return a.linkId === l.id; });
+      h += on.length ? selectHtml('gapa-' + l.id, 'The assumption that covers it', ' data-gapa="' + l.id + '"', on.map(function (a) {
+        return { value: a.id, label: 'A' + (state.assumptions.indexOf(a) + 1) + ': ' + short(a.text, 70) };
+      }), g.assumptionId, 'Choose an assumption…') :
+        '<p class="warn">No assumption in the register sits on this arrow. If what it needs is already true in Bodø, put that belief through the sorter on screen 6 and place it on arrow ' + no + '.</p>';
+    }
+    return h + '</div>';
+  }
+  function renderInterventions(sc) {
+    if (designLocked(state)) return renderLock(sc);
+    var I = CONFIG.interventions, h = screenHead(sc, I.lead), ch = chosenOption(state);
+    if (ch) h += '<div class="guide" style="margin-bottom:1rem"><span class="k">The chosen option (screen 7)</span>' + esc(dash(ch.summary)) + ' <i>' + esc(dash(ch.location)) + '</i></div>';
+    h += '<section class="panel" style="--panel-colour:var(--char-6)"><p class="eyebrow panel-eyebrow">Outcomes framework · interventions on arrows</p>' +
+      '<div class="dg-wrap" id="dg-wrap" tabindex="0" role="region" aria-label="Outcomes framework diagram with intervention markers. It scrolls sideways inside this box.">' + diagramSvg(state, { interactive: true }) + '</div>' +
+      '<div id="dg-legend">' + diagramLegend(state) + '</div>' +
+      '<p class="quiet">Each marker I1, I2 … is an intervention on the arrow it serves. Tab to a marker and press Enter to open it.</p></section>';
+    h += '<section class="panel" style="' + panelStyle(sc) + '">';
+    h += '<div class="part" style="--part-colour:var(--char-4)"><h3>1. Interventions on arrows</h3><div>' +
+      state.interventions.map(interventionEditor).join('') +
+      '<button type="button" class="btn btn-accent" data-action="iv-add">Add an intervention</button></div>' +
+      guide('On the connectors', quote(I.connector, I.connectorRef) + '<p style="margin-top:0.4rem">' + quote(I.multiple, I.multipleRef) + '</p><p style="margin-top:0.4rem">' +
+        quote(I.definition, I.definitionRef) + '</p><p style="margin-top:0.4rem">' + quote(I.activities, I.activitiesRef) + '</p>') + '</div>';
+    var sh = shoehorned(state);
+    h += '<div class="part" style="--part-colour:var(--char-2)"><h3>2. Shoehorn check</h3><div>' +
+      (sh.length ? sh.map(function (iv) { return '<div class="shoehorn"><b>I' + (state.interventions.indexOf(iv) + 1) + ' ' + esc(String(iv.name).trim() || '(no name yet)') + '</b>: ' + esc(I.shoehornFlag) + '</div>'; }).join('') :
+        '<p class="quiet">' + (state.interventions.length ? 'Every intervention sits on at least one arrow.' : 'No interventions yet.') + '</p>') + '</div>' +
+      guide('Don\u2019t force it', quote(I.shoehorn, I.shoehornRef)) + '</div>';
+    var gaps = gapLinks(state);
+    h += '<div class="part" style="--part-colour:var(--char-1)"><h3>3. Gap walk</h3><div>' +
+      (gaps.length ? '<p class="quiet">' + esc(I.gapLead) + '</p>' + gaps.map(gapRow).join('') : '<p class="quiet">' + esc(I.gapNone) + '</p>') + '</div>' +
+      guide('Walk the framework', quote(I.gapWalk, I.gapWalkRef)) + '</div>';
+    h += '<div class="part" style="--part-colour:var(--char-5)"><h3>4. Inputs</h3><div><p class="quiet">' + esc(I.inputsLead) + '</p>' +
+      (state.interventions.length ? state.interventions.map(function (iv, i) {
+        return '<h3 style="margin-top:0.75rem">I' + (i + 1) + ' · ' + esc(String(iv.name).trim() || 'no name yet') + '</h3>' +
+          iv.inputs.map(function (inp, j) { return inputEditor(iv, i, inp, j); }).join('') +
+          '<button type="button" class="btn btn-ghost btn-small" data-action="in-add" data-arg="' + iv.id + '">Add an input to I' + (i + 1) + '</button>';
+      }).join('') : '<p class="quiet">Add an intervention first.</p>') + '</div>' +
+      guide('Inputs', quote(I.inputs, I.inputsRef) + '<ul class="plain" style="margin-top:0.4rem">' + I.inputQuestions.map(function (q) { return '<li><q>' + esc(q) + '</q></li>'; }).join('') + '</ul>' +
+        '<p style="margin-top:0.4rem">' + esc(I.limitsLead) + '</p><ul class="plain">' + CONFIG.inputLimits.map(function (q) { return '<li><q>' + esc(q.q) + '</q></li>'; }).join('') + '</ul><cite>' + esc(I.inputsRef) + '</cite>') + '</div>';
+    h += '</section>' + screenGate(8);
+    return h;
+  }
+
+  // ── Screen 9: risks, the stress test and the riskiest assumptions ──
+  function ivOptions(withWhole) {
+    var o = state.interventions.map(function (iv, i) { return { value: iv.id, label: 'I' + (i + 1) + ': ' + (short(iv.name, 60) || 'no name yet') }; });
+    return withWhole ? o.concat([{ value: 'whole', label: CONFIG.risks.whole }]) : o;
+  }
+  function riskEditor(r, i) {
+    var base = 'risks.' + i + '.', n = i + 1;
+    var h = '<div class="item" id="rk-' + r.id + '" style="--item-colour:' + (r.stressCharId ? charHex(r.stressCharId) : 'var(--char-2)') + '"><div class="item-head"><span class="tag">R' + n + '</span>' +
+      '<span class="grow quiet">' + (r.stressCharId ? 'From the stress test: ' + esc(charLabelOf(r.stressCharId)) + '. It goes when an intervention protects it.' : '') + '</span>' +
+      (r.stressCharId ? '' : '<button type="button" class="btn btn-danger btn-small" data-action="risk-remove" data-arg="' + r.id + '" aria-label="Remove risk ' + n + '">Remove</button>') + '</div>';
+    h += wcText('rk-text-' + r.id, 'Risk ' + n, base + 'text', r.text, CONFIG.words.riskText, { short: true, logLabel: 'Risk' });
+    h += '<div class="two-col"><fieldset role="radiogroup"><legend>Internal or external?</legend><div class="choices">' + CONFIG.riskTypes.map(function (x) {
+      return chip({ type: 'radio', name: 'rki|' + r.id, value: x.id, label: esc(x.label), checked: r.internal === x.id, colour: x.colour, attrs: ' data-f="' + base + 'internal" data-label="Risk"' });
+    }).join('') + '</div></fieldset>' +
+      '<fieldset role="radiogroup"><legend>Likelihood</legend><div class="choices">' + CONFIG.levels.map(function (lv) {
+        return chip({ type: 'radio', name: 'rkl|' + r.id, value: lv.id, label: esc(lv.label), checked: r.likelihood === lv.id, colour: 'var(--char-6)', attrs: ' data-f="' + base + 'likelihood" data-label="Risk"' });
+      }).join('') + '</div></fieldset></div>';
+    h += wcText('rk-mit-' + r.id, 'Mitigation: what the club can do about it', base + 'mitigation', r.mitigation, CONFIG.words.mitigation, { short: true, logLabel: 'Risk' });
+    h += selectHtml('rk-iv-' + r.id, 'The intervention it bears on', ' data-f="' + base + 'interventionId" data-label="Risk"', ivOptions(true), r.interventionId, 'Choose…');
+    return h + '</div>';
+  }
+  function stressEditor(c) {
+    var row = state.stressTest[c.id], Q = CONFIG.stressQuestions[c.id] || { note: '', questions: [] };
+    return '<div class="item" id="stx-' + c.id + '" style="--item-colour:' + c.colour + '"><div class="item-head"><span class="tag" style="background:' + c.hex + '">' + (CONFIG.characteristics.indexOf(c) + 1) + '</span>' +
+      '<span class="grow"><b>' + esc(c.label) + '</b> <span class="quiet">' + esc(Q.note) + '</span></span></div>' +
+      '<ul class="stress-qs">' + Q.questions.map(function (q) { return '<li>' + esc(q) + '</li>'; }).join('') + '</ul>' +
+      wcText('st-thr-' + c.id, 'How could this setting threaten it?', 'stressTest.' + c.id + '.threat', row.threat, CONFIG.words.threat, { short: true, logLabel: 'Stress test' }) +
+      selectHtml('st-by-' + c.id, 'Which intervention protects it?', ' data-f="stressTest.' + c.id + '.protectedBy" data-label="Stress test"',
+        ivOptions(false).concat([{ value: 'none', label: 'None yet: add it to the risk register' }]), row.protectedBy, 'Choose…') + '</div>';
+  }
+  function ownEditor(q, i) {
+    var base = 'stressOwn.' + i + '.', n = i + 1;
+    return '<div class="item" id="own-' + q.id + '" style="--item-colour:var(--char-4)"><div class="item-head"><span class="tag">Q' + n + '</span><span class="grow"></span>' +
+      '<button type="button" class="btn btn-danger btn-small" data-action="own-remove" data-arg="' + q.id + '" aria-label="Remove your question ' + n + '">Remove</button></div>' +
+      wcText('own-q-' + q.id, 'Your question ' + n + ', in your own words', base + 'question', q.question, CONFIG.words.ownQuestion, { short: true, logLabel: 'Stress test' }) +
+      '<div class="two-col">' + textInput('own-sl-' + q.id, 'Slide number in the client brief', base + 'slide', q.slide, { slide: true, max: 3, logLabel: 'Stress test' }) +
+      selectHtml('own-ch-' + q.id, 'Characteristic (optional)', ' data-f="' + base + 'charId" data-label="Stress test"', CONFIG.characteristics.map(function (c) { return { value: c.id, label: c.label }; }), q.charId, 'None') + '</div>' +
+      wcText('own-a-' + q.id, 'Your answer', base + 'answer', q.answer, CONFIG.words.ownAnswer, { short: true, logLabel: 'Stress test' }) + '</div>';
+  }
+  function renderRisks(sc) {
+    if (designLocked(state)) return renderLock(sc);
+    var R = CONFIG.risks, h = screenHead(sc, R.lead);
+    CONFIG.characteristics.forEach(function (c) { if (!state.stressTest[c.id]) state.stressTest[c.id] = newStressRow(); });
+    h += '<section class="panel" style="' + panelStyle(sc) + '">';
+    h += '<div class="part" style="--part-colour:var(--char-2)"><h3>1. Risk register</h3><div>' +
+      (state.risks.length ? state.risks.map(riskEditor).join('') : '<p class="quiet">No risks yet.</p>') +
+      '<button type="button" class="btn btn-accent" data-action="risk-add">Add a risk</button></div>' +
+      guide('Risks', quote(R.definition, R.definitionRef) + '<ul class="plain" style="margin-top:0.4rem">' + R.questions.map(function (q) { return '<li><q>' + esc(q) + '</q></li>'; }).join('') + '</ul><cite>' + esc(R.questionsRef) + '</cite>' +
+        '<p style="margin-top:0.6rem"><b>Risk or assumption?</b> ' + esc(R.difference) + '</p><p style="margin-top:0.4rem">' + quote(CONFIG.assumptions.quote, CONFIG.assumptions.quoteRef) + '</p>' +
+        '<p style="margin-top:0.4rem">' + quote(R.outside, R.outsideRef) + '</p>') + '</div>';
+    h += '<div class="part" style="--part-colour:var(--char-6)"><h3>2. Stadium stress test</h3><div><p class="quiet">' + esc(R.stressLead) + '</p>' +
+      CONFIG.characteristics.map(stressEditor).join('') + '</div>' +
+      guide('The eight characteristics', '<p>The questions are prompts, not a checklist: answer for your design, in your own words. Each characteristic\u2019s line restates its definition from the course notes on Oldenburg.</p>') + '</div>';
+    h += '<div class="part" style="--part-colour:var(--char-4)"><h3>3. Your own questions from the brief</h3><div><p class="quiet">' + esc(R.ownLead) + '</p>' +
+      state.stressOwn.map(ownEditor).join('') +
+      '<button type="button" class="btn btn-accent" data-action="own-add">Add a question from the brief</button></div>' +
+      guide('The client brief', '<p>' + esc(CONFIG.text.briefNotice) + '</p>') + '</div>';
+    var need = riskiestNeeded(state), got = riskiest(state).length;
+    h += '<div class="part" style="--part-colour:var(--char-5)"><h3>4. The riskiest assumptions</h3><div><p class="quiet">' + esc(R.riskiestLead) + '</p>' +
+      (state.assumptions.length ? '<p><b>' + got + ' of ' + need + ' marked.</b></p><div class="choices">' + state.assumptions.map(function (a, i) {
+        return chip({ id: 'rx-' + a.id, value: '1', checked: a.riskiest, disabled: !a.riskiest && got >= need, colour: 'var(--char-5)', cls: ' block',
+          label: '<b>A' + (i + 1) + '</b>&nbsp;' + esc(short(a.text, 110)), attrs: ' data-f="assumptions.' + i + '.riskiest" data-label="Riskiest assumptions"' });
+      }).join('') + '</div>' : '<p class="warn">The assumption register is empty. Put beliefs through the sorter on screen 6.</p>') + '</div>' +
+      guide('It will work if', quote(CONFIG.assumptions.evidenceQuote, CONFIG.assumptions.evidenceQuoteRef)) + '</div>';
+    h += '</section>' + screenGate(9);
+    h += renderClose(11);
+    return h;
+  }
+
   // Open the editor of a diagram box or arrow.
   function openEditor(id) {
     if (id === LTO_ID || id === 'goal') { goto(3); refocus(id === 'goal' ? 'ce-goal' : 'lto-text'); return; }
+    if (interventionById(state, id)) {
+      if (state.ui.screen !== 8) goto(8);
+      var iv = $('iv-name-' + id);
+      if (iv) { if (iv.scrollIntoView) iv.scrollIntoView({ block: 'center' }); iv.focus(); }
+      return;
+    }
     var target = outcomeById(state, id) ? 'oc-text-' + id : clusterById(state, id) ? 'cl-label-' + id : linkById(state, id) ? 'rat-' + id : '';
     var oc = $('oc-' + id);
     if (oc && oc.tagName === 'DETAILS' && !oc.open) { oc.open = true; ocOpen[id] = true; }
@@ -3231,7 +4048,8 @@
     return h;
   }
 
-  var RENDER = { 1: renderSetup, 2: renderClient, 3: renderProblem, 4: renderStakeholders, 5: renderMap, 6: renderEvidence };
+  var RENDER = { 1: renderSetup, 2: renderClient, 3: renderProblem, 4: renderStakeholders, 5: renderMap, 6: renderEvidence,
+    7: renderOptions, 8: renderInterventions, 9: renderRisks };
 
   function renderSide() {
     var sc = SCREEN[state.ui.screen], week = sc.week, sChk = state.selfChecks['week' + week], list = members(state);
@@ -3309,7 +4127,7 @@
       t2.innerHTML = gateHtml('gate-close' + w, selfCheckChecks(state, w), { action: 'close-week', arg: String(w), label: 'Close week ' + w });
       cg.parentNode.replaceChild(t2.firstChild, cg);
     }
-    if (no === 5) refreshDiagram();
+    if (no === 5 || no === 8) refreshDiagram();
     renderRail();
   }
 
@@ -3428,6 +4246,23 @@
     });
     app.addEventListener('change', function (ev) {
       var el = ev.target, sNo = state.ui.screen, err;
+      // Week 11: interventions on arrows, the gap walk, the chosen option.
+      if (el.dataset.ivlink) {
+        setInterventionLink(state, el.dataset.ivlink, el.value, el.checked);
+        logEdit(state, sNo, 'Intervention arrows'); save(); render(); refocus(el.id); return;
+      }
+      if (el.dataset.gap) {
+        setGap(state, el.dataset.gap, el.value);
+        logEdit(state, sNo, 'Gap walk'); save(); render(); refocus(el.id); return;
+      }
+      if (el.dataset.gapa) {
+        setGap(state, el.dataset.gapa, undefined, el.value);
+        logEdit(state, sNo, 'Gap walk'); save(); render(); refocus(el.id); return;
+      }
+      if (el.dataset.choose) {
+        chooseOption(state, el.value);
+        logEdit(state, sNo, 'Chosen option'); save(); render(); refocus(el.id); return;
+      }
       // Week 10: arrows, clusters, tags, evidence, the sorter's choices.
       if (el.dataset.lead) {
         var fromId = el.dataset.lead, link = state.links.filter(function (l) { return l.from === fromId && l.to === el.value; })[0];
@@ -3478,7 +4313,9 @@
         return;
       }
       if (el.tagName === 'SELECT' && el.dataset.f) {
-        setPath(el.dataset.f, el.value); edited(el); save(); render(); refocus(el.id); return;
+        setPath(el.dataset.f, el.value);
+        if (el.dataset.f.indexOf('stressTest.') === 0) syncStressRisks(state);
+        edited(el); save(); render(); refocus(el.id); return;
       }
       if (el.type === 'checkbox' && el.dataset.f && el.dataset.label) {
         setPath(el.dataset.f, el.checked); edited(el); save(); render(); refocus(el.id); return;
@@ -3501,7 +4338,9 @@
         }
         if (el.dataset.f) {
           setPath(el.dataset.f, el.value);
+          if (/\.basis$/.test(el.dataset.f)) setPath(el.dataset.f.replace(/basis$/, 'fromBrief'), el.value === 'brief');
           logEdit(state, state.ui.screen, el.dataset.label || (el.name.indexOf('st|') === 0 ? 'Stakeholder ratings' : 'Ceiling placement'));
+          if (el.dataset.rerender) { save(); render(); refocus(el.id); return; }
           if (/canWeAsk$/.test(el.dataset.f)) { syncStakeholderFof(state); save(); renderSide(); }
           save(); refreshLive(null);
           if (/canWeAsk$/.test(el.dataset.f)) { render(); var r = document.querySelector('input[name="' + el.name + '"][value="' + el.value + '"]'); if (r) r.focus(); }
@@ -3589,12 +4428,41 @@
         if (b2.sort === 'precondition' && sNo === 5) refocus('oc-text-' + b2.refId); else refocus('belief-new');
       }
       else if (act === 'as-remove') {
-        if (window.confirm('Remove this assumption from the register?')) { state.assumptions = state.assumptions.filter(function (a) { return a.id !== arg; }); log('Assumptions'); save(); render(); }
+        if (window.confirm('Remove this assumption from the register?')) { state.assumptions = state.assumptions.filter(function (a) { return a.id !== arg; }); normaliseDesign(state); log('Assumptions'); save(); render(); }
       }
       else if (act === 'ev-add') { var ne = addEvidence(state); log('Evidence added or removed'); save(); render(); refocus('ev-type-' + ne.id); }
       else if (act === 'ev-remove') {
         if (window.confirm('Remove this evidence item? It is detached from every arrow and assumption.')) { removeEvidence(state, arg); log('Evidence added or removed'); save(); render(); }
       }
+      // Week 11
+      else if (act === 'opt-add') { var op = addOption(state); log('Options added or removed'); save(); render(); refocus('op-sum-' + op.id); }
+      else if (act === 'opt-remove') { if (window.confirm('Remove this option?')) { removeOption(state, arg); log('Options added or removed'); save(); render(); } }
+      else if (act === 'iv-add') { var iv = addIntervention(state); log('Interventions added or removed'); save(); render(); refocus('iv-name-' + iv.id); }
+      else if (act === 'iv-remove') {
+        if (window.confirm('Remove this intervention, its activities and inputs? Stress-test rows it protected go back to unanswered.')) { removeIntervention(state, arg); log('Interventions added or removed'); save(); render(); }
+      }
+      else if (act === 'act-add') { var iv2 = interventionById(state, arg); if (iv2) { iv2.activities.push(''); log('Intervention activities'); save(); render(); refocus('iv-act-' + iv2.id + '-' + (iv2.activities.length - 1)); } }
+      else if (act === 'act-remove') {
+        var ap = arg.split('|'), iv3 = interventionById(state, ap[0]);
+        if (iv3 && iv3.activities.length > 1 && window.confirm('Remove this activity?')) { iv3.activities.splice(+ap[1], 1); log('Intervention activities'); save(); render(); }
+      }
+      else if (act === 'in-add') { var ni = addInput(state, arg), iv4 = interventionById(state, arg); if (ni) { log('Inputs'); save(); render(); refocus('in-res-' + arg + '-' + (iv4.inputs.length - 1)); } }
+      else if (act === 'in-remove') {
+        var ip = arg.split('|'), iv5 = interventionById(state, ip[0]);
+        if (iv5 && window.confirm('Remove this input?')) { iv5.inputs.splice(+ip[1], 1); log('Inputs'); save(); render(); }
+      }
+      else if (act === 'in-sorter') {
+        var sp = arg.split('|'), iv6 = interventionById(state, sp[0]), inp = iv6 && iv6.inputs[+sp[1]];
+        if (!inp) return;
+        if (!wordCheck(inp.resource, CONFIG.words.resource).ok) { setStatus('Describe the resource first (at least ' + plural(CONFIG.words.resource, 'word') + ').'); refocus('in-res-' + sp[0] + '-' + sp[1]); return; }
+        var nb2 = addBelief(state, 'For ' + (String(iv6.name).trim() || 'this intervention') + ': ' + String(inp.resource).trim(), 8);
+        inp.beliefId = nb2.id; log('Beliefs'); save(); render();
+        setStatus('Added to the sorter as belief B' + state.beliefs.length + '. Answer it on screen 6.');
+      }
+      else if (act === 'risk-add') { var rk = addRisk(state); log('Risks added or removed'); save(); render(); refocus('rk-text-' + rk.id); }
+      else if (act === 'risk-remove') { if (window.confirm('Remove this risk?') && removeRisk(state, arg)) { log('Risks added or removed'); save(); render(); } }
+      else if (act === 'own-add') { var oq = addStressOwn(state); log('Stress test'); save(); render(); refocus('own-q-' + oq.id); }
+      else if (act === 'own-remove') { if (window.confirm('Remove this question?')) { state.stressOwn = state.stressOwn.filter(function (q) { return q.id !== arg; }); log('Stress test'); save(); render(); } }
       else if (act === 'export') exportNow();
       else if (act === 'week7-load') $('week7-file').click();
       else if (act === 'week7-clear') { if (window.confirm('Remove the week 7 sentences from this workbench?')) { state.imported.week7 = null; save(); render(); } }
@@ -3723,7 +4591,34 @@
     layoutOverlaps: layoutOverlaps,
     diagramSvg: diagramSvg,
     mapText: mapText,
-    registerText: registerText
+    registerText: registerText,
+    // week 11
+    designLocked: designLocked,
+    normaliseDesign: normaliseDesign,
+    addOption: addOption,
+    removeOption: removeOption,
+    chooseOption: chooseOption,
+    chosenOption: chosenOption,
+    addIntervention: addIntervention,
+    removeIntervention: removeIntervention,
+    setInterventionLink: setInterventionLink,
+    interventionsOn: interventionsOn,
+    shoehorned: shoehorned,
+    gapLinks: gapLinks,
+    gapProblem: gapProblem,
+    setGap: setGap,
+    addInput: addInput,
+    addRisk: addRisk,
+    removeRisk: removeRisk,
+    setStress: setStress,
+    syncStressRisks: syncStressRisks,
+    addStressOwn: addStressOwn,
+    riskiestNeeded: riskiestNeeded,
+    edgePoint: edgePoint,
+    edgePath: edgePath,
+    markerLayout: markerLayout,
+    designText: designText,
+    riskText: riskText
   };
 
   if (document.getElementById('tw-app')) init();
