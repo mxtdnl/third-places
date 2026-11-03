@@ -2250,7 +2250,7 @@
         s.reading.forEach(function (r) { ok(TW.CONFIG.readings[r.ref] && /^pp?\. \d/.test(r.pages) && r.what, 'ref on screen ' + s.no); });
         ok(s.title && s.summary, 'copy for screen ' + s.no);
       });
-      eq(S.filter(function (s) { return s.built; }).map(function (s) { return s.no; }).join(), '1,2,3,4,5,6');
+      eq(S.filter(function (s) { return s.built; }).map(function (s) { return s.no; }).join(), '1,2,3,4,5,6,7,8,9');
     });
 
     assert('glossary crosswalk, self-check, stakeholder questions, lint lists and soft cap are present', function() {
@@ -2615,7 +2615,7 @@
     suite('ToC Workbench (week 10) — Config');
 
     assert('screens 5 and 6 are built; week 10 run sheet, lenses, characteristics, evidence types', function() {
-      eq(TW.CONFIG.screens.filter(function (s) { return s.built; }).map(function (s) { return s.no; }).join(), '1,2,3,4,5,6');
+      eq(TW.CONFIG.screens.filter(function (s) { return s.built && s.week === 10; }).map(function (s) { return s.no; }).join(), '5,6');
       ok(TW.CONFIG.runSheets[9].length === 6 && TW.CONFIG.runSheets[10].length === 5);
       eq(TW.CONFIG.lenses.map(function (l) { return l.id; }).join(), 'PSYCHOLOGICAL,POLITICAL,ECONOMIC');
       eq(TW.CONFIG.characteristics.length, 8);
@@ -2892,6 +2892,229 @@
       ok(/A1\. belief word/.test(txt) && txt.indexOf('Cai: absent') !== -1 && txt.indexOf('Completeness pass: 3 of 3 arrows checked.') !== -1);
       ok(rep.indexOf('<svg class="dg"') !== -1 && rep.indexOf('Assumption register') !== -1);
       ok(TW.mapText(s).length > 6 && TW.registerText(s).length > 6);
+    });
+
+    // =====================================================
+    // BODØ THEORY OF CHANGE WORKBENCH, stage 3 (week 11)
+    // =====================================================
+
+    // A complete week 11 state: every week 9-11 gate passes.
+    function twFull11() {
+      var s = twFull10();
+      s.roles.week11 = TW.suggestRoles(TW.members(s), s.roles.week10);
+      var o1 = TW.addOption(s), o2 = TW.addOption(s);
+      [o1, o2].forEach(function (o, i) {
+        o.summary = TWW(10, 'option ' + i); o.location = 'north stand';
+        o.plausible = TWW(15, 'plausible'); o.doable = TWW(15, 'doable'); o.testable = TWW(15, 'testable');
+      });
+      TW.chooseOption(s, o1.id); o2.whyNot = TWW(15, 'rejected');
+      var iv = TW.addIntervention(s);
+      iv.name = 'Weekday café'; iv.activities = ['Open the café daily', 'Hire a café host']; iv.characteristics = ['access', 'regulars'];
+      TW.setInterventionLink(s, iv.id, s.links[0].id, true); TW.setInterventionLink(s, iv.id, s.links[1].id, true);
+      var inp = iv.inputs[0]; inp.resource = 'a ground-floor room'; inp.basis = 'brief'; inp.fromBrief = true; inp.slide = '5';
+      inp.limitation = TWW(8, 'limitation'); inp.limits = { ringFenced: 'no', skills: 'unknown', timeLimit: 'yes' };
+      // Arrow 3 has no intervention: covered by an assumption on it.
+      var b = TW.addBelief(s, TWW(6, 'second belief'), 6);
+      TW.sortBelief(s, b.id, 'assumption', { linkId: s.links[2].id, lens: 'ECONOMIC', evidenceIds: [s.evidence[0].id] });
+      TW.setGap(s, s.links[2].id, 'assumption', s.assumptions[1].id);
+      var r = TW.addRisk(s); r.text = TWW(8, 'risk'); r.internal = 'external'; r.likelihood = 'medium'; r.mitigation = TWW(10, 'mitigate'); r.interventionId = iv.id;
+      TW.CONFIG.characteristics.forEach(function (c, i) { TW.setStress(s, c.id, 'threat', TWW(12, 'threat ' + c.id)); TW.setStress(s, c.id, 'protectedBy', i === 7 ? 'none' : iv.id); });
+      var sr = s.risks[1]; sr.internal = 'internal'; sr.likelihood = 'low'; sr.mitigation = TWW(10, 'mitigate'); sr.interventionId = 'whole';
+      s.assumptions.forEach(function (a) { a.riskiest = true; });
+      return s;
+    }
+
+    suite('ToC Workbench (week 11) — Config and the design lock');
+
+    assert('screens 7-9 are built design screens; week 11 run sheet, close actions and card type', function() {
+      eq(TW.CONFIG.screens.filter(function (s) { return s.design; }).map(function (s) { return s.no + (s.built ? 'b' : ''); }).join(), '7b,8b,9b');
+      eq(TW.CONFIG.runSheets[11].length, 6);
+      ok(TW.CONFIG.closeActions[11].some(function (a) { return a.arg === 'riskiest'; }));
+      eq(TW.CONFIG.weekCards[11].join(), 'riskiest');
+      ok(TW.CARD_TYPES.some(function (c) { return c.id === 'riskiest'; }));
+      eq(TW.CONFIG.design.holdOffRef, '[TC] p. 7'); ok(TW.CONFIG.design.holdOff.indexOf('we deliberately ask groups to hold off on interventions') !== -1);
+      eq(TW.CONFIG.inputLimits.length, 3); eq(TW.CONFIG.risks.questions.length, 3);
+    });
+
+    assert('stress questions: three per characteristic, keyed by characteristic id, no brief or Bodø content', function() {
+      var Q = TW.CONFIG.stressQuestions;
+      eq(Object.keys(Q).join(), TW.CONFIG.characteristics.map(function (c) { return c.id; }).join());
+      Object.keys(Q).forEach(function (k) {
+        eq(Q[k].questions.length, 3, k); ok(Q[k].note.length > 10, k);
+        Q[k].questions.forEach(function (q) { ok(/\?$/.test(q), k + ': ' + q); ok(!/Bod|Glimt|Arctic|Aspmyra|slide/i.test(q), k + ': ' + q); });
+      });
+    });
+
+    assert('design lock: screens 7-9 locked until the week 10 gate passes, with the missing items; lock returns if the map breaks', function() {
+      var s = twFull10(); s.links[1].rationale = 'short';
+      ok(TW.designLocked(s)); ok(TW.screenEnabled(s, 7), 'locked screens still open, to show the lock');
+      ok(TW.designChecks(s).some(function (c) { return !c.ok && /arrow 2/.test(c.msg); }));
+      s = twFull10(); ok(!TW.designLocked(s));
+      ok(TW.screenEnabled(s, 7)); ok(!TW.screenEnabled(s, 8), 'screen 8 waits for screen 7'); ok(!TW.screenEnabled(s, 9));
+      s = twFull11(); ok(TW.screenEnabled(s, 8) && TW.screenEnabled(s, 9));
+      var n = s.interventions.length; TW.addBelief(s, TWW(6, 'unsorted'), 5);
+      ok(TW.designLocked(s), 'an unsorted belief locks design again'); eq(s.interventions.length, n, 'work is kept');
+    });
+
+    suite('ToC Workbench (week 11) — Gates');
+
+    assert('a complete week 11 passes screens 7-9 and the week gate; closing prints one card per riskiest assumption', function() {
+      var s = twFull11();
+      [7, 8, 9].forEach(function (n) { eq(twFailing(s, n).length, 0, 'screen ' + n + ': ' + twFailing(s, n).join(' ')); });
+      twSelfCheck(s, 11); eq(TW.closeWeek(s, 11, '2026-11-23T10:25:00.000Z').length, 0);
+      var cards = TW.readyCards(s, ['riskiest']); eq(cards.length, 2);
+      ok(/^Riskiest assumption A1/.test(cards[0].eyebrow)); ok(cards[0].details[0].indexOf('On arrow 1') === 0);
+      ok(TW.buildA6Html(cards).indexOf('class="a6-sheet"') !== -1);
+    });
+
+    assert('screen 7: two options, one chosen, a reason for each rejected option; one character never passes', function() {
+      var s = twFull11(); TW.removeOption(s, s.options[1].id);
+      eq(twFailing(s, 7).join(), 'Appraise at least 2 options (1 so far).');
+      s = twFull11(); s.options.forEach(function (o) { o.chosen = false; });
+      eq(twFailing(s, 7).join(), 'Choose one option to take forward.');
+      s = twFull11(); s.options[1].whyNot = 'x';
+      eq(twFailing(s, 7).join(), 'Option 2: why it was rejected: needs at least 15 words (1 so far).');
+      s = twFull11(); s.options[0].doable = 'd';
+      ok(/^Option 1, doable: needs at least 15 words/.test(twFailing(s, 7).join()));
+      TW.chooseOption(s, s.options[1].id); ok(!s.options[0].chosen && s.options[1].chosen);
+      ok(/^Option 1: why it was rejected/.test(twFailing(s, 7).filter(function (m) { return /rejected/.test(m); })[0]));
+    });
+
+    assert('shoehorn check: an intervention on no arrow is flagged, also when its arrow disappears', function() {
+      var s = twFull11(), iv2 = TW.addIntervention(s);
+      iv2.name = 'Fan museum'; iv2.activities = ['curate the trophy room']; iv2.characteristics = ['playful'];
+      Object.assign(iv2.inputs[0], { resource: 'display cases and staff', basis: 'assumption', limitation: TWW(8, 'limit'), limits: { ringFenced: 'no', skills: 'no', timeLimit: 'no' } });
+      eq(TW.shoehorned(s).length, 1);
+      ok(twFailing(s, 8).some(function (m) { return /^Intervention 2 \(Fan museum\): it sits on no arrow\./.test(m) && /shoehorn/.test(m); }));
+      TW.setInterventionLink(s, iv2.id, s.links[2].id, true); eq(TW.shoehorned(s).length, 0); eq(twFailing(s, 8).length, 0);
+      TW.setLeadsTo(s, s.links[2].from, s.links[2].to, false);
+      eq(iv2.linkIds.length, 0, 'link pruned with the arrow'); eq(TW.shoehorned(s).length, 1);
+    });
+
+    assert('gap walk: every arrow with no intervention needs a mark; "needs" blocks; the assumption must sit on that arrow', function() {
+      var s = twFull11(), l3 = s.links[2];
+      eq(TW.gapLinks(s).map(function (l) { return l.id; }).join(), l3.id);
+      TW.setGap(s, l3.id, '');
+      ok(/^Gap walk, arrow 3 \(outcome 3 → outcome 2\): no intervention\. Mark it/.test(twFailing(s, 8).join()));
+      TW.setGap(s, l3.id, 'needs');
+      eq(twFailing(s, 8).join(), 'Gap walk, arrow 3 (outcome 3 → outcome 2): needs an intervention. Place one on it, or mark it covered by an assumption.');
+      TW.setInterventionLink(s, s.interventions[0].id, l3.id, true); eq(twFailing(s, 8).length, 0, 'an intervention clears it');
+      eq(TW.gapLinks(s).length, 0);
+      s = twFull11(); TW.setGap(s, s.links[2].id, 'assumption', s.assumptions[0].id);
+      ok(/the chosen assumption no longer sits on this arrow/.test(twFailing(s, 8).join()));
+      s = twFull11(); s.assumptions.splice(1, 1); TW.normaliseDesign(s);
+      ok(/choose the assumption that covers it/.test(twFailing(s, 8).join()), 'removed assumption is cleared');
+    });
+
+    assert('inputs: from the brief needs a slide; three limitation questions; one-character entries rejected', function() {
+      var s = twFull11(), inp = s.interventions[0].inputs[0];
+      inp.slide = ''; ok(twFailing(s, 8).join().indexOf('Intervention 1 (Weekday café), input 1: give the slide of the client brief.') !== -1);
+      s = twFull11(); inp = s.interventions[0].inputs[0]; inp.basis = 'assumption'; inp.slide = ''; eq(twFailing(s, 8).length, 0, 'our assumption needs no slide');
+      inp.resource = 'x'; ok(/input 1 resource: needs at least 3 words \(1 so far\)/.test(twFailing(s, 8).join()));
+      s = twFull11(); s.interventions[0].inputs[0].limits.skills = '';
+      ok(twFailing(s, 8).join().indexOf('answer “Do the people you can deploy have the correct skills?”') !== -1);
+      s = twFull11(); s.interventions[0].activities.push('a'); ok(/activity 3: needs at least 3 words/.test(twFailing(s, 8).join()));
+      s = twFull11(); s.interventions[0].characteristics = []; eq(twFailing(s, 8).join(), 'Intervention 1 (Weekday café): tick the characteristics it protects or produces.');
+    });
+
+    assert('screen 9: risks, the stress test ("none yet" keeps one risk), own questions with slides, riskiest assumptions', function() {
+      var s = twFull11(), cid = TW.CONFIG.characteristics[7].id;
+      eq(s.risks.filter(function (r) { return r.stressCharId === cid; }).length, 1);
+      ok(!TW.removeRisk(s, s.risks[1].id), 'stress risks are removed by the stress test, not by hand');
+      TW.setStress(s, cid, 'protectedBy', s.interventions[0].id); eq(s.risks.length, 1, 'protected: its risk goes');
+      TW.setStress(s, cid, 'protectedBy', 'none'); eq(s.risks.length, 2); eq(s.risks[1].text, TWW(12, 'threat ' + cid));
+      s = twFull11(); TW.setStress(s, 'neutral', 'threat', 'x');
+      ok(/^Stress test, neutral ground: needs at least 12 words/.test(twFailing(s, 9).join()));
+      s = twFull11(); TW.removeIntervention(s, s.interventions[0].id);
+      eq(s.stressTest.neutral.protectedBy, '', 'removing the intervention clears the rows it protected');
+      ok(twFailing(s, 9).indexOf('Stress test, neutral ground: which intervention protects it? (or “none yet”)') !== -1);
+      s = twFull11(); var q = TW.addStressOwn(s); q.question = TWW(6, 'question'); q.answer = TWW(12, 'answer');
+      eq(twFailing(s, 9).join(), 'Your question 1: give the slide of the client brief it comes from.');
+      q.slide = '9'; eq(twFailing(s, 9).length, 0);
+      s = twFull11(); s.assumptions[1].riskiest = false; eq(TW.riskiestNeeded(s), 2);
+      eq(twFailing(s, 9).join(), 'Mark the 2 riskiest assumptions (1 marked).');
+      s = twFull11(); s.risks[0].internal = ''; eq(twFailing(s, 9).join(), 'Risk 1: internal or external?');
+    });
+
+    suite('ToC Workbench (week 11) — Markers, migrate() and outputs');
+
+    // Distance from a point to the first cubic curve of an SVG path "M x,y C ...".
+    function twCurveDist(d, pt) {
+      var n = d.match(/-?\d+(\.\d+)?/g).map(Number), best = Infinity;
+      var P = [[n[0], n[1]], [n[2], n[3]], [n[4], n[5]], [n[6], n[7]]];
+      for (var i = 0; i <= 2000; i++) {
+        var t = i / 2000, u = 1 - t;
+        var x = u * u * u * P[0][0] + 3 * u * u * t * P[1][0] + 3 * u * t * t * P[2][0] + t * t * t * P[3][0];
+        var y = u * u * u * P[0][1] + 3 * u * u * t * P[1][1] + 3 * u * t * t * P[2][1] + t * t * t * P[3][1];
+        best = Math.min(best, Math.hypot(x - pt[0], y - pt[1]));
+      }
+      return best;
+    }
+
+    assert('markers sit on their arrows (30 random maps), side by side, one focusable marker per placement', function() {
+      for (var seed = 1; seed <= 30; seed++) {
+        var s = twRandomMap(seed), r = twRng(seed * 7);
+        if (!s.links.length) continue;
+        for (var k = 0; k < 3; k++) {
+          var iv = TW.addIntervention(s);
+          s.links.forEach(function (l) { if (r() < 0.4) TW.setInterventionLink(s, iv.id, l.id, true); });
+        }
+        var lay = TW.layoutMap(s), marks = TW.markerLayout(s, lay), want = 0;
+        s.interventions.forEach(function (x) { want += x.linkIds.length; });
+        eq(marks.length, want, 'seed ' + seed);
+        marks.forEach(function (m) {
+          var e = lay.edges.filter(function (x) { return x.id === m.linkId; })[0];
+          ok(twCurveDist(TW.edgePath(e), [m.cx, m.cy]) < 0.75, 'seed ' + seed + ': marker off its arrow');
+          ok(m.x <= m.cx + 0.01 || marks.some(function (o) { return o !== m && o.linkId === m.linkId; }), 'centred');
+        });
+        var byLink = {};
+        marks.forEach(function (m) { (byLink[m.linkId] = byLink[m.linkId] || []).push(m); });
+        Object.keys(byLink).forEach(function (id) {
+          var g = byLink[id];
+          for (var i = 1; i < g.length; i++) ok(g[i].x >= g[i - 1].x + g[i - 1].w, 'seed ' + seed + ': markers overlap');
+          ok(Math.abs((g[0].x + g[g.length - 1].x + g[g.length - 1].w) / 2 - g[0].cx) < 0.01, 'group centred on the arrow');
+        });
+        var svg = TW.diagramSvg(s, { interactive: true });
+        eq((svg.match(/class="dg-marker" tabindex="0" role="button"/g) || []).length, want, 'seed ' + seed);
+      }
+    });
+
+    assert('migrate() upgrades a stage 2 export: week 11 fields filled, old input shape kept', function() {
+      var old = JSON.parse(JSON.stringify(twFull10()));
+      delete old.gapWalk; delete old.stressOwn;
+      old.assumptions.forEach(function (a) { delete a.riskiest; });
+      old.interventions = [{ id: 'i1', name: 'Café', activities: ['run it', 7], linkIds: [old.links[0].id, 'gone'], characteristics: ['home', 'nope'],
+        inputs: [{ resource: 'room', fromBrief: true, slide: '3', limitation: 'x' }] }];
+      old.risks = [{ id: 'r1', text: 't', interventionId: 'gone' }];
+      old.stressTest = { neutral: { threat: 'th', protectedBy: 'i1' }, bogus: { threat: 'x' }, leveller: 'junk' };
+      var x = { tool: 'toc-workbench', schemaVersion: 1, state: old };
+      eq(TW.validateImport(x).length, 0);
+      var s = TW.migrate(JSON.parse(JSON.stringify(old)));
+      eq(JSON.stringify(s.gapWalk), '{}'); ok(Array.isArray(s.stressOwn) && !s.stressOwn.length);
+      eq(s.assumptions[0].riskiest, false);
+      var iv = s.interventions[0];
+      eq(iv.activities.join(), 'run it'); eq(iv.linkIds.join(), old.links[0].id); eq(iv.characteristics.join(), 'home'); eq(iv.feature, '');
+      eq(iv.inputs[0].basis, 'brief'); eq(iv.inputs[0].slide, '3'); eq(iv.inputs[0].limits.skills, ''); eq(iv.inputs[0].beliefId, '');
+      eq(s.risks[0].interventionId, ''); eq(s.risks[0].stressCharId, '');
+      eq(Object.keys(s.stressTest).join(), 'neutral'); eq(s.stressTest.neutral.protectedBy, 'i1');
+      eq(s.outcomes.length, old.outcomes.length); eq(s.links[0].rationale, old.links[0].rationale);
+    });
+
+    assert('week 11 export and re-import preserve the state exactly', function() {
+      var s = twFull11(); twSelfCheck(s, 11); TW.closeWeek(s, 11, '2026-11-23T10:25:00.000Z');
+      var x = JSON.parse(JSON.stringify(TW.buildExport(s, '2026-11-23T10:30:00.000Z')));
+      eq(TW.validateImport(x).length, 0);
+      eq(JSON.stringify(TW.migrate(x.state)), JSON.stringify(s));
+    });
+
+    assert('Copy as text and the report include options, interventions, gap walk, risks, stress test, riskiest; markers in the diagram', function() {
+      var s = twFull11(), txt = TW.buildText(s), rep = TW.buildReportHtml(s);
+      ok(txt.indexOf('OPTIONS AND INTERVENTIONS (SCREENS 7 AND 8)') !== -1 && txt.indexOf('RISKS AND STRESS TEST (SCREEN 9)') !== -1);
+      ok(txt.indexOf('Option 1 (CHOSEN)') !== -1 && txt.indexOf('Rejected because: rejected word') !== -1);
+      ok(txt.indexOf('I1. Weekday café') !== -1 && txt.indexOf('[client brief, slide 5]') !== -1);
+      ok(/Arrow 3 \(outcome 3 → outcome 2\): covered by assumption A2/.test(txt));
+      ok(txt.indexOf('A home away from home: threat home') !== -1 && txt.indexOf('Protected by: None yet') !== -1);
+      ok(rep.indexOf('class="dg-marker"') !== -1 && rep.indexOf('Stadium stress test') !== -1 && rep.indexOf('Riskiest assumptions') !== -1);
     });
 
     assert('week9-toc-workbench.html: charset first, favicon, no curly quotes or network calls in script, no PLACEHOLDER, no brief content marker', function() {
