@@ -3315,6 +3315,102 @@
     });
 
     // =====================================================
+    // WEEK 11 TOC DECK
+    // =====================================================
+
+    suite('Week 11 deck — Content and encoding');
+
+    var W11D_HTML = cwsGet('week11-toc-deck.html');
+    var W11D_CONFIG = (function() {
+      var m = W11D_HTML.match(/var CONFIG = (\{[\s\S]*?\});\s*\/\/ END CONFIG/);
+      return m ? new Function('return ' + m[1])() : null;
+    })();
+
+    assert('week11-toc-deck.html: charset first, favicon, no curly quotes or network calls in script, no PLACEHOLDER', function() {
+      ok(W11D_HTML.indexOf('<meta charset="utf-8">') === 0, 'charset not first');
+      ok(W11D_HTML.indexOf('<link rel="icon" type="image/png" href="data:image/png;base64,') > W11D_HTML.indexOf('<title>'), 'favicon');
+      var m = W11D_HTML.match(/<script>([\s\S]*?)<\/script>/);
+      ok(m && !/[‘’“”]/.test(m[1]), 'curly quotes found');
+      ok(!/fetch\(|XMLHttpRequest|https?:\/\//.test(m[1]), 'network call found');
+      ok(W11D_HTML.indexOf('PLACEHOLDER') === -1, 'PLACEHOLDER found');
+    });
+
+    assert('week11-toc-deck.html uses no en or em dashes (SLIDES.md section 11)', function() {
+      ok(!/[–—]|&ndash;|&mdash;/.test(W11D_HTML));
+    });
+
+    assert('17 slides, and no two adjacent slides share an accent', function() {
+      var acc = (W11D_HTML.match(/<section class="slide[^"]*" data-accent="[^"]+"/g) || []).map(function(s) { return s.match(/data-accent="([^"]+)"/)[1]; });
+      eq(acc.length, 17);
+      for (var i = 1; i < acc.length; i++) ok(acc[i] !== acc[i - 1], 'slides ' + i + ' and ' + (i + 1));
+    });
+
+    assert('reading checks: three single-select items, each with a valid answer and page-cited feedback', function() {
+      ok(W11D_CONFIG, 'CONFIG not parsed');
+      eq(W11D_CONFIG.readingChecks.length, 3);
+      W11D_CONFIG.readingChecks.forEach(function(q, i) {
+        eq(Object.keys(q.options).length, 4, 'options ' + i);
+        ok(q.options[q.correct], 'correct key ' + i);
+        ok(/\[(TC|GAF)\] p\. \d+/.test(q.right), 'page reference in feedback ' + i);
+        ok(q.wrong.length > 0, 'wrong feedback ' + i);
+      });
+      eq(W11D_CONFIG.readingChecks.map(function(q) { return q.correct; }).join(''), 'bda');
+      ok(/\[TC\] p\. 7/.test(W11D_CONFIG.readingChecks[0].right), '(a) cites [TC] p. 7');
+      ok(/\[GAF\] p\. 21/.test(W11D_CONFIG.readingChecks[1].right), '(b) cites [GAF] p. 21');
+      ok(/\[GAF\] p\. 27/.test(W11D_CONFIG.readingChecks[2].right), '(c) cites [GAF] p. 27');
+      eq(W11D_CONFIG.readingChecks[1].options.d, 'Funding, existing structures, people and partners, intelligence, and policies');
+    });
+
+    assert('strategy, intervention and activity are [TC] p. 7\'s three terms', function() {
+      eq(W11D_CONFIG.definitions.map(function(d) { return d.name; }).join(','), 'Strategy,Intervention,Activity');
+      W11D_CONFIG.definitions.forEach(function(d) { ok(d.quote.length > 40 && d.note.length > 10, d.name); });
+    });
+
+    assert('workbench blocks run 12-30, 30-55, 55-70, 70-85, 85-90 on screens 7-9, with 3-5 tasks and known lead roles', function() {
+      var names = W11D_CONFIG.roles.map(function(r) { return r.name; });
+      var b = W11D_CONFIG.blocks;
+      eq(b.map(function(x) { return x.start + '-' + x.end; }).join(','), '12-30,30-55,55-70,70-85,85-90');
+      eq(b.map(function(x) { return x.screens.join('+'); }).join(','), '7,8,8,9,9');
+      b.forEach(function(x) {
+        ok(x.tasks.length >= 3 && x.tasks.length <= 5, 'task count ' + x.title);
+        ok(x.leads.length > 0, 'leads ' + x.title);
+        x.leads.forEach(function(l) { ok(names.indexOf(l) !== -1, 'unknown role ' + l); });
+      });
+      eq(b[0].leads[0], 'Facilitator');
+      eq(b[2].leads[0], 'Evidence lead');
+      eq(b[3].leads[0], 'Sceptic');
+    });
+
+    assert('deck matches week9-toc-workbench.html: screens, roles, input limits, risk questions', function() {
+      ok(typeof TW !== 'undefined' && TW.CONFIG, 'workbench not loaded');
+      Object.keys(W11D_CONFIG.screenNames).forEach(function(n) {
+        var s = TW.CONFIG.screens.filter(function(x) { return x.no === +n; })[0];
+        ok(s && s.week === 11 && s.built, 'screen ' + n);
+        eq(W11D_CONFIG.screenNames[n], s.title, 'screen ' + n + ' name');
+      });
+      eq(W11D_CONFIG.roles.map(function(r) { return r.name; }).join(','), TW.CONFIG.roles.map(function(r) { return r.name; }).join(','));
+      eq(W11D_CONFIG.inputs, TW.CONFIG.interventions.inputs);
+      eq(W11D_CONFIG.limitQuestions.map(function(l) { return l.id + ':' + l.q; }).join('|'), TW.CONFIG.inputLimits.map(function(l) { return l.id + ':' + l.q; }).join('|'));
+      eq(W11D_CONFIG.riskQuestions.join('|'), TW.CONFIG.risks.questions.join('|'));
+    });
+
+    assert('stress test: eight characteristics in order, each with the first two of the workbench\'s questions, verbatim', function() {
+      var cs = TW.CONFIG.characteristics;
+      eq(W11D_CONFIG.stress.length, 8);
+      W11D_CONFIG.stress.forEach(function(c, i) {
+        eq(c.id, cs[i].id, 'id ' + i);
+        eq(c.label, cs[i].label, 'label ' + c.id);
+        eq(c.colour, cs[i].colour, 'colour ' + c.id);
+        eq(c.questions.length, 2, 'count ' + c.id);
+        eq(c.questions.join('|'), TW.CONFIG.stressQuestions[c.id].questions.slice(0, 2).join('|'), 'questions ' + c.id);
+      });
+    });
+
+    assert('narrow layout query keeps the "screen and" prefix', function() {
+      ok(W11D_HTML.indexOf('@media screen and (max-width: 860px), screen and (max-aspect-ratio: 1/1)') !== -1);
+    });
+
+    // =====================================================
     // SUMMARY
     // =====================================================
 
