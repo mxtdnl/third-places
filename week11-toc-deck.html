@@ -10,8 +10,8 @@
    A 16:9 stage that always fits the viewport. The root font-size
    IS the slide unit: 1rem = 1% of stage width, so every dimension
    below is in rem and the deck scales as one composition.
-   The deck opens the session (about 12 minutes, with the reading
-   check) and then stays on screen: the "In the workbench" slides
+   The deck opens the session (about 15 minutes; it assumes no
+   reading) and then stays on screen: the "In the workbench" slides
    carry each block's minutes, screen, tasks, lead roles and an
    optional countdown. Chrome, stage and countdown match the week 9
    and week 10 decks so the weekly decks read as one series.
@@ -48,6 +48,7 @@ html {
      and decorative shapes keep the exact palette values above. */
   --char-4-ink: #7A5410;
   --char-7-ink: #9E4718;
+  --char-3-ink: #9A4A1A;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -208,6 +209,7 @@ body {
 }
 .slide[data-accent="var(--char-4)"] .eyebrow { color: var(--char-4-ink); }
 .slide[data-accent="var(--char-7)"] .eyebrow { color: var(--char-7-ink); }
+.slide[data-accent="var(--char-3)"] .eyebrow { color: var(--char-3-ink); }
 
 .eyebrow {
   display: block;
@@ -306,151 +308,7 @@ p { font-size: 1.85rem; }
 .banner p { color: #fff; font-size: 1.5rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
 .banner.on-gold p { color: var(--text); }
 
-/* ---------- Horizontal chain (slide 8) ---------- */
-
-.toc-direction, .toc-delivery { display: flex; align-items: center; gap: 1.4rem; }
-.toc-direction { background: var(--bg-deep); padding: 0.7rem 1.6rem; margin-bottom: 1.3rem; }
-.toc-direction .dir-label, .toc-delivery .dir-label {
-  font-size: 1.3rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--char-2);
-}
-.toc-direction .dir-rule { flex: 1; height: 0.4rem; background: var(--char-2); }
-.toc-delivery { margin-top: 1.3rem; }
-.toc-delivery .dir-label { color: var(--char-1); }
-.toc-delivery .dir-rule { flex: 1; height: 0.4rem; background: var(--char-1); }
-
-.chain { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.6rem; }
-.chain-node {
-  background: var(--bg-card);
-  border: 0.25rem solid var(--border);
-  border-top: 0.9rem solid var(--node-color);
-  padding: 1.2rem 1.4rem;
-}
-.chain-node.dashed { border-top-style: dashed; }
-.chain-node .node-label {
-  font-size: 1.4rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--node-ink, var(--node-color));
-  margin-bottom: 0.5rem;
-}
-.chain-node .node-text { font-size: 1.3rem; line-height: 1.36; }
-.chain-node .node-eg {
-  margin-top: 0.7rem;
-  padding-top: 0.6rem;
-  border-top: 0.2rem solid var(--border);
-  font-size: 1.25rem;
-  line-height: 1.35;
-  color: var(--text-muted);
-}
-.chain-links {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.6rem;
-  margin: 0 calc(12.5% + 0.2rem);
-  padding-top: 1rem;
-}
-.chain-link { position: relative; text-align: center; }
-.chain-link::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 50%;
-  transform: translateX(-50%);
-  width: 0; height: 0;
-  border-left: 0.9rem solid transparent;
-  border-right: 0.9rem solid transparent;
-  border-bottom: 1.1rem solid var(--char-2);
-}
-.chain-link .link-text {
-  margin-top: 1.1rem;
-  font-size: 1.25rem;
-  font-style: italic;
-  color: var(--text-muted);
-  line-height: 1.35;
-  border: 0.2rem dashed var(--char-2);
-  padding: 0.5rem 0.9rem;
-}
-
-/* ---------- Quizzes ---------- */
-
-.question { font-size: 2.4rem; font-weight: 700; line-height: 1.3; margin-bottom: 1.8rem; }
-.quiz-options { display: grid; gap: 1.1rem; }
-.quiz-options.two-up { grid-template-columns: 1fr 1fr; }
-.quiz-option {
-  background: var(--bg-card);
-  border: 0.25rem solid var(--border);
-  padding: 1.5rem 1.9rem;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 1.75rem;
-  line-height: 1.35;
-  text-align: left;
-  color: var(--text);
-  transition: border-color 0.15s ease, background-color 0.2s ease, transform 0.15s ease;
-  display: flex;
-  align-items: flex-start;
-  gap: 1.1rem;
-}
-.quiz-option:hover:not(.disabled) { border-color: var(--slide-accent); transform: translateY(-0.2rem); }
-.quiz-option .opt-letter { font-weight: 800; font-size: 1.6rem; min-width: 2rem; color: var(--opt-ink, var(--slide-accent)); text-transform: uppercase; }
-.slide[data-accent="var(--char-4)"] .quiz-option .opt-letter { color: var(--char-4-ink); }
-.slide[data-accent="var(--char-7)"] .quiz-option .opt-letter { color: var(--char-7-ink); }
-.quiz-option.correct { border-color: var(--correct); background: var(--correct-bg); }
-.quiz-option.correct .opt-letter { color: var(--correct) !important; }
-.quiz-option.incorrect { border-color: var(--incorrect); background: var(--incorrect-bg); }
-.quiz-option.incorrect .opt-letter { color: var(--incorrect) !important; }
-.quiz-option.disabled { cursor: default; pointer-events: none; }
-
-.feedback {
-  display: none;
-  margin-top: 1.5rem;
-  border-left: 0.8rem solid var(--correct);
-  background: var(--correct-bg);
-  padding: 1.2rem 1.8rem;
-  animation: feedbackIn 0.3s ease;
-}
-.feedback.wrong { border-left-color: var(--incorrect); background: var(--incorrect-bg); }
-.feedback.visible { display: block; }
-.feedback p { font-size: 1.5rem; line-height: 1.42; }
-
-@keyframes feedbackIn {
-  from { opacity: 0; transform: translateY(0.8rem); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ---------- Card grid ---------- */
-
-.cgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4rem; }
-.cgrid.four { grid-template-columns: repeat(4, 1fr); gap: 1.2rem; }
-.g-card {
-  background: var(--bg-card);
-  border: 0.25rem solid var(--border);
-  border-left: 0.9rem solid var(--gc-color);
-  padding: 1.25rem 1.5rem;
-}
-.g-card .gc-name {
-  font-weight: 800;
-  font-size: 1.55rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--gc-ink, var(--gc-color));
-  margin-bottom: 0.4rem;
-}
-.g-card .gc-num {
-  font-weight: 800;
-  font-size: 2.2rem;
-  line-height: 1;
-  color: var(--gc-ink, var(--gc-color));
-  margin-bottom: 0.5rem;
-}
-.g-card .gc-desc { font-size: 1.5rem; line-height: 1.38; color: var(--text-muted); }
-.g-card .gc-q { font-size: 1.68rem; line-height: 1.32; font-weight: 600; }
-
-/* ---------- In the workbench (slides 12-16) ---------- */
+/* ---------- In the workbench (slides 9-12) ---------- */
 
 .wb { grid-template-columns: 8fr 4fr; gap: 3rem; align-items: start; }
 .wb-tasks { list-style: none; counter-reset: task; display: flex; flex-direction: column; gap: 1.1rem; }
@@ -515,7 +373,7 @@ p { font-size: 1.85rem; }
 }
 .role-pill.on-gold { color: var(--text); }
 
-/* ---------- Close (slide 17) ---------- */
+/* ---------- Step cards (slides 2, 6 and 13) and steps ---------- */
 
 .test-card { background: var(--bg-card); border: 0.25rem solid var(--border); display: flex; flex-direction: column; }
 .test-card .test-head { background: var(--test-color); color: var(--test-fg, #fff); padding: 1rem 1.5rem; display: flex; align-items: baseline; gap: 1rem; }
@@ -529,36 +387,12 @@ p { font-size: 1.85rem; }
 .step .st-num { font-size: 2.6rem; font-weight: 800; line-height: 1; color: var(--st-ink, var(--st-color)); min-width: 2.6rem; }
 .step .st-text { font-size: 1.6rem; line-height: 1.38; }
 
-/* ---------- Four objects (slide 7) ---------- */
-
-.gc-where {
-  display: inline-block;
-  font-size: 1.25rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  background: var(--gc-color);
-  color: var(--gc-fg, #fff);
-  padding: 0.3rem 0.8rem;
-  margin-bottom: 0.9rem;
-}
-.g-card .gc-ref { display: block; margin-top: 0.8rem; font-size: 1.25rem; font-weight: 700; color: var(--text-muted); }
-
-/* ---------- Outcome wording (slide 11) ---------- */
+/* ---------- Numbered rules (slides 3 and 4) ---------- */
 
 .rules { display: flex; flex-direction: column; gap: 1.6rem; }
 .rule { display: flex; gap: 1.4rem; align-items: flex-start; border-top: 0.5rem solid var(--rl-color); padding-top: 0.9rem; }
 .rule .rule-n { font-size: 2.6rem; font-weight: 800; line-height: 1; color: var(--rl-ink, var(--rl-color)); min-width: 2.6rem; }
 .rule .rule-t { font-size: 1.55rem; line-height: 1.4; }
-.lint-chip {
-  display: inline-block;
-  margin: 0.45rem 0.45rem 0 0;
-  padding: 0.25rem 0.8rem;
-  font-size: 1.3rem;
-  font-weight: 700;
-  background: var(--lc-color, var(--char-2));
-  color: #fff;
-}
 
 
 /* ---------- Slide 1: title poster ----------
@@ -590,71 +424,81 @@ p { font-size: 1.85rem; }
 /* Block note under the tasks (a short quotation from the reading) */
 .wb-note { margin-top: 1rem; border-left: 0.6rem solid var(--slide-accent); padding: 0.5rem 1.2rem; font-size: 1.4rem; line-height: 1.4; font-style: italic; background: var(--bg-card); }
 
-/* ---------- Definitions (slide 6) ---------- */
+/* ---------- Text sizes for this deck ---------- */
 
-.def-quote { font-style: italic; }
-#defs-grid .test-body { font-size: 1.4rem; }
-.eg-card { margin-top: 1.3rem; display: grid; grid-template-columns: 7fr 5fr; gap: 2rem; align-items: center; }
+.tc-meta { font-size: 1.25rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.6rem; }
+.big-body .test-body { font-size: 1.85rem; }
+.rules.big .rule-t { font-size: 1.75rem; }
+.quote-block.slim { padding: 1.3rem 1.8rem; }
+.quote-block.slim p { font-size: 1.6rem; margin-bottom: 0.7rem; }
 
-/* ---------- Options appraisal (slide 7) ---------- */
-
-.gaf-q { border-left: 0.6rem solid var(--gq-color); padding: 0.5rem 0 0.5rem 1.3rem; }
-.gaf-q .gq-n { display: block; font-size: 1.25rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gq-ink, var(--gq-color)); }
-.gaf-q .gq-t { font-size: 1.85rem; font-weight: 700; line-height: 1.3; font-style: italic; }
-.opt-tests { display: flex; flex-direction: column; gap: 0.9rem; }
-.opt-test { display: grid; grid-template-columns: 11rem 1fr; gap: 1.2rem; align-items: start; }
-.opt-test .ot-name {
-  background: var(--ot-color);
-  color: var(--ot-fg, #fff);
-  font-size: 1.3rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 0.5rem 0.8rem;
-  text-align: center;
+/* ---------- The arrow (slides 3 and 4) ----------
+   Two boxes read from the bottom up, joined by an upward arrow; on
+   slide 4 an intervention sits on the arrow, as [TC] p. 7 places it. */
+.arrow-fig { display: flex; flex-direction: column; }
+.af-box {
+  background: var(--bg-card);
+  border: 0.35rem solid var(--text);
+  border-left: 1.1rem solid var(--af-color, var(--char-1));
+  padding: 1.1rem 1.6rem;
 }
-.opt-test .ot-q { font-size: 1.4rem; line-height: 1.38; }
-
-/* ---------- Chain of four (slide 8) ---------- */
-
-.chain-node .node-quote { font-size: 1.3rem; line-height: 1.36; font-style: italic; margin-top: 0.6rem; }
-.chain-node .node-head { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.5rem; }
-.chain-node .node-head .node-label { margin-bottom: 0; }
-.chain-node .node-mark {
-  flex-shrink: 0;
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 3.2rem; height: 3.2rem; border-radius: 50%;
-  background: var(--node-color); color: var(--node-fg, #fff);
-  font-size: 1.25rem; font-weight: 800;
+.af-box .af-k { display: block; font-size: 1.25rem; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.3rem; }
+.af-box .af-t { display: block; font-size: 2rem; font-weight: 700; line-height: 1.25; }
+.af-link { position: relative; height: 11rem; }
+.af-link.tall { height: 15rem; }
+.af-line { position: absolute; left: 50%; top: 1.7rem; bottom: 0; width: 0.7rem; margin-left: -0.35rem; background: var(--text); }
+.af-head {
+  position: absolute; left: 50%; top: 0; margin-left: -1.4rem;
+  width: 0; height: 0;
+  border-left: 1.4rem solid transparent;
+  border-right: 1.4rem solid transparent;
+  border-bottom: 1.9rem solid var(--text);
+}
+.af-label { position: absolute; left: calc(50% + 2rem); top: 50%; transform: translateY(-50%); font-size: 1.45rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
+.af-label.high { top: 30%; }
+.af-marker {
+  position: absolute; left: 50%; top: 68%; transform: translate(-50%, -50%);
+  background: var(--char-2); color: #fff;
+  border: 0.4rem solid var(--bg);
+  padding: 0.6rem 1.3rem;
+  font-size: 1.5rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;
 }
 
-/* ---------- Inputs (slide 9) ---------- */
+/* ---------- An idea in two halves (slide 5) ---------- */
+.frame { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.8rem; }
+.frame span { font-size: 2.6rem; font-weight: 800; padding: 1rem 1.8rem; color: #fff; }
+.frame .fr-a { background: var(--char-1); }
+.frame .fr-b { background: var(--char-6); }
+.eg-idea { padding: 1.4rem 2rem; }
+.eg-idea .eg-text { font-size: 2.1rem; line-height: 1.35; margin-top: 0.4rem; }
 
-.input-def { display: grid; grid-template-columns: 5fr 7fr; gap: 2rem; align-items: center; background: var(--bg-card); border: 0.25rem solid var(--border); border-left: 0.9rem solid var(--slide-accent); padding: 1.3rem 1.8rem; }
-.input-def .id-quote { font-size: 1.55rem; line-height: 1.4; font-style: italic; }
-.input-chips { display: flex; flex-wrap: wrap; gap: 0.6rem; }
-.input-chip { background: var(--ic-color); color: var(--ic-fg, #fff); font-size: 1.3rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.45rem 0.9rem; }
-.basis-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem; margin-top: 1.4rem; }
-.basis { display: flex; gap: 1.2rem; align-items: center; background: var(--bs-color); color: var(--bs-fg, #fff); padding: 1rem 1.5rem; }
-.basis b { font-size: 1.4rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
-.basis span { font-size: 1.4rem; line-height: 1.35; }
+/* ---------- The three questions (slide 6) ---------- */
+.q-ask { font-size: 2.3rem; font-weight: 800; line-height: 1.2; margin-bottom: 1rem; }
+.q-prompts { list-style: none; display: flex; flex-direction: column; gap: 0.7rem; }
+.q-prompts li { font-size: 1.5rem; line-height: 1.35; padding-left: 1.7rem; position: relative; }
+.q-prompts li::before { content: ''; position: absolute; left: 0; top: 0.6rem; width: 0.75rem; height: 0.75rem; background: var(--test-color); }
+.verdict-row { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-top: 1.8rem; }
+.verdict-row .vr-lead { font-size: 1.75rem; font-weight: 700; margin-right: 0.6rem; }
+.verdict { display: inline-block; font-size: 1.4rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.5rem 1.2rem; color: #fff; text-align: center; }
+.v-strong { background: var(--correct); }
+.v-thin { background: #B98A10; color: var(--text); }
+.v-fails { background: var(--incorrect); }
 
-/* ---------- Risk versus assumption (slide 10) ---------- */
+/* ---------- Worked example (slide 7) ---------- */
+.eg-head { display: flex; gap: 1.2rem; align-items: center; background: var(--bg-card); border: 0.25rem solid var(--border); border-left: 0.9rem solid var(--slide-accent); padding: 1rem 1.6rem; margin-bottom: 1.1rem; }
+.eg-head .eg-say { font-size: 1.75rem; font-weight: 700; line-height: 1.3; }
+.eg-tag { flex-shrink: 0; font-size: 1.3rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; background: var(--text); color: #fff; padding: 0.4rem 0.9rem; }
+.eg-rows { display: flex; flex-direction: column; gap: 0.8rem; }
+.eg-row { display: grid; grid-template-columns: 21rem 1fr 9rem; gap: 1.6rem; align-items: center; background: var(--bg-card); border: 0.25rem solid var(--border); padding: 0.7rem 1.4rem; }
+.eg-q { font-size: 1.55rem; font-weight: 800; line-height: 1.25; }
+.eg-q .q-label { display: table; margin-bottom: 0.4rem; }
+.eg-a { font-size: 1.5rem; line-height: 1.38; }
+.q-label { font-size: 1.25rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; background: var(--ql, var(--text)); color: var(--ql-fg, #fff); padding: 0.25rem 0.8rem; }
 
-.vs-pair { display: flex; flex-direction: column; gap: 0.9rem; }
-.vs-card { background: var(--bg-card); border: 0.25rem solid var(--border); border-top: 0.9rem solid var(--vs-color); padding: 0.9rem 1.6rem; }
-.vs-card .vs-name { font-size: 1.55rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--vs-ink, var(--vs-color)); }
-.vs-card .vs-where { font-size: 1.25rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
-.vs-card .vs-text { font-size: 1.4rem; line-height: 1.38; margin-top: 0.4rem; }
-
-/* ---------- Stadium stress test (slide 11) ---------- */
-
-.stress-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.7rem 0.9rem; }
-.stress-card { background: var(--bg-card); border: 0.25rem solid var(--border); border-top: 0.7rem solid var(--sc-color); padding: 0.5rem 0.95rem 0.6rem; }
-.stress-card .sc-name { font-size: 1.25rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; line-height: 1.2; color: var(--sc-ink, var(--sc-color)); margin-bottom: 0.35rem; }
-.stress-card ol { list-style: none; display: flex; flex-direction: column; gap: 0.3rem; }
-.stress-card li { font-size: 1.25rem; line-height: 1.22; padding-left: 1.1rem; position: relative; }
-.stress-card li::before { content: ''; position: absolute; left: 0; top: 0.5rem; width: 0.55rem; height: 0.55rem; background: var(--sc-color); }
+/* ---------- One sentence (slide 8) ---------- */
+.sentence-tpl { font-size: 2.8rem; font-weight: 700; line-height: 1.55; background: var(--bg-card); border: 0.25rem solid var(--border); border-left: 1.1rem solid var(--slide-accent); padding: 1.5rem 2.2rem; margin: 1rem 0; }
+.sentence-tpl .blank { display: inline-block; min-width: 9rem; padding: 0 0.8rem; border-bottom: 0.4rem solid var(--char-6); color: var(--char-6); font-style: italic; text-align: center; line-height: 1.25; }
+.so-that { font-size: 1.85rem; }
 
 /* ---------- Motion preference ---------- */
 
@@ -689,18 +533,14 @@ p { font-size: 1.85rem; }
   .nav-info { font-size: 1.3rem; }
   #fs-btn { display: none; }
   .timer-ctrl { border-right: none; padding-right: 0; width: 100%; justify-content: center; }
-  .quiz-option { min-height: 44px; font-size: 1.6rem; }
   h1 { font-size: 5.2rem; }
   h2 { font-size: 3.4rem; }
   .hero-mark { display: none; }
-  .g-2, .g-3, .g-7-5, .g-6-6, .g-5-7, .wb,
-  .quiz-options.two-up, .cgrid, .steps, .eg-card, .input-def, .basis-row, .stress-grid { grid-template-columns: 1fr; }
-  .chain { grid-template-columns: 1fr; }
-  .chain-links { grid-template-columns: 1fr; margin: 0; padding-top: 1.6rem; }
-  .toc-direction, .toc-delivery { flex-wrap: wrap; }
-  .opt-test { grid-template-columns: 1fr; gap: 0.4rem; }
-  .basis { flex-wrap: wrap; }
-  .basis b { white-space: normal; }
+  .g-2, .g-3, .g-7-5, .g-6-6, .g-5-7, .wb, .steps, .eg-row { grid-template-columns: 1fr; }
+  .eg-row { gap: 0.6rem; }
+  .eg-row .verdict { justify-self: start; }
+  .frame span { font-size: 2rem; }
+  .sentence-tpl { font-size: 2.2rem; }
   .wb-clock .wc-time { font-size: 5rem; }
 }
 
@@ -720,16 +560,10 @@ p { font-size: 1.85rem; }
   .slide-inner { height: auto; padding: 3rem 3rem 3rem 5rem; }
   .progress-track, .deck-chrome { display: none !important; }
   .deco, .hero-mark { display: none !important; }
-  .feedback { display: none !important; }
-  /* The four-column chain is too narrow on A4, so pair it up */
-  .chain { grid-template-columns: repeat(2, 1fr); gap: 1.4rem; }
-  .chain-links { display: none; }
-  .stress-grid { grid-template-columns: repeat(2, 1fr); }
   .wb-clock .wc-state { display: none; }
-  .rail, .banner, .chain-node, .chain-node .node-mark, .g-card, .test-head, .step, .rule-n,
-  .wb-clock, .wb-meta, .wb-tasks li::before, .role-pill, .input-chip, .basis, .ot-name,
-  .vs-card, .stress-card, .stress-card li::before, .gaf-q,
-  .s-head::before, .quote-block, .toc-direction, .dir-rule, .card.accent-left {
+  .rail, .banner, .test-head, .step, .rule-n, .wb-clock, .wb-meta, .wb-tasks li::before, .role-pill,
+  .af-box, .af-line, .af-head, .af-marker, .frame span, .verdict, .q-label, .eg-tag, .eg-head, .q-prompts li::before,
+  .sentence-tpl, .sentence-tpl .blank, .s-head::before, .quote-block, .card.accent-left {
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
   }
@@ -750,7 +584,7 @@ p { font-size: 1.85rem; }
         <div>
           <span class="eyebrow">Week 11 &middot; Intervene</span>
           <h1>What Should<br>the Club Build?</h1>
-          <p class="lede">The outcomes framework is in place. Today the group decides what the club would do: compare options, place each intervention on the arrows it serves, name the resources it needs, and test the design against what could go wrong.</p>
+          <p class="lede">Today your group turns its map into one intervention: something the club could actually build. Three steps: ideas from your arrows, three questions for each idea, then one choice.</p>
         </div>
         <div class="hero-mark" aria-hidden="true">
           <div class="hm-ceiling"></div>
@@ -770,163 +604,164 @@ p { font-size: 1.85rem; }
     <div class="deco" style="width: 70rem; height: 1rem; background: var(--char-1); opacity: 0.10; bottom: 8rem; left: 5rem; transform: rotate(-2deg)"></div>
   </section>
 
-  <!-- ============ SLIDE 2: QUOTE ============ -->
+  <!-- ============ SLIDE 2: TODAY ============ -->
   <section class="slide" data-accent="var(--char-4)">
     <div class="rail"></div>
     <div class="slide-no"></div>
     <div class="slide-inner">
       <header class="s-head">
-        <span class="eyebrow">[TC] p. 7 &middot; Interventions</span>
-        <h2>Why Design Opens Only Now</h2>
+        <span class="eyebrow">Today &middot; 90 Minutes</span>
+        <h2>Three Steps, One Intervention</h2>
       </header>
-      <div class="s-body grid g-6-6 center-y">
-        <div class="quote-block" style="--q-color: var(--char-4)">
-          <p>&ldquo;we deliberately ask groups to hold off on interventions&rdquo;</p>
-          <div class="attribution">Taplin &amp; Clark &middot; [TC] p. 7</div>
+      <div class="s-body">
+        <div class="grid g-3 big-body" style="gap: 2rem">
+          <div class="test-card" style="--test-color: var(--char-1)">
+            <div class="test-head"><span class="test-num">01</span><span class="test-name">Ideas</span></div>
+            <div class="test-body"><p class="tc-meta">Screen 7 &middot; 20 minutes</p><p>For each arrow on your map: what could the club do to make it happen?</p></div>
+          </div>
+          <div class="test-card" style="--test-color: var(--char-4); --test-fg: var(--text)">
+            <div class="test-head"><span class="test-num">02</span><span class="test-name">Test</span></div>
+            <div class="test-body"><p class="tc-meta">Screen 8 &middot; 30 minutes</p><p>Ask your best two or three ideas the same three questions.</p></div>
+          </div>
+          <div class="test-card" style="--test-color: var(--char-2)">
+            <div class="test-head"><span class="test-num">03</span><span class="test-name">Choose</span></div>
+            <div class="test-body"><p class="tc-meta">Screen 9 &middot; 15 minutes</p><p>Build one intervention from the ideas that held up, in one sentence.</p></div>
+          </div>
         </div>
-        <div class="stack">
-          <p class="small">Weeks 9 and 10 settled what needs to happen: the long-term outcome and the preconditions beneath it. Only now does the group ask what the club would do.</p>
-          <p class="small">Holding off keeps favourite ideas out until they have earned a place. &ldquo;This way, only those interventions that best contribute to the accomplishment of outcomes are included in the theory.&rdquo; <span class="ref">([TC] p. 7)</span></p>
-          <p class="small">In the workbench, screens 7 to 9 open once the backwards map passes its checks, and lock again if it breaks.</p>
-          <div class="banner on-gold"><p>The map first, then the design</p></div>
-        </div>
+        <div class="banner on-gold" style="margin-top: 2.4rem"><p>You leave with one intervention, printed on a card</p></div>
+        <p class="small muted" style="margin-top: 1.4rem">Everything you need for today is on these slides and in the workbench.</p>
       </div>
     </div>
     <div class="deco circle" style="width: 24rem; height: 24rem; border: 1.1rem solid var(--char-2); opacity: 0.09; top: -7rem; right: 9rem"></div>
     <div class="deco" style="width: 40rem; height: 7rem; background: var(--char-4); opacity: 0.08; bottom: 2rem; left: -6rem; transform: rotate(-4deg)"></div>
   </section>
 
-  <!-- ============ SLIDES 3-5: READING CHECK (built from CONFIG.readingChecks) ============ -->
-  <section class="slide quiz-slide" data-accent="var(--char-1)" data-quiz="0">
+  <!-- ============ SLIDE 3: WHAT AN ARROW IS ============ -->
+  <section class="slide" data-accent="var(--char-1)">
     <div class="rail"></div>
     <div class="slide-no"></div>
     <div class="slide-inner">
-      <header class="s-head"><span class="eyebrow">Reading Check &middot; 1 of 3</span><h2>Where an Intervention Sits</h2></header>
-      <div class="s-body quiz-body"></div>
+      <header class="s-head">
+        <span class="eyebrow">Your Map from Week 10</span>
+        <h2>What Is an Arrow?</h2>
+      </header>
+      <div class="s-body grid g-5-7 center-y">
+        <div class="arrow-fig" aria-hidden="true">
+          <div class="af-box" style="--af-color: var(--char-2)"><span class="af-k">Upper box</span><span class="af-t">Parents read to their children</span></div>
+          <div class="af-link"><span class="af-head"></span><span class="af-line"></span><span class="af-label">is needed for</span></div>
+          <div class="af-box" style="--af-color: var(--char-1)"><span class="af-k">Lower box</span><span class="af-t">Parents read confidently</span></div>
+        </div>
+        <div class="stack">
+          <p class="lede" style="color: var(--text)">Every arrow on your map joins two boxes.</p>
+          <div class="rules big">
+            <div class="rule" style="--rl-color: var(--char-1)"><span class="rule-n">1</span><span class="rule-t">Read it from the bottom up: <strong>the lower box is needed for the upper box.</strong></span></div>
+            <div class="rule" style="--rl-color: var(--char-2)"><span class="rule-n">2</span><span class="rule-t">Say it aloud: &ldquo;Parents reading confidently is needed for parents reading to their children.&rdquo;</span></div>
+            <div class="rule" style="--rl-color: var(--char-4); --rl-ink: var(--char-4-ink)"><span class="rule-n">3</span><span class="rule-t">In week 10 you wrote <em>why</em> on every arrow. That reason is the arrow&rsquo;s rationale.</span></div>
+          </div>
+          <p class="micro muted">Example adapted from [TC] p. 8, where the long-term outcome is that &ldquo;parents read to their children&rdquo;.</p>
+        </div>
+      </div>
     </div>
     <div class="deco circle" style="width: 26rem; height: 26rem; background: var(--char-1); opacity: 0.06; bottom: -10rem; right: -7rem"></div>
     <div class="deco" style="width: 10rem; height: 10rem; background: var(--char-4); opacity: 0.11; top: 4rem; right: 18rem; transform: rotate(20deg)"></div>
   </section>
 
-  <section class="slide quiz-slide" data-accent="var(--char-6)" data-quiz="1">
+  <!-- ============ SLIDE 4: WHERE AN INTERVENTION GOES ============ -->
+  <section class="slide" data-accent="var(--char-6)">
     <div class="rail"></div>
     <div class="slide-no"></div>
     <div class="slide-inner">
-      <header class="s-head"><span class="eyebrow">Reading Check &middot; 2 of 3</span><h2>What Counts as an Input</h2></header>
-      <div class="s-body quiz-body"></div>
+      <header class="s-head">
+        <span class="eyebrow">[TC] p. 7 &middot; On the Arrow</span>
+        <h2>Where an Intervention Goes</h2>
+      </header>
+      <div class="s-body grid g-5-7 center-y">
+        <div class="arrow-fig" aria-hidden="true">
+          <div class="af-box" style="--af-color: var(--char-2)"><span class="af-k">Upper box</span><span class="af-t">Parents read confidently</span></div>
+          <div class="af-link tall"><span class="af-head"></span><span class="af-line"></span><span class="af-label high">is needed for</span><span class="af-marker">Literacy classes</span></div>
+          <div class="af-box" style="--af-color: var(--char-1)"><span class="af-k">Lower box</span><span class="af-t">Parents want to read better</span></div>
+        </div>
+        <div class="stack">
+          <p class="lede" style="color: var(--text)"><strong>An intervention is something the club does to make an arrow happen.</strong></p>
+          <div class="rules big">
+            <div class="rule" style="--rl-color: var(--char-6)"><span class="rule-n">1</span><span class="rule-t">It sits on the arrow rather than in a box: it gets people from the lower box to the upper box.</span></div>
+            <div class="rule" style="--rl-color: var(--char-1)"><span class="rule-n">2</span><span class="rule-t">Start from an arrow rather than a favourite idea. One arrow can carry several ideas.</span></div>
+          </div>
+          <div class="quote-block slim" style="--q-color: var(--char-6)">
+            <p>&ldquo;The appropriate place to locate an intervention symbol is on the connector that leads from the precondition to the outcome that precondition helps to produce.&rdquo;</p>
+            <div class="attribution">Taplin &amp; Clark &middot; [TC] p. 7</div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="deco" style="width: 12rem; height: 12rem; background: var(--char-6); opacity: 0.08; bottom: 3rem; right: 4rem; transform: rotate(28deg)"></div>
     <div class="deco circle" style="width: 22rem; height: 22rem; border: 1.1rem solid var(--char-3); opacity: 0.08; top: -9rem; right: 22rem"></div>
+    <div class="deco" style="width: 12rem; height: 12rem; background: var(--char-6); opacity: 0.08; bottom: 3rem; right: 4rem; transform: rotate(28deg)"></div>
   </section>
 
-  <section class="slide quiz-slide" data-accent="var(--char-3)" data-quiz="2">
+  <!-- ============ SLIDE 5: AN IDEA IN TWO HALVES ============ -->
+  <section class="slide" data-accent="var(--char-3)">
     <div class="rail"></div>
     <div class="slide-no"></div>
     <div class="slide-inner">
-      <header class="s-head"><span class="eyebrow">Reading Check &middot; 3 of 3</span><h2>What Is a Risk?</h2></header>
-      <div class="s-body quiz-body"></div>
+      <header class="s-head">
+        <span class="eyebrow">Screen 7 &middot; Ideas</span>
+        <h2>Write Each Idea in Two Halves</h2>
+      </header>
+      <div class="s-body">
+        <div class="frame"><span class="fr-a">If the club &hellip;</span><span class="fr-b">&hellip; this arrow would happen because &hellip;</span></div>
+        <div class="card accent-left eg-idea" style="--card-color: var(--char-3)">
+          <span class="eyebrow" style="color: var(--char-3-ink)">Example &middot; the arrow from &ldquo;parents want to read better&rdquo; to &ldquo;parents read confidently&rdquo;</span>
+          <p class="eg-text">If the programme <strong>ran literacy classes</strong>, this arrow would happen because <strong>the classes teach adults to read</strong>.</p>
+        </div>
+        <div class="steps">
+          <div class="step" style="--st-color: var(--char-1)"><span class="st-num">1</span><span class="st-text">One idea per sentence. An arrow can have several ideas, or none.</span></div>
+          <div class="step" style="--st-color: var(--char-2)"><span class="st-num">2</span><span class="st-text">Say what the club would actually do: something you could see happening.</span></div>
+          <div class="step" style="--st-color: var(--char-4); --st-ink: var(--char-4-ink)"><span class="st-num">3</span><span class="st-text">The <em>because</em> half explains the arrow: how the idea gets people from the lower box to the upper box.</span></div>
+        </div>
+      </div>
     </div>
     <div class="deco circle" style="width: 28rem; height: 28rem; background: var(--char-3); opacity: 0.07; top: -12rem; right: -8rem"></div>
     <div class="deco" style="width: 50rem; height: 1rem; background: var(--char-1); opacity: 0.09; bottom: 2.6rem; left: 6rem; transform: rotate(-2deg)"></div>
   </section>
 
-  <!-- ============ SLIDE 6: STRATEGY, INTERVENTION, ACTIVITY (built from CONFIG.definitions) ============ -->
+  <!-- ============ SLIDE 6: THE THREE QUESTIONS (built from CONFIG.questions) ============ -->
   <section class="slide" data-accent="var(--char-5)">
     <div class="rail"></div>
     <div class="slide-no"></div>
     <div class="slide-inner">
       <header class="s-head">
-        <span class="eyebrow">[TC] p. 7 &middot; Three Words</span>
-        <h2>Strategy, Intervention, Activity</h2>
+        <span class="eyebrow">Screen 8 &middot; [TC] p. 9</span>
+        <h2>Three Questions for Every Idea</h2>
       </header>
       <div class="s-body">
-        <div class="grid g-3" id="defs-grid" style="gap: 1.6rem"></div>
-        <div class="eg-card">
-          <div class="card accent-left" style="--card-color: var(--char-5); padding: 1.3rem 1.8rem">
-            <span class="eyebrow" style="color: var(--char-5)">[TC]&rsquo;s example &middot; p. 7</span>
-            <p class="small def-quote" style="font-size: 1.35rem">&ldquo;an intervention might be &lsquo;literacy classes&rsquo; and the various activities needed to make that happen would be things like identifying space and teachers, choosing a curriculum, screening students, etc.&rdquo;</p>
-          </div>
-          <p class="small" style="font-size: 1.35rem">[GAF] splits the same ground into outputs and activities (Step 5), and calls the resources for an intervention inputs (Step 6). The workbench keeps [TC]&rsquo;s words.</p>
+        <div class="grid g-3" id="questions-grid" style="gap: 1.8rem"></div>
+        <div class="verdict-row">
+          <span class="vr-lead">Answer each with a reason, then give a verdict:</span>
+          <span class="verdict v-strong">Strong</span><span class="verdict v-thin">Thin</span><span class="verdict v-fails">Fails</span>
         </div>
+        <p class="small muted" style="margin-top: 1.1rem">&ldquo;Is your theory 1) plausible, 2) &lsquo;doable&rsquo; (or feasible), and 3) testable?&rdquo; <span class="ref">([TC] p. 9)</span> A verdict records your group&rsquo;s judgement; nothing is scored.</p>
       </div>
     </div>
     <div class="deco" style="width: 52rem; height: 1.2rem; background: var(--char-5); opacity: 0.12; top: 11rem; right: -12rem; transform: rotate(-3deg)"></div>
     <div class="deco circle" style="width: 20rem; height: 20rem; background: var(--char-7); opacity: 0.08; bottom: -9rem; left: -6rem"></div>
   </section>
 
-  <!-- ============ SLIDE 7: OPTIONS APPRAISAL ============ -->
-  <section class="slide" data-accent="var(--char-1)">
-    <div class="rail"></div>
-    <div class="slide-no"></div>
-    <div class="slide-inner">
-      <header class="s-head">
-        <span class="eyebrow">[GAF] p. 11 &middot; Options Appraisal</span>
-        <h2>More Than One Design</h2>
-      </header>
-      <div class="s-body grid g-5-7 center-y">
-        <div class="stack" style="--gap: 1.4rem">
-          <div class="gaf-q" style="--gq-color: var(--char-1)"><span class="gq-n">Question 6</span><span class="gq-t">&ldquo;What is the most appropriate intervention for this process of change?&rdquo;</span></div>
-          <div class="gaf-q" style="--gq-color: var(--char-2)"><span class="gq-n">Question 7</span><span class="gq-t">&ldquo;Are there alternative strategies to meet your aims?&rdquo;</span></div>
-          <p class="small" style="font-size: 1.45rem; margin-top: 1.4rem">Appraise at least two different designs. Location is one variable; the designs can also differ in what the place is, who runs it, when it opens and what it costs.</p>
-        </div>
-        <div class="card accent-left" style="--card-color: var(--char-1); padding: 1.6rem 2rem">
-          <span class="eyebrow" style="color: var(--char-1)">Test each option &middot; [TC] p. 9</span>
-          <div class="opt-tests">
-            <div class="opt-test" style="--ot-color: var(--char-1)"><span class="ot-name">Plausible</span><span class="ot-q">&ldquo;Does it make sense? Are the outcomes in the right order?&rdquo;</span></div>
-            <div class="opt-test" style="--ot-color: var(--char-4); --ot-fg: var(--text)"><span class="ot-name">Doable</span><span class="ot-q">&ldquo;Do you have the resources to implement all the interventions you&rsquo;ve specified?&rdquo;</span></div>
-            <div class="opt-test" style="--ot-color: var(--char-6)"><span class="ot-name">Testable</span><span class="ot-q">&ldquo;Have you identified solid, measurable indicators that can be evaluated in a timely manner?&rdquo; Indicators arrive in week 12; ask whether the option&rsquo;s effects could be observed at all.</span></div>
-          </div>
-          <div class="banner" style="margin-top: 1.4rem"><p>Choose one. Give a reason for every option rejected.</p></div>
-        </div>
-      </div>
-    </div>
-    <div class="deco circle" style="width: 26rem; height: 26rem; background: var(--char-1); opacity: 0.06; top: -12rem; right: 14rem"></div>
-    <div class="deco" style="width: 9rem; height: 9rem; background: var(--char-4); opacity: 0.12; bottom: 3rem; left: 3rem; transform: rotate(22deg)"></div>
-  </section>
-
-  <!-- ============ SLIDE 8: PLACING INTERVENTIONS AND THE GAP WALK ============ -->
+  <!-- ============ SLIDE 7: WORKED EXAMPLE ============ -->
   <section class="slide" data-accent="var(--char-7)">
     <div class="rail"></div>
     <div class="slide-no"></div>
     <div class="slide-inner">
-      <header class="s-head">
-        <span class="eyebrow">[TC] p. 7 &middot; On the Arrows</span>
-        <h2>Place, Check, Walk</h2>
+      <header class="s-head" style="margin-bottom: 1.4rem">
+        <span class="eyebrow">Worked Example &middot; Built from [TC] pp. 7-8</span>
+        <h2>Three Questions, One Idea</h2>
       </header>
       <div class="s-body">
-        <div class="toc-direction">
-          <span class="dir-label">&#9664; Design starts from the framework: each intervention goes where an arrow needs it</span>
-          <span class="dir-rule"></span>
-        </div>
-        <div class="chain">
-          <div class="chain-node" style="--node-color: var(--char-1)">
-            <div class="node-head"><span class="node-mark">I1</span><div class="node-label">Place</div></div>
-            <div class="node-text">Put each intervention on the connector from the precondition to the outcome it helps produce, and on every arrow it serves.</div>
-            <div class="node-quote">&ldquo;Some interventions may contribute to multiple outcomes.&rdquo; <span class="ref">p. 7</span></div>
-          </div>
-          <div class="chain-node" style="--node-color: var(--char-2)">
-            <div class="node-head"><span class="node-mark">?</span><div class="node-label">Shoehorn check</div></div>
-            <div class="node-text">An intervention on no arrow is flagged. Place it where it serves, or drop it.</div>
-            <div class="node-quote">&ldquo;it&rsquo;s best not to shoehorn them in&rdquo; <span class="ref">p. 7</span></div>
-          </div>
-          <div class="chain-node" style="--node-color: var(--char-4); --node-ink: var(--char-4-ink); --node-fg: var(--text)">
-            <div class="node-head"><span class="node-mark">&#9654;</span><div class="node-label">Gap walk</div></div>
-            <div class="node-text">List every arrow with no intervention on it.</div>
-            <div class="node-quote">&ldquo;walk through the framework to identify places where an intervention is necessary&rdquo; <span class="ref">p. 7</span></div>
-          </div>
-          <div class="chain-node" style="--node-color: var(--char-5)">
-            <div class="node-head"><span class="node-mark">&#10003;</span><div class="node-label">Every arrow</div></div>
-            <div class="node-text">Each one is served by an intervention, or covered by an assumption on that arrow: something already in place in Bod&oslash;.</div>
-          </div>
-        </div>
-        <div class="chain-links">
-          <div class="chain-link"><div class="link-text">then flag any intervention left over</div></div>
-          <div class="chain-link"><div class="link-text">then look for arrows left bare</div></div>
-          <div class="chain-link"><div class="link-text">then settle each bare arrow</div></div>
-        </div>
-        <div class="toc-delivery">
-          <span class="dir-rule"></span>
-          <span class="dir-label">In the club, each intervention helps its precondition produce the outcome above &#9654;</span>
+        <div class="eg-head"><span class="eg-tag">Idea</span><span class="eg-say">If the programme ran literacy classes, this arrow would happen because the classes teach adults to read.</span></div>
+        <div class="eg-rows">
+          <div class="eg-row"><div class="eg-q"><span class="q-label" style="--ql: var(--char-1)">Plausible</span>Why would it work here?</div><div class="eg-a">Classes teach the skill directly, so the step from wanting to read better to reading confidently makes sense.</div><span class="verdict v-strong">Strong</span></div>
+          <div class="eg-row"><div class="eg-q"><span class="q-label" style="--ql: var(--char-4); --ql-fg: var(--text)">Doable</span>Could they really do it?</div><div class="eg-a">It needs &ldquo;space and teachers, choosing a curriculum, screening students&rdquo; <span class="ref">([TC] p. 7)</span>. Nobody has said yet who pays the teachers.</div><span class="verdict v-thin">Thin</span></div>
+          <div class="eg-row"><div class="eg-q"><span class="q-label" style="--ql: var(--char-6)">Testable</span>How would they know it is working?</div><div class="eg-a">Reading scores when the course ends, and not before: if the class runs to the end of the year, &ldquo;it is unrealistic to expect to see an increase in literacy rates any earlier&rdquo; <span class="ref">([TC] p. 8)</span>.</div><span class="verdict v-strong">Strong</span></div>
+          <div class="eg-row"><div class="eg-q"><span class="q-label" style="--ql: var(--char-2)">Stronger if</span></div><div class="eg-a"><strong>To fix the thin spot:</strong> agree who pays the teachers before promising the classes.</div><span></span></div>
         </div>
       </div>
     </div>
@@ -934,25 +769,23 @@ p { font-size: 1.85rem; }
     <div class="deco" style="width: 8rem; height: 8rem; background: var(--char-1); opacity: 0.10; bottom: 3rem; left: 4rem; transform: rotate(16deg)"></div>
   </section>
 
-  <!-- ============ SLIDE 9: INPUTS (built from CONFIG.inputs and CONFIG.limitQuestions) ============ -->
+  <!-- ============ SLIDE 8: ONE INTERVENTION (sentence built from CONFIG.sentence) ============ -->
   <section class="slide" data-accent="var(--char-8)">
     <div class="rail"></div>
     <div class="slide-no"></div>
     <div class="slide-inner">
       <header class="s-head">
-        <span class="eyebrow">[GAF] p. 21 &middot; Inputs</span>
-        <h2>What Each Intervention Needs</h2>
+        <span class="eyebrow">Screen 9 &middot; Choose</span>
+        <h2>One Intervention, One Sentence</h2>
       </header>
       <div class="s-body">
-        <div class="input-def">
-          <p class="id-quote" id="inputs-quote"></p>
-          <div class="input-chips" id="input-chips"></div>
-        </div>
-        <div class="band-title" style="margin: 1.4rem 0 0.7rem">Then ask of each resource: what limits it? <span class="ref">([GAF] p. 21)</span></div>
-        <div class="cgrid" id="limit-grid"></div>
-        <div class="basis-row">
-          <div class="basis" style="--bs-color: var(--char-4); --bs-fg: var(--text)"><b>From the brief</b><span>A constraint the client brief (on the VLE) gives is cited by its slide number.</span></div>
-          <div class="basis" style="--bs-color: var(--char-5)"><b>Our assumption</b><span>Anything else is stated as our assumption, and can go through the sorter.</span></div>
+        <p class="lede" style="color: var(--text)">Keep the ideas that held up and put them together:</p>
+        <div class="sentence-tpl" id="sentence-tpl"></div>
+        <p class="so-that"><strong>So that:</strong> your long-term outcome, from week 9.</p>
+        <div class="steps">
+          <div class="step" style="--st-color: var(--char-1)"><span class="st-num">1</span><span class="st-text">Tick the tested ideas that go in. Give a reason for each one you drop.</span></div>
+          <div class="step" style="--st-color: var(--char-6)"><span class="st-num">2</span><span class="st-text">Fill in the five gaps, then give your intervention a short name.</span></div>
+          <div class="step" style="--st-color: var(--char-2)"><span class="st-num">3</span><span class="st-text">One intervention: the client gets one recommendation from your group.</span></div>
         </div>
       </div>
     </div>
@@ -960,56 +793,7 @@ p { font-size: 1.85rem; }
     <div class="deco" style="width: 10rem; height: 10rem; background: var(--char-3); opacity: 0.09; bottom: 4rem; right: 3rem; transform: rotate(18deg)"></div>
   </section>
 
-  <!-- ============ SLIDE 10: RISK VERSUS ASSUMPTION (built from CONFIG.riskQuestions) ============ -->
-  <section class="slide" data-accent="var(--char-2)">
-    <div class="rail"></div>
-    <div class="slide-no"></div>
-    <div class="slide-inner">
-      <header class="s-head" style="margin-bottom: 1.1rem">
-        <span class="eyebrow">[GAF] p. 27 &middot; Risks</span>
-        <h2>Risk or Assumption?</h2>
-      </header>
-      <div class="s-body grid g-6-6 center-y" style="gap: 2.2rem">
-        <div class="vs-pair">
-          <div class="vs-card" style="--vs-color: var(--char-4); --vs-ink: var(--char-4-ink)">
-            <div class="vs-name">Assumption</div><div class="vs-where">In the register &middot; [TC] p. 6</div>
-            <div class="vs-text">&ldquo;assumptions are already in place and do not need to be brought about&rdquo;. It needs evidence that it holds in Bod&oslash; today.</div>
-          </div>
-          <div class="vs-card" style="--vs-color: var(--char-2)">
-            <div class="vs-name">Risk</div><div class="vs-where">In the risk register &middot; [GAF] p. 27</div>
-            <div class="vs-text">&ldquo;Risks are internal or external factors that can influence your programme or project either positively or negatively.&rdquo; It may or may not happen: give it a likelihood and a mitigation.</div>
-          </div>
-          <div class="banner"><p>If an assumption could stop being true, that is a risk</p></div>
-        </div>
-        <div class="card accent-left" style="--card-color: var(--char-2); padding: 1.6rem 2rem">
-          <span class="eyebrow" style="color: var(--char-2)">Three questions &middot; [GAF] p. 27</span>
-          <div class="rules" id="risk-qs" style="gap: 1.1rem"></div>
-          <p class="small" style="font-size: 1.35rem; margin-top: 1.2rem; border-top: 0.25rem solid var(--border); padding-top: 0.8rem">&ldquo;External influences may affect your logic and some assumptions might be outside your control.&rdquo; <span class="ref">([GAF] p. 27)</span></p>
-        </div>
-      </div>
-    </div>
-    <div class="deco" style="width: 60rem; height: 0; border-top: 0.9rem dashed var(--char-1); opacity: 0.10; top: 9rem; right: -14rem; transform: rotate(-3deg)"></div>
-    <div class="deco circle" style="width: 14rem; height: 14rem; background: var(--char-2); opacity: 0.07; bottom: -5rem; left: 40rem"></div>
-  </section>
-
-  <!-- ============ SLIDE 11: STADIUM STRESS TEST (built from CONFIG.stress) ============ -->
-  <section class="slide" data-accent="var(--char-6)">
-    <div class="rail"></div>
-    <div class="slide-no"></div>
-    <div class="slide-inner">
-      <header class="s-head" style="margin-bottom: 0.9rem">
-        <span class="eyebrow">Screen 9 &middot; Stadium Stress Test &middot; Two of the Workbench&rsquo;s Three Questions Each</span>
-        <h2>What Could the Stadium Threaten?</h2>
-      </header>
-      <div class="s-body">
-        <div class="stress-grid" id="stress-grid"></div>
-      </div>
-    </div>
-    <div class="deco circle" style="width: 24rem; height: 24rem; background: var(--char-6); opacity: 0.07; top: -12rem; right: 6rem"></div>
-    <div class="deco" style="width: 9rem; height: 9rem; background: var(--char-4); opacity: 0.10; top: 3rem; right: 34rem; transform: rotate(18deg)"></div>
-  </section>
-
-  <!-- ============ SLIDES 12-16: IN THE WORKBENCH (built from CONFIG.blocks) ============ -->
+  <!-- ============ SLIDES 9-12: IN THE WORKBENCH (built from CONFIG.blocks) ============ -->
   <section class="slide wb-slide" data-accent="var(--char-1)" data-block="0">
     <div class="rail"></div><div class="slide-no"></div>
     <div class="slide-inner"><header class="s-head"></header><div class="s-body"></div></div>
@@ -1022,58 +806,47 @@ p { font-size: 1.85rem; }
     <div class="deco circle" style="width: 30rem; height: 30rem; background: var(--char-4); opacity: 0.08; top: -14rem; right: 18rem"></div>
     <div class="deco" style="width: 46rem; height: 1rem; background: var(--char-2); opacity: 0.09; bottom: 2.5rem; left: 4rem; transform: rotate(-2deg)"></div>
   </section>
-  <section class="slide wb-slide" data-accent="var(--char-3)" data-block="2">
-    <div class="rail"></div><div class="slide-no"></div>
-    <div class="slide-inner"><header class="s-head"></header><div class="s-body"></div></div>
-    <div class="deco" style="width: 60rem; height: 0; border-top: 0.9rem dashed var(--char-8); opacity: 0.10; top: 9rem; right: -14rem; transform: rotate(-3deg)"></div>
-    <div class="deco circle" style="width: 14rem; height: 14rem; background: var(--char-3); opacity: 0.09; bottom: -4rem; left: 40rem"></div>
-  </section>
-  <section class="slide wb-slide" data-accent="var(--char-2)" data-block="3">
+  <section class="slide wb-slide" data-accent="var(--char-2)" data-block="2">
     <div class="rail"></div><div class="slide-no"></div>
     <div class="slide-inner"><header class="s-head"></header><div class="s-body"></div></div>
     <div class="deco" style="width: 12rem; height: 12rem; background: var(--char-7); opacity: 0.09; top: 3rem; right: 24rem; transform: rotate(30deg)"></div>
     <div class="deco circle" style="width: 24rem; height: 24rem; border: 1.1rem solid var(--char-2); opacity: 0.08; bottom: -11rem; left: 22rem"></div>
   </section>
-  <section class="slide wb-slide" data-accent="var(--char-5)" data-block="4">
+  <section class="slide wb-slide" data-accent="var(--char-5)" data-block="3">
     <div class="rail"></div><div class="slide-no"></div>
     <div class="slide-inner"><header class="s-head"></header><div class="s-body"></div></div>
     <div class="deco circle" style="width: 22rem; height: 22rem; background: var(--char-5); opacity: 0.08; top: -9rem; right: 20rem"></div>
     <div class="deco" style="width: 10rem; height: 10rem; background: var(--char-6); opacity: 0.09; bottom: 4rem; left: 36rem; transform: rotate(18deg)"></div>
   </section>
 
-  <!-- ============ SLIDE 17: CLOSE ============ -->
-  <section class="slide" data-accent="var(--char-8)">
+  <!-- ============ SLIDE 13: CLOSE ============ -->
+  <section class="slide" data-accent="var(--char-6)">
     <div class="rail"></div>
     <div class="slide-no"></div>
     <div class="slide-inner">
-      <header class="s-head" style="margin-bottom: 1.3rem">
-        <span class="eyebrow">85-90 min &middot; Close</span>
-        <h2>Check, Print, Export, Read Ahead</h2>
+      <header class="s-head">
+        <span class="eyebrow">80-90 min &middot; Close</span>
+        <h2>What You Leave With</h2>
       </header>
       <div class="s-body">
-        <p class="small" style="font-size: 1.4rem; margin-bottom: 1.1rem">&ldquo;Is your theory 1) plausible, 2) &lsquo;doable&rsquo; (or feasible), and 3) testable?&rdquo; <span class="ref">([TC] p. 9)</span> Today, ask it of the design.</p>
-        <div class="grid g-3" style="gap: 1.4rem">
+        <div class="grid g-3 big-body" style="gap: 1.8rem">
+          <div class="test-card" style="--test-color: var(--char-6)">
+            <div class="test-head"><span class="test-num">01</span><span class="test-name">Your card</span></div>
+            <div class="test-body"><p>Print the intervention card and pin it on the wall: your sentence, the ideas it is built from and your long-term outcome.</p></div>
+          </div>
           <div class="test-card" style="--test-color: var(--char-1)">
-            <div class="test-head"><span class="test-num">01</span><span class="test-name">Plausible</span></div>
-            <div class="test-body"><p>&ldquo;Are there big gaps in the logic?&rdquo; <span class="ref">p. 9</span></p><p>Is every arrow served by an intervention or covered by an assumption?</p></div>
+            <div class="test-head"><span class="test-num">02</span><span class="test-name">Week 12</span></div>
+            <div class="test-body"><p>How will the club know it is working? You write indicators, and another group tests your intervention with the same three questions.</p></div>
           </div>
           <div class="test-card" style="--test-color: var(--char-4); --test-fg: var(--text)">
-            <div class="test-head"><span class="test-num">02</span><span class="test-name">Doable</span></div>
-            <div class="test-body"><p>&ldquo;Do you need to bring in additional partners?&rdquo; <span class="ref">p. 9</span></p><p>Do the inputs match what each intervention needs?</p></div>
-          </div>
-          <div class="test-card" style="--test-color: var(--char-6)">
-            <div class="test-head"><span class="test-num">03</span><span class="test-name">Testable</span></div>
-            <div class="test-body"><p>&ldquo;Testability refers to how well you have crafted your indicators.&rdquo; <span class="ref">p. 9</span></p><p>Could the club see whether each intervention is working?</p></div>
+            <div class="test-head"><span class="test-num">03</span><span class="test-name">One reading</span></div>
+            <div class="test-body"><p>If you read one thing before week 12: [TC] pp. 8-9, on indicators and quality review. Two pages.</p></div>
           </div>
         </div>
-        <div class="steps">
-          <div class="step" style="--st-color: var(--char-2)"><span class="st-num">1</span><span class="st-text">Mark the three riskiest assumptions, then complete the week 11 self-check.</span></div>
-          <div class="step" style="--st-color: var(--char-3)"><span class="st-num">2</span><span class="st-text">Print the riskiest-assumption cards. Export JSON; every member keeps a copy.</span></div>
-          <div class="step" style="--st-color: var(--char-7); --st-ink: var(--char-7-ink)"><span class="st-num">3</span><span class="st-text"><strong>Pre-reading for week 12:</strong> [TC] pp. 8-9; [GAF] Step 11 (pp. 37-42) and pp. 47-48.</span></div>
-        </div>
+        <div class="banner" style="margin-top: 2.2rem"><p>Export before you leave: every member keeps a copy</p></div>
       </div>
     </div>
-    <div class="deco circle" style="width: 22rem; height: 22rem; background: var(--char-8); opacity: 0.08; top: -9rem; right: 16rem"></div>
+    <div class="deco circle" style="width: 22rem; height: 22rem; background: var(--char-6); opacity: 0.08; top: -9rem; right: 16rem"></div>
     <div class="deco" style="width: 10rem; height: 10rem; background: var(--char-4); opacity: 0.11; top: 4rem; right: 6rem; transform: rotate(18deg)"></div>
   </section>
 
@@ -1094,8 +867,9 @@ p { font-size: 1.85rem; }
 <script>
 // ============================================================
 // CONFIG: all editable structured content for this deck.
-// Prose slides (title, quote, definitions example, options, chain,
-// risk versus assumption, close) are written directly in the markup.
+// Prose slides (title, today, the arrow, where an intervention goes,
+// an idea in two halves, the worked example, close) are written
+// directly in the markup.
 //
 // Rules for editing:
 // - Quotations from the readings must match the PDF exactly and
@@ -1103,125 +877,39 @@ p { font-size: 1.85rem; }
 // - No content from the client brief, ever. Refer to
 //   "the client brief (on the VLE)".
 // - No dashes as punctuation (SLIDES.md section 11). Use a plain
-//   hyphen in number ranges: 12-30.
-// - Use &ldquo; and &rdquo; (or \u2019 for an apostrophe) for curly
-//   marks inside strings; never type them directly in this script.
+//   hyphen in number ranges: 15-35.
+// - Use HTML entities for curly marks inside strings (&ldquo;
+//   &rdquo; &lsquo; &rsquo;); never type them directly in this script.
 // - Items marked "keep in step" are copied from week9-toc-workbench.html;
 //   test.html checks that the two files agree.
 // ============================================================
 var CONFIG = {
 
-  // Slides 3-5: reading check. Single select; `correct` is the option key.
-  // Each `right` feedback quotes the page that supports the answer.
-  // `wrong` is shown for 2.5 seconds, then the options reset so the
-  // presenter can put the question back to the room.
-  readingChecks: [
-    {
-      question: 'Where does an intervention sit on the outcomes framework?',
-      options: {
-        a: 'Inside the box of the outcome it is meant to produce',
-        b: 'On the connector from the precondition to the outcome it helps produce',
-        c: 'Above the accountability ceiling, next to the ultimate goal',
-        d: 'In a separate list beside the map, linked only to the long-term outcome'
-      },
-      correct: 'b',
-      right: '<strong>Correct.</strong> &ldquo;The appropriate place to locate an intervention symbol is on the connector that leads from the precondition to the outcome that precondition helps to produce.&rdquo; <span class="ref">([TC] p. 7)</span> One intervention can sit on several arrows.',
-      wrong: '<strong>Not quite.</strong> Look again at the second column of section 5 on [TC] p. 7: where do the intervention symbols go?'
-    },
-    {
-      question: 'Which list does [GAF] give as possible inputs?',
-      options: {
-        a: 'Outputs, activities, outcomes and impacts',
-        b: 'Budget, timeline, risks and indicators',
-        c: 'Staff, volunteers, members and supporters',
-        d: 'Funding, existing structures, people and partners, intelligence, and policies'
-      },
-      correct: 'd',
-      right: '<strong>Correct.</strong> &ldquo;Inputs could include resources such as funding, existing structures, people and partners, intelligence, and policies.&rdquo; <span class="ref">([GAF] p. 21)</span>',
-      wrong: '<strong>Not quite.</strong> Look again at the boxed sentence at the top of Step 6, [GAF] p. 21.'
-    },
-    {
-      question: 'What is a risk?',
-      options: {
-        a: 'An internal or external factor that can influence the programme, positively or negatively',
-        b: 'A condition the group takes as already in place in Bod&oslash;, backed by evidence',
-        c: 'An arrow on the map that has no intervention on it',
-        d: 'Something outside the club&rsquo;s control that can only harm the programme'
-      },
-      correct: 'a',
-      right: '<strong>Correct.</strong> &ldquo;Risks are internal or external factors that can influence your programme or project either positively or negatively.&rdquo; <span class="ref">([GAF] p. 27)</span> A risk may or may not happen.',
-      wrong: '<strong>Not quite.</strong> Look again at the opening paragraph of Step 8, [GAF] p. 27: inside or outside, and in which direction?'
-    }
+  // Slide 6: the three questions. Keep in step with the workbench's
+  // CONFIG.tests.questions (id, label, ask and prompts, word for word).
+  questions: [
+    { id: 'plausible', label: 'Plausible', ask: 'Why would it work here?', colour: 'var(--char-1)',
+      prompts: ['Would it really get people from the lower box to the upper box?',
+        'Would it work in Bod&oslash;, and not only somewhere else?',
+        'Could it damage any of the eight characteristics of a third place?'] },
+    { id: 'doable', label: 'Doable', ask: 'Could the club really do it?', colour: 'var(--char-4)', fg: 'var(--text)',
+      prompts: ['Who would run it, and who would pay for it?',
+        'What would it need: space, staff, money, partners, permission?',
+        'Is any of that outside the club&rsquo;s control?'] },
+    { id: 'testable', label: 'Testable', ask: 'How would the club know it is working?', colour: 'var(--char-6)',
+      prompts: ['What would someone see or count in the first year if it worked?',
+        'What would tell the club that it is not working?'] }
   ],
 
-  // Slide 6: [TC] p. 7's three terms. `quote` is verbatim from the page.
-  definitions: [
-    { name: 'Strategy', colour: 'var(--char-1)',
-      quote: 'We use strategy to mean a coordinated sequence of interventions, using a variety of tools and calculated for optimal leverage, to bring about the desired outcomes.',
-      note: 'The whole design: the one option the group chooses.' },
-    { name: 'Intervention', colour: 'var(--char-4)', fg: 'var(--text)',
-      quote: 'Interventions are the things your program or group of stakeholders will undertake to bring about outcomes.',
-      note: 'One thing the club would do, placed on the arrows it serves.' },
-    { name: 'Activity', colour: 'var(--char-2)',
-      quote: 'We use activity to describe all the specific actions that make up an intervention.',
-      note: 'The steps that make an intervention happen.' }
-  ],
+  // Slides 6 and 7: the verdict on each answer. Keep in step with the
+  // workbench's CONFIG.verdicts (labels).
+  verdicts: ['Strong', 'Thin', 'Fails'],
 
-  // Slide 9: inputs, [GAF] p. 21. Keep in step with the workbench's
-  // CONFIG.interventions.inputs and CONFIG.inputLimits.
-  inputs: 'Inputs could include resources such as funding, existing structures, people and partners, intelligence, and policies.',
-  inputTypes: [
-    { label: 'Funding', colour: 'var(--char-1)' },
-    { label: 'Existing structures', colour: 'var(--char-4)', fg: 'var(--text)' },
-    { label: 'People and partners', colour: 'var(--char-2)' },
-    { label: 'Intelligence', colour: 'var(--char-5)' },
-    { label: 'Policies', colour: 'var(--char-6)' }
-  ],
-  limitQuestions: [
-    { id: 'ringFenced', q: 'Is your budget ring-fenced for a specific purpose?', colour: 'var(--char-1)' },
-    { id: 'skills', q: 'Do the people you can deploy have the correct skills?', colour: 'var(--char-3)' },
-    { id: 'timeLimit', q: 'Is there a time-constraint on the availability of facilities?', colour: 'var(--char-6)' }
-  ],
-
-  // Slide 10: [GAF] p. 27's three risk questions. Keep in step with the
-  // workbench's CONFIG.risks.questions.
-  riskQuestions: [
-    'What is going on outside of our control that we need to be aware of?',
-    'What other work is happening in this area?',
-    'What can we do to ensure this does not disrupt our causal chains?'
-  ],
-
-  // Slide 11: the stadium stress test. Labels and the first two of each
-  // characteristic's three questions, verbatim from the workbench's
-  // CONFIG.characteristics and CONFIG.stressQuestions (keep in step).
-  // They are general questions about any football club's stadium and
-  // contain nothing from the client brief.
-  stress: [
-    { id: 'neutral', label: 'Neutral ground', colour: 'var(--char-1)',
-      questions: ['Does anyone have to buy a ticket, hold a membership or book in order to be there? Does that change between match days and other days?',
-        'Can someone stay a long time without spending money, or will they feel expected to buy something?'] },
-    { id: 'leveller', label: 'The leveller', colour: 'var(--char-2)',
-      questions: ['Does the stadium already sort people by what they pay: season-ticket holders, hospitality guests, sponsors, players, ordinary visitors? Would any of that sorting carry over into this space?',
-        'Is there a reserved area, a VIP entrance or a dress code that signals who matters?'] },
-    { id: 'conversation', label: 'Conversation is the main activity', colour: 'var(--char-3)',
-      questions: ['Will screens, music, announcements or match coverage drown out conversation, or replace it?',
-        'Do the layout and seating let strangers talk, or do they face everyone the same way, as stands do?'] },
-    { id: 'access', label: 'Accessibility and accommodation', colour: 'var(--char-4)', ink: 'var(--char-4-ink)',
-      questions: ['Will it be open on the days and at the hours people are free, and not only around fixtures and events?',
-        'Is it on people\u2019s everyday routes, or a trip to make specially? Can it be reached on foot, by bike or by public transport?'] },
-    { id: 'regulars', label: 'The regulars', colour: 'var(--char-5)',
-      questions: ['Who could become the regulars on an ordinary weekday, as opposed to match days?',
-        'If the regulars are mostly committed fans, will newcomers who are not fans feel welcome or feel like outsiders?'] },
-    { id: 'lowProfile', label: 'A low profile', colour: 'var(--char-6)',
-      questions: ['Will club branding, sponsors\u2019 logos and the stadium\u2019s architecture make the space feel like a showpiece rather than an everyday place?',
-        'Will it be designed to be photographed, or to be lived in?'] },
-    { id: 'playful', label: 'The mood is playful', colour: 'var(--char-7)', ink: 'var(--char-7-ink)',
-      questions: ['Will results set the mood, so that the space is flat or tense after a defeat?',
-        'Will rules, staffing or rivalry keep play to a script or make it hostile, rather than letting it be spontaneous and good-humoured?'] },
-    { id: 'home', label: 'A home away from home', colour: 'var(--char-8)',
-      questions: ['Can people feel it is partly theirs, or will it always feel like the club\u2019s commercial property?',
-        'Would anyone notice if a regular stopped coming?'] }
-  ],
+  // Slide 8: the intervention sentence and the word shown in each gap.
+  // Keep in step with the workbench's CONFIG.intervention.sentence and
+  // each slot's "blank".
+  sentence: 'The club should create {what} {where}, for {forWhom}, open {when}, run by {runBy}.',
+  blanks: { what: 'what', where: 'where', forWhom: 'whom', when: 'when', runBy: 'whom' },
 
   // "Lead roles" panels: the five group roles (toc_buildplan.md section
   // 4.12), as in the week 9 and 10 decks and the workbench's CONFIG.roles.
@@ -1233,67 +921,56 @@ var CONFIG = {
     { name: 'Timekeeper', colour: 'var(--char-7)' }
   ],
 
-  // Slides 12-16: "In the workbench" blocks. Minutes are from the
+  // Slides 9-12: "In the workbench" blocks. Minutes are from the
   // start of the 90-minute session; the countdown runs for end - start.
-  // `screens` are screen numbers in week9-toc-workbench.html
-  // (toc_buildplan.md section 7.1), named from `screenNames` (keep in step).
-  // `leads` must name roles above. `note` is optional, shown under the tasks.
+  // `screens` are screen numbers in week9-toc-workbench.html, named from
+  // `screenNames` (keep in step). `leads` must name roles above. `note`
+  // is optional, shown under the tasks.
   workbenchFile: 'week9-toc-workbench.html',
-  screenNames: { 7: 'Options appraisal', 8: 'Interventions', 9: 'Risks and stress test' },
+  screenNames: { 7: 'Ideas from the arrows', 8: 'Test the ideas', 9: 'Our intervention' },
   blocks: [
     {
-      title: 'Options Appraisal',
-      start: 12, end: 30, screens: [7],
+      title: 'Ideas from the Arrows',
+      start: 15, end: 35, screens: [7],
       tasks: [
-        'Rotate roles for week 11 at the top of screen 7.',
-        'Describe at least two different designs. Vary more than the location: what it is, who runs it, opening hours, cost.',
-        'Test each as plausible, doable and testable. Say where it is strong and where it is thin.',
-        'Choose one. For every other option, record why it was rejected.'
+        'Rotate roles at the top of screen 7.',
+        'Read arrow 1 aloud, bottom box first, using &ldquo;is needed for&rdquo;.',
+        'Split the arrows: the workbench shows who takes which. Each person drafts ideas on paper, in two halves.',
+        'The Scribe types the ideas in under their arrows. At least three.'
       ],
-      leads: ['Facilitator'],
-      note: '&ldquo;Are there alternative strategies to meet your aims?&rdquo; <span class="ref">([GAF] p. 11)</span>'
+      leads: ['Facilitator', 'Scribe'],
+      note: 'Start from an arrow rather than a favourite idea.'
     },
     {
-      title: 'Interventions and the Gap Walk',
-      start: 30, end: 55, screens: [8],
+      title: 'Test the Ideas',
+      start: 35, end: 65, screens: [8],
       tasks: [
-        'Name each intervention and list its activities.',
-        'Place it on every arrow it helps to produce (I1, I2 and so on in the diagram).',
-        'Place or remove any intervention flagged as sitting on no arrow.',
-        'Walk each bare arrow: it needs an intervention, or an assumption on it covers it.'
+        'Choose two or three ideas: the ones you would most like the club to build.',
+        'For each, answer the three questions with a reason, then give a verdict.',
+        'Name the characteristic it could put at risk, or none.',
+        'Say what would make it stronger.'
       ],
-      leads: ['Sceptic', 'Scribe'],
-      note: '&ldquo;Don&rsquo;t force interventions that do not readily directly contribute to the outcomes on the framework.&rdquo; <span class="ref">([TC] p. 7)</span>'
+      leads: ['Sceptic', 'Evidence lead'],
+      note: 'A thin or failed answer is useful: it shows what to fix.'
     },
     {
-      title: 'Inputs',
-      start: 55, end: 70, screens: [8],
+      title: 'Our Intervention',
+      start: 65, end: 80, screens: [9],
       tasks: [
-        'For each intervention, list the resources it needs.',
-        'Answer the three limitation questions: a ring-fenced budget, the right skills, time limits on facilities.',
-        'A constraint from the client brief (on the VLE) needs its slide number.',
-        'Anything else is our assumption. Put it through the sorter.'
+        'Tick the tested ideas that held up. Give a reason for each one you drop.',
+        'Fill in the sentence: what, where, for whom, when, run by whom.',
+        'Give your intervention a short name.',
+        'Read the sentence aloud: would someone outside the course understand it?'
       ],
-      leads: ['Evidence lead']
-    },
-    {
-      title: 'Risks and the Stress Test',
-      start: 70, end: 85, screens: [9],
-      tasks: [
-        'Ask the three risk questions. Give each risk a likelihood, a mitigation and the intervention it bears on.',
-        'Run the stadium stress test: how could this setting threaten each characteristic?',
-        'Name the intervention that protects it, or &ldquo;none yet&rdquo;, which adds a risk.',
-        'Add your own questions drawn from the client brief (on the VLE), with slide numbers.'
-      ],
-      leads: ['Sceptic']
+      leads: ['Facilitator', 'Scribe']
     },
     {
       title: 'Close',
-      start: 85, end: 90, screens: [9],
+      start: 80, end: 90, screens: [9],
       tasks: [
-        'Mark the three riskiest assumptions: the ones that would do most damage if false.',
-        'Complete the week 11 self-check.',
-        'Print the riskiest-assumption cards, then export.'
+        'Self-check: ask the three questions of your intervention as a whole.',
+        'Close week 11, then print the intervention card.',
+        'Export JSON; every member keeps a copy.'
       ],
       leads: ['Timekeeper', 'Scribe']
     }
@@ -1315,75 +992,19 @@ function fmtTime(sec) {
   return pad2(Math.floor(sec / 60)) + ':' + pad2(sec % 60);
 }
 
-(function buildQuizzes() {
-  document.querySelectorAll('.quiz-slide').forEach(function(slide) {
-    var q = CONFIG.readingChecks[parseInt(slide.getAttribute('data-quiz'), 10)];
-    var h = '<p class="question">' + q.question + '</p><div class="quiz-options two-up">';
-    Object.keys(q.options).forEach(function(k) {
-      h += '<button class="quiz-option" data-val="' + k + '"><span class="opt-letter">' + k.toUpperCase() + '</span><span>' + q.options[k] + '</span></button>';
-    });
-    h += '</div><div class="feedback right-fb" role="status"><p>' + q.right + '</p></div>' +
-         '<div class="feedback wrong wrong-fb" role="status"><p>' + q.wrong + '</p></div>';
-    var body = slide.querySelector('.quiz-body');
-    body.innerHTML = h;
-    var opts = body.querySelectorAll('.quiz-option');
-    opts.forEach(function(opt) {
-      opt.addEventListener('click', function() {
-        if (opt.classList.contains('disabled')) return;
-        var val = opt.getAttribute('data-val');
-        opts.forEach(function(o) {
-          o.classList.add('disabled');
-          if (o.getAttribute('data-val') === q.correct) o.classList.add('correct');
-          else if (o === opt) o.classList.add('incorrect');
-        });
-        if (val === q.correct) {
-          body.querySelector('.right-fb').classList.add('visible');
-        } else {
-          var fb = body.querySelector('.wrong-fb');
-          fb.classList.add('visible');
-          setTimeout(function() {
-            fb.classList.remove('visible');
-            opts.forEach(function(o) { o.classList.remove('disabled', 'correct', 'incorrect'); });
-          }, 2500);
-        }
-      });
-    });
+(function buildQuestions() {
+  document.getElementById('questions-grid').innerHTML = CONFIG.questions.map(function(q, i) {
+    return '<div class="test-card" style="--test-color: ' + q.colour + (q.fg ? '; --test-fg: ' + q.fg : '') + '">' +
+           '<div class="test-head"><span class="test-num">' + pad2(i + 1) + '</span><span class="test-name">' + q.label + '</span></div>' +
+           '<div class="test-body"><p class="q-ask">' + q.ask + '</p><ul class="q-prompts">' +
+           q.prompts.map(function(p) { return '<li>' + p + '</li>'; }).join('') + '</ul></div></div>';
+  }).join('');
+})();
+
+(function buildSentence() {
+  document.getElementById('sentence-tpl').innerHTML = CONFIG.sentence.replace(/\{(\w+)\}/g, function(m, k) {
+    return '<span class="blank">' + (CONFIG.blanks[k] || k) + '</span>';
   });
-})();
-
-(function buildDefinitions() {
-  document.getElementById('defs-grid').innerHTML = CONFIG.definitions.map(function(d, i) {
-    return '<div class="test-card" style="--test-color: ' + d.colour + (d.fg ? '; --test-fg: ' + d.fg : '') + '">' +
-           '<div class="test-head"><span class="test-num">' + pad2(i + 1) + '</span><span class="test-name">' + d.name + '</span></div>' +
-           '<div class="test-body"><p class="def-quote">&ldquo;' + d.quote + '&rdquo; <span class="ref">p. 7</span></p>' +
-           '<p class="muted">' + d.note + '</p></div></div>';
-  }).join('');
-})();
-
-(function buildInputs() {
-  document.getElementById('inputs-quote').innerHTML = '&ldquo;' + CONFIG.inputs + '&rdquo; <span class="ref">([GAF] p. 21)</span>';
-  document.getElementById('input-chips').innerHTML = CONFIG.inputTypes.map(function(t) {
-    return '<span class="input-chip" style="--ic-color: ' + t.colour + (t.fg ? '; --ic-fg: ' + t.fg : '') + '">' + t.label + '</span>';
-  }).join('');
-  document.getElementById('limit-grid').innerHTML = CONFIG.limitQuestions.map(function(l) {
-    return '<div class="g-card" style="--gc-color: ' + l.colour + '"><div class="gc-q">&ldquo;' + l.q + '&rdquo;</div></div>';
-  }).join('');
-})();
-
-(function buildRiskQuestions() {
-  var colours = ['var(--char-2)', 'var(--char-1)', 'var(--char-5)'];
-  document.getElementById('risk-qs').innerHTML = CONFIG.riskQuestions.map(function(q, i) {
-    return '<div class="rule" style="--rl-color: ' + colours[i % colours.length] + '"><span class="rule-n">' + (i + 1) + '</span>' +
-           '<span class="rule-t">&ldquo;' + q + '&rdquo;</span></div>';
-  }).join('');
-})();
-
-(function buildStress() {
-  document.getElementById('stress-grid').innerHTML = CONFIG.stress.map(function(c) {
-    return '<div class="stress-card" style="--sc-color: ' + c.colour + '; --sc-ink: ' + (c.ink || c.colour) + '">' +
-           '<div class="sc-name">' + c.label + '</div><ol>' +
-           c.questions.map(function(q) { return '<li>' + q + '</li>'; }).join('') + '</ol></div>';
-  }).join('');
 })();
 
 (function buildBlocks() {

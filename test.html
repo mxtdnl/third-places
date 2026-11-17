@@ -2254,7 +2254,7 @@
     });
 
     assert('glossary crosswalk, self-check, stakeholder questions, lint lists and soft cap are present', function() {
-      eq(TW.CONFIG.glossary.length, 8);
+      eq(TW.CONFIG.glossary.length, 9);
       TW.CONFIG.glossary.forEach(function (g) { ok(g.term && g.gaf, g.term); });
       eq(TW.CONFIG.selfCheck.questions.map(function (q) { return q.id; }).join(), 'plausible,doable,testable');
       TW.CONFIG.selfCheck.questions.forEach(function (q) { eq(q.ref, '[TC] p. 9'); ok(q.quote.length > 60); });
@@ -2481,8 +2481,9 @@
     assert('migrate() fills every field of the full state shape from nothing', function() {
       var s = TW.migrate({}), d = TW.defaultState();
       Object.keys(d).forEach(function (k) { ok(k in s, k); });
-      ['outcomes', 'clusters', 'links', 'assumptions', 'findOutFirst', 'evidence', 'reverseImport', 'options', 'interventions', 'risks', 'indicators', 'valuesCheck', 'revisionLog']
+      ['outcomes', 'clusters', 'links', 'assumptions', 'findOutFirst', 'evidence', 'reverseImport', 'interventions', 'indicators', 'valuesCheck', 'revisionLog']
         .forEach(function (k) { ok(Array.isArray(s[k]) && s[k].length === 0, k); });
+      eq(JSON.stringify(s.design), '{"name":"","what":"","where":"","forWhom":"","when":"","runBy":""}');
       eq(Object.keys(s.selfChecks).join(), 'week9,week10,week11,week12,week13');
       eq(Object.keys(s.roles).join(), 'week9,week10,week11,week12,week13');
       ok(s.meta.exportId.length > 3); eq(s.group.members.length, 5);
@@ -2511,9 +2512,9 @@
     assert('an export made in week 9 imports with every later-stage field present and empty', function() {
       var x = JSON.parse(JSON.stringify(TW.buildExport(twFull())));
       var s = TW.migrate(x.state);
-      ['outcomes', 'clusters', 'links', 'assumptions', 'evidence', 'reverseImport', 'options', 'interventions', 'risks', 'indicators', 'valuesCheck']
+      ['outcomes', 'clusters', 'links', 'assumptions', 'evidence', 'reverseImport', 'interventions', 'indicators', 'valuesCheck']
         .forEach(function (k) { ok(Array.isArray(s[k]) && s[k].length === 0, k); });
-      eq(JSON.stringify(s.stressTest), '{}');
+      eq(JSON.stringify(s.design), '{"name":"","what":"","where":"","forWhom":"","when":"","runBy":""}');
       eq(JSON.stringify(s.reviews), '{"given":[],"received":[]}');
       eq(JSON.stringify(s.diagrams), '{"clientOutcomeIds":[],"clientLinkIds":[]}');
       eq(JSON.stringify(s.narrative), '{"execSummary":"","sections":{}}');
@@ -2898,142 +2899,138 @@
     // BODØ THEORY OF CHANGE WORKBENCH, stage 3 (week 11)
     // =====================================================
 
-    // A complete week 11 state: every week 9-11 gate passes.
+    // A complete week 11 state: every week 9-11 gate passes. Ideas I1 and I2
+    // sit on arrow 1 and I3 on arrow 3; I1 and I3 are tested; I1 is in the
+    // intervention and I3 is dropped with a reason.
     function twFull11() {
       var s = twFull10();
       s.roles.week11 = TW.suggestRoles(TW.members(s), s.roles.week10);
-      var o1 = TW.addOption(s), o2 = TW.addOption(s);
-      [o1, o2].forEach(function (o, i) {
-        o.summary = TWW(10, 'option ' + i); o.location = 'north stand';
-        o.plausible = TWW(15, 'plausible'); o.doable = TWW(15, 'doable'); o.testable = TWW(15, 'testable');
+      var i1 = TW.addIdea(s, s.links[0].id), i2 = TW.addIdea(s, s.links[0].id), i3 = TW.addIdea(s, s.links[2].id);
+      i1.what = 'opened a weekday café'; i1.because = TWW(8, 'because one');
+      i2.what = 'ran a quiz night'; i2.because = TWW(8, 'because two');
+      i3.what = 'set prices for students'; i3.because = TWW(8, 'because three');
+      [i1, i3].forEach(function (iv) {
+        TW.setTested(s, iv.id, true);
+        iv.plausible = TWW(12, 'plausible'); iv.plausibleVerdict = 'strong';
+        iv.doable = TWW(12, 'doable'); iv.doableVerdict = 'thin';
+        iv.testable = TWW(12, 'testable'); iv.testableVerdict = 'strong';
+        iv.charAtRisk = 'neutral'; iv.fix = TWW(8, 'fix');
       });
-      TW.chooseOption(s, o1.id); o2.whyNot = TWW(15, 'rejected');
-      var iv = TW.addIntervention(s);
-      iv.name = 'Weekday café'; iv.activities = ['Open the café daily', 'Hire a café host']; iv.characteristics = ['access', 'regulars'];
-      TW.setInterventionLink(s, iv.id, s.links[0].id, true); TW.setInterventionLink(s, iv.id, s.links[1].id, true);
-      var inp = iv.inputs[0]; inp.resource = 'a ground-floor room'; inp.basis = 'brief'; inp.fromBrief = true; inp.slide = '5';
-      inp.limitation = TWW(8, 'limitation'); inp.limits = { ringFenced: 'no', skills: 'unknown', timeLimit: 'yes' };
-      // Arrow 3 has no intervention: covered by an assumption on it.
-      var b = TW.addBelief(s, TWW(6, 'second belief'), 6);
-      TW.sortBelief(s, b.id, 'assumption', { linkId: s.links[2].id, lens: 'ECONOMIC', evidenceIds: [s.evidence[0].id] });
-      TW.setGap(s, s.links[2].id, 'assumption', s.assumptions[1].id);
-      var r = TW.addRisk(s); r.text = TWW(8, 'risk'); r.internal = 'external'; r.likelihood = 'medium'; r.mitigation = TWW(10, 'mitigate'); r.interventionId = iv.id;
-      TW.CONFIG.characteristics.forEach(function (c, i) { TW.setStress(s, c.id, 'threat', TWW(12, 'threat ' + c.id)); TW.setStress(s, c.id, 'protectedBy', i === 7 ? 'none' : iv.id); });
-      var sr = s.risks[1]; sr.internal = 'internal'; sr.likelihood = 'low'; sr.mitigation = TWW(10, 'mitigate'); sr.interventionId = 'whole';
-      s.assumptions.forEach(function (a) { a.riskiest = true; });
+      i3.charAtRisk = 'none';
+      TW.setInDesign(s, i1.id, true); i3.whyNot = TWW(8, 'dropped');
+      s.design = { name: 'The Living Room', what: 'a weekday café and lounge', where: 'in the north stand', forWhom: 'young adults and students',
+        when: 'every day from noon', runBy: 'club staff with volunteers' };
       return s;
     }
 
-    suite('ToC Workbench (week 11) — Config and the design lock');
+    suite('ToC Workbench (week 11) — Config and the lock');
 
-    assert('screens 7-9 are built design screens; week 11 run sheet, close actions and card type', function() {
-      eq(TW.CONFIG.screens.filter(function (s) { return s.design; }).map(function (s) { return s.no + (s.built ? 'b' : ''); }).join(), '7b,8b,9b');
-      eq(TW.CONFIG.runSheets[11].length, 6);
-      ok(TW.CONFIG.closeActions[11].some(function (a) { return a.arg === 'riskiest'; }));
-      eq(TW.CONFIG.weekCards[11].join(), 'riskiest');
-      ok(TW.CARD_TYPES.some(function (c) { return c.id === 'riskiest'; }));
-      eq(TW.CONFIG.design.holdOffRef, '[TC] p. 7'); ok(TW.CONFIG.design.holdOff.indexOf('we deliberately ask groups to hold off on interventions') !== -1);
-      eq(TW.CONFIG.inputLimits.length, 3); eq(TW.CONFIG.risks.questions.length, 3);
+    assert('screens 7-9: ideas, tests and the intervention; run sheet, close action, card type, questions, verdicts and sentence slots', function() {
+      eq(TW.CONFIG.screens.filter(function (s) { return s.design; }).map(function (s) { return s.no + (s.built ? 'b' : '') + ':' + s.title; }).join('|'),
+        '7b:Ideas from the arrows|8b:Test the ideas|9b:Our intervention');
+      eq(TW.CONFIG.runSheets[11].map(function (r) { return r.t; }).join(), '0–15,15–35,35–65,65–80,80–90');
+      ok(TW.CONFIG.closeActions[11].some(function (a) { return a.arg === 'intervention'; }));
+      eq(TW.CONFIG.weekCards[11].join(), 'intervention');
+      ok(TW.CARD_TYPES.some(function (c) { return c.id === 'intervention'; }));
+      eq(TW.CONFIG.tests.questions.map(function (q) { return q.id; }).join(), TW.CONFIG.selfCheck.questions.map(function (q) { return q.id; }).join());
+      eq(TW.CONFIG.tests.questions.map(function (q) { return q.ask; }).join('|'), 'Why would it work here?|Could the club really do it?|How would the club know it is working?');
+      eq(TW.CONFIG.verdicts.map(function (v) { return v.id; }).join(), 'strong,thin,fails');
+      eq(TW.CONFIG.arrows.connectorRef, '[TC] p. 7'); ok(TW.CONFIG.arrows.connector.indexOf('on the connector that leads from the precondition to the outcome') !== -1);
+      eq(TW.CONFIG.tests.introRef, '[TC] p. 9'); eq(TW.CONFIG.design.holdOffRef, '[TC] p. 7');
+      eq(TW.CONFIG.intervention.slots.map(function (x) { return x.id; }).join(), 'what,where,forWhom,when,runBy');
+      TW.CONFIG.intervention.slots.forEach(function (x) {
+        ok(TW.CONFIG.words[x.words] >= 1, x.id); ok(TW.CONFIG.intervention.sentence.indexOf('{' + x.id + '}') !== -1, x.id); ok(x.blank && x.hint, x.id);
+      });
+      ok(TW.CONFIG.minIdeas >= 1 && TW.CONFIG.minTested >= 1 && TW.CONFIG.maxTested >= TW.CONFIG.minTested);
     });
 
-    assert('stress questions: three per characteristic, keyed by characteristic id, no brief or Bodø content', function() {
-      var Q = TW.CONFIG.stressQuestions;
-      eq(Object.keys(Q).join(), TW.CONFIG.characteristics.map(function (c) { return c.id; }).join());
-      Object.keys(Q).forEach(function (k) {
-        eq(Q[k].questions.length, 3, k); ok(Q[k].note.length > 10, k);
-        Q[k].questions.forEach(function (q) { ok(/\?$/.test(q), k + ': ' + q); ok(!/Bod|Glimt|Arctic|Aspmyra|slide/i.test(q), k + ': ' + q); });
+    assert('the three questions are plain questions with prompts, and carry no brief content', function() {
+      TW.CONFIG.tests.questions.forEach(function (q) {
+        ok(/\?$/.test(q.ask), q.id); ok(q.prompts.length >= 2, q.id);
+        q.prompts.forEach(function (p) { ok(/\?$/.test(p), p); ok(!/Glimt|Aspmyra|slide/i.test(p), p); });
       });
     });
 
-    assert('design lock: screens 7-9 locked until the week 10 gate passes, with the missing items; lock returns if the map breaks', function() {
+    assert('lock: week 11 opens once the map has arrows and no loop; unfinished week 10 items are a warning, not a lock', function() {
       var s = twFull10(); s.links[1].rationale = 'short';
-      ok(TW.designLocked(s)); ok(TW.screenEnabled(s, 7), 'locked screens still open, to show the lock');
-      ok(TW.designChecks(s).some(function (c) { return !c.ok && /arrow 2/.test(c.msg); }));
-      s = twFull10(); ok(!TW.designLocked(s));
+      ok(!TW.designLocked(s), 'an unfinished map does not lock week 11');
+      ok(TW.designWarnings(s).some(function (c) { return /arrow 2/.test(c.msg); }));
       ok(TW.screenEnabled(s, 7)); ok(!TW.screenEnabled(s, 8), 'screen 8 waits for screen 7'); ok(!TW.screenEnabled(s, 9));
+      s = twFull(); ok(TW.designLocked(s), 'no arrows: locked'); ok(TW.screenEnabled(s, 7), 'a locked screen still opens, to show why');
+      ok(/no arrows yet/.test(TW.gateResult(TW.lockChecks(s)).failing.join()));
+      s = twFull10(); eq(TW.designWarnings(s).length, 0);
       s = twFull11(); ok(TW.screenEnabled(s, 8) && TW.screenEnabled(s, 9));
-      var n = s.interventions.length; TW.addBelief(s, TWW(6, 'unsorted'), 5);
-      ok(TW.designLocked(s), 'an unsorted belief locks design again'); eq(s.interventions.length, n, 'work is kept');
     });
 
     suite('ToC Workbench (week 11) — Gates');
 
-    assert('a complete week 11 passes screens 7-9 and the week gate; closing prints one card per riskiest assumption', function() {
+    assert('a complete week 11 passes screens 7-9 and the week gate; the intervention card reads as one sentence', function() {
       var s = twFull11();
       [7, 8, 9].forEach(function (n) { eq(twFailing(s, n).length, 0, 'screen ' + n + ': ' + twFailing(s, n).join(' ')); });
       twSelfCheck(s, 11); eq(TW.closeWeek(s, 11, '2026-11-23T10:25:00.000Z').length, 0);
-      var cards = TW.readyCards(s, ['riskiest']); eq(cards.length, 2);
-      ok(/^Riskiest assumption A1/.test(cards[0].eyebrow)); ok(cards[0].details[0].indexOf('On arrow 1') === 0);
+      var cards = TW.readyCards(s, ['intervention']); eq(cards.length, 1);
+      eq(cards[0].text, 'The club should create a weekday café and lounge in the north stand, for young adults and students, open every day from noon, run by club staff with volunteers.');
+      ok(/^Our intervention · The Living Room · Week 11$/.test(cards[0].eyebrow));
+      eq(cards[0].details[0], 'So that: Residents of all ages feel they belong in a shared space');
+      ok(/^I1 \(arrow 1\): If the club opened a weekday café, this arrow would happen because one word/.test(cards[0].details[1]), cards[0].details[1]);
+      eq(cards[0].details.length, 2);
       ok(TW.buildA6Html(cards).indexOf('class="a6-sheet"') !== -1);
     });
 
-    assert('screen 7: two options, one chosen, a reason for each rejected option; one character never passes', function() {
-      var s = twFull11(); TW.removeOption(s, s.options[1].id);
-      eq(twFailing(s, 7).join(), 'Appraise at least 2 options (1 so far).');
-      s = twFull11(); s.options.forEach(function (o) { o.chosen = false; });
-      eq(twFailing(s, 7).join(), 'Choose one option to take forward.');
-      s = twFull11(); s.options[1].whyNot = 'x';
-      eq(twFailing(s, 7).join(), 'Option 2: why it was rejected: needs at least 15 words (1 so far).');
-      s = twFull11(); s.options[0].doable = 'd';
-      ok(/^Option 1, doable: needs at least 15 words/.test(twFailing(s, 7).join()));
-      TW.chooseOption(s, s.options[1].id); ok(!s.options[0].chosen && s.options[1].chosen);
-      ok(/^Option 1: why it was rejected/.test(twFailing(s, 7).filter(function (m) { return /rejected/.test(m); })[0]));
+    assert('screen 7: three ideas, each on an arrow and in two halves; one character never passes; arrows are shared out in turn', function() {
+      var s = twFull11(); TW.removeIdea(s, s.interventions[1].id);
+      eq(twFailing(s, 7).join(), 'Write at least 3 ideas (2 so far).');
+      s = twFull11(); s.interventions[1].what = 'x';
+      eq(twFailing(s, 7).join(), 'Idea 2, what the club would do: needs at least 3 words (1 so far).');
+      s = twFull11(); s.interventions[2].because = 'because';
+      ok(/^Idea 3, why the arrow would happen: needs at least 8 words/.test(twFailing(s, 7).join()));
+      s = twFull11(); s.roles.week11 = {};
+      ok(twFailing(s, 7).indexOf('Assign the Facilitator for week 11.') !== -1);
+      var share = TW.arrowShare(s);
+      eq(s.links.map(function (l) { return share[l.id]; }).join(), 'Ana,Ben,Cai');
+      eq(TW.ideaSentence({ what: 'If the club ran a quiz night.', because: 'because people meet.' }), 'If the club ran a quiz night, this arrow would happen because people meet.');
     });
 
-    assert('shoehorn check: an intervention on no arrow is flagged, also when its arrow disappears', function() {
-      var s = twFull11(), iv2 = TW.addIntervention(s);
-      iv2.name = 'Fan museum'; iv2.activities = ['curate the trophy room']; iv2.characteristics = ['playful'];
-      Object.assign(iv2.inputs[0], { resource: 'display cases and staff', basis: 'assumption', limitation: TWW(8, 'limit'), limits: { ringFenced: 'no', skills: 'no', timeLimit: 'no' } });
-      eq(TW.shoehorned(s).length, 1);
-      ok(twFailing(s, 8).some(function (m) { return /^Intervention 2 \(Fan museum\): it sits on no arrow\./.test(m) && /shoehorn/.test(m); }));
-      TW.setInterventionLink(s, iv2.id, s.links[2].id, true); eq(TW.shoehorned(s).length, 0); eq(twFailing(s, 8).length, 0);
-      TW.setLeadsTo(s, s.links[2].from, s.links[2].to, false);
-      eq(iv2.linkIds.length, 0, 'link pruned with the arrow'); eq(TW.shoehorned(s).length, 1);
+    assert('an idea whose arrow leaves the map is flagged, and can be given another arrow', function() {
+      var s = twFull11(), i3 = s.interventions[2], l3 = s.links[2];
+      TW.setLeadsTo(s, l3.from, l3.to, false);
+      eq(i3.linkIds.length, 0, 'link pruned with the arrow'); eq(TW.orphanIdeas(s).length, 1);
+      ok(twFailing(s, 7).indexOf('Idea 3: its arrow is no longer on the map. Give it an arrow, or remove it.') !== -1);
+      ok(TW.setIdeaArrow(s, i3.id, s.links[0].id)); eq(TW.orphanIdeas(s).length, 0);
+      eq(TW.interventionsOn(s, s.links[0].id).length, 3);
+      ok(!TW.setIdeaArrow(s, i3.id, 'gone'));
     });
 
-    assert('gap walk: every arrow with no intervention needs a mark; "needs" blocks; the assumption must sit on that arrow', function() {
-      var s = twFull11(), l3 = s.links[2];
-      eq(TW.gapLinks(s).map(function (l) { return l.id; }).join(), l3.id);
-      TW.setGap(s, l3.id, '');
-      ok(/^Gap walk, arrow 3 \(outcome 3 → outcome 2\): no intervention\. Mark it/.test(twFailing(s, 8).join()));
-      TW.setGap(s, l3.id, 'needs');
-      eq(twFailing(s, 8).join(), 'Gap walk, arrow 3 (outcome 3 → outcome 2): needs an intervention. Place one on it, or mark it covered by an assumption.');
-      TW.setInterventionLink(s, s.interventions[0].id, l3.id, true); eq(twFailing(s, 8).length, 0, 'an intervention clears it');
-      eq(TW.gapLinks(s).length, 0);
-      s = twFull11(); TW.setGap(s, s.links[2].id, 'assumption', s.assumptions[0].id);
-      ok(/the chosen assumption no longer sits on this arrow/.test(twFailing(s, 8).join()));
-      s = twFull11(); s.assumptions.splice(1, 1); TW.normaliseDesign(s);
-      ok(/choose the assumption that covers it/.test(twFailing(s, 8).join()), 'removed assumption is cleared');
+    assert('screen 8: two or three ideas tested, each question answered with a verdict, the characteristic at risk, and a fix', function() {
+      var s = twFull11();
+      TW.setTested(s, s.interventions[2].id, false);
+      eq(twFailing(s, 8).join(), 'Choose at least 2 ideas to test (1 chosen).');
+      s = twFull11(); ok(TW.setTested(s, s.interventions[1].id, true)); eq(TW.testedIdeas(s).length, 3);
+      var extra = TW.addIdea(s, s.links[1].id);
+      ok(!TW.setTested(s, extra.id, true), 'a fourth idea is refused'); eq(TW.testedIdeas(s).length, 3);
+      ok(/^Idea 2, plausible: needs at least 12 words/.test(twFailing(s, 8).join()));
+      s = twFull11(); s.interventions[0].doableVerdict = '';
+      eq(twFailing(s, 8).join(), 'Idea 1, doable: strong, thin or fails?');
+      s = twFull11(); s.interventions[2].charAtRisk = '';
+      eq(twFailing(s, 8).join(), 'Idea 3: which characteristic could it put at risk? (or none)');
+      s = twFull11(); s.interventions[0].fix = 'f';
+      eq(twFailing(s, 8).join(), 'Idea 1, what would make it stronger: needs at least 8 words (1 so far).');
     });
 
-    assert('inputs: from the brief needs a slide; three limitation questions; one-character entries rejected', function() {
-      var s = twFull11(), inp = s.interventions[0].inputs[0];
-      inp.slide = ''; ok(twFailing(s, 8).join().indexOf('Intervention 1 (Weekday café), input 1: give the slide of the client brief.') !== -1);
-      s = twFull11(); inp = s.interventions[0].inputs[0]; inp.basis = 'assumption'; inp.slide = ''; eq(twFailing(s, 8).length, 0, 'our assumption needs no slide');
-      inp.resource = 'x'; ok(/input 1 resource: needs at least 3 words \(1 so far\)/.test(twFailing(s, 8).join()));
-      s = twFull11(); s.interventions[0].inputs[0].limits.skills = '';
-      ok(twFailing(s, 8).join().indexOf('answer “Do the people you can deploy have the correct skills?”') !== -1);
-      s = twFull11(); s.interventions[0].activities.push('a'); ok(/activity 3: needs at least 3 words/.test(twFailing(s, 8).join()));
-      s = twFull11(); s.interventions[0].characteristics = []; eq(twFailing(s, 8).join(), 'Intervention 1 (Weekday café): tick the characteristics it protects or produces.');
-    });
-
-    assert('screen 9: risks, the stress test ("none yet" keeps one risk), own questions with slides, riskiest assumptions', function() {
-      var s = twFull11(), cid = TW.CONFIG.characteristics[7].id;
-      eq(s.risks.filter(function (r) { return r.stressCharId === cid; }).length, 1);
-      ok(!TW.removeRisk(s, s.risks[1].id), 'stress risks are removed by the stress test, not by hand');
-      TW.setStress(s, cid, 'protectedBy', s.interventions[0].id); eq(s.risks.length, 1, 'protected: its risk goes');
-      TW.setStress(s, cid, 'protectedBy', 'none'); eq(s.risks.length, 2); eq(s.risks[1].text, TWW(12, 'threat ' + cid));
-      s = twFull11(); TW.setStress(s, 'neutral', 'threat', 'x');
-      ok(/^Stress test, neutral ground: needs at least 12 words/.test(twFailing(s, 9).join()));
-      s = twFull11(); TW.removeIntervention(s, s.interventions[0].id);
-      eq(s.stressTest.neutral.protectedBy, '', 'removing the intervention clears the rows it protected');
-      ok(twFailing(s, 9).indexOf('Stress test, neutral ground: which intervention protects it? (or “none yet”)') !== -1);
-      s = twFull11(); var q = TW.addStressOwn(s); q.question = TWW(6, 'question'); q.answer = TWW(12, 'answer');
-      eq(twFailing(s, 9).join(), 'Your question 1: give the slide of the client brief it comes from.');
-      q.slide = '9'; eq(twFailing(s, 9).length, 0);
-      s = twFull11(); s.assumptions[1].riskiest = false; eq(TW.riskiestNeeded(s), 2);
-      eq(twFailing(s, 9).join(), 'Mark the 2 riskiest assumptions (1 marked).');
-      s = twFull11(); s.risks[0].internal = ''; eq(twFailing(s, 9).join(), 'Risk 1: internal or external?');
+    assert('screen 9: at least one tested idea in, a reason for each one dropped, a name and every slot of the sentence', function() {
+      var s = twFull11();
+      TW.setInDesign(s, s.interventions[0].id, false);
+      ok(twFailing(s, 9).indexOf('Choose at least one tested idea to build your intervention from.') !== -1);
+      ok(twFailing(s, 9).indexOf('Idea 1: why you dropped it: needs at least 8 words (0 so far).') !== -1);
+      s = twFull11(); ok(!TW.setInDesign(s, s.interventions[1].id, true), 'an untested idea cannot go in');
+      TW.setInDesign(s, s.interventions[2].id, true); eq(twFailing(s, 9).length, 0, 'both tested ideas in: no reason needed');
+      s = twFull11(); s.design.name = 'x'; eq(twFailing(s, 9).join(), 'Give your intervention a short name.');
+      s = twFull11(); s.design.where = 'here';
+      eq(twFailing(s, 9).join(), 'Where, in or around the stadium: needs at least 2 words (1 so far).');
+      s = twFull11(); s.design.forWhom = ''; s.design.runBy = ' ';
+      eq(TW.designSentence(s), 'The club should create a weekday café and lounge in the north stand, for [whom], open every day from noon, run by [whom].');
+      eq(TW.readyCards(s, ['intervention']).length, 0, 'no card until screen 9 is complete');
+      s = twFull11(); TW.setTested(s, s.interventions[0].id, false); eq(TW.designIdeas(s).length, 0, 'untesting an idea takes it out');
     });
 
     suite('ToC Workbench (week 11) — Markers, migrate() and outputs');
@@ -3051,21 +3048,16 @@
       return best;
     }
 
-    assert('markers sit on their arrows (30 random maps), side by side, one focusable marker per placement', function() {
+    assert('idea markers sit on their arrows (30 random maps), side by side, one focusable marker per idea; ideas in the intervention are marked', function() {
       for (var seed = 1; seed <= 30; seed++) {
         var s = twRandomMap(seed), r = twRng(seed * 7);
         if (!s.links.length) continue;
-        for (var k = 0; k < 3; k++) {
-          var iv = TW.addIntervention(s);
-          s.links.forEach(function (l) { if (r() < 0.4) TW.setInterventionLink(s, iv.id, l.id, true); });
-        }
-        var lay = TW.layoutMap(s), marks = TW.markerLayout(s, lay), want = 0;
-        s.interventions.forEach(function (x) { want += x.linkIds.length; });
-        eq(marks.length, want, 'seed ' + seed);
+        for (var k = 0; k < 4; k++) TW.addIdea(s, s.links[Math.floor(r() * s.links.length)].id);
+        var lay = TW.layoutMap(s), marks = TW.markerLayout(s, lay);
+        eq(marks.length, 4, 'seed ' + seed);
         marks.forEach(function (m) {
           var e = lay.edges.filter(function (x) { return x.id === m.linkId; })[0];
           ok(twCurveDist(TW.edgePath(e), [m.cx, m.cy]) < 0.75, 'seed ' + seed + ': marker off its arrow');
-          ok(m.x <= m.cx + 0.01 || marks.some(function (o) { return o !== m && o.linkId === m.linkId; }), 'centred');
         });
         var byLink = {};
         marks.forEach(function (m) { (byLink[m.linkId] = byLink[m.linkId] || []).push(m); });
@@ -3075,28 +3067,31 @@
           ok(Math.abs((g[0].x + g[g.length - 1].x + g[g.length - 1].w) / 2 - g[0].cx) < 0.01, 'group centred on the arrow');
         });
         var svg = TW.diagramSvg(s, { interactive: true });
-        eq((svg.match(/class="dg-marker" tabindex="0" role="button"/g) || []).length, want, 'seed ' + seed);
+        eq((svg.match(/class="dg-marker" tabindex="0" role="button"/g) || []).length, 4, 'seed ' + seed);
       }
+      var s2 = twFull11(), svg2 = TW.diagramSvg(s2, { interactive: true });
+      eq((svg2.match(/class="dg-marker in"/g) || []).length, 1);
+      ok(svg2.indexOf('aria-label="Idea 1: opened a weekday café, in your intervention, on arrow 1"') !== -1);
     });
 
-    assert('migrate() upgrades a stage 2 export: week 11 fields filled, old input shape kept', function() {
+    assert('migrate() reads a file from the earlier week 11: old fields left untouched, an old name becomes the idea', function() {
       var old = JSON.parse(JSON.stringify(twFull10()));
-      delete old.gapWalk; delete old.stressOwn;
+      old.options = [{ id: 'p1', summary: 'old option', chosen: true }];
+      old.gapWalk = { x: { status: 'needs' } }; old.stressTest = { neutral: { threat: 'th' } }; old.stressOwn = []; old.risks = [{ id: 'r1', text: 't' }];
       old.assumptions.forEach(function (a) { delete a.riskiest; });
-      old.interventions = [{ id: 'i1', name: 'Café', activities: ['run it', 7], linkIds: [old.links[0].id, 'gone'], characteristics: ['home', 'nope'],
-        inputs: [{ resource: 'room', fromBrief: true, slide: '3', limitation: 'x' }] }];
-      old.risks = [{ id: 'r1', text: 't', interventionId: 'gone' }];
-      old.stressTest = { neutral: { threat: 'th', protectedBy: 'i1' }, bogus: { threat: 'x' }, leveller: 'junk' };
+      old.interventions = [{ id: 'i1', name: 'Weekday café', activities: ['run it'], linkIds: [old.links[0].id, old.links[1].id, 'gone'], characteristics: ['home'], inputs: [] },
+        { id: 'i2', name: '', what: 'kept idea', tested: 'yes', inDesign: true, plausibleVerdict: 'great', charAtRisk: 'nope', linkIds: ['gone'] }];
+      delete old.design;
       var x = { tool: 'toc-workbench', schemaVersion: 1, state: old };
       eq(TW.validateImport(x).length, 0);
       var s = TW.migrate(JSON.parse(JSON.stringify(old)));
-      eq(JSON.stringify(s.gapWalk), '{}'); ok(Array.isArray(s.stressOwn) && !s.stressOwn.length);
+      eq(JSON.stringify(s.design), '{"name":"","what":"","where":"","forWhom":"","when":"","runBy":""}');
       eq(s.assumptions[0].riskiest, false);
-      var iv = s.interventions[0];
-      eq(iv.activities.join(), 'run it'); eq(iv.linkIds.join(), old.links[0].id); eq(iv.characteristics.join(), 'home'); eq(iv.feature, '');
-      eq(iv.inputs[0].basis, 'brief'); eq(iv.inputs[0].slide, '3'); eq(iv.inputs[0].limits.skills, ''); eq(iv.inputs[0].beliefId, '');
-      eq(s.risks[0].interventionId, ''); eq(s.risks[0].stressCharId, '');
-      eq(Object.keys(s.stressTest).join(), 'neutral'); eq(s.stressTest.neutral.protectedBy, 'i1');
+      var a = s.interventions[0], b = s.interventions[1];
+      eq(a.what, 'Weekday café', 'the old name becomes the idea'); eq(a.linkIds.join(), old.links[0].id, 'one arrow kept'); eq(a.because, ''); eq(a.tested, false);
+      eq(b.what, 'kept idea'); eq(b.linkIds.length, 0); eq(b.tested, false, 'a wrongly typed flag is reset'); eq(b.inDesign, false, 'an untested idea is not in the intervention');
+      eq(b.plausibleVerdict, ''); eq(b.charAtRisk, '');
+      eq(s.options[0].summary, 'old option', 'old fields are left untouched');
       eq(s.outcomes.length, old.outcomes.length); eq(s.links[0].rationale, old.links[0].rationale);
     });
 
@@ -3107,14 +3102,16 @@
       eq(JSON.stringify(TW.migrate(x.state)), JSON.stringify(s));
     });
 
-    assert('Copy as text and the report include options, interventions, gap walk, risks, stress test, riskiest; markers in the diagram', function() {
+    assert('Copy as text and the report include the intervention, the ideas and the three questions; markers in the diagram', function() {
       var s = twFull11(), txt = TW.buildText(s), rep = TW.buildReportHtml(s);
-      ok(txt.indexOf('OPTIONS AND INTERVENTIONS (SCREENS 7 AND 8)') !== -1 && txt.indexOf('RISKS AND STRESS TEST (SCREEN 9)') !== -1);
-      ok(txt.indexOf('Option 1 (CHOSEN)') !== -1 && txt.indexOf('Rejected because: rejected word') !== -1);
-      ok(txt.indexOf('I1. Weekday café') !== -1 && txt.indexOf('[client brief, slide 5]') !== -1);
-      ok(/Arrow 3 \(outcome 3 → outcome 2\): covered by assumption A2/.test(txt));
-      ok(txt.indexOf('A home away from home: threat home') !== -1 && txt.indexOf('Protected by: None yet') !== -1);
-      ok(rep.indexOf('class="dg-marker"') !== -1 && rep.indexOf('Stadium stress test') !== -1 && rep.indexOf('Riskiest assumptions') !== -1);
+      ok(txt.indexOf('OUR INTERVENTION (SCREEN 9)') !== -1 && txt.indexOf('IDEAS AND THE THREE QUESTIONS (SCREENS 7 AND 8)') !== -1);
+      ok(txt.indexOf('Name: The Living Room') !== -1);
+      ok(txt.indexOf('The club should create a weekday café and lounge in the north stand, for young adults and students') !== -1);
+      ok(txt.indexOf('I2 on arrow 1 (') !== -1 && txt.indexOf('If the club ran a quiz night, this arrow would happen because two word') !== -1);
+      ok(txt.indexOf('Plausible, Why would it work here? Strong.') !== -1 && txt.indexOf('Doable, Could the club really do it? Thin.') !== -1);
+      ok(txt.indexOf('Characteristic at risk: None that we can see') !== -1 && txt.indexOf('Dropped because: dropped word') !== -1);
+      ok(rep.indexOf('class="dg-marker in"') !== -1 && rep.indexOf('Our intervention (screen 9)') !== -1 && rep.indexOf('The three questions') !== -1);
+      eq(TW.ideasText(s)[0], 'Ideas from the arrows:'); eq(TW.interventionText(s)[0], 'Name: The Living Room');
     });
 
     assert('week9-toc-workbench.html: charset first, favicon, no curly quotes or network calls in script, no PLACEHOLDER, no brief content marker', function() {
@@ -3339,71 +3336,62 @@
       ok(!/[–—]|&ndash;|&mdash;/.test(W11D_HTML));
     });
 
-    assert('17 slides, and no two adjacent slides share an accent', function() {
+    assert('13 slides, and no two adjacent slides share an accent', function() {
       var acc = (W11D_HTML.match(/<section class="slide[^"]*" data-accent="[^"]+"/g) || []).map(function(s) { return s.match(/data-accent="([^"]+)"/)[1]; });
-      eq(acc.length, 17);
+      eq(acc.length, 13);
       for (var i = 1; i < acc.length; i++) ok(acc[i] !== acc[i - 1], 'slides ' + i + ' and ' + (i + 1));
     });
 
-    assert('reading checks: three single-select items, each with a valid answer and page-cited feedback', function() {
+    assert('no reading check: the deck explains the arrow, the intervention, the idea frame, the three questions and the sentence', function() {
       ok(W11D_CONFIG, 'CONFIG not parsed');
-      eq(W11D_CONFIG.readingChecks.length, 3);
-      W11D_CONFIG.readingChecks.forEach(function(q, i) {
-        eq(Object.keys(q.options).length, 4, 'options ' + i);
-        ok(q.options[q.correct], 'correct key ' + i);
-        ok(/\[(TC|GAF)\] p\. \d+/.test(q.right), 'page reference in feedback ' + i);
-        ok(q.wrong.length > 0, 'wrong feedback ' + i);
-      });
-      eq(W11D_CONFIG.readingChecks.map(function(q) { return q.correct; }).join(''), 'bda');
-      ok(/\[TC\] p\. 7/.test(W11D_CONFIG.readingChecks[0].right), '(a) cites [TC] p. 7');
-      ok(/\[GAF\] p\. 21/.test(W11D_CONFIG.readingChecks[1].right), '(b) cites [GAF] p. 21');
-      ok(/\[GAF\] p\. 27/.test(W11D_CONFIG.readingChecks[2].right), '(c) cites [GAF] p. 27');
-      eq(W11D_CONFIG.readingChecks[1].options.d, 'Funding, existing structures, people and partners, intelligence, and policies');
+      ok(W11D_HTML.indexOf('quiz-slide') === -1 && !W11D_CONFIG.readingChecks, 'reading check left in');
+      ['What Is an Arrow?', 'Where an Intervention Goes', 'Write Each Idea in Two Halves', 'Three Questions for Every Idea', 'Three Questions, One Idea', 'One Intervention, One Sentence', 'What You Leave With']
+        .forEach(function(h) { ok(W11D_HTML.indexOf('<h2>' + h + '</h2>') !== -1, h); });
+      ok(W11D_HTML.indexOf('the lower box is needed for the upper box') !== -1);
     });
 
-    assert('strategy, intervention and activity are [TC] p. 7\'s three terms', function() {
-      eq(W11D_CONFIG.definitions.map(function(d) { return d.name; }).join(','), 'Strategy,Intervention,Activity');
-      W11D_CONFIG.definitions.forEach(function(d) { ok(d.quote.length > 40 && d.note.length > 10, d.name); });
+    assert('quotations from [TC] are word for word, with their pages', function() {
+      var plain = W11D_HTML.replace(/&ldquo;|&rdquo;/g, '"');
+      ok(plain.indexOf('"' + TW.CONFIG.arrows.connector + '"') !== -1, 'connector quotation');
+      ok(/"space and teachers, choosing a curriculum, screening students" <span class="ref">\(\[TC\] p\. 7\)<\/span>/.test(plain), 'activities, p. 7');
+      ok(/"it is unrealistic to expect to see an increase in literacy rates any earlier" <span class="ref">\(\[TC\] p\. 8\)<\/span>/.test(plain), 'timing, p. 8');
+      ok(plain.indexOf('[TC] p. 8, where the long-term outcome is that "parents read to their children"') !== -1, 'long-term outcome, p. 8');
     });
 
-    assert('workbench blocks run 12-30, 30-55, 55-70, 70-85, 85-90 on screens 7-9, with 3-5 tasks and known lead roles', function() {
+    assert('workbench blocks run 15-35, 35-65, 65-80, 80-90 on screens 7, 8, 9, 9, with 3-5 tasks and known lead roles', function() {
       var names = W11D_CONFIG.roles.map(function(r) { return r.name; });
       var b = W11D_CONFIG.blocks;
-      eq(b.map(function(x) { return x.start + '-' + x.end; }).join(','), '12-30,30-55,55-70,70-85,85-90');
-      eq(b.map(function(x) { return x.screens.join('+'); }).join(','), '7,8,8,9,9');
+      eq(b.map(function(x) { return x.start + '-' + x.end; }).join(','), '15-35,35-65,65-80,80-90');
+      eq(b.map(function(x) { return x.screens.join('+'); }).join(','), '7,8,9,9');
       b.forEach(function(x) {
         ok(x.tasks.length >= 3 && x.tasks.length <= 5, 'task count ' + x.title);
         ok(x.leads.length > 0, 'leads ' + x.title);
         x.leads.forEach(function(l) { ok(names.indexOf(l) !== -1, 'unknown role ' + l); });
       });
-      eq(b[0].leads[0], 'Facilitator');
-      eq(b[2].leads[0], 'Evidence lead');
-      eq(b[3].leads[0], 'Sceptic');
+      eq(b[1].leads[0], 'Sceptic');
+      eq((W11D_HTML.match(/class="slide wb-slide"/g) || []).length, b.length);
+      var rs = TW.CONFIG.runSheets[11].map(function(r) { return r.t.replace('–', '-'); });
+      eq(rs.slice(1).join(','), b.map(function(x) { return x.start + '-' + x.end; }).join(','), 'deck blocks follow the workbench run sheet');
     });
 
-    assert('deck matches week9-toc-workbench.html: screens, roles, input limits, risk questions', function() {
+    assert('deck matches week9-toc-workbench.html: screen names, roles, the three questions, verdicts and the sentence', function() {
       ok(typeof TW !== 'undefined' && TW.CONFIG, 'workbench not loaded');
+      function plain(t) { return t.replace(/&oslash;/g, 'ø').replace(/&rsquo;/g, '’'); }
       Object.keys(W11D_CONFIG.screenNames).forEach(function(n) {
         var s = TW.CONFIG.screens.filter(function(x) { return x.no === +n; })[0];
         ok(s && s.week === 11 && s.built, 'screen ' + n);
         eq(W11D_CONFIG.screenNames[n], s.title, 'screen ' + n + ' name');
       });
       eq(W11D_CONFIG.roles.map(function(r) { return r.name; }).join(','), TW.CONFIG.roles.map(function(r) { return r.name; }).join(','));
-      eq(W11D_CONFIG.inputs, TW.CONFIG.interventions.inputs);
-      eq(W11D_CONFIG.limitQuestions.map(function(l) { return l.id + ':' + l.q; }).join('|'), TW.CONFIG.inputLimits.map(function(l) { return l.id + ':' + l.q; }).join('|'));
-      eq(W11D_CONFIG.riskQuestions.join('|'), TW.CONFIG.risks.questions.join('|'));
-    });
-
-    assert('stress test: eight characteristics in order, each with the first two of the workbench\'s questions, verbatim', function() {
-      var cs = TW.CONFIG.characteristics;
-      eq(W11D_CONFIG.stress.length, 8);
-      W11D_CONFIG.stress.forEach(function(c, i) {
-        eq(c.id, cs[i].id, 'id ' + i);
-        eq(c.label, cs[i].label, 'label ' + c.id);
-        eq(c.colour, cs[i].colour, 'colour ' + c.id);
-        eq(c.questions.length, 2, 'count ' + c.id);
-        eq(c.questions.join('|'), TW.CONFIG.stressQuestions[c.id].questions.slice(0, 2).join('|'), 'questions ' + c.id);
+      eq(W11D_CONFIG.questions.length, TW.CONFIG.tests.questions.length);
+      W11D_CONFIG.questions.forEach(function(q, i) {
+        var w = TW.CONFIG.tests.questions[i];
+        eq(q.id, w.id); eq(q.label, w.label); eq(q.ask, w.ask);
+        eq(q.prompts.map(plain).join('|'), w.prompts.join('|'), 'prompts ' + q.id);
       });
+      eq(W11D_CONFIG.verdicts.join(','), TW.CONFIG.verdicts.map(function(v) { return v.label; }).join(','));
+      eq(W11D_CONFIG.sentence, TW.CONFIG.intervention.sentence);
+      TW.CONFIG.intervention.slots.forEach(function(s) { eq(W11D_CONFIG.blanks[s.id], s.blank, 'blank ' + s.id); });
     });
 
     assert('narrow layout query keeps the "screen and" prefix', function() {
