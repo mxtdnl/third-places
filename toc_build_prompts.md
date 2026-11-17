@@ -150,33 +150,34 @@ ACCEPTANCE: plan §9 items 5, 7, 8, 10 (diagram), 11 and 14.
 
 ## T3 — Workbench week 11 screens: interventions
 
+Simplified in November 2026 (built as below): the first version had options appraisal, a gap walk, inputs, a risk register and a full stadium stress test, which was too much for one 90-minute session with no reading done.
+
 ```
 Follow the standing instructions in toc_build_prompts.md §0.
 
-Stage 3 of 5 of week9-toc-workbench.html: the week 11 screens. Spec: toc_buildplan.md §4 (principle 4), §6 Week 11, §7. Reading: [TC] p. 7; [GAF] p. 11 (questions 6–7), pp. 19–22, 27–28.
+Stage 3 of 5 of week9-toc-workbench.html: the week 11 screens. Spec: toc_buildplan.md §4 (principle 4), §6 Week 11, §7. Reading: [TC] pp. 7 and 9. Assume no reading has been done: every screen explains its idea in plain English.
 
-DESIGN LOCK: screens 7–9 stay locked until the week 10 gate passes, with a message listing what is missing. Show [TC] p. 7's quotation ("we deliberately ask groups to hold off on interventions").
+THE LOCK: screens 7-9 are locked only while the backwards map has no arrows or has a loop. Unfinished week 10 checks show on screen 7 as a warning, not a lock.
 
-SCREEN 7, OPTIONS APPRAISAL:
-- At least two options: summary, location, and a word-counted judgement each for plausible, doable and testable ([TC] p. 9).
-- Choose one and record why each other option was rejected.
-- Show [GAF] p. 11's "alternative strategies" question.
+SCREEN 7, IDEAS FROM THE ARROWS:
+- What an arrow is: read from the bottom up, the lower box is needed for the upper box. Show it as a small figure built from the group's own arrow 1, with [TC] p. 7's "on the connector" quotation.
+- The map diagram, with each idea drawn as a marker I1, I2 ... on its arrow.
+- The arrows shared out among the members in turn (nothing stored).
+- One card per arrow: its two boxes, its week 10 rationale, and its ideas. Each idea is written for one arrow in two halves: "If the club ..." and "... this arrow would happen because ...". At least three ideas.
+- An idea whose arrow leaves the map is listed until it is given another arrow or removed.
 
-SCREEN 8, INTERVENTIONS:
-- Each intervention: name, activities, and one or more arrows from the map ([TC] p. 7: interventions sit on the connector from a precondition to the outcome it helps produce).
-- Each intervention also records the characteristics it protects or produces.
-- Interventions appear on the SVG diagram as markers on their arrows.
-- Shoehorn check: an intervention with no arrow is flagged, with [TC] p. 7's "it's best not to shoehorn them in".
-- Gap walk: list every arrow with no intervention; each must be marked "needs an intervention" (blocking) or "covered by an assumption" (choose one from the register).
-- Inputs per intervention ([GAF] p. 21): resource, whether it comes from the brief (slide number required) or is our assumption, and the limitation questions (ring-fenced? skills? time limits on facilities?).
+SCREEN 8, TEST THE IDEAS:
+- Choose two or three ideas (no more than three).
+- For each, [TC] p. 9's three questions in plain words: "Why would it work here?" (plausible), "Could the club really do it?" (doable), "How would the club know it is working?" (testable). Each has two or three prompts, a word-counted answer and a verdict: strong, thin or fails. The verdict is the group's judgement; nothing is scored.
+- Under plausible: which of the eight characteristics the idea could put at risk, or none.
+- What would make the idea stronger.
 
-SCREEN 9, RISKS AND STRESS TEST:
-- Risks ([GAF] p. 27): text, internal or external, likelihood (low/medium/high), mitigation, linked intervention. Show the definition quotation and the three questions.
-- Explain the difference from an assumption beside the form.
-- Stadium stress test: for each of the eight characteristics, how this setting could threaten it, and which intervention protects it (or "none yet", which goes to the risk register). The general question bank lives in CONFIG.stressQuestions. It must contain no brief content; a field invites groups to add their own question drawn from the brief.
-- Week 11 close: self-check; print A6 cards for the three assumptions the group marks riskiest.
+SCREEN 9, OUR INTERVENTION:
+- Tick the tested ideas that go into the intervention (at least one); a reason for each tested idea dropped.
+- A short name, and the sentence "The club should create [what] [where], for [whom], open [when], run by [whom].", each gap word-counted, with a live preview and "So that: [the long-term outcome]".
+- Week 11 close: the self-check asks the three questions of the intervention as a whole; print the intervention A6 card; export.
 
-TESTS: lock logic, shoehorn and gap-walk checks, marker placement on arrows, migrate() from a stage 2 export.
+TESTS: the lock and the warning, the screen 7-9 gates, single-arrow ideas pruned with their arrow, markers on arrows, the intervention card, migrate() from the earlier week 11 file.
 
 ACCEPTANCE: plan §9 items 6, 7, 8, 10 (A6 cards), 11 and 14.
 ```
@@ -204,9 +205,10 @@ SCREEN 11, OUTSIDE REVIEW:
 - Reviewer mode: import another group's review copy; reviewer group name and members. Walk the review link by link:
   - [TC] p. 9's plausibility, feasibility and testability questions, quoted exactly;
   - then [GAF] p. 47's quality factors: consistent definitions and terms (check against the screen 3 definitions), stakeholders considered, context and evidence clear.
-- Required: name the weakest assumption and propose how the club could test it; flag any claim above the accountability ceiling.
+- Required: name the weakest assumption and propose how the club could test it; name the biggest risk to the group's intervention (week 11, screen 9); flag any claim above the accountability ceiling.
 - Export the review file.
 - Author mode, respond: import the review; every challenge needs accept, revise or rebut (word-counted reason). Revise jumps to the right screen and logs the change.
+- Author mode, then: mark the three riskiest assumptions (assumptions[].riskiest, already in the state; they become the "it will work if" of the recommendation and print as A6 cards), and record each risk the review names with a mitigation (add "risks" to the state through migrate()).
 - The reviewer never edits the author's work.
 
 TESTS: timeline check, share-out, baseline-to-find-out-first routing, review file round trip (a review made on one group's copy imports into that group only, matched by group name and export id), migrate() from a stage 3 export.
@@ -242,7 +244,7 @@ SCREEN 13, RECOMMENDATION AND OUTPUTS:
 
 SCREEN 14, CLASS VIEW (instructor):
 - Load any number of group exports.
-- Show side by side: recommendation sentences, long-term outcomes, ceiling placements, interventions by characteristic protected, the riskiest assumptions across groups, and the most common find-out-first items.
+- Show side by side: recommendation sentences, long-term outcomes, ceiling placements, the week 11 intervention sentences, the characteristics each group's ideas could put at risk, the riskiest assumptions across groups, and the most common find-out-first items.
 - Projector-friendly layout. No scores or rankings.
 
 FINAL ACCEPTANCE: run every item in plan §9 against the finished file and report each.
@@ -336,28 +338,23 @@ Add the index.html card and the CLAUDE.md entry.
 ```
 Follow the standing instructions in toc_build_prompts.md §0, and the deck brief in the "Deck prompts: shared brief" section of that file.
 
-Build week11-toc-deck.html (Activity 18). Spec: toc_buildplan.md §4 (principle 4), §6 Week 11. Reading: [TC] p. 7; [GAF] pp. 11, 19–22, 27–28.
+Build week11-toc-deck.html (Activity 18). Spec: toc_buildplan.md §4 (principle 4), §6 Week 11. Reading: [TC] pp. 7–9. Assume no reading has been done: teach each idea directly, in plain English, with no reading check.
 
-SLIDES (about 16):
+SLIDES (13):
 1. Title poster. Eyebrow "Week 11 · Intervene". Title "What Should the Club Build?".
-2. Quote plus commentary: "we deliberately ask groups to hold off on interventions" ([TC] p. 7). Commentary: why design unlocks only now.
-3–5. Reading check, single-select:
-   - (a) Where does an intervention sit on the outcomes framework? Correct: on the connector from the precondition to the outcome it helps produce ([TC] p. 7).
-   - (b) Which list does [GAF] give as possible inputs? Correct: funding, existing structures, people and partners, intelligence, and policies ([GAF] p. 21).
-   - (c) What is a risk? Correct: an internal or external factor that can influence the programme positively or negatively ([GAF] p. 27).
-6. Numbered cards: strategy, intervention, activity, as [TC] p. 7 defines them.
-7. Split with panel: options appraisal. [GAF] p. 11 "Are there alternative strategies to meet your aims?"; each option tested as plausible, doable, testable ([TC] p. 9); one chosen, the rest rejected with reasons.
-8. Chain: placing interventions on arrows, then the gap walk (every arrow is served by an intervention or covered by an assumption). Quote "it's best not to shoehorn them in" ([TC] p. 7).
-9. Card grid: inputs and [GAF] p. 21's limitation questions (ring-fenced budget? the right skills? time limits on facilities?). Constraints from the brief are cited by slide; anything else is stated as an assumption.
-10. Split with panel: risk versus assumption, with [GAF] p. 27's three questions.
-11. Card grid of eight, one per characteristic in its colour: the stadium stress test, two general questions each (from the workbench CONFIG.stressQuestions; no brief content).
-12–16. In the workbench:
-   - 12–30 options (screen 7);
-   - 30–55 interventions and gap walk (screen 8);
-   - 55–70 inputs (screen 8);
-   - 70–85 risks and stress test (screen 9);
-   - 85–90 close.
-17. Close: self-check; print the riskiest-assumption cards; export; pre-reading for week 12 ([TC] pp. 8–9; [GAF] Step 11 and pp. 47–48).
+2. Today: three steps (ideas, screen 7, 20 minutes; test, screen 8, 30 minutes; choose, screen 9, 15 minutes); "You leave with one intervention, printed on a card".
+3. What is an arrow? A figure of two boxes and an upward arrow, read from the bottom up: the lower box is needed for the upper box. Example adapted from [TC] p. 8 ("parents read to their children"). The week 10 rationale is the reason on the arrow.
+4. Where an intervention goes: the same figure with "literacy classes" ([TC] p. 7) sitting on the arrow; [TC] p. 7's "on the connector" quotation; start from an arrow rather than a favourite idea.
+5. An idea in two halves: "If the club ..." / "... this arrow would happen because ...", with a worked example and three rules.
+6. The three questions, as in the workbench (CONFIG.tests.questions), with the verdicts strong, thin, fails and [TC] p. 9's question.
+7. Worked example: literacy classes put through the three questions, with quotations from [TC] pp. 7 and 8, a verdict for each and a fix.
+8. One intervention in one sentence: "The club should create [what] [where], for [whom], open [when], run by [whom].", so that the long-term outcome.
+9–12. In the workbench:
+   - 15–35 ideas from the arrows (screen 7);
+   - 35–65 test the ideas (screen 8);
+   - 65–80 our intervention (screen 9);
+   - 80–90 close (screen 9).
+13. Close: the intervention card, week 12 (indicators and the outside review), one optional reading ([TC] pp. 8–9), export.
 
 Add the index.html card and the CLAUDE.md entry.
 ```
