@@ -3676,6 +3676,82 @@
       ok(W12D_HTML.indexOf('@media screen and (max-width: 860px), screen and (max-aspect-ratio: 1/1)') !== -1);
     });
 
+
+    // =====================================================
+    // WEEK 12 PLAN, NO-UPLOAD VERSION
+    // =====================================================
+
+    suite('Week 12 plan (no-upload version)');
+
+    var P12_HTML = cwsGet('week12-plan-workbench.html');
+    (function () { var m = P12_HTML.match(/<script>([\s\S]*?)<\/script>/); if (m) new Function(m[1])(); })();
+
+    assert('week12-plan-workbench.html: charset first, favicon, no curly quotes, network calls or PLACEHOLDER in script', function() {
+      ok(P12_HTML.indexOf('<meta charset="utf-8">') === 0, 'charset not first');
+      ok(P12_HTML.indexOf('<link rel="icon" type="image/png" href="data:image/png;base64,') > P12_HTML.indexOf('<title>'), 'favicon');
+      var m = P12_HTML.match(/<script>([\s\S]*?)<\/script>/);
+      ok(m && !/[‘’“”]/.test(m[1]), 'curly quotes found');
+      ok(!/fetch\(|XMLHttpRequest|https?:\/\//.test(m[1]), 'network call found');
+      ok(m[1].indexOf('PLACEHOLDER') === -1, 'PLACEHOLDER found');
+      ok(window.P12 && P12.CONFIG, 'P12 hook');
+    });
+
+    assert('starts with empty rows ready to type in: 3 activities, 2 risks, 2 "it will work if", 2 signs', function() {
+      var s = P12.defaultState();
+      eq([s.activities.length, s.risks.length, s.workIf.length, s.signs.length].join(), '3,2,2,2');
+    });
+
+    assert('no word limits: one word fills a box; a sign is done with its number known or marked unknown', function() {
+      var s = P12.defaultState(), a = s.activities[0];
+      a.what = 'quiz'; a.when = 'weekly'; a.who = 'volunteers'; ok(!P12.rowDone('activities', a));
+      a.needs = 'room'; ok(P12.rowDone('activities', a));
+      var x = s.signs[0]; x.shows = 'belonging'; x.byWhen = '12 months'; x.howMany = '200'; x.who = 'students'; x.level = 'visit'; x.count = 'door count';
+      ok(!P12.rowDone('signs', x)); x.known = 'no'; ok(P12.rowDone('signs', x));
+      x.known = 'yes'; ok(!P12.rowDone('signs', x)); x.today = 'none'; ok(P12.rowDone('signs', x));
+      eq(P12.signSentence({ byWhen: '12 months', howMany: '200', who: 'students', level: 'will visit twice a month.' }), 'By 12 months after opening, 200 students will visit twice a month.');
+    });
+
+    assert('Find out first builds itself from the checks and the unknown numbers', function() {
+      var s = P12.defaultState();
+      s.workIf[0] = { text: 'Students travel here.', check: 'ask them' };
+      s.workIf[1] = { text: 'no check yet', check: '' };
+      s.signs[0].known = 'no'; s.signs[0].byWhen = '6 months'; s.signs[0].howMany = 'half'; s.signs[0].who = 'regulars'; s.signs[0].level = 'stay an hour';
+      eq(P12.findOutFirst(s).join('|'), 'Check before opening: Students travel here (how: ask them)|Find out today’s number: By 6 months after opening, half regulars will stay an hour.');
+    });
+
+    assert('loading is optional: a week 11 workbench export fills the intervention, outcome, assumptions and map boxes; other files are refused', function() {
+      var wb = twFull11(), x = JSON.parse(JSON.stringify(TW.buildExport(wb)));
+      var r = P12.fromFile(x);
+      ok(!r.error, r.error);
+      eq(r.state.group.name, 'Test Group'); eq(r.state.group.members, 'Ana, Ben, Cai');
+      eq(r.state.design.what, 'a weekday café and lounge'); eq(r.state.design.lto, wb.lto.text);
+      eq(r.state.assumptions.length, wb.assumptions.length);
+      eq(r.state.boxes[0], wb.lto.text); eq(r.state.boxes.length, 1 + wb.outcomes.length);
+      eq(r.state.activities.length, 3, 'empty rows when the workbench has no week 12 work');
+      ok(P12.fromFile({ tool: 'week7-bodo-decline', state: {} }).error);
+      ok(P12.fromFile('nonsense').error);
+    });
+
+    assert('a full week 12 workbench export carries its week 12 work across', function() {
+      var wb = twFull12(), r = P12.fromFile(JSON.parse(JSON.stringify(TW.buildExport(wb))));
+      eq(r.state.activities.length, 3); eq(r.state.workIf[1].text, 'Students will travel to the stadium on weekdays');
+      eq(r.state.signs[0].byWhen, '12 months'); eq(r.state.signs[0].shows, wb.lto.text); eq(r.state.signs[0].known, 'no');
+      eq(r.state.signs[1].shows, wb.outcomes[1].text);
+    });
+
+    assert('own export round trip; text, report and cards include only rows with something in them', function() {
+      var s = P12.defaultState();
+      s.group.name = 'G'; s.design.what = 'a café'; s.activities[0].what = 'quiz'; s.workIf[0].text = 'people come';
+      var x = JSON.parse(JSON.stringify(P12.buildExport(s, '2026-11-30T10:00:00.000Z')));
+      eq(x.tool, 'week12-plan'); eq(JSON.stringify(P12.fromFile(x).state), JSON.stringify(P12.migrate(s)));
+      var c = P12.cards(s);
+      eq(c.length, 2, 'the intervention card and one "it will work if"');
+      ok(/^The club should create a café \[where\]/.test(c[0].text));
+      var t = P12.buildText(s);
+      ok(t.indexOf('1. quiz When:') !== -1 && t.indexOf('2. ') === -1);
+      ok(P12.reportHtml(s).indexOf('<table class="rep-table">') !== -1);
+    });
+
     // =====================================================
     // SUMMARY
     // =====================================================

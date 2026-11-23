@@ -1,0 +1,696 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Plan in Detail</title>
+<!-- Favicon: Home icons created by Good Ware - Flaticon (Flaticon) -->
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+<!--
+  WEEK 12 - THE PLAN IN DETAIL (NO-UPLOAD VERSION)
+  Social Phenomena Challenge, INTERVENE phase. Activity 15, week 12.
+
+  A one-page version of week 12 of the Bodø Theory of Change workbench
+  (week9-toc-workbench.html, screens 10-11), for groups that do not have
+  their workbench file, are on a new device, or want to start typing
+  straight away. It needs no upload and has no word limits: every box is
+  free text and nothing is locked. A group that does have its workbench
+  export can load it (optional) to fill in its intervention, long-term
+  outcome, assumptions and map boxes.
+
+  Same session and same deck as the full workbench (week12-toc-deck.html):
+     0-10  Deck.
+    10-40  Step 2: what happens there (activities); what could go wrong.
+    40-60  Step 3: it will work if ..., with a check before it opens.
+    60-82  Step 4: signs it is working, each with the four targets.
+    82-90  Print the cards and the plan; export.
+  Step 1 (your group and your intervention) takes a minute, or none if
+  the workbench file is loaded.
+
+  Core reading: [TC] Taplin, D. H. & Clark, H. (2012). Theory of Change
+  Basics. ActKnowledge. Course copy ToCBasics.pdf. Quotations are exact,
+  with the page.
+
+  THE CLIENT BRIEF IS CONFIDENTIAL. It is never stored in this file.
+  No scores: the ticks only show which boxes have something in them.
+
+  ============================================================================
+  EXPORT JSON  (tool "week12-plan", schemaVersion 1)
+  ============================================================================
+  {
+    "tool": "week12-plan", "schemaVersion": 1, "exportedAt": "ISO 8601",
+    "state": {
+      "group":  { "name", "members" },          members: one line, commas
+      "design": { "name", "what", "where", "forWhom", "when", "runBy", "lto" },
+                 read as "The club should create [what] [where], for
+                 [forWhom], open [when], run by [runBy]." lto = so that ...
+      "activities": [ { "what", "when", "who", "needs" } ],
+      "risks":      [ { "text", "mitigation" } ],
+      "workIf":     [ { "text", "check" } ],
+      "signs":      [ { "shows", "byWhen", "howMany", "who", "level",
+                        "count", "known": "" | "yes" | "no", "today" } ],
+      "assumptions": [ "string" ],               from a loaded workbench file
+      "boxes":       [ "string" ]                map boxes from that file
+    }
+  }
+  IMPORT accepts this file, or an export of week9-toc-workbench.html (tool
+  "toc-workbench"): from that it reads the group, design, lto.text,
+  assumptions, outcomes and any week 12 entries already made there.
+  ============================================================================
+-->
+<style>
+  :root {
+    --bg: #F2DFBE; --bg-card: #FFFAF2; --bg-deep: #E8D2A8;
+    --text: #2A1F18; --text-muted: #6A5A48; --border: #D8C8A8;
+    --char-1: #5C3A96; --char-2: #B52838; --char-3: #C85218; --char-4: #D4A020;
+    --char-5: #7A5828; --char-6: #B83068; --char-7: #CC6830; --char-8: #7E58A8;
+    --char-4-ink: #7A5410;
+    --correct: #2A7A42; --correct-bg: #E6F4EA;
+    --incorrect: #B82828; --incorrect-bg: #FDEEEE;
+    --ambiguous: #B98A10; --ambiguous-bg: #FFF3D6;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 16px; line-height: 1.55; overflow-x: hidden;
+  }
+  :focus-visible { outline: 3px solid var(--char-1); outline-offset: 2px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  .app-wrap { max-width: 980px; margin: 0 auto; padding: 1.5rem 2rem 3rem; }
+  h1 { font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.1; margin-bottom: 0.5rem; }
+  h2 { font-size: clamp(1.25rem, 2.6vw, 1.7rem); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.2; }
+  p { margin-bottom: 0.6rem; }
+  .eyebrow { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); }
+  .lede { font-size: 1.05rem; color: var(--text-muted); max-width: 720px; }
+  .quiet { color: var(--text-muted); font-size: 0.9rem; }
+
+  .page-header { position: relative; overflow: hidden; padding: 1.5rem 2rem 1.25rem 0; margin-bottom: 1rem; border-bottom: 6px solid var(--char-8); }
+  .page-header > * { position: relative; z-index: 1; }
+  .page-header::before { content: ''; position: absolute; width: 230px; height: 230px; background: var(--char-8); border-radius: 50%; opacity: 0.10; top: -80px; right: -40px; z-index: 0; }
+  .page-header::after { content: ''; position: absolute; width: 64px; height: 64px; background: var(--char-4); opacity: 0.18; bottom: 14px; right: 170px; transform: rotate(25deg); z-index: 0; }
+  .page-header .deco-bar { position: absolute; z-index: 0; pointer-events: none; width: 160px; height: 10px; background: var(--char-2); top: 28px; right: 260px; transform: rotate(-8deg); opacity: 0.8; }
+  .page-header .deco-ring { position: absolute; z-index: 0; pointer-events: none; width: 84px; height: 84px; border: 6px solid var(--char-1); border-radius: 50%; bottom: -30px; right: 40px; opacity: 0.3; }
+
+  .howto { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.5rem; margin: 0 0 1rem; list-style: none; counter-reset: st; }
+  .howto li { background: var(--bg-card); border: 2px solid var(--border); border-top: 6px solid var(--st); padding: 0.55rem 0.75rem; font-size: 0.88rem; line-height: 1.35; }
+  .howto b { display: block; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--st-ink, var(--st)); }
+
+  .toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; }
+  .status { min-height: 1.6rem; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.75rem; padding-left: 0.6rem; border-left: 4px solid var(--char-4); }
+  .status:empty { border-left-color: transparent; }
+  .btn {
+    font: inherit; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    min-height: 44px; padding: 0.55rem 1rem; border: 2px solid transparent; border-radius: 0; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  }
+  .btn-primary { background: var(--char-1); color: #fff; }
+  .btn-primary:hover { background: var(--char-2); transform: translateY(-2px); }
+  .btn-accent { background: var(--char-6); color: #fff; }
+  .btn-accent:hover { background: var(--char-2); transform: translateY(-2px); }
+  .btn-ghost { background: transparent; color: var(--text); border-color: var(--text); }
+  .btn-ghost:hover { background: var(--text); color: var(--bg); transform: translateY(-2px); }
+  .btn-danger { background: transparent; color: var(--incorrect); border-color: var(--incorrect); }
+  .btn-danger:hover { background: var(--incorrect); color: #fff; }
+  .btn:active { transform: translateY(0); }
+  .btn-small { padding: 0.4rem 0.7rem; font-size: 0.7rem; }
+
+  .step { position: relative; overflow: hidden; background: var(--bg-card); border: 2px solid var(--border); border-top: 8px solid var(--sc); padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; }
+  .step::after { content: ''; position: absolute; width: 150px; height: 150px; border-radius: 50%; background: var(--sc); opacity: 0.07; right: -40px; bottom: -50px; pointer-events: none; }
+  .step > * { position: relative; z-index: 1; }
+  .step-head { display: flex; gap: 0.9rem; align-items: flex-start; margin-bottom: 0.6rem; }
+  .step-no { flex: 0 0 auto; width: 2.6rem; height: 2.6rem; display: flex; align-items: center; justify-content: center; background: var(--sc); color: var(--sc-fg, #fff); font-weight: 800; font-size: 1.3rem; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .step-head .when { display: block; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sc-ink, var(--sc)); }
+  .do { font-size: 1.02rem; font-weight: 600; margin-bottom: 0.75rem; max-width: 760px; }
+  .sub { font-size: 0.8rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; margin: 1.1rem 0 0.5rem; color: var(--sc-ink, var(--sc)); }
+
+  .field { margin-bottom: 0.7rem; min-width: 0; }
+  .field > label { display: block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.25rem; }
+  .field .hint { display: block; font-size: 0.8rem; color: var(--text-muted); margin: -0.1rem 0 0.25rem; text-transform: none; letter-spacing: 0; font-weight: 400; }
+  input[type="text"], textarea { width: 100%; font: inherit; font-size: 0.95rem; color: var(--text); background: #fff; border: 2px solid var(--border); border-radius: 0; padding: 0.5rem 0.65rem; min-height: 44px; }
+  textarea { min-height: 64px; resize: vertical; }
+  input:focus, textarea:focus { border-color: var(--char-1); outline: 3px solid var(--char-4); outline-offset: 1px; }
+  .grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 1rem; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 0.75rem; }
+
+  .row { background: #fff; border: 2px solid var(--border); border-left: 6px solid var(--rc, var(--char-1)); padding: 0.75rem 1rem 0.2rem; margin-bottom: 0.75rem; }
+  .row-head { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+  .tag { display: inline-flex; align-items: center; justify-content: center; min-width: 2rem; height: 2rem; padding: 0 0.4rem; background: var(--rc, var(--char-1)); color: var(--rc-fg, #fff); font-weight: 800; font-size: 0.8rem; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .row-head .grow { flex: 1 1 auto; }
+  .tick { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); }
+  .tick.on { color: var(--correct); }
+
+  .sentence { font-size: 1.08rem; font-weight: 600; line-height: 2.4; background: #fff; border: 2px solid var(--border); border-left: 8px solid var(--sc); padding: 0.4rem 1rem; margin-bottom: 0.75rem; }
+  .sentence input { display: inline-block; width: auto; min-width: 8rem; max-width: 100%; vertical-align: baseline; font-weight: 700; padding: 0.3rem 0.5rem; margin: 0.15rem 0; border-color: var(--sc); }
+  .sentence input.w-s { width: 9rem; }
+  .sentence input.w-m { width: 13rem; }
+  .sentence input.w-l { width: 18rem; }
+  .readback { font-weight: 700; border-left: 6px solid var(--sc); background: rgba(126,88,168,0.08); padding: 0.5rem 0.8rem; margin-bottom: 0.75rem; overflow-wrap: anywhere; }
+
+  .choices { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.7rem; }
+  .choice { position: relative; display: inline-flex; }
+  .choice input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .choice > span { display: inline-flex; align-items: center; min-height: 44px; padding: 0.4rem 0.9rem; border: 2px solid var(--border); background: #fff; cursor: pointer; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease; }
+  .choice input:checked + span { background: var(--choice-colour, var(--char-1)); border-color: var(--choice-colour, var(--char-1)); color: #fff; }
+  .choice input:focus-visible + span { outline: 3px solid var(--char-4); outline-offset: 2px; }
+  .legend { display: block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.25rem; }
+  fieldset { border: 0; min-width: 0; }
+
+  .quote { font-size: 0.88rem; line-height: 1.45; padding: 0.6rem 0.8rem; background: rgba(92,58,150,0.08); border-left: 5px solid var(--char-1); margin-bottom: 0.75rem; max-width: 760px; }
+  .quote cite { font-style: normal; font-weight: 700; font-size: 0.8rem; margin-left: 0.3rem; }
+  .pick { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.75rem; }
+  .pick .btn { text-transform: none; letter-spacing: 0; font-weight: 600; font-size: 0.85rem; border-color: var(--char-5); text-align: left; }
+  .prompts { margin: 0 0 0.75rem 1.2rem; font-size: 0.9rem; color: var(--text-muted); }
+  .fof { list-style: none; }
+  .fof li { padding: 0.4rem 0; border-top: 2px solid var(--border); font-size: 0.92rem; }
+  .fof li:first-child { border-top: 0; }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1rem; margin-top: 0.75rem; }
+  .a6 { display: flex; flex-direction: column; background: #fff; border: 2px dashed #8A7A62; padding: 1rem 1.1rem; aspect-ratio: 105 / 148; overflow: hidden; }
+  .a6-eyebrow { font-size: 0.66rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: #4A3828; }
+  .a6-bar { height: 10px; margin: 0.4rem 0 0.75rem; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .a6-text { font-size: 1.1rem; font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; margin-bottom: 0.6rem; }
+  .a6-detail { font-size: 0.78rem; line-height: 1.35; overflow-wrap: anywhere; }
+  .a6-detail p { margin-bottom: 0.3rem; }
+  .a6-foot { margin-top: auto; padding-top: 0.5rem; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; border-top: 2px solid #2A1F18; }
+  .actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+  .site-footer { margin-top: 2rem; font-size: 0.8rem; color: var(--text-muted); border-top: 4px solid var(--char-4); padding-top: 0.75rem; }
+  .print-only { display: none; }
+
+  @media (max-width: 760px) {
+    .app-wrap { padding: 1rem 16px 2.5rem; }
+    .page-header { padding-right: 0; }
+    .page-header .deco-bar { right: 12px; top: 4px; width: 80px; }
+    .howto, .grid2, .grid4 { grid-template-columns: minmax(0, 1fr); }
+    .step { padding: 1rem; }
+    .sentence input, .sentence input.w-s, .sentence input.w-m, .sentence input.w-l { width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+    .btn:hover { transform: none; }
+  }
+
+  @page { size: A4 portrait; margin: 10mm; }
+  @media print {
+    body { background: #fff; font-size: 9.5pt; }
+    .app-wrap { max-width: none; padding: 0; }
+    .no-print, .toolbar, .status, .howto, #form, .site-footer { display: none !important; }
+    .page-header { padding: 0 0 2mm; margin-bottom: 3mm; border-bottom-width: 1mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page-header::before, .page-header::after, .deco-bar, .deco-ring, .lede { display: none; }
+    h1 { font-size: 16pt; margin: 0; }
+    .print-only { display: block; }
+    body.print-cards .page-header { display: none; }
+    .rep { border-top: 1mm solid var(--rep, #5C3A96); padding-top: 2mm; margin-bottom: 4mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .rep h2 { font-size: 11pt; margin-bottom: 1.5mm; }
+    .rep-table { width: 100%; border-collapse: collapse; font-size: 8.5pt; }
+    .rep-table th, .rep-table td { border: 0.3mm solid #C8B898; padding: 1mm 1.5mm; text-align: left; vertical-align: top; }
+    .rep-table th { font-size: 7pt; letter-spacing: 0.08em; text-transform: uppercase; }
+    .rep p { margin-bottom: 1mm; }
+    .a6-sheet { display: grid; grid-template-columns: 95mm 95mm; grid-template-rows: 138mm 138mm; break-before: page; }
+    body.print-cards .a6-sheet:first-child { break-before: auto; }
+    .a6 { width: 95mm; height: 138mm; aspect-ratio: auto; border: 0.3mm dashed #8A7A62; padding: 7mm; }
+    .a6-eyebrow { font-size: 7pt; } .a6-text { font-size: 14pt; } .a6-detail { font-size: 8pt; } .a6-foot { font-size: 7pt; }
+  }
+</style>
+
+<div class="app-wrap" id="p12-app">
+  <header class="page-header">
+    <div class="deco-bar" aria-hidden="true"></div>
+    <div class="deco-ring" aria-hidden="true"></div>
+    <p class="eyebrow" style="color: var(--char-8)">Activity 15 &middot; Week 12 &middot; No-upload version</p>
+    <h1>The Plan in Detail</h1>
+    <p class="lede">One page for week 12. Nothing to upload and no word limits: type straight into the boxes, top to bottom. It saves on this device as you type.</p>
+    <p class="print-only" id="print-meta"></p>
+  </header>
+
+  <ol class="howto no-print" aria-label="Today's steps">
+    <li style="--st: var(--char-1)"><b>1 &middot; 1 minute</b>Your group and your intervention</li>
+    <li style="--st: var(--char-8)"><b>2 &middot; 10&ndash;40 min</b>What happens there; what could go wrong</li>
+    <li style="--st: var(--char-5)"><b>3 &middot; 40&ndash;60 min</b>It will work if &hellip;</li>
+    <li style="--st: var(--char-4); --st-ink: var(--char-4-ink)"><b>4 &middot; 60&ndash;82 min</b>Signs it is working</li>
+  </ol>
+
+  <div class="toolbar" role="toolbar" aria-label="File tools">
+    <button type="button" class="btn btn-ghost" id="btn-load">Load a file (optional)</button>
+    <button type="button" class="btn btn-ghost" id="btn-export">Export JSON</button>
+    <button type="button" class="btn btn-ghost" id="btn-copy">Copy as text</button>
+    <button type="button" class="btn btn-ghost" id="btn-print">Print the plan</button>
+    <button type="button" class="btn btn-danger" id="btn-reset">Reset</button>
+    <input type="file" id="load-file" accept="application/json,.json" class="sr-only" tabindex="-1" aria-hidden="true">
+  </div>
+  <p class="status" id="status" role="status" aria-live="polite"></p>
+
+  <main id="form"></main>
+
+  <div id="print-area" class="print-only"></div>
+  <footer class="site-footer no-print">Third Places &middot; Social Phenomena Challenge. The full workbench is <a href="week9-toc-workbench.html">week9-toc-workbench.html</a>; the deck is <a href="week12-toc-deck.html">week12-toc-deck.html</a>.</footer>
+</div>
+<script>
+(function () {
+  'use strict';
+
+  // ==========================================================================
+  // CONFIG: everything a non-developer may want to edit lives here.
+  //  - Never put anything from the client brief in this file.
+  //  - Quotations from the readings must match the PDF exactly, with the
+  //    page. Curly quotation marks are written as \u201C \u201D \u2019.
+  //  - There are no word limits: a box counts as filled once it has
+  //    anything in it.
+  // ==========================================================================
+  var CONFIG = {
+    toolId: 'week12-plan',
+    schemaVersion: 1,
+    storageKey: 'week12-plan-v1',
+    // The full workbench's exports can be loaded to fill this page in.
+    workbenchToolId: 'toc-workbench',
+
+    // How many rows each list starts with (more can be added).
+    start: { activities: 3, risks: 2, workIf: 2, signs: 2 },
+    // A soft limit: past this, the add button asks the group to keep the
+    // ones that matter most. Nothing is refused.
+    keepTo: { workIf: 3, signs: 3 },
+
+    steps: {
+      group: {
+        title: 'Your group and your intervention', colour: 'var(--char-1)', when: '1 minute',
+        do: 'Type your group and copy in the intervention you chose in week 11. If you have your workbench file, use Load a file instead and this fills itself in.'
+      },
+      plan: {
+        title: 'What happens there', colour: 'var(--char-8)', when: '10\u201340 min',
+        do: 'Break your intervention into the things that would actually happen there, week to week. Each person drafts at least one activity; the Scribe types them in.',
+        quote: 'We use activity to describe all the specific actions that make up an intervention.', quoteRef: '[TC] p. 7'
+      },
+      risks: {
+        title: 'What could go wrong', colour: 'var(--char-2)',
+        do: 'Name at least two things, and what the club would do about each one.',
+        prompts: ['What if hardly anyone comes, or only one kind of person comes?', 'What if it costs more than planned, or the people running it leave?', 'What could push out one of the eight characteristics of a third place?']
+      },
+      workIf: {
+        title: 'It will work if \u2026', colour: 'var(--char-5)', when: '40\u201360 min',
+        do: 'Name the two or three things your plan depends on most. For each one, say how the club could check it before it opens.',
+        fromFile: 'From your assumption register (tap one to use it):'
+      },
+      signs: {
+        title: 'Signs it is working', colour: 'var(--char-4)', fg: 'var(--text)', ink: 'var(--char-4-ink)', when: '60\u201382 min',
+        do: 'Two or three things the club could see or count in its first years if the plan works. Fill in the sentence for each.',
+        quote: 'Each indicator needs to have four targets: How many of who or what will reach what level by when?', quoteRef: '[TC] p. 8'
+      },
+      finish: {
+        title: 'Find out first, and your cards', colour: 'var(--char-6)', when: '82\u201390 min',
+        do: 'This list builds itself from steps 3 and 4: it is what the club should find out in its first year. Then print your cards and export.'
+      }
+    },
+
+    // The intervention sentence, from week 11 (same as the workbench).
+    sentence: 'The club should create {what} {where}, for {forWhom}, open {when}, run by {runBy}.',
+    slots: [
+      { id: 'what', label: 'What the club should create', hint: 'The kind of place, in a few words.' },
+      { id: 'where', label: 'Where', hint: 'In, at, beside or next to the stadium.' },
+      { id: 'forWhom', label: 'For whom', hint: 'Who it is mainly for.' },
+      { id: 'when', label: 'When it is open', hint: 'Days and times.' },
+      { id: 'runBy', label: 'Run by', hint: 'Who runs it from day to day.' }
+    ],
+    activityFields: [
+      { id: 'what', label: 'What happens', hint: 'One thing that happens there.' },
+      { id: 'when', label: 'When, and how often', hint: 'For example: every weekday evening.' },
+      { id: 'who', label: 'Who makes it happen', hint: 'Staff, volunteers, a partner?' },
+      { id: 'needs', label: 'What it needs', hint: 'Space, staff, money, partners, permission.' }
+    ],
+    // The sign sentence, filled in place. Read as: "By [byWhen] after
+    // opening, [howMany] [who] will [level]."
+    signParts: [
+      { text: 'By' }, { id: 'byWhen', label: 'By when', hint: 'e.g. 12 months', cls: 'w-s' },
+      { text: 'after opening,' }, { id: 'howMany', label: 'How many', hint: 'e.g. 200', cls: 'w-s' },
+      { id: 'who', label: 'Of whom', hint: 'which people', cls: 'w-m' },
+      { text: 'will' }, { id: 'level', label: 'Doing what, how much', hint: 'e.g. visit twice a month', cls: 'w-l' }, { text: '.' }
+    ],
+    fofCheck: 'Check before opening: {text} (how: {check})',
+    fofToday: 'Find out today\u2019s number: {sign}'
+  };
+  // END CONFIG
+
+  // ==========================================================================
+  // State and pure functions (exposed as window.P12 for test.html)
+  // ==========================================================================
+  var LISTS = {
+    activities: function () { return { what: '', when: '', who: '', needs: '' }; },
+    risks: function () { return { text: '', mitigation: '' }; },
+    workIf: function () { return { text: '', check: '' }; },
+    signs: function () { return { shows: '', byWhen: '', howMany: '', who: '', level: '', count: '', known: '', today: '' }; }
+  };
+  function isObj(o) { return !!o && typeof o === 'object' && !Array.isArray(o); }
+  function str(v) { return typeof v === 'string' ? v : (v == null ? '' : String(v)); }
+  function clean(v) { return str(v).trim().replace(/\s+/g, ' '); }
+  function esc(s) { return str(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+  function defaultState() {
+    var s = { group: { name: '', members: '' }, design: { name: '', what: '', where: '', forWhom: '', when: '', runBy: '', lto: '' }, assumptions: [], boxes: [] };
+    Object.keys(LISTS).forEach(function (k) { s[k] = []; for (var i = 0; i < CONFIG.start[k]; i++) s[k].push(LISTS[k]()); });
+    return s;
+  }
+  // Fill any missing field with its default; keep only strings.
+  function migrate(raw) {
+    var d = defaultState(), s = isObj(raw) ? raw : {};
+    var out = { group: {}, design: {} };
+    ['group', 'design'].forEach(function (g) { Object.keys(d[g]).forEach(function (k) { out[g][k] = str(isObj(s[g]) ? s[g][k] : ''); }); });
+    Object.keys(LISTS).forEach(function (k) {
+      var list = Array.isArray(s[k]) ? s[k].filter(isObj) : null;
+      out[k] = list ? list.map(function (x) { var t = LISTS[k](); Object.keys(t).forEach(function (f) { t[f] = str(x[f]); }); return t; }) : d[k];
+    });
+    out.signs.forEach(function (x) { if (x.known !== 'yes' && x.known !== 'no') x.known = ''; });
+    ['assumptions', 'boxes'].forEach(function (k) { out[k] = Array.isArray(s[k]) ? s[k].map(clean).filter(Boolean) : []; });
+    return out;
+  }
+  function filled(obj, keys) { return keys.every(function (k) { return clean(obj[k]) !== ''; }); }
+  function started(obj) { return Object.keys(obj).some(function (k) { return clean(obj[k]) !== ''; }); }
+  function rowDone(kind, x) {
+    if (kind === 'signs') return filled(x, ['shows', 'byWhen', 'howMany', 'who', 'level', 'count']) && (x.known === 'no' || (x.known === 'yes' && clean(x.today) !== ''));
+    return filled(x, Object.keys(LISTS[kind]()));
+  }
+  function designSentence(s) {
+    return CONFIG.sentence.replace(/\{(\w+)\}/g, function (m, k) { return clean(s.design[k]) || '[' + k.replace('forWhom', 'for whom').replace('runBy', 'whom') + ']'; });
+  }
+  function signSentence(x) {
+    var level = clean(x.level).replace(/^will\s+/i, '').replace(/[.\s]+$/, '');
+    return 'By ' + (clean(x.byWhen) || '[when]') + ' after opening, ' + (clean(x.howMany) || '[how many]') + ' ' + (clean(x.who) || '[of whom]') + ' will ' + (level || '[do what]') + '.';
+  }
+  function fill(tpl, map) { return tpl.replace(/\{(\w+)\}/g, function (m, k) { return map[k]; }); }
+  // Find out first: one item per check, and one per sign whose number
+  // today is not known.
+  function findOutFirst(s) {
+    var out = [];
+    s.workIf.forEach(function (w) {
+      if (clean(w.text) && clean(w.check)) out.push(fill(CONFIG.fofCheck, { text: clean(w.text).replace(/[.\s]+$/, ''), check: clean(w.check).replace(/[.\s]+$/, '') }));
+    });
+    s.signs.forEach(function (x) { if (x.known === 'no') out.push(fill(CONFIG.fofToday, { sign: signSentence(x) })); });
+    return out;
+  }
+  // Loading a file: this tool's own export, or the full workbench's.
+  function fromFile(obj) {
+    if (!isObj(obj)) return { error: 'That file is not a workbench or week 12 file.' };
+    if (obj.tool === CONFIG.toolId && isObj(obj.state)) return { state: migrate(obj.state), from: 'this page' };
+    if (obj.tool !== CONFIG.workbenchToolId || !isObj(obj.state)) return { error: 'That file is not a workbench or week 12 file. Nothing was changed.' };
+    var w = obj.state, s = defaultState(), g = isObj(w.group) ? w.group : {}, d = isObj(w.design) ? w.design : {};
+    s.group.name = str(g.name);
+    s.group.members = (Array.isArray(g.members) ? g.members : []).map(clean).filter(Boolean).join(', ');
+    ['name', 'what', 'where', 'forWhom', 'when', 'runBy'].forEach(function (k) { s.design[k] = str(d[k]); });
+    s.design.lto = isObj(w.lto) ? str(w.lto.text) : '';
+    s.assumptions = (Array.isArray(w.assumptions) ? w.assumptions : []).map(function (a) { return clean(isObj(a) ? a.text : ''); }).filter(Boolean);
+    var outcomes = Array.isArray(w.outcomes) ? w.outcomes.filter(isObj) : [];
+    s.boxes = (s.design.lto ? [clean(s.design.lto)] : []).concat(outcomes.map(function (o) { return clean(o.text); }).filter(Boolean));
+    function boxText(id) {
+      if (id === 'lto') return clean(s.design.lto);
+      var o = outcomes.filter(function (x) { return x.id === id; })[0];
+      return o ? clean(o.text) : '';
+    }
+    // Anything week 12 already made in the full workbench comes across.
+    if (Array.isArray(w.activities) && w.activities.length) s.activities = w.activities.filter(isObj).map(function (a) { return { what: str(a.what), when: str(a.when), who: str(a.who), needs: str(a.needs) }; });
+    if (Array.isArray(w.risks) && w.risks.filter(isObj).some(function (r) { return clean(r.text); })) s.risks = w.risks.filter(isObj).map(function (r) { return { text: str(r.text), mitigation: str(r.mitigation) }; });
+    if (Array.isArray(w.workIf) && w.workIf.length) s.workIf = w.workIf.filter(isObj).map(function (x) { return { text: str(x.text), check: str(x.check) }; });
+    if (Array.isArray(w.indicators) && w.indicators.length) s.signs = w.indicators.filter(isObj).map(function (x) {
+      var n = clean(x.byWhen);
+      return { shows: boxText(x.outcomeId), byWhen: /^\d+$/.test(n) ? n + ' months' : n, howMany: str(x.howMany), who: str(x.who), level: str(x.level),
+        count: str(x.dataSource), known: x.baselineKnown === 'yes' || x.baselineKnown === 'no' ? x.baselineKnown : '', today: str(x.baseline) };
+    });
+    return { state: migrate(s), from: 'the workbench file of ' + (clean(g.name) || 'your group') };
+  }
+  function buildExport(s, now) {
+    return { tool: CONFIG.toolId, schemaVersion: CONFIG.schemaVersion, exportedAt: (now ? new Date(now) : new Date()).toISOString(), state: migrate(s) };
+  }
+  function dash(v) { return clean(v) || '\u2014'; }
+  function used(list, kind) { return list.filter(function (x) { return started(x); }); }
+  function buildText(s) {
+    var out = ['THE PLAN IN DETAIL (WEEK 12)', 'Group: ' + dash(s.group.name) + ' (' + dash(s.group.members) + ')', '',
+      'OUR INTERVENTION' + (clean(s.design.name) ? ': ' + clean(s.design.name) : ''), designSentence(s), 'So that: ' + dash(s.design.lto), '', 'WHAT HAPPENS THERE'];
+    used(s.activities).forEach(function (a, i) { out.push((i + 1) + '. ' + dash(a.what) + ' When: ' + dash(a.when) + '. Who: ' + dash(a.who) + '. Needs: ' + dash(a.needs) + '.'); });
+    out.push('', 'WHAT COULD GO WRONG');
+    used(s.risks).forEach(function (r, i) { out.push('R' + (i + 1) + '. ' + dash(r.text) + ' The club would: ' + dash(r.mitigation)); });
+    out.push('', 'IT WILL WORK IF');
+    used(s.workIf).forEach(function (w, i) { out.push((i + 1) + '. ' + dash(w.text) + ' Check before opening: ' + dash(w.check)); });
+    out.push('', 'SIGNS IT IS WORKING');
+    used(s.signs).forEach(function (x, i) {
+      out.push('S' + (i + 1) + '. ' + signSentence(x) + ' Shows: ' + dash(x.shows) + '. Counted by: ' + dash(x.count) + '. Today: ' +
+        (x.known === 'yes' ? dash(x.today) : x.known === 'no' ? 'not known (find out first)' : '\u2014'));
+    });
+    out.push('', 'FIND OUT FIRST');
+    findOutFirst(s).forEach(function (f) { out.push('- ' + f); });
+    return out.join('\n');
+  }
+  // A6 cards: the intervention, each "it will work if", each sign. Only
+  // rows with something in them are printed.
+  function cards(s) {
+    var foot = dash(s.group.name) + (clean(s.group.members) ? ' \u00B7 ' + clean(s.group.members) : '');
+    var out = [{ eyebrow: 'Our intervention' + (clean(s.design.name) ? ' \u00B7 ' + clean(s.design.name) : '') + ' \u00B7 Week 12', colour: '#B83068', text: designSentence(s),
+      details: ['So that: ' + dash(s.design.lto)].concat(used(s.activities).map(function (a, i) { return 'Activity ' + (i + 1) + ': ' + dash(a.what) + ' (' + dash(a.when) + ')'; })), foot: foot }];
+    var w = used(s.workIf);
+    w.forEach(function (x, i) { out.push({ eyebrow: 'It will work if \u00B7 ' + (i + 1) + ' of ' + w.length + ' \u00B7 Week 12', colour: '#7A5828', text: dash(x.text), details: ['Check before opening: ' + dash(x.check)], foot: foot }); });
+    used(s.signs).forEach(function (x, i) {
+      out.push({ eyebrow: 'Sign it is working \u00B7 S' + (i + 1) + ' \u00B7 Week 12', colour: '#D4A020', text: signSentence(x),
+        details: ['Shows: ' + dash(x.shows), 'Counted by: ' + dash(x.count), 'Today: ' + (x.known === 'yes' ? dash(x.today) : x.known === 'no' ? 'not known: find out first' : '\u2014')], foot: foot });
+    });
+    return out;
+  }
+  function a6Html(c) {
+    return '<div class="a6"><div class="a6-eyebrow">' + esc(c.eyebrow) + '</div><div class="a6-bar" style="background:' + esc(c.colour) + '"></div>' +
+      '<div class="a6-text">' + esc(c.text) + '</div><div class="a6-detail">' + c.details.map(function (d) { return '<p>' + esc(d) + '</p>'; }).join('') + '</div>' +
+      '<div class="a6-foot">' + esc(c.foot) + '</div></div>';
+  }
+  function a6Sheets(list) {
+    var h = '';
+    for (var i = 0; i < list.length; i += 4) h += '<div class="a6-sheet">' + list.slice(i, i + 4).map(a6Html).join('') + '</div>';
+    return h;
+  }
+  function reportHtml(s) {
+    function table(head, rows) {
+      return rows.length ? '<table class="rep-table"><thead><tr>' + head.map(function (h) { return '<th>' + esc(h) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+        rows.map(function (r) { return '<tr>' + r.map(function (c) { return '<td>' + esc(c) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>' : '<p>\u2014</p>';
+    }
+    return '<section class="rep" style="--rep:#B83068"><h2>Our intervention' + (clean(s.design.name) ? ': ' + esc(clean(s.design.name)) : '') + '</h2><p><b>' + esc(designSentence(s)) + '</b></p><p>So that: ' + esc(dash(s.design.lto)) + '</p></section>' +
+      '<section class="rep" style="--rep:#7E58A8"><h2>What happens there</h2>' + table(['What happens', 'When', 'Who', 'What it needs'], used(s.activities).map(function (a) { return [dash(a.what), dash(a.when), dash(a.who), dash(a.needs)]; })) + '</section>' +
+      '<section class="rep" style="--rep:#B52838"><h2>What could go wrong</h2>' + table(['What could go wrong', 'What the club would do'], used(s.risks).map(function (r) { return [dash(r.text), dash(r.mitigation)]; })) + '</section>' +
+      '<section class="rep" style="--rep:#7A5828"><h2>It will work if</h2>' + table(['It will work if', 'Check before opening'], used(s.workIf).map(function (w) { return [dash(w.text), dash(w.check)]; })) + '</section>' +
+      '<section class="rep" style="--rep:#D4A020"><h2>Signs it is working</h2>' + table(['Sign', 'Shows', 'Counted by', 'Today'], used(s.signs).map(function (x) {
+        return [signSentence(x), dash(x.shows), dash(x.count), x.known === 'yes' ? dash(x.today) : x.known === 'no' ? 'Not known: find out first' : '\u2014'];
+      })) + '</section>' +
+      '<section class="rep" style="--rep:#B83068"><h2>Find out first</h2>' + (findOutFirst(s).map(function (f) { return '<p>' + esc(f) + '</p>'; }).join('') || '<p>\u2014</p>') + '</section>';
+  }
+
+  // ==========================================================================
+  // Rendering (browser only)
+  // ==========================================================================
+  var state, $ = function (id) { return document.getElementById(id); };
+  function save() { try { window.localStorage.setItem(CONFIG.storageKey, JSON.stringify(state)); } catch (e) { /* storage unavailable */ } }
+  function load() {
+    try { var raw = window.localStorage.getItem(CONFIG.storageKey); if (raw) return migrate(JSON.parse(raw)); } catch (e) { /* start afresh */ }
+    return defaultState();
+  }
+  function setStatus(m) { $('status').textContent = m || ''; }
+
+  function field(id, label, path, value, opts) {
+    opts = opts || {};
+    return '<div class="field"><label for="' + id + '">' + esc(label) + (opts.hint ? '<span class="hint">' + esc(opts.hint) + '</span>' : '') + '</label>' +
+      (opts.area ? '<textarea id="' + id + '" data-f="' + path + '">' + esc(value) + '</textarea>' : '<input type="text" id="' + id + '" data-f="' + path + '" value="' + esc(value) + '">') + '</div>';
+  }
+  function stepHead(no, st) {
+    return '<div class="step-head"><span class="step-no">' + no + '</span><div><span class="when">' + esc(st.when || '') + '</span><h2>' + esc(st.title) + '</h2></div></div>' +
+      '<p class="do">' + esc(st.do) + '</p>';
+  }
+  function stepStyle(st) { return '--sc:' + st.colour + (st.fg ? ';--sc-fg:' + st.fg : '') + (st.ink ? ';--sc-ink:' + st.ink : ''); }
+  function tickHtml(kind, i) { var on = rowDone(kind, state[kind][i]); return '<span class="tick' + (on ? ' on' : '') + '" id="tick-' + kind + '-' + i + '">' + (on ? '\u2713 Done' : '') + '</span>'; }
+  function rowHead(kind, i, label, colour, fg) {
+    return '<div class="row-head"><span class="tag">' + esc(label) + '</span><span class="grow">' + tickHtml(kind, i) + '</span>' +
+      (state[kind].length > 1 ? '<button type="button" class="btn btn-danger btn-small" data-act="remove" data-kind="' + kind + '" data-i="' + i + '" aria-label="Remove ' + esc(label) + '">Remove</button>' : '') + '</div>';
+  }
+  function addButton(kind, label) {
+    return '<div class="actions"><button type="button" class="btn btn-accent" data-act="add" data-kind="' + kind + '">' + esc(label) + '</button></div>';
+  }
+
+  function renderGroup() {
+    var st = CONFIG.steps.group, d = state.design;
+    return '<section class="step" id="step-group" style="' + stepStyle(st) + '">' + stepHead(1, st) +
+      '<div class="grid2">' + field('g-name', 'Group name', 'group.name', state.group.name) + field('g-mem', 'Members', 'group.members', state.group.members, { hint: 'Names, separated by commas.' }) + '</div>' +
+      '<p class="sub">Your intervention, from week 11</p>' +
+      field('d-name', 'A short name for it', 'design.name', d.name) +
+      '<div class="grid2">' + CONFIG.slots.map(function (sl) { return field('d-' + sl.id, sl.label, 'design.' + sl.id, d[sl.id], { hint: sl.hint }); }).join('') + '</div>' +
+      '<div class="readback" id="d-sentence" aria-live="polite">' + esc(designSentence(state)) + '</div>' +
+      field('d-lto', 'So that \u2026 (your long-term outcome, from week 9)', 'design.lto', d.lto) + '</section>';
+  }
+  function renderPlan() {
+    var st = CONFIG.steps.plan, rs = CONFIG.steps.risks;
+    var h = '<section class="step" id="step-plan" style="' + stepStyle(st) + '">' + stepHead(2, st) +
+      '<p class="quote">\u201C' + esc(st.quote) + '\u201D<cite>' + esc(st.quoteRef) + '</cite></p>';
+    state.activities.forEach(function (a, i) {
+      h += '<div class="row" style="--rc:var(--char-8)">' + rowHead('activities', i, 'Activity ' + (i + 1)) + '<div class="grid2">' +
+        CONFIG.activityFields.map(function (f) { return field('a-' + i + '-' + f.id, f.label, 'activities.' + i + '.' + f.id, a[f.id], { hint: f.hint, area: f.id === 'what' || f.id === 'needs' }); }).join('') + '</div></div>';
+    });
+    h += addButton('activities', 'Add another activity');
+    h += '<p class="sub" style="color:var(--char-2)">' + esc(rs.title) + '</p><p class="do">' + esc(rs.do) + '</p><ul class="prompts">' +
+      rs.prompts.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join('') + '</ul>';
+    state.risks.forEach(function (r, i) {
+      h += '<div class="row" style="--rc:var(--char-2)">' + rowHead('risks', i, 'R' + (i + 1)) + '<div class="grid2">' +
+        field('r-' + i + '-t', 'What could go wrong', 'risks.' + i + '.text', r.text, { area: true }) +
+        field('r-' + i + '-m', 'What the club would do about it', 'risks.' + i + '.mitigation', r.mitigation, { area: true }) + '</div></div>';
+    });
+    return h + addButton('risks', 'Add another risk') + '</section>';
+  }
+  function renderWorkIf() {
+    var st = CONFIG.steps.workIf, h = '<section class="step" id="step-workif" style="' + stepStyle(st) + '">' + stepHead(3, st);
+    if (state.assumptions.length) h += '<p class="quiet">' + esc(st.fromFile) + '</p><div class="pick">' + state.assumptions.map(function (a, i) {
+      return '<button type="button" class="btn btn-ghost btn-small" data-act="use-assumption" data-i="' + i + '">' + esc(a) + '</button>';
+    }).join('') + '</div>';
+    state.workIf.forEach(function (w, i) {
+      h += '<div class="row" style="--rc:var(--char-5)">' + rowHead('workIf', i, String(i + 1)) + '<div class="grid2">' +
+        field('w-' + i + '-t', 'It will work if \u2026', 'workIf.' + i + '.text', w.text, { area: true }) +
+        field('w-' + i + '-c', 'How could the club check this before it opens?', 'workIf.' + i + '.check', w.check, { area: true }) + '</div></div>';
+    });
+    return h + addButton('workIf', 'Add another') + '</section>';
+  }
+  function renderSigns() {
+    var st = CONFIG.steps.signs, h = '<section class="step" id="step-signs" style="' + stepStyle(st) + '">' + stepHead(4, st) +
+      '<p class="quote">\u201C' + esc(st.quote) + '\u201D<cite>' + esc(st.quoteRef) + '</cite></p>';
+    if (state.boxes.length) h += '<datalist id="box-list">' + state.boxes.map(function (b) { return '<option value="' + esc(b) + '"></option>'; }).join('') + '</datalist>';
+    state.signs.forEach(function (x, i) {
+      var base = 'signs.' + i + '.';
+      h += '<div class="row" style="--rc:var(--char-4);--rc-fg:var(--text)">' + rowHead('signs', i, 'S' + (i + 1)) +
+        '<div class="field"><label for="s-' + i + '-shows">Which box on your map does it show?<span class="hint">' + (state.boxes.length ? 'Start typing, or pick from your map.' : 'Copy the box from your map.') + '</span></label>' +
+        '<input type="text" id="s-' + i + '-shows" data-f="' + base + 'shows" value="' + esc(x.shows) + '"' + (state.boxes.length ? ' list="box-list" autocomplete="off"' : '') + '></div>' +
+        '<span class="legend" id="s-' + i + '-leg">The sign, as a sentence</span><div class="sentence" role="group" aria-labelledby="s-' + i + '-leg">' +
+        CONFIG.signParts.map(function (p) {
+          if (p.text) return p.text === '.' ? '.' : ' ' + esc(p.text) + ' ';
+          return '<label class="sr-only" for="s-' + i + '-' + p.id + '">' + esc(p.label) + '</label><input type="text" class="' + p.cls + '" id="s-' + i + '-' + p.id + '" data-f="' + base + p.id + '" value="' + esc(x[p.id]) + '" placeholder="' + esc(p.hint) + '">';
+        }).join('') + '</div>' +
+        field('s-' + i + '-count', 'How would the club count it?', base + 'count', x.count, { hint: 'For example: a door count, a short survey, a booking list.' }) +
+        '<fieldset><legend class="legend">Do we know this number today?</legend><div class="choices">' +
+        ['yes', 'no'].map(function (v) {
+          return '<label class="choice" style="--choice-colour:' + (v === 'yes' ? 'var(--correct)' : 'var(--char-1)') + '"><input type="radio" name="known-' + i + '" value="' + v + '" data-f="' + base + 'known"' + (x.known === v ? ' checked' : '') + '><span>' + (v === 'yes' ? 'Yes' : 'No') + '</span></label>';
+        }).join('') + '</div></fieldset>' +
+        (x.known === 'yes' ? field('s-' + i + '-today', 'What is it today, and where does that come from?', base + 'today', x.today) :
+          x.known === 'no' ? '<p class="quiet">Not known today: it goes on Find out first, below.</p>' : '') + '</div>';
+    });
+    return h + addButton('signs', 'Add another sign') + '</section>';
+  }
+  function fofHtml() {
+    var f = findOutFirst(state);
+    return f.length ? '<ul class="fof">' + f.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' : '<p class="quiet">Nothing yet: it fills in from steps 3 and 4.</p>';
+  }
+  function renderFinish() {
+    var st = CONFIG.steps.finish;
+    return '<section class="step" id="step-finish" style="' + stepStyle(st) + '">' + stepHead(5, st) +
+      '<div id="fof">' + fofHtml() + '</div>' +
+      '<div class="actions"><button type="button" class="btn btn-primary" data-act="print-cards">Print the cards</button>' +
+      '<button type="button" class="btn btn-ghost" data-act="print-plan">Print the plan (A4)</button>' +
+      '<button type="button" class="btn btn-ghost" data-act="export">Export JSON</button></div>' +
+      '<div class="card-grid" id="card-preview">' + cards(state).map(a6Html).join('') + '</div></section>';
+  }
+  function render() {
+    $('form').innerHTML = renderGroup() + renderPlan() + renderWorkIf() + renderSigns() + renderFinish();
+  }
+  function refreshLive() {
+    $('d-sentence').textContent = designSentence(state);
+    Object.keys(LISTS).forEach(function (k) {
+      state[k].forEach(function (x, i) {
+        var t = $('tick-' + k + '-' + i); if (!t) return;
+        var on = rowDone(k, x); t.className = 'tick' + (on ? ' on' : ''); t.textContent = on ? '\u2713 Done' : '';
+      });
+    });
+    $('fof').innerHTML = fofHtml();
+    $('card-preview').innerHTML = cards(state).map(a6Html).join('');
+  }
+  function setPath(path, value) {
+    var p = path.split('.'), o = state;
+    for (var i = 0; i < p.length - 1; i++) o = o[p[i]];
+    o[p[p.length - 1]] = value;
+  }
+  function printNow(mode) {
+    $('print-meta').textContent = dash(state.group.name) + ' \u00B7 ' + dash(state.group.members);
+    document.body.classList.toggle('print-cards', mode === 'cards');
+    $('print-area').innerHTML = mode === 'cards' ? a6Sheets(cards(state)) : reportHtml(state) + a6Sheets(cards(state));
+    window.print();
+  }
+  function exportNow() {
+    var blob = new Blob([JSON.stringify(buildExport(state), null, 2)], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'week12-plan-' + (clean(state.group.name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'group') + '.json';
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+    setStatus('Exported.');
+  }
+  function copyText(t) {
+    function fallback() {
+      var ta = document.createElement('textarea'); ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      var ok = false; try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove(); setStatus(ok ? 'Copied as text.' : 'Copy failed: use Print instead.');
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(function () { setStatus('Copied as text.'); }, fallback);
+    else fallback();
+  }
+
+  function init() {
+    state = load();
+    render();
+    var form = $('form');
+    form.addEventListener('input', function (ev) {
+      var el = ev.target;
+      if (!el.dataset || !el.dataset.f || el.type === 'radio') return;
+      setPath(el.dataset.f, el.value); save(); refreshLive();
+    });
+    form.addEventListener('change', function (ev) {
+      var el = ev.target;
+      if (el.type !== 'radio' || !el.dataset.f) return;
+      setPath(el.dataset.f, el.value); save(); render();
+      var again = document.querySelector('input[name="' + el.name + '"][value="' + el.value + '"]'); if (again) again.focus();
+    });
+    form.addEventListener('click', function (ev) {
+      var b = ev.target.closest('[data-act]');
+      if (!b) return;
+      var act = b.dataset.act, kind = b.dataset.kind, i = +b.dataset.i;
+      if (act === 'add') {
+        if (CONFIG.keepTo[kind] && state[kind].length >= CONFIG.keepTo[kind] &&
+          !window.confirm('You already have ' + state[kind].length + '. The plan is clearer with the ' + CONFIG.keepTo[kind] + ' that matter most. Add another anyway?')) return;
+        state[kind].push(LISTS[kind]()); save(); render();
+        var first = form.querySelectorAll('[data-f^="' + kind + '.' + (state[kind].length - 1) + '."]')[0]; if (first) first.focus();
+      } else if (act === 'remove') {
+        if (started(state[kind][i]) && !window.confirm('Remove this one? What is typed in it will be lost.')) return;
+        state[kind].splice(i, 1); save(); render();
+      } else if (act === 'use-assumption') {
+        var text = state.assumptions[i], empty = state.workIf.filter(function (w) { return !clean(w.text); })[0];
+        if (!empty) { empty = LISTS.workIf(); state.workIf.push(empty); }
+        empty.text = text; save(); render();
+        var k = state.workIf.indexOf(empty), c = $('w-' + k + '-c'); if (c) c.focus();
+        setStatus('Copied in. Now say how the club could check it.');
+      } else if (act === 'print-cards') printNow('cards');
+      else if (act === 'print-plan') printNow('report');
+      else if (act === 'export') exportNow();
+    });
+    $('btn-load').addEventListener('click', function () { $('load-file').click(); });
+    $('load-file').addEventListener('change', function () {
+      var f = this.files && this.files[0], input = this;
+      if (!f) return;
+      var r = new FileReader();
+      r.onload = function () {
+        input.value = '';
+        var obj; try { obj = JSON.parse(r.result); } catch (e) { setStatus('That file is not valid JSON. Nothing was changed.'); return; }
+        var res = fromFile(obj);
+        if (res.error) { setStatus(res.error); return; }
+        if (Object.keys(LISTS).some(function (k) { return state[k].some(started); }) && !window.confirm('Replace what is on this page with ' + res.from + '?')) return;
+        state = res.state; save(); render(); setStatus('Loaded ' + res.from + '. Check step 1, then carry on.');
+      };
+      r.readAsText(f);
+    });
+    $('btn-export').addEventListener('click', exportNow);
+    $('btn-copy').addEventListener('click', function () { copyText(buildText(state)); });
+    $('btn-print').addEventListener('click', function () { printNow('report'); });
+    $('btn-reset').addEventListener('click', function () {
+      if (!window.confirm('Reset clears everything on this page, on this device. Export first if you want to keep it. Reset now?')) return;
+      state = defaultState();
+      try { window.localStorage.removeItem(CONFIG.storageKey); } catch (e) { /* storage unavailable */ }
+      render(); setStatus('Reset.');
+    });
+    window.addEventListener('afterprint', function () { document.body.classList.remove('print-cards'); });
+  }
+
+  window.P12 = { CONFIG: CONFIG, defaultState: defaultState, migrate: migrate, rowDone: rowDone, designSentence: designSentence, signSentence: signSentence,
+    findOutFirst: findOutFirst, fromFile: fromFile, buildExport: buildExport, buildText: buildText, cards: cards, reportHtml: reportHtml };
+  if (document.getElementById('p12-app')) init();
+})();
+</script>
