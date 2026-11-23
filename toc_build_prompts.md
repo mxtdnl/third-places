@@ -10,8 +10,8 @@ Prompts for building everything in `toc_buildplan.md` §7. Run one prompt per Cl
 | 4 | D10 | Week 10 deck | Week 10 |
 | 5 | T3 | Workbench week 11 screens | Week 11 |
 | 6 | D11 | Week 11 deck | Week 11 |
-| 7 | T4 | Workbench week 12 screens | Week 12 |
-| 8 | D12 | Week 12 deck | Week 12 |
+| 7 | T4 | Workbench week 12 screens (simplified; built) | Week 12 |
+| 8 | D12 | Week 12 deck (simplified; built) | Week 12 |
 | 9 | T5 | Workbench week 13 screens, class view, final acceptance | Week 13 |
 | 10 | D13 | Week 13 deck | Week 13 |
 
@@ -184,36 +184,32 @@ ACCEPTANCE: plan §9 items 6, 7, 8, 10 (A6 cards), 11 and 14.
 
 ---
 
-## T4 — Workbench week 12 screens: indicators and outside review
+## T4 — Workbench week 12 screens: the plan in detail
+
+Simplified in November 2026, in the same way as week 11 (built; this prompt records what was built). The earlier version (indicators with the full M&E framework, a timeline check, an outside review with reviewer and author modes) is withdrawn.
 
 ```
 Follow the standing instructions in toc_build_prompts.md §0.
 
-Stage 4 of 5 of week9-toc-workbench.html: the week 12 screens. Spec: toc_buildplan.md §4 (principles 8, 9), §6 Week 12, §7. Reading: [TC] pp. 8–9; [GAF] pp. 31, 37–42, 47–48.
+Stage 4 of 5 of week9-toc-workbench.html: the week 12 screens. Spec: toc_buildplan.md §4 (principle 8), §6 Week 12, §7. Reading: [TC] pp. 6–8. No reading is assumed of students; copy is plain English.
 
-SCREEN 10, INDICATORS AND M&E FRAMEWORK:
-- "Share out" button: assigns outcomes to members in turn ([TC] p. 9: indicator development does not lend itself to group meetings); the owner can be changed.
-- Per indicator:
-  - [TC] p. 8's four targets: how many, of whom, what level, by when;
-  - [GAF] p. 39's columns: definition, baseline (a value with its source, or "unknown": unknown adds a find-out-first item automatically), data source, frequency, responsible, reporting.
-- Every outcome needs at least one indicator.
-- Timeline check ([TC] p. 8, [GAF] p. 31): flag any outcome whose "by when" is earlier than any of its preconditions'. "By when" is entered as months after opening.
-- Output: the M&E framework table on A4 landscape, and the find-out-first list grouped by source as the first-year learning plan.
+LOCK: screens 10-11 open once the week 11 intervention is complete (the map has arrows and no loop, and screen 9 passes); until then they show what is missing. Screen 11 opens once screen 10 passes.
 
-SCREEN 11, OUTSIDE REVIEW:
-- Author mode: export a review copy (the full state plus a review request).
-- Reviewer mode: import another group's review copy; reviewer group name and members. Walk the review link by link:
-  - [TC] p. 9's plausibility, feasibility and testability questions, quoted exactly;
-  - then [GAF] p. 47's quality factors: consistent definitions and terms (check against the screen 3 definitions), stakeholders considered, context and evidence clear.
-- Required: name the weakest assumption and propose how the club could test it; name the biggest risk to the group's intervention (week 11, screen 9); flag any claim above the accountability ceiling.
-- Export the review file.
-- Author mode, respond: import the review; every challenge needs accept, revise or rebut (word-counted reason). Revise jumps to the right screen and logs the change.
-- Author mode, then: mark the three riskiest assumptions (assumptions[].riskiest, already in the state; they become the "it will work if" of the recommendation and print as A6 cards), and record each risk the review names with a mitigation (add "risks" to the state through migrate()).
-- The reviewer never edits the author's work.
+SCREEN 10, THE PLAN IN DETAIL:
+- The week 11 intervention restated (sentence, long-term outcome, the ideas it is built from), with a link to screen 9.
+- Activities ([TC] p. 7: "We use activity to describe all the specific actions that make up an intervention."), at least three: what happens, when and how often, who makes it happen, what it needs; each word-counted; optionally the idea from the intervention it carries out.
+- What could go wrong, at least two, each with what the club would do about it. Prompts, and the characteristics week 11 flagged as at risk.
 
-TESTS: timeline check, share-out, baseline-to-find-out-first routing, review file round trip (a review made on one group's copy imports into that group only, matched by group name and export id), migrate() from a stage 3 export.
+SCREEN 11, WILL IT WORK?:
+- It will work if: two or three items, started from the assumption register (text copied in to edit; that assumption is marked riskiest) or written from scratch; each with how the club could check it before it opens. Each check goes on find out first.
+- Signs it is working: two or three, each on a box of the map (the long-term outcome or an outcome), with [TC] p. 8's four targets (how many, of whom, doing what, by when in months after opening, 1 to 60), read back as "By [N] months after opening, [how many] [of whom] will [do what].", how the club would count it, and whether today's number is known (if so, the number and its source; if not, it goes on find out first).
+- The week 12 close: self-check, then the plan A6 cards (one per "it will work if" item, one per sign).
 
-ACCEPTANCE: plan §9 items 7, 8, 10 (M&E table), 11 and 14; plus: a review exported by group A for group B is refused by group C with a readable message.
+STATE (through migrate()): activities, risks, workIf, indicator baselineKnown; assumptions[].riskiest follows workIf; find out first follows screen 11 (sources "check" and "baseline").
+
+TESTS: the lock, each gate with its messages, one-character entries refused, the limits, riskiest marking, find-out-first sync, migrate() from a stage 3 export, round trip, text and report, cards.
+
+ACCEPTANCE: plan §9 items 7, 8, 10 (plan cards), 11 and 14.
 ```
 
 ---
@@ -239,7 +235,7 @@ SCREEN 13, RECOMMENDATION AND OUTPUTS:
 - Outputs:
   - the recommendation pack in the plan §8 order (A4; narrative at most two pages, then appendix);
   - both diagrams;
-  - A6 cards: the recommendation, plus the existing long-term outcome and riskiest-assumption cards;
+  - A6 cards: the recommendation, plus the existing long-term outcome, intervention and plan cards;
   - Copy as text for the whole pack.
 
 SCREEN 14, CLASS VIEW (instructor):
@@ -274,7 +270,7 @@ Build week9-toc-deck.html (Activity 16). Spec: toc_buildplan.md §3, §4 (princi
 
 SLIDES (about 15):
 1. Title poster. Eyebrow "Week 9 · Intervene". Title "Where Are We Going?". Lede: the next five weeks build one recommendation to the client.
-2. Sequence band: describe, explain, adjudicate, intervene (intervene current). Second band: weeks 9–15 (9 long-term outcome, 10 backwards map, 11 interventions, 12 indicators and review, 13 recommendation, 14 rehearse, 15 client).
+2. Sequence band: describe, explain, adjudicate, intervene (intervene current). Second band: weeks 9–15 (9 long-term outcome, 10 backwards map, 11 interventions, 12 the plan in detail, 13 recommendation, 14 rehearse, 15 client).
 3. Numbered cards: the three readings ([TC], [GAF], [A7]): what each is for, with the course file names.
 4. Card grid or table: the terms crosswalk (toc_buildplan.md §3.2).
 5–7. Reading check, three single-select slides:
@@ -354,39 +350,33 @@ SLIDES (13):
    - 35–65 test the ideas (screen 8);
    - 65–80 our intervention (screen 9);
    - 80–90 close (screen 9).
-13. Close: the intervention card, week 12 (indicators and the outside review), one optional reading ([TC] pp. 8–9), export.
+13. Close: the intervention card, week 12 (the plan in detail), one optional reading ([TC] p. 8), export.
 
 Add the index.html card and the CLAUDE.md entry.
 ```
 
 ---
 
-## D12 — Week 12 deck: "Will the Club Know?"
+## D12 — Week 12 deck: "The Plan in Detail"
+
+Simplified in November 2026 with the week 12 screens (built; this prompt records what was built). The earlier "Will the Club Know?" deck (reading check, M&E framework table, outside review) is withdrawn.
 
 ```
 Follow the standing instructions in toc_build_prompts.md §0, and the deck brief in the "Deck prompts: shared brief" section of that file.
 
-Build week12-toc-deck.html (Activity 19). Spec: toc_buildplan.md §4 (principles 8, 9), §6 Week 12. Reading: [TC] pp. 8–9; [GAF] pp. 31, 37–42, 47–48.
+Build week12-toc-deck.html (Activity 19). Spec: toc_buildplan.md §6 Week 12. Reading: [TC] pp. 6–8. Plain English; no reading check and no reading assumed.
 
-SLIDES (about 15):
-1. Title poster. Eyebrow "Week 12 · Intervene". Title "Will the Club Know?".
-2. Quote plus commentary: "How many of who or what will reach what level by when?" ([TC] p. 8).
-3–5. Reading check, single-select:
-   - (a) What does testability refer to? Correct: how well the indicators are crafted ([TC] p. 9).
-   - (b) What does a baseline record? Correct: the current value, the starting point ([GAF] p. 39).
-   - (c) When should quality review happen? Correct: throughout construction ([TC] p. 9, "an ongoing process during the construction of your theory").
-6. Numbered cards: the four targets, each with a generic illustration marked PLACEHOLDER:.
-7. Table archetype: [GAF] p. 39's M&E framework rows (indicator, definition, baseline, target, data source, frequency, responsible, reporting), with what each means for the club.
-8. Split with panel: unknown baselines. Without access to residents, most baselines are unknown; each becomes a find-out-first item, and together they form the club's first-year plan.
-9. Chain: timeline consistency. An outcome cannot be due before its preconditions ([TC] p. 8; [GAF] p. 31).
-10. Numbered cards: plausible, doable, testable, each with [TC] p. 9's questions quoted exactly.
-11. Card grid: being an outside reviewer. [GAF] p. 47's quality factors; how to write a fair, specific challenge; naming the weakest assumption and how to test it; flagging claims above the ceiling.
-12. Card grid: responding to a review (accept, revise, rebut with a reason).
-13–15. In the workbench:
-   - 10–40 indicators, shared out (screen 10);
-   - 40–72 outside review (screen 11, reviewer mode);
-   - 72–90 respond (screen 11, author mode).
-16. Close: export; pre-reading for week 13 ([TC] p. 9 §8; [GAF] Step 10).
+SLIDES (13):
+1. Title poster. Eyebrow "Week 12 · Intervene". Title "The Plan in Detail".
+2. Today: three steps (detail, must be true, signs), with screens and minutes.
+3. What is an activity? [TC] p. 7's literacy classes broken into its own activities, with the p. 7 definition quoted.
+4. Four questions for every activity (what happens, when, who, what it needs), with an example built from the literacy classes. Labels and hints copied from the workbench.
+5. What could go wrong, and what the club would do. Prompts copied from the workbench.
+6. It will work if …, with a check before opening; "conditions you take for granted" ([TC] p. 6).
+7. Four targets for every sign: [TC] p. 8 quoted, with its classroom example split into the four targets.
+8. One sign, one sentence: the workbench's sign sentence with its gaps; the box on the map, how it is counted, today's number.
+9–12. In the workbench: 10–40 the plan in detail (screen 10); 40–60 it will work if (screen 11); 60–82 signs it is working (screen 11); 82–90 close.
+13. Close: the plan cards; week 13; one optional reading ([TC] p. 9 §8).
 
 Add the index.html card and the CLAUDE.md entry.
 ```

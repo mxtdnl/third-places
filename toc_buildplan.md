@@ -86,8 +86,8 @@ These principles change the earlier draft. Each is followed in the weekly design
 5. **Outcome wording.** Outcomes are positive conditions ([TC] p. 4), with one change per outcome: "If you need to use the word 'and' this is an indication that you need to create a new, separate outcome" ([GAF] p. 16). The workbench warns on activity verbs and on "and".
 6. **Clusters.** Preconditions that act together can be grouped as a cluster with one arrow out ([TC] p. 4). The map editor supports this, which keeps diagrams readable.
 7. **Evidence quality uses the course's own criteria.** [GAF] Step 7 asks "What is the quality of this evidence and how reliable is it?" (p. 24). Rather than introduce a new hierarchy, the workbench rates key evidence on the four week 6 criteria from `week6b-adjudication-bench.html`: causal identification, scope conditions, observable implications and methodological quality. "Scope conditions" carries the week 7 Bodø verdict (travels, bends, breaks).
-8. **Indicators combine both readings.** [TC]'s four targets ("How many of who or what will reach what level by when?", p. 8) sit inside [GAF]'s M&E framework columns (p. 39): definition, baseline, target, data source, frequency, responsible, reporting. With no access to residents, most baselines are unknown and become "find out first" items, which turns the constraint into the club's first-year plan. Following [TC] p. 9, indicator drafting is shared out among members and then reviewed by the group.
-9. **Quality review runs throughout, with outside reviewers.** [TC] p. 9 frames quality review as "an ongoing process during the construction of your theory" and suggests inviting outside reviewers. Each week ends with a short self-check against plausible, doable and testable. In week 12 another group acts as the outside reviewer, using [TC]'s questions plus [GAF]'s quality factors (p. 47): consistent definitions and terms, stakeholders considered, context and evidence clear.
+8. **Indicators use [TC]'s four targets, in plain words.** Each headline sign that the intervention is working has [TC]'s four targets ("How many of who or what will reach what level by when?", p. 8), the box on the map it shows, how the club would count it, and today's number. With no access to residents, most of today's numbers are unknown and become "find out first" items, which turns the constraint into the club's first-year plan. (Simplified in week 12: two or three headline signs rather than [GAF] p. 39's full M&E framework for every outcome.)
+9. **Quality review runs throughout.** [TC] p. 9 frames quality review as "an ongoing process during the construction of your theory" and suggests inviting outside reviewers. Each week ends with a short self-check against plausible, doable and testable. An outside review by another group was planned for week 12 and dropped when week 12 was simplified (November 2026); the week 14 rehearsal is where groups hear each other's recommendations.
 10. **Two diagrams, one narrative.** [GAF] p. 32 recommends "multiple versions of your visualisation with different levels of detail for different users". Week 13 produces a full diagram (for the appendix and red team) and a one-page client diagram. The narrative is "one or two pages", led by a plain-English executive summary drafted by one member and reviewed by the group ([TC] p. 9).
 11. **Proportionality.** [GAF] p. 5: the ToC should be proportionate to the intervention. The map has a soft cap (default 15 outcomes, configurable) with a warning, not a block.
 12. **Workshop practice.** [GAF] pp. 43–44 runs ToC development over several sessions, with facilitators and everyone heard. Groups rotate roles each week: Facilitator, Scribe (holds the device), Sceptic (challenges preconditions and assumptions), Evidence lead, and Timekeeper in groups of five. The workbench records who held which role.
@@ -117,7 +117,7 @@ Each week has:
 | 9 | 1. Define impacts and outcomes | [TC] §2; [GAF] Steps 1–3 |
 | 10 | 3. Make causal linkages, plus assumptions | [TC] §3–4; [GAF] Steps 4, 7, 9 |
 | 11 | 2. Outputs and activities, simplified | [TC] §5 and §7; [GAF] Step 2 (alternatives) |
-| 12 | 5. Metrics and evaluation, plus review and risks | [TC] §6–7; [GAF] Steps 8 and 11, timelines, quality factors |
+| 12 | 5. Metrics and evaluation, plus activities and risks, simplified | [TC] §5–6; [GAF] Steps 5–6, 8 and 11 |
 | 13 | Diagram and narrative | [TC] §8; [GAF] Step 10 |
 
 ### Week 9 — The long-term outcome
@@ -151,7 +151,7 @@ Each week has:
 
 ### Week 11 — Interventions: what should the club build?
 
-Simplified in November 2026. The first version (options appraisal, interventions with a gap walk, inputs, a risk register and an eight-characteristic stress test) asked for more than a dozen new ideas in 73 minutes, each at a surface level. Week 11 now teaches three ideas well: what an arrow is, an intervention as something the club does to make an arrow happen, and [TC] p. 9's three questions (plausible, doable, testable). It assumes no reading has been done, and ends with one intervention on an A6 card. Inputs survive inside "Could the club really do it?", the stress test inside "Which characteristic could it put at risk?", and the riskiest assumptions and risks move to week 12's outside review.
+Simplified in November 2026. The first version (options appraisal, interventions with a gap walk, inputs, a risk register and an eight-characteristic stress test) asked for more than a dozen new ideas in 73 minutes, each at a surface level. Week 11 now teaches three ideas well: what an arrow is, an intervention as something the club does to make an arrow happen, and [TC] p. 9's three questions (plausible, doable, testable). It assumes no reading has been done, and ends with one intervention on an A6 card. Inputs survive inside "Could the club really do it?", the stress test inside "Which characteristic could it put at risk?", and the riskiest assumptions and risks move to week 12 (as "it will work if" and "what could go wrong").
 
 **Pre-reading:** none assumed. Optional: [TC] p. 7 (§5) and p. 9 (§7).
 
@@ -165,18 +165,21 @@ Simplified in November 2026. The first version (options appraisal, interventions
 
 **Outcome:** ideas on the arrows of the map; two or three ideas tested on the three questions, with verdicts; one intervention in one sentence, with the ideas it is built from and the ideas dropped; the intervention card.
 
-### Week 12 — Indicators and quality review
+### Week 12 — The plan in detail
 
-**Pre-reading:** [TC] pp. 8–9 (§6 and §7); [GAF] Step 11 (pp. 37–42), Step 8 on risks (pp. 27–28) and quality factors (pp. 47–48).
+Simplified in November 2026, in the same way as week 11. The first version (indicators with the full M&E framework for every outcome, a timeline check, an outside review by another group and a response to every challenge) asked for three demanding blocks in 80 minutes after a reading. Week 12 now has one job: the group details its plan. It assumes no reading has been done. Inputs survive inside "What it needs", risks inside "What could go wrong", the riskiest assumptions as "it will work if", and indicators as two or three headline signs with [TC] p. 8's four targets. The outside review is dropped.
+
+**Pre-reading:** none assumed. Optional: [TC] p. 8 (§6).
 
 | Time | Activity | Reading applied |
 |---|---|---|
-| 0–10 | Deck: the four targets; the M&E framework columns; baselines and why ours are unknown; the reviewer's questions. Rotate roles. | [TC] p. 8; [GAF] p. 39 |
-| 10–40 | **Indicators, shared out.** The workbench divides outcomes among members. Each drafts indicators: the four targets plus definition, baseline (or "find out first"), data source, frequency, responsible and reporting. The group then reviews them all; a timing check flags an outcome whose "by when" falls before its preconditions'. | [TC] pp. 8–9; [GAF] pp. 31, 39 |
-| 40–72 | **Outside review.** Groups swap exports. Reviewer mode walks [TC]'s plausibility, feasibility and testability questions (p. 9) and [GAF]'s quality factors (p. 47) link by link. Reviewers must name the weakest assumption, say how the club could test it, name the biggest risk to the group's intervention (week 11), and flag any claim above the ceiling. The review is exported as a file. | [TC] p. 9; [GAF] p. 47 |
-| 72–90 | **Respond.** Import the review and answer every challenge (accept, revise, or rebut with a reason); revisions go to the log. Mark the three riskiest assumptions (the "it will work if" of the recommendation, printed as A6 cards) and give each risk the review names a mitigation. Export. | [GAF] pp. 27, 47 |
+| 0–10 | Deck: today's three steps; what an activity is ([TC] p. 7's literacy classes and their activities); four questions for every activity; what could go wrong; "it will work if", with a check before opening; the four targets, with [TC] p. 8's classroom example; one sign in one sentence. | [TC] pp. 6–8 |
+| 10–40 | **The plan in detail** (screen 10). Rotate roles. The week 11 intervention is restated. Each member drafts at least one activity on paper: what happens, when and how often, who makes it happen, what it needs (space, staff, money, partners, permission, and whether any of it is outside the club's control). The Scribe types them in: at least three. Then at least two things that could go wrong, each with what the club would do about it; the characteristics week 11 flagged as at risk are shown as a prompt. | [TC] p. 7; [GAF] pp. 19–22, 27–28 |
+| 40–60 | **It will work if** (screen 11). The two or three things the plan depends on most, started from the assumption register (which marks them riskiest) or written from scratch, each with how the club could check it before it opens. Each check goes on "find out first". The Sceptic leads. | [TC] p. 6 |
+| 60–82 | **Signs it is working** (screen 11). Two or three signs, each on a box of the map, with the four targets (how many, of whom, doing what, by when in months after opening), read back as "By [N] months after opening, [how many] [of whom] will [do what].", how the club would count it, and whether today's number is known; an unknown number goes on "find out first". | [TC] p. 8 |
+| 82–90 | Self-check (the three questions, of the plan as it stands); print the plan A6 cards (one per "it will work if" item, one per sign); export. | [TC] p. 9 |
 
-**Outcome:** M&E framework table; complete "find out first" list (the first-year learning plan); review log with every challenge answered; the riskiest assumptions and the main risks with mitigations; revised ToC.
+**Outcome:** the intervention broken into activities, each with when, who and what it needs; what could go wrong, with what the club would do; the two or three things that must be true, each with a check before opening; two or three signs it is working with their four targets; a longer "find out first" list (the first-year learning plan); the plan cards.
 
 ### Week 13 — Diagram, narrative and recommendation
 
@@ -223,8 +226,8 @@ The workbench is one file that grows each week, so earlier screens stay editable
 | 7 | Ideas from the arrows (what an arrow is; ideas on arrows) | 11 | [TC] p. 7 |
 | 8 | Test the ideas (the three questions, with verdicts) | 11 | [TC] p. 9 |
 | 9 | Our intervention (one sentence) and the week 11 close | 11 | [TC] p. 7; [GAF] p. 11 |
-| 10 | Indicators and M&E framework; timeline check | 12 | [TC] p. 8; [GAF] Step 11 |
-| 11 | Outside review (author and reviewer modes); riskiest assumptions and risks | 12 | [TC] p. 9; [GAF] pp. 27, 47 |
+| 10 | The plan in detail: activities, then what could go wrong | 12 | [TC] p. 7; [GAF] Steps 5–6, 8 |
+| 11 | Will it work?: it will work if, signs it is working, and the week 12 close | 12 | [TC] pp. 6, 8; [GAF] Step 11 |
 | 12 | Diagrams (full and client) and narrative | 13 | [TC] p. 9; [GAF] Step 10 |
 | 13 | Recommendation, values check and outputs | 13 | §1, §8 |
 | 14 | Class view (instructor; loads every group's export) | 13 | |
@@ -250,9 +253,11 @@ evidence[{id, summary, source, type, slide, ratings{causal, scope, implications,
 reverseImport[{member, course, claim, linkId, stance}]
 interventions[{id, linkIds[one arrow], what, because, tested, plausible, plausibleVerdict, doable, doableVerdict, testable, testableVerdict, charAtRisk, fix, inDesign, whyNot}]
 design{name, what, where, forWhom, when, runBy}
-risks[{id, text, mitigation, ...}]   (added in week 12)
-indicators[{id, outcomeId, owner, howMany, who, level, byWhen, definition, baseline, dataSource, frequency, responsible, reporting}]
-reviews{given[], received[{fromGroup, items[{target, question, challenge, response, status}]}]}
+activities[{id, what, when, who, needs, ideaId}]   (added in week 12)
+risks[{id, text, mitigation}]   (added in week 12)
+workIf[{id, assumptionId, text, check}]   (added in week 12; assumptions[].riskiest follows it)
+indicators[{id, outcomeId, howMany, who, level, byWhen, dataSource, baselineKnown, baseline, ...}]   (week 12; owner, definition, frequency, responsible, reporting unused)
+reviews{given[], received[]}   (unused since week 12 was simplified)
 diagrams{clientOutcomeIds[], clientLinkIds[]}
 narrative{execSummary, sections{}}
 valuesCheck[{value, slide, speaksTo, cost}]
@@ -274,8 +279,9 @@ revisionLog[{at, week, screen, change}]
 - At least three ideas, each written for an arrow of the map, in two halves.
 - Two or three ideas tested on the three questions, each answer with a verdict, the characteristic at risk and a fix.
 - One intervention built from at least one tested idea, a reason for each tested idea dropped, a name, and every gap of its sentence filled.
-- Every outcome has an indicator with all four targets, and every unknown baseline is on "find out first".
-- Every review challenge has a response.
+- Week 12's screens open once the week 11 intervention is complete.
+- At least three activities, each with what happens, when, who and what it needs; at least two things that could go wrong, each with what the club would do.
+- Two or three "it will work if" items, each with a check before opening; two or three signs, each on a box of the map with all four targets, how it is counted and today's number or "unknown"; every check and every unknown number is on "find out first".
 - The client diagram fits one A4 page.
 - The narrative is within its word limit and has an executive summary.
 - The recommendation sentence fills every slot.
@@ -306,13 +312,13 @@ A4, with diagrams printable at A3. Available as Copy as text. The narrative is a
 3. **What the third place is for:** the long-term outcome, its definitions, and the accountability ceiling with the client's ambition placed against it.
 4. **Whose community.**
 5. **How it works:** the client diagram and the pathway narrative.
-6. **What we recommend building:** the intervention sentence, the ideas it is built from and the arrows they sit on, and the ideas dropped with reasons.
-7. **What must be true:** the riskiest assumptions with their evidence ratings and Bodø verdicts; the main risks with mitigations (both from week 12).
-8. **How the club will know:** the M&E framework.
+6. **What we recommend building:** the intervention sentence, the ideas it is built from and the arrows they sit on, the activities it is made of (week 12), and the ideas dropped with reasons.
+7. **What must be true:** the "it will work if" items, with the evidence ratings and Bodø verdicts of any assumption they start from, and how the club could check each; what could go wrong, with what the club would do (both from week 12).
+8. **How the club will know:** the signs it is working, with their four targets (week 12).
 9. **What to find out first:** the first-year learning plan.
-10. **What not to do:** the characteristics each tested idea could put at risk (week 11), and the review's challenges (week 12).
+10. **What not to do:** the characteristics each tested idea could put at risk (week 11).
 11. **Fit with the club's values.**
-12. **Appendix:** full diagram, the client's reconstructed theory, stakeholder map, assumption register, review log, revision log.
+12. **Appendix:** full diagram, the client's reconstructed theory, stakeholder map, assumption register, revision log.
 
 ## 9. Acceptance criteria
 
@@ -323,7 +329,7 @@ A4, with diagrams printable at A3. Available as Copy as text. The narrative is a
 5. The sorter routes every belief to assumption, precondition or "find out first", and nothing skips it.
 6. Week 11's screens open once the map has arrows and no loop; unfinished week 10 checks show as a warning.
 7. Every gate in §7.3 blocks with a specific message; one-character entries are rejected.
-8. Export, re-import and the review-file round trip all preserve state exactly.
+8. Export and re-import preserve state exactly.
 9. The class view loads at least 8 group files.
 10. Print: A4 pack, A3/A4 full diagram, one-page client diagram, A6 cards four to a page with cut lines.
 11. 360px with no horizontal scroll; touch targets of at least 44px; full keyboard walk-through; AA contrast.
@@ -334,9 +340,10 @@ A4, with diagrams printable at A3. Available as Copy as text. The narrative is a
 
 ## 10. Decisions taken (override if wrong)
 
-- [TC]'s terms are the primary vocabulary; [GAF] supplies stakeholders, evidence questions, inputs, risks, the M&E framework, two diagram versions and workshop practice.
+- [TC]'s terms are the primary vocabulary; [GAF] supplies stakeholders, evidence questions, inputs, risks, two diagram versions and workshop practice.
 - Assumptions and rationales move to week 10, as the readings sequence them.
-- Week 11 is simplified (November 2026): ideas from the arrows, the three questions, one intervention, with no reading assumed. Inputs fold into "Could the club really do it?", the stadium stress test into "Which characteristic could it put at risk?", and the riskiest assumptions and risks move to week 12's outside review.
+- Week 11 is simplified (November 2026): ideas from the arrows, the three questions, one intervention, with no reading assumed. Inputs fold into "Could the club really do it?", the stadium stress test into "Which characteristic could it put at risk?", and the riskiest assumptions and risks move to week 12.
+- Week 12 is simplified (November 2026): the plan in detail (activities, what could go wrong), what must be true and two or three signs it is working, with no reading assumed and no outside review.
 - Evidence quality is rated on the week 6 criteria rather than a new evidence hierarchy.
 - One workbench built in five stages; one deck per week.
 - Group roles rotate weekly.
@@ -346,5 +353,5 @@ A4, with diagrams printable at A3. Available as Copy as text. The narrative is a
 ## 11. Open questions
 
 1. **Client constraints.** Which constraints can the client confirm before week 11?
-2. **Client contact.** Is there a client check-in between weeks 9 and 13? Week 12's outside review could use the client as a reviewer ([TC] p. 9 suggests "key power brokers").
+2. **Client contact.** Is there a client check-in between weeks 9 and 13? If so, the client could act as an outside reviewer of the week 13 pack ([TC] p. 9 suggests "key power brokers").
 3. **Pre-reading load.** Five readings of 3–15 pages each: confirm this suits the course's reading expectations.
