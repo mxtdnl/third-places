@@ -31,9 +31,13 @@
   "owner", "definition", "frequency", "responsible" and "reporting" are not
   used.
 
-  WEEK 12 DETAILS THE PLAN (screens 10-11). Both screens are locked until
-  the week 11 intervention is complete (planLockChecks: the map has arrows
-  and no loop, and screen 9 passes). Screen 10 breaks the intervention into
+  WEEK 12 DETAILS THE PLAN (screens 10-11). Neither screen is locked, and
+  each opens on its own, so the timed blocks of the deck never wait for
+  each other. Anything unfinished from week 11 (planLockChecks: the map
+  has arrows and no loop, and screen 9 passes) shows as a warning. Each
+  screen starts with empty rows ready to type in (ensurePlanRows), week 12
+  roles are optional, short answers pass (one real word for when, who and
+  what it needs), and "by when" takes 12, 12 months or 2 years. Screen 10 breaks the intervention into
   activities ([TC] p. 7: the specific actions that make up an
   intervention), each with when, who and what it needs, then what could go
   wrong and what the club would do about it. Screen 11 names the two or
@@ -42,7 +46,16 @@
   register marks that assumption "riskiest"), each with how the club could
   check it before opening, and two or three signs it is working
   ("indicators", [TC] p. 8's four targets). Each check, and each sign whose
-  number today is unknown, is kept on Find out first (syncPlanFof).
+  number today is unknown, is kept on Find out first (syncPlanFof). The
+  plan cards print whatever has been filled in.
+
+  INPUT: WEEK 12 ONE-PAGE FILE. Import JSON also accepts an export of
+  week12-plan-workbench.html (tool "week12-plan"). mergePlanFile() brings
+  its week 12 work into the work already on this device: activities,
+  risks, "it will work if" items (matched to the assumption register by
+  text) and signs (matched to a box of the map by text) replace the week
+  12 lists; the group, intervention and long-term outcome fill only fields
+  that are empty here.
 
   WEEK 11 STARTS FROM THE ARROWS (screens 7-9). Ideas are written for the
   arrows of the backwards map ([TC] p. 7: interventions sit on the
@@ -583,6 +596,7 @@
   /* Gate */
   .gate { margin-top: 1rem; padding: 0.85rem 1rem; background: rgba(92,58,150,0.08); border-left: 6px solid var(--char-1); }
   .gate h3 { color: var(--char-1); }
+  .gate-count { font-size: 0.72rem; letter-spacing: 0.1em; color: var(--text-muted); margin-left: 0.4rem; }
   .gate ul { list-style: none; margin-bottom: 0.6rem; }
   .gate li { font-size: 0.86rem; padding: 0.15rem 0; display: flex; gap: 0.5rem; align-items: baseline; }
   .gate li::before { content: ''; flex: 0 0 auto; width: 10px; height: 10px; background: var(--incorrect); transform: translateY(1px); }
@@ -1078,19 +1092,27 @@
       slotWhen: 2,         // when it is open
       slotRunBy: 2,        // who runs it
       // Week 12 (screens 10-11)
-      activityWhat: 6,     // what happens
-      activityWhen: 2,     // when, and how often
-      activityWho: 2,      // who makes it happen
-      activityNeeds: 4,    // what it needs
-      risk: 6,             // what could go wrong
-      mitigation: 6,       // what the club would do about it
-      workIf: 6,           // it will work if ...
-      check: 8,            // how the club could check it before opening
-      signWho: 2,          // of whom
-      signLevel: 3,        // doing what, how much
-      signSource: 3,       // how the club would count it
-      baseline: 4          // today's number, and where it comes from
+      // Short on purpose: "weekly", "volunteers" and "students" are good
+      // answers. One real word still needs two characters.
+      activityWhat: 3,     // what happens
+      activityWhen: 1,     // when, and how often
+      activityWho: 1,      // who makes it happen
+      activityNeeds: 1,    // what it needs
+      risk: 3,             // what could go wrong
+      mitigation: 3,       // what the club would do about it
+      workIf: 3,           // it will work if ...
+      check: 3,            // how the club could check it before opening
+      signWho: 1,          // of whom
+      signLevel: 1,        // doing what, how much
+      signSource: 1,       // how the club would count it
+      baseline: 1          // today's number, and where it comes from
     },
+    // Self-check answers per week, where a week needs a shorter close
+    // (week 12's close shares its 8 minutes with printing). Other weeks use
+    // words.selfCheck.
+    selfCheckWords: { 12: 8 },
+    // Week 12 screens start with this many empty rows, ready to type in.
+    planRows: { activities: 3, risks: 2, workIf: 2, indicators: 2 },
     // Shortest name accepted (group, members, terms, stakeholders).
     minNameChars: 2,
 
@@ -1438,9 +1460,7 @@
     // the signs that it is working. Quotations are exact, with the page:
     // [TC] pp. 7 and 8.
     plan: {
-      lockTitle: 'Week 12 needs your intervention',
-      lockLead: 'Week 12 details the intervention you chose in week 11. Finish this first:',
-      lockAfter: 'Your work on these screens is kept. They open as soon as your intervention on screen 9 is complete.',
+      warnLead: 'Week 11 is not finished. You can still plan this week; finish these when you can:',
       lead: 'Week 11 said what the club should create. This week says how it would actually run: the activities it is made of, what each one needs, and what could go wrong.',
       yoursLead: 'Your intervention, from week 11. Change it on screen 9 if the detail shows it needs changing.',
       activity: 'We use activity to describe all the specific actions that make up an intervention.', activityRef: '[TC] p. 7',
@@ -1474,7 +1494,8 @@
       howManyLabel: 'How many', howManyHint: 'A number or a share: 200, or one in five.',
       whoLabel: 'Of whom', whoHint: 'For example: residents who never buy a match ticket.',
       levelLabel: 'Doing what, how much', levelHint: 'For example: visit at least twice a month.',
-      byWhenLabel: 'By when: months after opening',
+      byWhenLabel: 'By when: months after opening', byWhenHint: '12, 18 months or 2 years',
+      rolesSummary: 'Roles for week 12 (optional)',
       sourceLabel: 'How would the club count it?', sourceHint: 'For example: a door count, a short survey, a booking list.',
       knownLegend: 'Do we know this number today?',
       baselineLabel: 'What is it today, and where does that come from?',
@@ -1998,20 +2019,18 @@
     return c;
   }
 
-  // Week 12 opens once the week 11 intervention is complete: the map has
-  // arrows and no loop, and screen 9 passes. Until then screens 10-11 show
-  // what is missing.
+  // Week 12 never locks: anything unfinished from week 11 (the map needs
+  // arrows and no loop, and screen 9 should pass) shows as a warning.
   function planLockChecks(s) {
     var g = gateResult(screen9Checks(s));
     return lockChecks(s).concat([check(g.ok, g.ok ? 'Your intervention is complete.' : 'Finish your intervention on screen 9: ' + g.failing[0])]);
   }
-  function planLocked(s) { return !gateResult(planLockChecks(s)).ok; }
+  function planWarnings(s) { return planLockChecks(s).filter(function (c) { return !c.ok; }); }
   // Week 12, screen 10: activities, then what could go wrong.
   function screen10Checks(s) {
     var F = CONFIG.plan.fields;
-    var c = roleChecks(s, 12).concat([
-      check(s.activities.length >= CONFIG.minActivities, 'Add at least ' + plural(CONFIG.minActivities, 'activity', 'activities') + ' (' + s.activities.length + ' so far).')
-    ]);
+    // Week 12 roles are optional: they are not part of the gate.
+    var c = [check(s.activities.length >= CONFIG.minActivities, 'Add at least ' + plural(CONFIG.minActivities, 'activity', 'activities') + ' (' + s.activities.length + ' so far).')];
     s.activities.forEach(function (a, i) {
       Object.keys(F).forEach(function (k) { c.push(wordMsg('Activity ' + (i + 1) + ', ' + F[k].label.toLowerCase(), a[k], F[k].words)); });
     });
@@ -2023,7 +2042,16 @@
     return c;
   }
   // Week 12, screen 11: it will work if ..., then the signs it is working.
-  function validMonths(v) { var t = String(v == null ? '' : v).trim(); return /^\d{1,3}$/.test(t) && +t >= 1 && +t <= CONFIG.maxMonths; }
+  // "By when" in months after opening: 12, 12 months, 18 mths, a year,
+  // 2 years. Returns the number of months, or null.
+  var NUMBER_WORDS = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5 };
+  function monthsOf(v) {
+    var t = String(v == null ? '' : v).trim().toLowerCase().replace(/\.$/, ''), m;
+    if ((m = t.match(/^(\d{1,3})\s*(m|mo|mos|mth|mths|month|months)?$/))) return +m[1];
+    if ((m = t.match(/^(\d{1,2}|a|an|one|two|three|four|five)\s*(yr|yrs|year|years)$/))) return (NUMBER_WORDS[m[1]] || +m[1]) * 12;
+    return null;
+  }
+  function validMonths(v) { var n = monthsOf(v); return n !== null && n >= 1 && n <= CONFIG.maxMonths; }
   function screen11Checks(s) {
     var c = [check(s.workIf.length >= CONFIG.minWorkIf, 'Name at least ' + plural(CONFIG.minWorkIf, 'thing') + ' that must be true for it to work (' + s.workIf.length + ' so far).')];
     s.workIf.forEach(function (w, i) {
@@ -2037,7 +2065,7 @@
       c.push(check(String(x.howMany).trim().length > 0, who + ': how many?'));
       c.push(wordMsg(who + ', of whom', x.who, 'signWho'));
       c.push(wordMsg(who + ', doing what', x.level, 'signLevel'));
-      c.push(check(validMonths(x.byWhen), who + ': by when? A number of months after opening, from 1 to ' + CONFIG.maxMonths + '.'));
+      c.push(check(validMonths(x.byWhen), who + ': by when? Months after opening, from 1 to ' + CONFIG.maxMonths + ' (for example 12, or 2 years).'));
       c.push(wordMsg(who + ', how the club would count it', x.dataSource, 'signSource'));
       c.push(check(x.baselineKnown === 'yes' || x.baselineKnown === 'no', who + ': do we know this number today?'));
       if (x.baselineKnown === 'yes') c.push(wordMsg(who + ', today\u2019s number', x.baseline, 'baseline'));
@@ -2060,10 +2088,11 @@
   function selfCheckChecks(s, week) {
     var sc = s.selfChecks['week' + week];
     return CONFIG.selfCheck.questions.map(function (q) {
-      var w = wordCheck(sc[q.id], CONFIG.words.selfCheck);
+      var w = wordCheck(sc[q.id], selfCheckMin(week));
       return check(w.ok, q.label + ': ' + (w.msg || 'done') + '.');
     });
   }
+  function selfCheckMin(week) { return (CONFIG.selfCheckWords || {})[week] || CONFIG.words.selfCheck; }
   function weekClosed(s, week) { return !!(s.selfChecks['week' + week] && s.selfChecks['week' + week].completedAt); }
   // Close a week: its gate and its self-check must pass. Returns the problems.
   function closeWeek(s, week, now) {
@@ -2078,17 +2107,12 @@
   // show what is coming and the reading).
   // Design screens (7-9) open while locked, to show what is missing; once
   // unlocked they open in order among themselves.
-  // Plan screens (10-11) open while locked, to show what is missing; once
-  // unlocked they open in order among themselves.
+  // Plan screens (10-11) always open, each on its own.
   function screenEnabled(s, no) {
     var sc = SCREEN[no];
     if (!sc) return false;
     if (!sc.built || no === 1 || no <= s.ui.reached) return true;
-    if (sc.plan) {
-      if (planLocked(s)) return true;
-      for (var k = 1; k < no; k++) if (SCREEN[k].plan && !gateResult(screenChecks(s, k)).ok) return false;
-      return true;
-    }
+    if (sc.plan) return true;
     if (sc.design) {
       if (designLocked(s)) return true;
       for (var j = 1; j < no; j++) if (SCREEN[j].design && !gateResult(screenChecks(s, j)).ok) return false;
@@ -2572,7 +2596,8 @@
   }
   // A sign as one sentence; an empty slot shows as [how many], [of whom] ...
   function signSentence(x) {
-    var v = { byWhen: cleanText(x.byWhen), howMany: cleanText(x.howMany), who: cleanText(x.who), level: cleanText(x.level).replace(/^will\s+/i, '') };
+    var mo = monthsOf(x.byWhen);
+    var v = { byWhen: mo !== null ? String(mo) : cleanText(x.byWhen), howMany: cleanText(x.howMany), who: cleanText(x.who), level: cleanText(x.level).replace(/^will\s+/i, '') };
     return CONFIG.plan.signSentence.replace(/\{(\w+)\}/g, function (m, k) { return v[k] || '[' + CONFIG.plan.signBlanks[k] + ']'; });
   }
   // Find out first follows screen 11: one item per check that has its text
@@ -2622,6 +2647,59 @@
       dataSource: '', frequency: '', responsible: '', reporting: '' };
     s.indicators.push(x);
     return x;
+  }
+  // Empty rows to type in, the first time a week 12 screen is opened.
+  function ensurePlanRows(s, no) {
+    var R = CONFIG.planRows, changed = false;
+    function fillTo(list, n, add) { while (s[list].length < n) { add(s); changed = true; } }
+    if (no === 10) { fillTo('activities', R.activities, addActivity); fillTo('risks', R.risks, addRisk); }
+    if (no === 11) { fillTo('workIf', R.workIf, function () { addWorkIf(s, ''); }); fillTo('indicators', R.indicators, addSign); }
+    return changed;
+  }
+  // Use an assumption from the register: it fills the first empty row, or
+  // adds a row if every row has something in it.
+  function useAssumption(s, assumptionId) {
+    var a = assumptionById(s, assumptionId);
+    if (!a || s.workIf.some(function (w) { return w.assumptionId === a.id; })) return null;
+    var w = s.workIf.filter(function (x) { return !x.assumptionId && !cleanText(x.text) && !cleanText(x.check); })[0];
+    if (!w) return addWorkIf(s, assumptionId);
+    w.assumptionId = a.id; w.text = a.text;
+    markRiskiest(s);
+    return w;
+  }
+  // Bring in the week 12 work from an export of week12-plan-workbench.html
+  // (tool "week12-plan"). Returns { errors } or { count }.
+  var PLAN_FILE_TOOL = 'week12-plan';
+  function mergePlanFile(s, obj) {
+    if (!isObj(obj) || obj.tool !== PLAN_FILE_TOOL || !isObj(obj.state)) return { errors: ['This is not a week 12 one-page file.'] };
+    var f = obj.state, str = function (v) { return typeof v === 'string' ? v : ''; }, low = function (v) { return cleanText(v).toLowerCase(); };
+    var list = function (k) { return Array.isArray(f[k]) ? f[k].filter(isObj) : []; };
+    var g = isObj(f.group) ? f.group : {}, d = isObj(f.design) ? f.design : {};
+    if (!cleanText(s.group.name)) s.group.name = str(g.name);
+    if (!members(s).length && str(g.members)) {
+      var names = str(g.members).split(',').map(cleanText).filter(Boolean).slice(0, CONFIG.maxMembers);
+      s.group.members = names.concat(['', '', '', '', '']).slice(0, CONFIG.maxMembers);
+    }
+    ['name', 'what', 'where', 'forWhom', 'when', 'runBy'].forEach(function (k) { if (!cleanText(s.design[k])) s.design[k] = str(d[k]); });
+    if (!cleanText(s.lto.text)) s.lto.text = str(d.lto);
+    function boxId(text) {
+      var t = low(text);
+      if (!t) return '';
+      if (t === low(s.lto.text)) return LTO_ID;
+      var o = s.outcomes.filter(function (x) { return low(x.text) === t; })[0];
+      return o ? o.id : '';
+    }
+    function assumptionFor(text) { var a = s.assumptions.filter(function (x) { return low(x.text) === low(text); })[0]; return a ? a.id : ''; }
+    s.activities = list('activities').map(function (a) { return { id: uid('a'), what: str(a.what), when: str(a.when), who: str(a.who), needs: str(a.needs), ideaId: '' }; });
+    s.risks = list('risks').map(function (r) { return { id: uid('r'), text: str(r.text), mitigation: str(r.mitigation) }; });
+    s.workIf = list('workIf').map(function (w) { return { id: uid('w'), assumptionId: assumptionFor(w.text), text: str(w.text), check: str(w.check) }; });
+    s.indicators = list('signs').map(function (x) {
+      return { id: uid('n'), outcomeId: boxId(x.shows), owner: '', howMany: str(x.howMany), who: str(x.who), level: str(x.level), byWhen: str(x.byWhen),
+        definition: '', baselineKnown: x.known === 'yes' || x.known === 'no' ? x.known : '', baseline: str(x.today), dataSource: str(x.count),
+        frequency: '', responsible: '', reporting: '' };
+    });
+    normalisePlan(s);
+    return { count: s.activities.length + s.risks.length + s.workIf.length + s.indicators.length };
   }
   function removeSign(s, id) { s.indicators = s.indicators.filter(function (x) { return x.id !== id; }); syncPlanFof(s); }
   // The characteristics the week 11 tests said could be at risk.
@@ -3147,6 +3225,14 @@
     return out;
   }
 
+  // The rows the plan cards print: those with something in them.
+  function planCardRows(s) {
+    return {
+      workIf: s.workIf.filter(function (w) { return cleanText(w.text); }),
+      signs: s.indicators.filter(function (x) { return cleanText(x.howMany) || cleanText(x.who) || cleanText(x.level); })
+    };
+  }
+
   var OUTPUT_SECTIONS = [
     { id: 'group', week: 9, title: 'Group and roles', colour: '#5C3A96',
       has: function () { return true; },
@@ -3365,14 +3451,15 @@
     // One card per "it will work if" item and one per sign: the "it will
     // work if" and "the club will know it is working when" of week 13.
     { id: 'plan', title: 'Plan cards',
-      ready: function (s) { return !planLocked(s) && gateResult(screen10Checks(s)).ok && gateResult(screen11Checks(s)).ok; },
+      // Prints whatever has been filled in, so no group leaves with nothing.
+      ready: function (s) { return planCardRows(s).workIf.length + planCardRows(s).signs.length > 0; },
       cards: function (s) {
-        var foot = dash(s.group.name) + ' · ' + members(s).join(', ');
-        return s.workIf.map(function (w, i) {
-          return { eyebrow: 'It will work if · ' + (i + 1) + ' of ' + s.workIf.length + ' · Week 12', colour: '#7E58A8', text: dash(w.text),
+        var foot = dash(s.group.name) + ' · ' + members(s).join(', '), rows = planCardRows(s);
+        return rows.workIf.map(function (w, i, all) {
+          return { eyebrow: 'It will work if · ' + (i + 1) + ' of ' + all.length + ' · Week 12', colour: '#7E58A8', text: dash(w.text),
             details: ['Check before opening: ' + dash(w.check)].concat(w.assumptionId ? ['From the assumption register' + workIfFrom(s, w)] : []), foot: foot };
-        }).concat(s.indicators.map(function (x, i) {
-          return { eyebrow: 'Sign it is working · S' + (i + 1) + ' · Week 12', colour: '#D4A020', text: signSentence(x),
+        }).concat(rows.signs.map(function (x) {
+          return { eyebrow: 'Sign it is working · S' + (s.indicators.indexOf(x) + 1) + ' · Week 12', colour: '#D4A020', text: signSentence(x),
             details: ['Shows: ' + short(dash(signBox(s, x)), 140), 'Counted by: ' + dash(x.dataSource), 'Today: ' + signToday(x)], foot: foot };
         }));
       } }
@@ -3467,15 +3554,19 @@
   }
   function gateHtml(id, checks, button) {
     var g = gateResult(checks);
-    return '<div class="gate' + (g.ok ? ' passed' : '') + '" id="' + id + '"><h3>' + (g.ok ? 'Ready' : 'Still to do') + '</h3>' +
-      '<ul>' + checks.map(function (c) { return '<li class="' + (c.ok ? 'ok' : 'bad') + '">' + esc(c.msg) + '</li>'; }).join('') + '</ul>' +
+    // Only what is still to do, with a count of what is done.
+    var done = g.total - g.failing.length;
+    return '<div class="gate' + (g.ok ? ' passed' : '') + '" id="' + id + '"><h3>' + (g.ok ? 'Ready' : 'Still to do') +
+      (g.total > 1 ? ' <span class="gate-count">' + done + ' of ' + g.total + ' done</span>' : '') + '</h3>' +
+      (g.ok ? '' : '<ul>' + checks.filter(function (c) { return !c.ok; }).map(function (c) { return '<li class="bad">' + esc(c.msg) + '</li>'; }).join('') + '</ul>') +
       (button ? '<button type="button" class="btn btn-primary" data-action="' + button.action + '"' + (button.arg ? ' data-arg="' + esc(button.arg) + '"' : '') +
-        (g.ok ? '' : ' disabled') + '>' + esc(button.label) + '</button>' : '') + '</div>';
+        (g.ok || button.always ? '' : ' disabled') + '>' + esc(button.label) + '</button>' : '') + '</div>';
   }
-  // Only the failing checks, for long screens (the full list in the gate).
   function screenGate(no) {
     var next = no + 1, label = SCREEN[next] ? 'Next: ' + SCREEN[next].title : 'Done';
-    return gateHtml('gate-' + no, screenChecks(state, no), { action: 'next', arg: String(next), label: label });
+    // Week 12's two screens do not wait for each other.
+    var always = !!(SCREEN[no].plan && SCREEN[next] && SCREEN[next].plan);
+    return gateHtml('gate-' + no, screenChecks(state, no), { action: 'next', arg: String(next), label: label, always: always });
   }
 
   function panelStyle(sc) { return '--panel-colour:' + sc.colour + ';--panel-ink:' + textColour(sc.colour) + ';--banner-ink:' + inkFor(sc.colour); }
@@ -3486,10 +3577,10 @@
       h += '<div class="rail-week"><span class="wk">Week ' + w + (weekClosed(state, w) ? ' ✓' : '') + '</span>';
       CONFIG.screens.filter(function (sc) { return sc.week === w; }).forEach(function (sc) {
         var on = state.ui.screen === sc.no, en = screenEnabled(state, sc.no);
-        var locked = (sc.design && designLocked(state)) || (sc.plan && planLocked(state)), done = sc.built && !locked && gateResult(screenChecks(state, sc.no)).ok;
+        var locked = sc.design && designLocked(state), done = sc.built && !locked && gateResult(screenChecks(state, sc.no)).ok;
         h += '<button type="button" class="rail-btn' + (sc.built ? '' : ' later') + (locked ? ' locked' : '') + (done ? ' done' : '') + '" data-action="goto" data-arg="' + sc.no + '"' +
           ' style="--rail-colour:' + sc.colour + ';--rail-ink:' + inkFor(sc.colour) + '"' + (on ? ' aria-current="page"' : '') + (en ? '' : ' disabled') +
-          ' title="' + esc(sc.title) + '" aria-label="Screen ' + sc.no + ': ' + esc(sc.title) + (sc.built ? (locked ? (sc.plan ? ', locked until the intervention is complete' : ', locked until the map has arrows') : done ? ', complete' : '') : ', arrives in week ' + sc.week) + '">' +
+          ' title="' + esc(sc.title) + '" aria-label="Screen ' + sc.no + ': ' + esc(sc.title) + (sc.built ? (locked ? ', locked until the map has arrows' : done ? ', complete' : '') : ', arrives in week ' + sc.week) + '">' +
           (sc.built ? '<span class="pip" aria-hidden="true"></span>' : '') + sc.no + '</button>';
       });
       h += '</div>';
@@ -3705,14 +3796,22 @@
       '<h3>Self-check</h3><p class="quiet">' + esc(CONFIG.guidance.close) + '</p>';
     var wg = gateResult(weekChecks(state, week));
     if (!closed && !wg.ok) {
-      h += gateHtml('gate-week' + week, weekChecks(state, week).filter(function (c) { return !c.ok; }));
+      // A count per screen, with a link: each screen's own list says what.
+      var left = CONFIG.screens.filter(function (x) { return x.week === week && x.built; }).map(function (x) {
+        return { no: x.no, title: x.title, n: gateResult(screenChecks(state, x.no)).failing.length };
+      }).filter(function (x) { return x.n; });
+      h += '<div class="gate" id="gate-week' + week + '"><h3>Still to do</h3><ul>' + left.map(function (x) {
+        return '<li class="bad">Screen ' + x.no + ', ' + esc(x.title) + ': ' + plural(x.n, 'thing') + ' to finish</li>';
+      }).join('') + '</ul><div class="actions">' + left.map(function (x) {
+        return '<button type="button" class="btn btn-ghost btn-small" data-action="goto" data-arg="' + x.no + '">Screen ' + x.no + '</button>';
+      }).join('') + '</div></div>';
       h += '<p class="quiet">The self-check opens when every screen of week ' + week + ' is ready.</p></section>';
       return h;
     }
     h += '<div class="guide" style="margin-bottom:0.75rem">' + quote(CONFIG.selfCheck.intro, CONFIG.selfCheck.introRef) + '</div><p>' + esc((CONFIG.selfCheck.weekLeads || {})[week] || CONFIG.selfCheck.lead) + '</p>';
     CONFIG.selfCheck.questions.forEach(function (q) {
       h += '<div class="q-block"><q>' + esc(q.quote) + '</q>' +
-        wcText('sc-' + week + '-' + q.id, q.label + ' (' + q.ref + ')', 'selfChecks.week' + week + '.' + q.id, sc[q.id], CONFIG.words.selfCheck, { short: true, readonly: closed }) + '</div>';
+        wcText('sc-' + week + '-' + q.id, q.label + ' (' + q.ref + ')', 'selfChecks.week' + week + '.' + q.id, sc[q.id], selfCheckMin(week), { short: true, readonly: closed }) + '</div>';
     });
     if (closed) {
       h += '<div class="closed-box"><p><b>Week ' + week + ' closed</b> on ' + esc(sc.completedAt.slice(0, 10)) + '. Later edits to its screens go into the revision log.</p>' +
@@ -4170,14 +4269,11 @@
     return h;
   }
 
-  // ── Week 12: the plan lock ──
-  function renderPlanLock(sc) {
-    var P = CONFIG.plan, h = screenHead(sc, sc.summary);
-    h += '<div class="lock-box"><p class="big">' + esc(P.lockTitle) + '</p>' +
-      '<p>' + esc(P.lockLead) + '</p>' + gateHtml('gate-lock', planLockChecks(state).filter(function (c) { return !c.ok; })) +
-      '<p class="quiet">' + esc(P.lockAfter) + '</p><div class="actions">' +
-      '<button type="button" class="btn btn-primary" data-action="goto" data-arg="' + (designLocked(state) ? 5 : 9) + '">' + (designLocked(state) ? 'Screen 5: backwards map' : 'Screen 9: our intervention') + '</button></div></div>';
-    return h;
+  // ── Week 12: what is unfinished from week 11 (a warning, never a lock) ──
+  function planWarnHtml() {
+    var w = planWarnings(state);
+    return w.length ? '<div class="warn" role="note" style="margin-bottom:1rem"><b>' + esc(CONFIG.plan.warnLead) + '</b><ul>' +
+      w.map(function (c) { return '<li>' + esc(c.msg) + '</li>'; }).join('') + '</ul></div>' : '';
   }
 
   // ── Screen 10: the plan in detail ──
@@ -4214,9 +4310,8 @@
       }).join('') + '</ul>' : '');
   }
   function renderPlan(sc) {
-    if (planLocked(state)) return renderPlanLock(sc);
     var P = CONFIG.plan, h = screenHead(sc, P.lead), risky = charsAtRisk(state);
-    h += '<div id="roles-panel" data-week="12">' + renderRoles(12) + '</div>';
+    h += planWarnHtml();
     h += '<section class="panel" style="--panel-colour:var(--char-6)"><p class="eyebrow panel-eyebrow">1 · Your intervention · ' + esc(dash(state.design.name)) + '</p>' +
       '<p class="quiet">' + esc(P.yoursLead) + '</p>' + interventionRecap() +
       '<div class="actions"><button type="button" class="btn btn-ghost" data-action="goto" data-arg="9">Screen 9: change it</button></div></section>';
@@ -4230,6 +4325,7 @@
       (risky.length ? '<p class="quiet">' + esc(P.riskFromTests) + ' <b>' + esc(risky.map(charLabelOf).join(', ')) + '</b>.</p>' : '') +
       state.risks.map(riskEditor).join('') +
       '<div class="actions"><button type="button" class="btn btn-accent" data-action="risk-add">Add something that could go wrong</button></div></section>';
+    h += '<details class="drawer"><summary>' + esc(P.rolesSummary) + '</summary><div id="roles-panel" data-week="12">' + renderRoles(12) + '</div></details>';
     h += screenGate(10);
     return h;
   }
@@ -4257,7 +4353,7 @@
       textInput('sg-many-' + x.id, P.howManyLabel, base + 'howMany', x.howMany, { max: 40, logLabel: 'Signs it is working' }) +
       wcText('sg-who-' + x.id, P.whoLabel, base + 'who', x.who, CONFIG.words.signWho, { short: true, logLabel: 'Signs it is working' }) +
       wcText('sg-level-' + x.id, P.levelLabel, base + 'level', x.level, CONFIG.words.signLevel, { short: true, logLabel: 'Signs it is working' }) +
-      '<div class="field"><label for="sg-when-' + x.id + '">' + esc(P.byWhenLabel) + '</label><input type="text" id="sg-when-' + x.id + '" class="slide" inputmode="numeric" autocomplete="off" maxlength="3"' +
+      '<div class="field"><label for="sg-when-' + x.id + '">' + esc(P.byWhenLabel) + '</label><input type="text" id="sg-when-' + x.id + '" autocomplete="off" maxlength="20" placeholder="' + esc(P.byWhenHint) + '"' +
       ' data-f="' + base + 'byWhen" data-label="Signs it is working" value="' + esc(x.byWhen) + '"></div></div>' +
       '<p class="quiet">' + esc(P.howManyHint) + ' ' + esc(P.whoHint) + ' ' + esc(P.levelHint) + '</p>';
     h += '<div class="sign-sentence" id="sg-sen-' + x.id + '" aria-live="polite">' + esc(signSentence(x)) + '</div>';
@@ -4271,8 +4367,8 @@
     return h + '</div>';
   }
   function renderWillWork(sc) {
-    if (planLocked(state)) return renderPlanLock(sc);
-    var P = CONFIG.plan, h = screenHead(sc, P.lead2), full = state.workIf.length >= CONFIG.maxWorkIf;
+    var P = CONFIG.plan, h = screenHead(sc, P.lead2) + planWarnHtml();
+    var full = state.workIf.length >= CONFIG.maxWorkIf && !state.workIf.some(function (w) { return !w.assumptionId && !cleanText(w.text) && !cleanText(w.check); });
     var free = state.assumptions.filter(function (a) { return !state.workIf.some(function (w) { return w.assumptionId === a.id; }); });
     h += '<section class="panel" style="--panel-colour:var(--char-8)"><p class="eyebrow panel-eyebrow">1 · It will work if …</p><p>' + esc(P.workIfLead) + '</p>' +
       state.workIf.map(workIfEditor).join('');
@@ -4340,7 +4436,7 @@
     h += '<details class="side-sec" style="--sec-colour:var(--char-2);--sec-ink:var(--char-2)"><summary>Self-check · week ' + week + (weekClosed(state, week) ? ' ✓' : '') + '</summary><div>' +
       '<p><q>' + esc(CONFIG.selfCheck.intro) + '</q> ' + esc(CONFIG.selfCheck.introRef) + '</p><ul class="plain refs">' +
       CONFIG.selfCheck.questions.map(function (q) {
-        return '<li><b>' + esc(q.label) + '</b> ' + (wordCheck(sChk[q.id], CONFIG.words.selfCheck).ok ? '✓ answered' : 'not yet answered') + '<br><span class="quiet">' + esc(q.quote) + '</span></li>';
+        return '<li><b>' + esc(q.label) + '</b> ' + (wordCheck(sChk[q.id], selfCheckMin(week)).ok ? '✓ answered' : 'not yet answered') + '<br><span class="quiet">' + esc(q.quote) + '</span></li>';
       }).join('') + '</ul><p class="quiet">Answer it at the close of week ' + week + (lastBuiltScreen(week) ? ' (end of screen ' + lastBuiltScreen(week) + ')' : '') + '.</p></div></details>';
     h += '<details class="side-sec" style="--sec-colour:var(--char-8);--sec-ink:var(--char-8)"><summary>Find out first <span class="count-badge">' + state.findOutFirst.length + '</span></summary><div>';
     state.findOutFirst.forEach(function (f) {
@@ -4360,15 +4456,16 @@
     var l = CONFIG.screens.filter(function (sc) { return sc.week === week && sc.built; });
     return l.length ? l[l.length - 1].no : 0;
   }
-  // The run sheet of the current week, or the latest one built.
+  // The run sheet of the week of the screen on show, or the latest one built.
   function renderRunSheet() {
     var keys = Object.keys(CONFIG.runSheets).map(Number).sort(function (a, b) { return a - b; });
-    var w = currentWeek(state), week = CONFIG.runSheets[w] ? w : keys[keys.length - 1];
+    var w = SCREEN[state.ui.screen].week, week = CONFIG.runSheets[w] ? w : keys[keys.length - 1];
     $('tw-runsheet').innerHTML = '<summary>How week ' + week + ' runs (90 minutes)</summary><ol>' +
       CONFIG.runSheets[week].map(function (r) { return '<li><span class="t">' + esc(r.t) + '</span><span>' + esc(r.what) + '</span></li>'; }).join('') + '</ol>';
   }
   function render(focusMain) {
     var sc = SCREEN[state.ui.screen];
+    if (sc.plan && ensurePlanRows(state, sc.no)) save();
     renderRunSheet();
     renderRail();
     els.main.innerHTML = sc.built && RENDER[sc.no] ? RENDER[sc.no](sc) : renderLater(sc);
@@ -4528,9 +4625,9 @@
       var el = ev.target, sNo = state.ui.screen, err;
       // Week 12: an "it will work if" item started from the register.
       if (el.dataset.workifFrom) {
-        var nw = el.value && addWorkIf(state, el.value);
+        var nw = el.value && useAssumption(state, el.value);
         if (!nw) { el.value = ''; return; }
-        logEdit(state, sNo, 'It will work if'); save(); render(); refocus('wi-text-' + nw.id); return;
+        logEdit(state, sNo, 'It will work if'); save(); render(); refocus('wi-check-' + nw.id); return;
       }
       // Week 11: an idea's arrow, the ideas to test, the ideas in the intervention.
       if (el.dataset.ideaArrow) {
@@ -4632,7 +4729,7 @@
       if (!b || b.disabled) return;
       var act = b.dataset.action, arg = b.dataset.arg, sNo = state.ui.screen, log = function (c) { logEdit(state, sNo, c); };
       if (act === 'goto') goto(+arg);
-      else if (act === 'next') { if (gateResult(screenChecks(state, sNo)).ok) goto(+arg); }
+      else if (act === 'next') { if (gateResult(screenChecks(state, sNo)).ok || (SCREEN[sNo].plan && SCREEN[+arg] && SCREEN[+arg].plan)) goto(+arg); }
       else if (act === 'suggest-roles') {
         var w = +arg, list = members(state);
         state.roles['week' + w] = suggestRoles(list, w > 9 ? state.roles['week' + (w - 1)] : null);
@@ -4765,6 +4862,14 @@
     $('btn-import').addEventListener('click', function () { $('import-file').click(); });
     $('import-file').addEventListener('change', function () {
       readJsonFile(this, function (obj) {
+        if (isObj(obj) && obj.tool === PLAN_FILE_TOOL) {
+          if (!window.confirm('Bring in the week 12 plan from this file? It replaces the activities, risks, \u201Cit will work if\u201D items and signs on this device; your weeks 9-11 work stays as it is.')) return;
+          var res = mergePlanFile(state, obj);
+          if (res.errors) { setStatus(res.errors[0] + ' Nothing was changed.'); return; }
+          logEdit(state, 10, 'Week 12 plan brought in from the one-page file'); save(); goto(10);
+          setStatus('Brought in the week 12 plan. Check which box on your map each sign shows (screen 11).');
+          return;
+        }
         var errs = validateImport(obj);
         if (errs.length) { setStatus(errs[0] + ' Nothing was changed.'); return; }
         var who = isObj(obj.group) && obj.group.name ? obj.group.name : 'this group';
@@ -4887,7 +4992,13 @@
     interventionText: interventionText,
     // week 12
     planLockChecks: planLockChecks,
-    planLocked: planLocked,
+    planWarnings: planWarnings,
+    monthsOf: monthsOf,
+    ensurePlanRows: ensurePlanRows,
+    useAssumption: useAssumption,
+    mergePlanFile: mergePlanFile,
+    gateHtml: gateHtml,
+    selfCheckMin: selfCheckMin,
     normalisePlan: normalisePlan,
     syncPlanFof: syncPlanFof,
     signSentence: signSentence,
