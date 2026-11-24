@@ -3173,15 +3173,22 @@
       P.riskPrompts.forEach(function (q) { ok(/\?$/.test(q), q); ok(!/Glimt|Aspmyra|slide/i.test(q), q); });
     });
 
-    assert('lock: week 12 opens once the week 11 intervention is complete; then screen 11 waits for screen 10', function() {
+    assert('no lock: week 12 always opens, each screen on its own; unfinished week 11 work is a warning', function() {
       var s = twFull10();
-      ok(TW.planLocked(s), 'no intervention yet: locked'); ok(TW.screenEnabled(s, 10) && TW.screenEnabled(s, 11), 'a locked screen still opens, to show why');
-      ok(/^Finish your intervention on screen 9: /.test(TW.gateResult(TW.planLockChecks(s)).failing.join()));
-      s = twFull(); ok(/no arrows yet/.test(TW.gateResult(TW.planLockChecks(s)).failing.join()));
-      s = twFull11(); ok(!TW.planLocked(s)); ok(TW.screenEnabled(s, 10)); ok(!TW.screenEnabled(s, 11), 'screen 11 waits for screen 10');
-      s.links[1].rationale = 'short'; ok(!TW.planLocked(s), 'an unfinished week 10 does not lock week 12');
-      s = twFull12(); ok(TW.screenEnabled(s, 11));
-      s.design.runBy = ''; ok(TW.planLocked(s), 'an unfinished intervention locks it again');
+      ok(TW.screenEnabled(s, 10) && TW.screenEnabled(s, 11), 'both open without an intervention');
+      ok(/^Finish your intervention on screen 9: /.test(TW.planWarnings(s).map(function (c) { return c.msg; }).join()));
+      s = twFull(); ok(TW.planWarnings(s).some(function (c) { return /no arrows yet/.test(c.msg); }));
+      s = twFull11(); eq(TW.planWarnings(s).length, 0); ok(TW.screenEnabled(s, 11), 'screen 11 does not wait for screen 10');
+      s.links[1].rationale = 'short'; eq(TW.planWarnings(s).length, 0, 'an unfinished week 10 is not a week 12 warning');
+    });
+
+    assert('each week 12 screen starts with empty rows ready to type in, once', function() {
+      var s = twFull11();
+      ok(TW.ensurePlanRows(s, 10)); eq(s.activities.length + ',' + s.risks.length, '3,2');
+      ok(TW.ensurePlanRows(s, 11)); eq(s.workIf.length + ',' + s.indicators.length, '2,2');
+      ok(!TW.ensurePlanRows(s, 10) && !TW.ensurePlanRows(s, 11), 'nothing more once the rows exist');
+      ok(!TW.ensurePlanRows(s, 9), 'only on week 12 screens');
+      eq(s.workIf[0].text, ''); eq(s.indicators[0].byWhen, '');
     });
 
     suite('ToC Workbench (week 12) — Gates');
@@ -3205,16 +3212,18 @@
     assert('screen 10: three activities, each with what, when, who and needs; two risks with what the club would do; roles; one character never passes', function() {
       var s = twFull12(); TW.removeActivity(s, s.activities[2].id);
       eq(twFailing(s, 10).join(), 'Add at least 3 activities (2 so far).');
-      s = twFull12(); s.activities[1].what = 'x';
-      eq(twFailing(s, 10).join(), 'Activity 2, what happens: needs at least 6 words (1 so far).');
+      s = twFull12(); s.activities[1].what = 'quiz';
+      eq(twFailing(s, 10).join(), 'Activity 2, what happens: needs at least 3 words (1 so far).');
       s = twFull12(); s.activities[0].needs = 'a';
-      eq(twFailing(s, 10).join(), 'Activity 1, what it needs: needs at least 4 words (1 so far).');
+      eq(twFailing(s, 10).join(), 'Activity 1, what it needs: needs more than one character.', 'one character never passes');
+      s = twFull12(); s.activities[0].when = 'weekly'; s.activities[0].who = 'volunteers'; s.activities[0].needs = 'money';
+      eq(twFailing(s, 10).length, 0, 'one real word is enough for when, who and what it needs');
       s = twFull12(); TW.removeRisk(s, s.risks[0].id);
       eq(twFailing(s, 10).join(), 'Name at least 2 things that could go wrong (1 so far).');
       s = twFull12(); s.risks[1].mitigation = '';
-      eq(twFailing(s, 10).join(), 'Risk 2, what the club would do: needs at least 6 words (0 so far).');
+      eq(twFailing(s, 10).join(), 'Risk 2, what the club would do: needs at least 3 words (0 so far).');
       s = twFull12(); s.roles.week12 = {};
-      ok(twFailing(s, 10).indexOf('Assign the Scribe for week 12.') !== -1);
+      eq(twFailing(s, 10).length, 0, 'week 12 roles are optional');
       eq(TW.charsAtRisk(s).join(), 'neutral');
     });
 
@@ -3224,12 +3233,12 @@
       eq(s.workIf[0].text, s.assumptions[0].text, 'the assumption text is copied in');
       eq(TW.addWorkIf(s, s.assumptions[0].id), null, 'an assumption is used once');
       ok(TW.addWorkIf(s, ''), 'a third, written from scratch'); eq(TW.addWorkIf(s, ''), null, 'a fourth is refused'); eq(s.workIf.length, 3);
-      ok(/^Must be true 3, it will work if: needs at least 6 words/.test(twFailing(s, 11).join()));
+      ok(/^Must be true 3, it will work if: needs at least 3 words/.test(twFailing(s, 11).join()));
       s = twFull12(); TW.removeWorkIf(s, s.workIf[0].id);
       eq(s.assumptions[0].riskiest, false, 'removing the item clears "riskiest"');
       eq(twFailing(s, 11).join(), 'Name at least 2 things that must be true for it to work (1 so far).');
       s = twFull12(); s.workIf[1].check = 'ask them';
-      eq(twFailing(s, 11).join(), 'Must be true 2, how to check it: needs at least 8 words (2 so far).');
+      eq(twFailing(s, 11).join(), 'Must be true 2, how to check it: needs at least 3 words (2 so far).');
       s = twFull12(); s.assumptions = []; TW.normalisePlan(s);
       eq(s.workIf[0].assumptionId, '', 'an assumption that leaves the register is unlinked'); eq(s.workIf.length, 2);
     });
@@ -3241,20 +3250,75 @@
       eq(s.indicators[0].outcomeId, ''); eq(twFailing(s, 11).join(), 'Sign 1: which box on your map does it show?');
       s = twFull12(); s.indicators[1].howMany = '  ';
       eq(twFailing(s, 11).join(), 'Sign 2: how many?');
-      ['0', '61', 'x', '1.5', ''].forEach(function (v) {
+      ['0', '61', 'x', '1.5', '', 'soon', '6 years'].forEach(function (v) {
         s = twFull12(); s.indicators[0].byWhen = v;
-        eq(twFailing(s, 11).join(), 'Sign 1: by when? A number of months after opening, from 1 to 60.', 'byWhen ' + JSON.stringify(v));
+        eq(twFailing(s, 11).join(), 'Sign 1: by when? Months after opening, from 1 to 60 (for example 12, or 2 years).', 'byWhen ' + JSON.stringify(v));
       });
       ok(TW.validMonths('1') && TW.validMonths(' 60 ') && TW.validMonths('24'));
-      s = twFull12(); s.indicators[0].who = 'all';
-      eq(twFailing(s, 11).join(), 'Sign 1, of whom: needs at least 2 words (1 so far).');
+      eq(['12', '12 months', '18 mths', 'a year', '2 years', '1 month', 'One year.'].map(TW.monthsOf).join(), '12,12,18,12,24,1,12');
+      s = twFull12(); s.indicators[0].byWhen = '2 years';
+      eq(TW.signSentence(s.indicators[0]), 'By 24 months after opening, 200 residents under 30 will visit at least twice a month.');
+      s = twFull12(); s.indicators[0].who = 'a';
+      eq(twFailing(s, 11).join(), 'Sign 1, of whom: needs more than one character.');
+      s = twFull12(); s.indicators[0].who = 'students'; s.indicators[0].level = 'visit'; s.indicators[0].dataSource = 'surveys';
+      eq(twFailing(s, 11).length, 0, 'one real word is enough');
       s = twFull12(); s.indicators[1].baselineKnown = '';
       eq(twFailing(s, 11).join(), 'Sign 2: do we know this number today?');
-      s = twFull12(); s.indicators[1].baseline = 'none';
-      eq(twFailing(s, 11).join(), 'Sign 2, today’s number: needs at least 4 words (1 so far).');
+      s = twFull12(); s.indicators[1].baseline = '';
+      eq(twFailing(s, 11).join(), 'Sign 2, today’s number: needs at least 1 word (0 so far).');
       s = twFull12(); s.indicators[0].baseline = ''; eq(twFailing(s, 11).length, 0, 'no number needed when it is not known');
       eq(TW.addSign(s) !== null, true); eq(TW.addSign(s), null, 'a fourth sign is refused');
       eq(TW.signSentence({ byWhen: '', howMany: '', who: '', level: '' }), 'By [N] months after opening, [how many] [of whom] will [do what].');
+    });
+
+    assert('using an assumption fills the first empty row; a used assumption is refused', function() {
+      var s = twFull11(); TW.ensurePlanRows(s, 11);
+      var w = TW.useAssumption(s, s.assumptions[0].id);
+      eq(s.workIf.indexOf(w), 0); eq(s.workIf.length, 2, 'no row added'); eq(w.text, s.assumptions[0].text); eq(s.assumptions[0].riskiest, true);
+      eq(TW.useAssumption(s, s.assumptions[0].id), null); eq(TW.useAssumption(s, 'gone'), null);
+      s.workIf[1].text = 'something'; var b = TW.addBelief(s, TWW(5, 'second'), 6); TW.sortBelief(s, b.id, 'assumption', { linkId: s.links[0].id, lens: 'ECONOMIC', evidenceIds: [s.evidence[0].id] });
+      var w2 = TW.useAssumption(s, s.assumptions[1].id); eq(s.workIf.length, 3, 'a row is added when none is empty'); eq(w2.text, s.assumptions[1].text);
+    });
+
+    assert('the gate lists only what is still to do, with a count; week 12 screens never disable Next', function() {
+      var s = twFull12(); s.activities[0].what = '';
+      var h = TW.gateHtml('g', TW.screenChecks(s, 10), { action: 'next', label: 'Next' });
+      eq((h.match(/<li/g) || []).length, 1); ok(h.indexOf('class="ok"') === -1); ok(/\d+ of \d+ done/.test(h)); ok(/ disabled/.test(h));
+      ok(!/ disabled/.test(TW.gateHtml('g', TW.screenChecks(s, 10), { action: 'next', label: 'Next', always: true })));
+      ok(TW.gateHtml('g', TW.screenChecks(twFull12(), 10)).indexOf('<ul>') === -1, 'nothing listed when ready');
+    });
+
+    assert('plan cards print whatever has been filled in; the week 12 self-check is shorter', function() {
+      var s = twFull11(); TW.ensurePlanRows(s, 11);
+      eq(TW.readyCards(s, ['plan']).length, 0, 'nothing filled in, nothing to print');
+      s.workIf[0].text = 'People come on weekdays'; s.indicators[1].howMany = '50';
+      var c = TW.readyCards(s, ['plan']);
+      eq(c.length, 2); eq(c[0].eyebrow, 'It will work if · 1 of 1 · Week 12'); eq(c[1].eyebrow, 'Sign it is working · S2 · Week 12');
+      eq(TW.selfCheckMin(12), 8); eq(TW.selfCheckMin(11), TW.CONFIG.words.selfCheck);
+      s = twFull12(); TW.CONFIG.selfCheck.questions.forEach(function (q) { s.selfChecks.week12[q.id] = TWW(8, q.id); });
+      eq(TW.closeWeek(s, 12, '2026-11-30T10:25:00.000Z').length, 0);
+    });
+
+    assert('Import JSON accepts the one-page file: week 12 lists replace, empty fields fill, signs and assumptions matched by text', function() {
+      var wb = twFull11();
+      var one = { tool: 'week12-plan', schemaVersion: 1, state: {
+        group: { name: 'Other name', members: 'X, Y' }, design: { name: 'New name', what: 'x', lto: 'other' },
+        activities: [{ what: 'quiz night weekly', when: 'Thursdays', who: 'volunteers', needs: 'a room' }],
+        risks: [{ text: 'nobody comes at all', mitigation: 'free taster evening' }],
+        workIf: [{ text: wb.assumptions[0].text.toUpperCase(), check: 'ask at the gate' }, { text: 'own one', check: 'count' }],
+        signs: [{ shows: wb.lto.text, byWhen: '12 months', howMany: '200', who: 'students', level: 'visit', count: 'door count', known: 'no', today: '' },
+          { shows: 'nothing like it', byWhen: '2 years', howMany: '5', who: 'groups', level: 'meet', count: 'bookings', known: 'yes', today: 'none' }] } };
+      var r = TW.mergePlanFile(wb, JSON.parse(JSON.stringify(one)));
+      eq(r.count, 6);
+      eq(wb.group.name, 'Test Group', 'filled fields are kept'); eq(wb.design.name, 'The Living Room'); eq(wb.lto.text, 'Residents of all ages feel they belong in a shared space');
+      eq(wb.activities[0].when, 'Thursdays'); eq(wb.risks[0].mitigation, 'free taster evening');
+      eq(wb.workIf[0].assumptionId, wb.assumptions[0].id, 'matched by text'); eq(wb.assumptions[0].riskiest, true); eq(wb.workIf[1].assumptionId, '');
+      eq(wb.indicators[0].outcomeId, 'lto'); eq(wb.indicators[1].outcomeId, '', 'unmatched box left to choose');
+      eq(wb.indicators[0].dataSource, 'door count'); ok(TW.validMonths(wb.indicators[1].byWhen));
+      ok(wb.findOutFirst.some(function (f) { return f.source === 'baseline'; }));
+      var empty = TW.defaultState(); TW.mergePlanFile(empty, one);
+      eq(empty.group.name, 'Other name'); eq(TW.members(empty).join(), 'X,Y'); eq(empty.design.name, 'New name'); eq(empty.lto.text, 'other');
+      ok(TW.mergePlanFile(TW.defaultState(), { tool: 'toc-workbench', state: {} }).errors);
     });
 
     suite('ToC Workbench (week 12) — Find out first, migrate() and outputs');

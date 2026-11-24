@@ -167,7 +167,7 @@ Simplified in November 2026. The first version (options appraisal, interventions
 
 ### Week 12 — The plan in detail
 
-Simplified in November 2026, in the same way as week 11. The first version (indicators with the full M&E framework for every outcome, a timeline check, an outside review by another group and a response to every challenge) asked for three demanding blocks in 80 minutes after a reading. Week 12 now has one job: the group details its plan. It assumes no reading has been done. Inputs survive inside "What it needs", risks inside "What could go wrong", the riskiest assumptions as "it will work if", and indicators as two or three headline signs with [TC] p. 8's four targets. The outside review is dropped.
+Simplified in November 2026, in the same way as week 11, and then audited for whether students know what to do straight away: no lock, empty rows ready to type in, optional roles, short answers accepted, a gate that lists only what is left, and cards that print whatever is filled in. A one-page version with no upload and no word limits (`week12-plan-workbench.html`) serves groups without their workbench file; the workbench imports its file. The first version (indicators with the full M&E framework for every outcome, a timeline check, an outside review by another group and a response to every challenge) asked for three demanding blocks in 80 minutes after a reading. Week 12 now has one job: the group details its plan. It assumes no reading has been done. Inputs survive inside "What it needs", risks inside "What could go wrong", the riskiest assumptions as "it will work if", and indicators as two or three headline signs with [TC] p. 8's four targets. The outside review is dropped.
 
 **Pre-reading:** none assumed. Optional: [TC] p. 8 (§6).
 
@@ -279,7 +279,7 @@ revisionLog[{at, week, screen, change}]
 - At least three ideas, each written for an arrow of the map, in two halves.
 - Two or three ideas tested on the three questions, each answer with a verdict, the characteristic at risk and a fix.
 - One intervention built from at least one tested idea, a reason for each tested idea dropped, a name, and every gap of its sentence filled.
-- Week 12's screens open once the week 11 intervention is complete.
+- Week 12's screens never lock and do not wait for each other; unfinished week 11 work shows as a warning. Short answers pass (one real word for when, who and what it needs).
 - At least three activities, each with what happens, when, who and what it needs; at least two things that could go wrong, each with what the club would do.
 - Two or three "it will work if" items, each with a check before opening; two or three signs, each on a box of the map with all four targets, how it is counted and today's number or "unknown"; every check and every unknown number is on "find out first".
 - The client diagram fits one A4 page.

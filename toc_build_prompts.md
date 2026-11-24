@@ -193,7 +193,7 @@ Follow the standing instructions in toc_build_prompts.md §0.
 
 Stage 4 of 5 of week9-toc-workbench.html: the week 12 screens. Spec: toc_buildplan.md §4 (principle 8), §6 Week 12, §7. Reading: [TC] pp. 6–8. No reading is assumed of students; copy is plain English.
 
-LOCK: screens 10-11 open once the week 11 intervention is complete (the map has arrows and no loop, and screen 9 passes); until then they show what is missing. Screen 11 opens once screen 10 passes.
+NO LOCK: screens 10-11 always open, each on its own; unfinished week 11 work (the map has arrows and no loop, and screen 9 passes) shows as a warning. Each screen starts with empty rows ready to type in. Week 12 roles are optional. Short answers pass (one real word for when, who and what it needs). "By when" takes 12, 12 months or 2 years. The plan cards print whatever is filled in. Import JSON also accepts the week12-plan-workbench.html file.
 
 SCREEN 10, THE PLAN IN DETAIL:
 - The week 11 intervention restated (sentence, long-term outcome, the ideas it is built from), with a link to screen 9.
