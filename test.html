@@ -2250,7 +2250,7 @@
         s.reading.forEach(function (r) { ok(TW.CONFIG.readings[r.ref] && /^pp?\. \d/.test(r.pages) && r.what, 'ref on screen ' + s.no); });
         ok(s.title && s.summary, 'copy for screen ' + s.no);
       });
-      eq(S.filter(function (s) { return s.built; }).map(function (s) { return s.no; }).join(), '1,2,3,4,5,6,7,8,9');
+      eq(S.filter(function (s) { return s.built; }).map(function (s) { return s.no; }).join(), '1,2,3,4,5,6,7,8,9,10,11');
     });
 
     assert('glossary crosswalk, self-check, stakeholder questions, lint lists and soft cap are present', function() {
@@ -3124,6 +3124,195 @@
       ok(JSON.stringify(TW.CONFIG).indexOf('PLACEHOLDER') === -1, 'PLACEHOLDER left in CONFIG');
     });
 
+
+    // =====================================================
+    // BODØ THEORY OF CHANGE WORKBENCH, stage 4 (week 12)
+    // =====================================================
+
+    // A complete week 12 state on top of week 11: three activities (one
+    // carries out I1), two risks, two "it will work if" items (the first
+    // from assumption A1), and two signs (S1 on the long-term outcome with
+    // today's number unknown, S2 on outcome 2 with it known).
+    function twFull12() {
+      var s = twFull11();
+      s.roles.week12 = TW.suggestRoles(TW.members(s), s.roles.week11);
+      ['Ana', 'Ben', 'Cai'].forEach(function (m, i) {
+        var a = TW.addActivity(s);
+        a.what = TWW(6, 'activity ' + m); a.when = 'every weekday evening'; a.who = 'club staff'; a.needs = TWW(4, 'needs');
+        if (i === 0) a.ideaId = s.interventions[0].id;
+      });
+      for (var i = 0; i < 2; i++) { var r = TW.addRisk(s); r.text = TWW(6, 'risk ' + i); r.mitigation = TWW(6, 'mitigation ' + i); }
+      var w1 = TW.addWorkIf(s, s.assumptions[0].id); w1.check = TWW(8, 'check one');
+      var w2 = TW.addWorkIf(s, ''); w2.text = 'Students will travel to the stadium on weekdays'; w2.check = TWW(8, 'check two');
+      var x1 = TW.addSign(s); x1.outcomeId = TW.LTO_ID; x1.howMany = '200'; x1.who = 'residents under 30'; x1.level = 'visit at least twice a month';
+      x1.byWhen = '12'; x1.dataSource = 'a door count each evening'; x1.baselineKnown = 'no';
+      var x2 = TW.addSign(s); x2.outcomeId = s.outcomes[1].id; x2.howMany = 'one in five'; x2.who = 'season ticket holders'; x2.level = 'will come on a non-match day';
+      x2.byWhen = '6'; x2.dataSource = 'a short survey at matches'; x2.baselineKnown = 'yes'; x2.baseline = 'none: the space does not exist yet';
+      TW.normalisePlan(s);
+      return s;
+    }
+
+    suite('ToC Workbench (week 12) — Config and the lock');
+
+    assert('screens 10-11: the plan in detail and will it work; run sheet, close action, card type, limits and quotations', function() {
+      eq(TW.CONFIG.screens.filter(function (s) { return s.plan; }).map(function (s) { return s.no + (s.built ? 'b' : '') + ':' + s.week + ':' + s.title; }).join('|'),
+        '10b:12:The plan in detail|11b:12:Will it work?');
+      eq(TW.CONFIG.runSheets[12].map(function (r) { return r.t; }).join(), '0–10,10–40,40–60,60–82,82–90');
+      eq(TW.CONFIG.closeActions[12].map(function (a) { return a.arg; }).join(), 'plan');
+      eq(TW.CONFIG.weekCards[12].join(), 'plan');
+      ok(TW.CARD_TYPES.some(function (c) { return c.id === 'plan'; }));
+      var P = TW.CONFIG.plan;
+      eq(P.activity, 'We use activity to describe all the specific actions that make up an intervention.'); eq(P.activityRef, '[TC] p. 7');
+      eq(P.targets, 'Each indicator needs to have four targets: How many of who or what will reach what level by when?'); eq(P.targetsRef, '[TC] p. 8');
+      eq(P.clear, 'Your indicator should make it extremely clear to everyone what you will consider success for a given outcome.'); eq(P.clearRef, '[TC] p. 8');
+      ok(P.example.indexOf('“literacy classes” and the various activities needed') !== -1); eq(P.exampleRef, '[TC] p. 7');
+      eq(Object.keys(P.fields).join(), 'what,when,who,needs');
+      Object.keys(P.fields).forEach(function (k) { ok(TW.CONFIG.words[P.fields[k].words] >= 1, k); });
+      ok(TW.CONFIG.minActivities >= 1 && TW.CONFIG.minRisks >= 1 && TW.CONFIG.minSigns >= 1 && TW.CONFIG.maxSigns >= TW.CONFIG.minSigns && TW.CONFIG.maxWorkIf >= TW.CONFIG.minWorkIf);
+      ok(TW.CONFIG.fofSources.check && TW.CONFIG.fofSources.baseline);
+      P.riskPrompts.forEach(function (q) { ok(/\?$/.test(q), q); ok(!/Glimt|Aspmyra|slide/i.test(q), q); });
+    });
+
+    assert('lock: week 12 opens once the week 11 intervention is complete; then screen 11 waits for screen 10', function() {
+      var s = twFull10();
+      ok(TW.planLocked(s), 'no intervention yet: locked'); ok(TW.screenEnabled(s, 10) && TW.screenEnabled(s, 11), 'a locked screen still opens, to show why');
+      ok(/^Finish your intervention on screen 9: /.test(TW.gateResult(TW.planLockChecks(s)).failing.join()));
+      s = twFull(); ok(/no arrows yet/.test(TW.gateResult(TW.planLockChecks(s)).failing.join()));
+      s = twFull11(); ok(!TW.planLocked(s)); ok(TW.screenEnabled(s, 10)); ok(!TW.screenEnabled(s, 11), 'screen 11 waits for screen 10');
+      s.links[1].rationale = 'short'; ok(!TW.planLocked(s), 'an unfinished week 10 does not lock week 12');
+      s = twFull12(); ok(TW.screenEnabled(s, 11));
+      s.design.runBy = ''; ok(TW.planLocked(s), 'an unfinished intervention locks it again');
+    });
+
+    suite('ToC Workbench (week 12) — Gates');
+
+    assert('a complete week 12 passes screens 10-11 and closes; plan cards: one per must-be-true item and one per sign', function() {
+      var s = twFull12();
+      [10, 11].forEach(function (n) { eq(twFailing(s, n).length, 0, 'screen ' + n + ': ' + twFailing(s, n).join(' ')); });
+      eq(TW.readyCards(s, ['plan']).length, 4);
+      twSelfCheck(s, 12); eq(TW.closeWeek(s, 12, '2026-11-30T10:25:00.000Z').length, 0);
+      var cards = TW.readyCards(s, ['plan']);
+      eq(cards.map(function (c) { return c.eyebrow; }).join('|'), 'It will work if · 1 of 2 · Week 12|It will work if · 2 of 2 · Week 12|Sign it is working · S1 · Week 12|Sign it is working · S2 · Week 12');
+      eq(cards[0].text, s.assumptions[0].text);
+      eq(cards[0].details.join('|'), 'Check before opening: check one word word word word word word word word|From the assumption register (assumption A1)');
+      eq(cards[1].details.length, 1);
+      eq(cards[2].text, 'By 12 months after opening, 200 residents under 30 will visit at least twice a month.');
+      eq(cards[3].text, 'By 6 months after opening, one in five season ticket holders will come on a non-match day.', '"will" is not doubled');
+      eq(cards[2].details[2], 'Today: not known: on Find out first');
+      eq(cards[3].details[0], 'Shows: outcome 2: Residents visit the space outside match days');
+    });
+
+    assert('screen 10: three activities, each with what, when, who and needs; two risks with what the club would do; roles; one character never passes', function() {
+      var s = twFull12(); TW.removeActivity(s, s.activities[2].id);
+      eq(twFailing(s, 10).join(), 'Add at least 3 activities (2 so far).');
+      s = twFull12(); s.activities[1].what = 'x';
+      eq(twFailing(s, 10).join(), 'Activity 2, what happens: needs at least 6 words (1 so far).');
+      s = twFull12(); s.activities[0].needs = 'a';
+      eq(twFailing(s, 10).join(), 'Activity 1, what it needs: needs at least 4 words (1 so far).');
+      s = twFull12(); TW.removeRisk(s, s.risks[0].id);
+      eq(twFailing(s, 10).join(), 'Name at least 2 things that could go wrong (1 so far).');
+      s = twFull12(); s.risks[1].mitigation = '';
+      eq(twFailing(s, 10).join(), 'Risk 2, what the club would do: needs at least 6 words (0 so far).');
+      s = twFull12(); s.roles.week12 = {};
+      ok(twFailing(s, 10).indexOf('Assign the Scribe for week 12.') !== -1);
+      eq(TW.charsAtRisk(s).join(), 'neutral');
+    });
+
+    assert('screen 11: two or three must-be-true items, each with a check; an assumption is used once and becomes "riskiest"', function() {
+      var s = twFull12();
+      eq(s.assumptions[0].riskiest, true);
+      eq(s.workIf[0].text, s.assumptions[0].text, 'the assumption text is copied in');
+      eq(TW.addWorkIf(s, s.assumptions[0].id), null, 'an assumption is used once');
+      ok(TW.addWorkIf(s, ''), 'a third, written from scratch'); eq(TW.addWorkIf(s, ''), null, 'a fourth is refused'); eq(s.workIf.length, 3);
+      ok(/^Must be true 3, it will work if: needs at least 6 words/.test(twFailing(s, 11).join()));
+      s = twFull12(); TW.removeWorkIf(s, s.workIf[0].id);
+      eq(s.assumptions[0].riskiest, false, 'removing the item clears "riskiest"');
+      eq(twFailing(s, 11).join(), 'Name at least 2 things that must be true for it to work (1 so far).');
+      s = twFull12(); s.workIf[1].check = 'ask them';
+      eq(twFailing(s, 11).join(), 'Must be true 2, how to check it: needs at least 8 words (2 so far).');
+      s = twFull12(); s.assumptions = []; TW.normalisePlan(s);
+      eq(s.workIf[0].assumptionId, '', 'an assumption that leaves the register is unlinked'); eq(s.workIf.length, 2);
+    });
+
+    assert('screen 11: each sign has a box on the map, the four targets, how it is counted, and today\'s number or a find-out-first item', function() {
+      var s = twFull12(); TW.removeSign(s, s.indicators[1].id);
+      eq(twFailing(s, 11).join(), 'Add at least 2 signs that it is working (1 so far).');
+      s = twFull12(); s.indicators[0].outcomeId = 'gone'; TW.normalisePlan(s);
+      eq(s.indicators[0].outcomeId, ''); eq(twFailing(s, 11).join(), 'Sign 1: which box on your map does it show?');
+      s = twFull12(); s.indicators[1].howMany = '  ';
+      eq(twFailing(s, 11).join(), 'Sign 2: how many?');
+      ['0', '61', 'x', '1.5', ''].forEach(function (v) {
+        s = twFull12(); s.indicators[0].byWhen = v;
+        eq(twFailing(s, 11).join(), 'Sign 1: by when? A number of months after opening, from 1 to 60.', 'byWhen ' + JSON.stringify(v));
+      });
+      ok(TW.validMonths('1') && TW.validMonths(' 60 ') && TW.validMonths('24'));
+      s = twFull12(); s.indicators[0].who = 'all';
+      eq(twFailing(s, 11).join(), 'Sign 1, of whom: needs at least 2 words (1 so far).');
+      s = twFull12(); s.indicators[1].baselineKnown = '';
+      eq(twFailing(s, 11).join(), 'Sign 2: do we know this number today?');
+      s = twFull12(); s.indicators[1].baseline = 'none';
+      eq(twFailing(s, 11).join(), 'Sign 2, today’s number: needs at least 4 words (1 so far).');
+      s = twFull12(); s.indicators[0].baseline = ''; eq(twFailing(s, 11).length, 0, 'no number needed when it is not known');
+      eq(TW.addSign(s) !== null, true); eq(TW.addSign(s), null, 'a fourth sign is refused');
+      eq(TW.signSentence({ byWhen: '', howMany: '', who: '', level: '' }), 'By [N] months after opening, [how many] [of whom] will [do what].');
+    });
+
+    suite('ToC Workbench (week 12) — Find out first, migrate() and outputs');
+
+    assert('Find out first follows screen 11: one item per check and per unknown number; edits update them; removal takes them away', function() {
+      var s = twFull12();
+      var checks = s.findOutFirst.filter(function (f) { return f.source === 'check'; }), base = s.findOutFirst.filter(function (f) { return f.source === 'baseline'; });
+      eq(checks.length, 2); eq(base.length, 1);
+      eq(checks[1].refId, s.workIf[1].id);
+      eq(checks[1].text, 'Check before opening: Students will travel to the stadium on weekdays (how: check two word word word word word word word word)');
+      eq(base[0].text, 'Find out today’s number: By 12 months after opening, 200 residents under 30 will visit at least twice a month.');
+      ok(s.findOutFirst.some(function (f) { return f.source === 'stakeholder'; }), 'other items are kept');
+      s.workIf[1].text = 'Students travel here'; ok(TW.syncPlanFof(s)); ok(/^Check before opening: Students travel here \(how:/.test(s.findOutFirst.filter(function (f) { return f.refId === s.workIf[1].id; })[0].text));
+      ok(!TW.syncPlanFof(s), 'no change: nothing to do');
+      s.indicators[0].baselineKnown = 'yes'; TW.syncPlanFof(s); eq(s.findOutFirst.filter(function (f) { return f.source === 'baseline'; }).length, 0);
+      TW.removeWorkIf(s, s.workIf[0].id); eq(s.findOutFirst.filter(function (f) { return f.source === 'check'; }).length, 1);
+      s.workIf[0].check = ''; TW.syncPlanFof(s); eq(s.findOutFirst.filter(function (f) { return f.source === 'check'; }).length, 0, 'no check, no item');
+    });
+
+    assert('an activity whose idea leaves the intervention is unlinked', function() {
+      var s = twFull12(); eq(s.activities[0].ideaId, s.interventions[0].id);
+      TW.setInDesign(s, s.interventions[0].id, false); TW.normalisePlan(s);
+      eq(s.activities[0].ideaId, '');
+    });
+
+    assert('migrate() reads a stage 3 (week 11) export: week 12 fields present and empty; an earlier risk keeps its extra fields', function() {
+      var old = JSON.parse(JSON.stringify(twFull11()));
+      delete old.activities; delete old.workIf; delete old.risks;
+      old.indicators = [{ id: 'n1', howMany: '5' }];
+      old.risks = [{ id: 'r1', text: 'old risk', likelihood: 'high' }];
+      var x = { tool: 'toc-workbench', schemaVersion: 1, state: old };
+      eq(TW.validateImport(x).length, 0);
+      var s = TW.migrate(JSON.parse(JSON.stringify(old)));
+      eq(JSON.stringify(s.activities), '[]'); eq(JSON.stringify(s.workIf), '[]');
+      eq(s.risks[0].mitigation, ''); eq(s.risks[0].likelihood, 'high', 'extra fields are left untouched');
+      eq(s.indicators[0].baselineKnown, ''); eq(s.indicators[0].outcomeId, ''); eq(s.indicators[0].howMany, '5');
+      eq(s.design.name, 'The Living Room');
+    });
+
+    assert('week 12 export and re-import preserve the state exactly', function() {
+      var s = twFull12(); twSelfCheck(s, 12); TW.closeWeek(s, 12, '2026-11-30T10:25:00.000Z');
+      var x = JSON.parse(JSON.stringify(TW.buildExport(s, '2026-11-30T10:30:00.000Z')));
+      eq(TW.validateImport(x).length, 0);
+      eq(JSON.stringify(TW.migrate(x.state)), JSON.stringify(s));
+    });
+
+    assert('Copy as text and the report include the activities, the risks, what must be true and the signs', function() {
+      var s = twFull12(), txt = TW.buildText(s), rep = TW.buildReportHtml(s);
+      ok(txt.indexOf('THE PLAN IN DETAIL (SCREEN 10)') !== -1 && txt.indexOf('WILL IT WORK? (SCREEN 11)') !== -1);
+      ok(txt.indexOf('Activity 1: activity Ana word word word word word word When: every weekday evening. Who: club staff. Needs: needs word word word word. Carries out I1.') !== -1);
+      ok(txt.indexOf('R2. risk 1 word word word word word word The club would: mitigation 1') !== -1);
+      ok(txt.indexOf('1. ' + s.assumptions[0].text + ' (assumption A1). Check before opening: check one') !== -1);
+      ok(txt.indexOf('S2. By 6 months after opening, one in five season ticket holders will come on a non-match day. Shows outcome 2: Residents visit the space outside match days. Counted by: a short survey at matches. Today: none: the space does not exist yet') !== -1);
+      ok(txt.indexOf('[Check before opening (screen 11)]') !== -1 && txt.indexOf('[Today’s number unknown (screen 11)]') !== -1);
+      ok(rep.indexOf('The plan in detail (screen 10)') !== -1 && rep.indexOf('Signs it is working') !== -1 && rep.indexOf('<b>(I1)</b>') !== -1);
+      eq(TW.planText(s)[0], 'Activities:'); eq(TW.willWorkText(s)[0], 'It will work if:');
+    });
+
     // =====================================================
     // WEEK 9 TOC DECK
     // =====================================================
@@ -3396,6 +3585,171 @@
 
     assert('narrow layout query keeps the "screen and" prefix', function() {
       ok(W11D_HTML.indexOf('@media screen and (max-width: 860px), screen and (max-aspect-ratio: 1/1)') !== -1);
+    });
+
+
+    // =====================================================
+    // WEEK 12 TOC DECK
+    // =====================================================
+
+    suite('Week 12 deck — Content and encoding');
+
+    var W12D_HTML = cwsGet('week12-toc-deck.html');
+    var W12D_CONFIG = (function() {
+      var m = W12D_HTML.match(/var CONFIG = (\{[\s\S]*?\});\s*\/\/ END CONFIG/);
+      return m ? new Function('return ' + m[1])() : null;
+    })();
+
+    assert('week12-toc-deck.html: charset first, favicon, no curly quotes or network calls in script, no PLACEHOLDER', function() {
+      ok(W12D_HTML.indexOf('<meta charset="utf-8">') === 0, 'charset not first');
+      ok(W12D_HTML.indexOf('<link rel="icon" type="image/png" href="data:image/png;base64,') > W12D_HTML.indexOf('<title>'), 'favicon');
+      var m = W12D_HTML.match(/<script>([\s\S]*?)<\/script>/);
+      ok(m && !/[‘’“”]/.test(m[1]), 'curly quotes found');
+      ok(!/fetch\(|XMLHttpRequest|https?:\/\//.test(m[1]), 'network call found');
+      ok(W12D_HTML.indexOf('PLACEHOLDER') === -1, 'PLACEHOLDER found');
+    });
+
+    assert('week12-toc-deck.html uses no en or em dashes (SLIDES.md section 11)', function() {
+      ok(!/[–—]|&ndash;|&mdash;/.test(W12D_HTML));
+    });
+
+    assert('13 slides, and no two adjacent slides share an accent', function() {
+      var acc = (W12D_HTML.match(/<section class="slide[^"]*" data-accent="[^"]+"/g) || []).map(function(s) { return s.match(/data-accent="([^"]+)"/)[1]; });
+      eq(acc.length, 13);
+      for (var i = 1; i < acc.length; i++) ok(acc[i] !== acc[i - 1], 'slides ' + i + ' and ' + (i + 1));
+    });
+
+    assert('no reading check, no outside review: the deck explains activities, risks, what must be true, the four targets and the sign sentence', function() {
+      ok(W12D_CONFIG, 'CONFIG not parsed');
+      ok(W12D_HTML.indexOf('quiz-slide') === -1 && !W12D_CONFIG.readingChecks, 'reading check left in');
+      ok(!/outside review|reviewer/i.test(W12D_HTML), 'outside review left in');
+      ['What Is an Activity?', 'Four Questions for Every Activity', 'What Could Go Wrong?', 'It Will Work If &hellip;', 'Four Targets for Every Sign', 'One Sign, One Sentence', 'What You Leave With']
+        .forEach(function(h) { ok(W12D_HTML.indexOf('<h2>' + h + '</h2>') !== -1, h); });
+    });
+
+    assert('quotations from [TC] are word for word, with their pages', function() {
+      var plain = W12D_HTML.replace(/&ldquo;|&rdquo;/g, '"').replace(/&rsquo;/g, '’');
+      ok(plain.indexOf('"' + TW.CONFIG.plan.activity + '"') !== -1, 'activity, p. 7');
+      ok(plain.indexOf('"' + TW.CONFIG.plan.targets + '"') !== -1, 'four targets, p. 8');
+      ok(plain.indexOf('"' + TW.CONFIG.plan.clear + '" <span class="ref">([TC] p. 8)</span>') !== -1, 'clear, p. 8');
+      ok(/"identifying space and teachers, choosing a curriculum, screening students" <span class="ref">\(\[TC\] p\. 7\)<\/span>/.test(plain), 'activities, p. 7');
+      ok(/"the indicators for that might be to have two new computers and a new set of class books for 8 of 12 classrooms within a year" <span class="ref">\(\[TC\] p\. 8\)<\/span>/.test(plain), 'example, p. 8');
+      ok(/"conditions you take for granted" <span class="ref">\(\[TC\] p\. 6\)<\/span>/.test(plain), 'assumptions, p. 6');
+      ok(TW.CONFIG.assumptions.quote.indexOf('conditions you take for granted') !== -1);
+    });
+
+    assert('workbench blocks run 10-40, 40-60, 60-82, 82-90 on screens 10, 11, 11, 11, with 3-5 tasks and known lead roles', function() {
+      var names = W12D_CONFIG.roles.map(function(r) { return r.name; });
+      var b = W12D_CONFIG.blocks;
+      eq(b.map(function(x) { return x.start + '-' + x.end; }).join(','), '10-40,40-60,60-82,82-90');
+      eq(b.map(function(x) { return x.screens.join('+'); }).join(','), '10,11,11,11');
+      b.forEach(function(x) {
+        ok(x.tasks.length >= 3 && x.tasks.length <= 5, 'task count ' + x.title);
+        ok(x.leads.length > 0, 'leads ' + x.title);
+        x.leads.forEach(function(l) { ok(names.indexOf(l) !== -1, 'unknown role ' + l); });
+      });
+      eq(b[1].leads[0], 'Sceptic');
+      eq((W12D_HTML.match(/class="slide wb-slide"/g) || []).length, b.length);
+      var rs = TW.CONFIG.runSheets[12].map(function(r) { return r.t.replace('–', '-'); });
+      eq(rs.slice(1).join(','), b.map(function(x) { return x.start + '-' + x.end; }).join(','), 'deck blocks follow the workbench run sheet');
+    });
+
+    assert('deck matches week9-toc-workbench.html: screen names, roles, activity fields, risk prompts and the sign sentence', function() {
+      ok(typeof TW !== 'undefined' && TW.CONFIG, 'workbench not loaded');
+      function plain(t) { return t.replace(/&oslash;/g, 'ø').replace(/&rsquo;/g, '’'); }
+      Object.keys(W12D_CONFIG.screenNames).forEach(function(n) {
+        var s = TW.CONFIG.screens.filter(function(x) { return x.no === +n; })[0];
+        ok(s && s.week === 12 && s.built, 'screen ' + n);
+        eq(W12D_CONFIG.screenNames[n], s.title, 'screen ' + n + ' name');
+      });
+      eq(W12D_CONFIG.roles.map(function(r) { return r.name; }).join(','), TW.CONFIG.roles.map(function(r) { return r.name; }).join(','));
+      var F = TW.CONFIG.plan.fields;
+      eq(W12D_CONFIG.fields.map(function(f) { return f.id; }).join(), Object.keys(F).join());
+      W12D_CONFIG.fields.forEach(function(f) { eq(f.label, F[f.id].label, f.id); eq(plain(f.hint), F[f.id].hint, f.id); });
+      eq(W12D_CONFIG.riskPrompts.map(plain).join('|'), TW.CONFIG.plan.riskPrompts.join('|'));
+      eq(W12D_CONFIG.signSentence, TW.CONFIG.plan.signSentence);
+      eq(JSON.stringify(W12D_CONFIG.blanks), JSON.stringify(TW.CONFIG.plan.signBlanks));
+      eq(W12D_CONFIG.targets.map(function(t) { return t.example; }).join(' | '), '8 of 12 | classrooms | have two new computers and a new set of class books | within a year');
+    });
+
+    assert('narrow layout query keeps the "screen and" prefix', function() {
+      ok(W12D_HTML.indexOf('@media screen and (max-width: 860px), screen and (max-aspect-ratio: 1/1)') !== -1);
+    });
+
+
+    // =====================================================
+    // WEEK 12 PLAN, NO-UPLOAD VERSION
+    // =====================================================
+
+    suite('Week 12 plan (no-upload version)');
+
+    var P12_HTML = cwsGet('week12-plan-workbench.html');
+    (function () { var m = P12_HTML.match(/<script>([\s\S]*?)<\/script>/); if (m) new Function(m[1])(); })();
+
+    assert('week12-plan-workbench.html: charset first, favicon, no curly quotes, network calls or PLACEHOLDER in script', function() {
+      ok(P12_HTML.indexOf('<meta charset="utf-8">') === 0, 'charset not first');
+      ok(P12_HTML.indexOf('<link rel="icon" type="image/png" href="data:image/png;base64,') > P12_HTML.indexOf('<title>'), 'favicon');
+      var m = P12_HTML.match(/<script>([\s\S]*?)<\/script>/);
+      ok(m && !/[‘’“”]/.test(m[1]), 'curly quotes found');
+      ok(!/fetch\(|XMLHttpRequest|https?:\/\//.test(m[1]), 'network call found');
+      ok(m[1].indexOf('PLACEHOLDER') === -1, 'PLACEHOLDER found');
+      ok(window.P12 && P12.CONFIG, 'P12 hook');
+    });
+
+    assert('starts with empty rows ready to type in: 3 activities, 2 risks, 2 "it will work if", 2 signs', function() {
+      var s = P12.defaultState();
+      eq([s.activities.length, s.risks.length, s.workIf.length, s.signs.length].join(), '3,2,2,2');
+    });
+
+    assert('no word limits: one word fills a box; a sign is done with its number known or marked unknown', function() {
+      var s = P12.defaultState(), a = s.activities[0];
+      a.what = 'quiz'; a.when = 'weekly'; a.who = 'volunteers'; ok(!P12.rowDone('activities', a));
+      a.needs = 'room'; ok(P12.rowDone('activities', a));
+      var x = s.signs[0]; x.shows = 'belonging'; x.byWhen = '12 months'; x.howMany = '200'; x.who = 'students'; x.level = 'visit'; x.count = 'door count';
+      ok(!P12.rowDone('signs', x)); x.known = 'no'; ok(P12.rowDone('signs', x));
+      x.known = 'yes'; ok(!P12.rowDone('signs', x)); x.today = 'none'; ok(P12.rowDone('signs', x));
+      eq(P12.signSentence({ byWhen: '12 months', howMany: '200', who: 'students', level: 'will visit twice a month.' }), 'By 12 months after opening, 200 students will visit twice a month.');
+    });
+
+    assert('Find out first builds itself from the checks and the unknown numbers', function() {
+      var s = P12.defaultState();
+      s.workIf[0] = { text: 'Students travel here.', check: 'ask them' };
+      s.workIf[1] = { text: 'no check yet', check: '' };
+      s.signs[0].known = 'no'; s.signs[0].byWhen = '6 months'; s.signs[0].howMany = 'half'; s.signs[0].who = 'regulars'; s.signs[0].level = 'stay an hour';
+      eq(P12.findOutFirst(s).join('|'), 'Check before opening: Students travel here (how: ask them)|Find out today’s number: By 6 months after opening, half regulars will stay an hour.');
+    });
+
+    assert('loading is optional: a week 11 workbench export fills the intervention, outcome, assumptions and map boxes; other files are refused', function() {
+      var wb = twFull11(), x = JSON.parse(JSON.stringify(TW.buildExport(wb)));
+      var r = P12.fromFile(x);
+      ok(!r.error, r.error);
+      eq(r.state.group.name, 'Test Group'); eq(r.state.group.members, 'Ana, Ben, Cai');
+      eq(r.state.design.what, 'a weekday café and lounge'); eq(r.state.design.lto, wb.lto.text);
+      eq(r.state.assumptions.length, wb.assumptions.length);
+      eq(r.state.boxes[0], wb.lto.text); eq(r.state.boxes.length, 1 + wb.outcomes.length);
+      eq(r.state.activities.length, 3, 'empty rows when the workbench has no week 12 work');
+      ok(P12.fromFile({ tool: 'week7-bodo-decline', state: {} }).error);
+      ok(P12.fromFile('nonsense').error);
+    });
+
+    assert('a full week 12 workbench export carries its week 12 work across', function() {
+      var wb = twFull12(), r = P12.fromFile(JSON.parse(JSON.stringify(TW.buildExport(wb))));
+      eq(r.state.activities.length, 3); eq(r.state.workIf[1].text, 'Students will travel to the stadium on weekdays');
+      eq(r.state.signs[0].byWhen, '12 months'); eq(r.state.signs[0].shows, wb.lto.text); eq(r.state.signs[0].known, 'no');
+      eq(r.state.signs[1].shows, wb.outcomes[1].text);
+    });
+
+    assert('own export round trip; text, report and cards include only rows with something in them', function() {
+      var s = P12.defaultState();
+      s.group.name = 'G'; s.design.what = 'a café'; s.activities[0].what = 'quiz'; s.workIf[0].text = 'people come';
+      var x = JSON.parse(JSON.stringify(P12.buildExport(s, '2026-11-30T10:00:00.000Z')));
+      eq(x.tool, 'week12-plan'); eq(JSON.stringify(P12.fromFile(x).state), JSON.stringify(P12.migrate(s)));
+      var c = P12.cards(s);
+      eq(c.length, 2, 'the intervention card and one "it will work if"');
+      ok(/^The club should create a café \[where\]/.test(c[0].text));
+      var t = P12.buildText(s);
+      ok(t.indexOf('1. quiz When:') !== -1 && t.indexOf('2. ') === -1);
+      ok(P12.reportHtml(s).indexOf('<table class="rep-table">') !== -1);
     });
 
     // =====================================================

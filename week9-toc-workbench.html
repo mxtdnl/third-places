@@ -12,9 +12,9 @@
   club create a community third place in its new stadium. Plan:
   toc_buildplan.md. Build prompts: toc_build_prompts.md.
 
-  BUILD STAGE: 3 of 5 (core, week 9, week 10 and week 11 screens). Screens
-  10-14 show "Arrives in week N" with their reading until their stage is
-  built. Later stages add screens, output sections and A6 card types; they do
+  BUILD STAGE: 4 of 5 (core, week 9, week 10, week 11 and week 12 screens).
+  Screens 12-14 show "Arrives in week N" with their reading until their
+  stage is built. Later stages add screens, output sections and A6 card types; they do
   not change the state shape below except by adding defaults through
   migrate(). Stage 2 added "beliefs", "sweep", evidence "factId" and Reverse
   Import "absent". Stage 3 (week 11) added the idea fields of
@@ -22,8 +22,27 @@
   earlier stage 3 fields ("options", "gapWalk", "risks", "stressTest",
   "stressOwn", intervention activities and inputs) are no longer part of the
   state, and migrate() leaves any it finds in an old file untouched (an old
-  intervention "name" becomes the idea's "what"). Assumption "riskiest"
-  stays in the state for week 12.
+  intervention "name" becomes the idea's "what"). Stage 4 (week 12) added
+  "activities", "risks", "workIf" and indicator "baselineKnown", and sets
+  assumption "riskiest" from "workIf". Week 12 was simplified in November
+  2026 in the same way as week 11: it details the group's plan (activities,
+  what could go wrong, what must be true, signs it is working) and has no
+  outside review, so "reviews" stays empty, and the indicator fields
+  "owner", "definition", "frequency", "responsible" and "reporting" are not
+  used.
+
+  WEEK 12 DETAILS THE PLAN (screens 10-11). Both screens are locked until
+  the week 11 intervention is complete (planLockChecks: the map has arrows
+  and no loop, and screen 9 passes). Screen 10 breaks the intervention into
+  activities ([TC] p. 7: the specific actions that make up an
+  intervention), each with when, who and what it needs, then what could go
+  wrong and what the club would do about it. Screen 11 names the two or
+  three things that must be true for it to work ("workIf", the "it will
+  work if" of week 13's recommendation; an item started from the assumption
+  register marks that assumption "riskiest"), each with how the club could
+  check it before opening, and two or three signs it is working
+  ("indicators", [TC] p. 8's four targets). Each check, and each sign whose
+  number today is unknown, is kept on Find out first (syncPlanFof).
 
   WEEK 11 STARTS FROM THE ARROWS (screens 7-9). Ideas are written for the
   arrows of the backwards map ([TC] p. 7: interventions sit on the
@@ -81,6 +100,18 @@
   65-80  Screen 9: build one intervention from the ideas that held up, as
          one sentence; say why each other tested idea was dropped.
   80-90  Screen 9: week 11 self-check; print the intervention card; export.
+
+  RUN SHEET, WEEK 12 (90 minutes)
+   0-10  Deck (week 12): activities, what could go wrong, what must be true
+         and signs it is working, with a worked example.
+  10-40  Screen 10: rotate roles; each member drafts at least one activity
+         (what happens, when, who, what it needs); then what could go
+         wrong, and what the club would do.
+  40-60  Screen 11: it will work if ... the two or three things that must
+         be true, and how the club could check each before it opens.
+  60-82  Screen 11: two or three signs it is working, each with the four
+         targets and how the club would count it.
+  82-90  Screen 11: week 12 self-check; print the plan cards; export.
 
   IDEAS AND THE INTERVENTION (screens 7-9). Each idea is an item of
   "interventions": a possible intervention on one arrow (linkIds holds one
@@ -201,10 +232,13 @@
       "assumptions": [ { "id", "linkId", "text", "lens", "evidenceIds": [],
                          "sort": "assumption" } ],
       "findOutFirst": [ { "id", "text",
-                          "source": "stakeholder"|"sorter"|"baseline"|"manual",
+                          "source": "stakeholder"|"sorter"|"check"|"baseline"|"manual",
                           "refId" } ],           stakeholder items follow the
                                                  stakeholder's "can we ask?";
-                                                 sorter items: refId = belief id
+                                                 sorter items: refId = belief id;
+                                                 check items: refId = workIf id;
+                                                 baseline items: refId = indicator id
+                                                 (both follow screen 11)
       "beliefs": [ { "id", "text", "screen": 5|6, "at": ISO,       (stage 2)
                      "sort": ""|"assumption"|"precondition"|"fof",
                      "refId" } ],                the item the sorter made
@@ -236,12 +270,24 @@
       "design": { "name", "what", "where", "forWhom", "when", "runBy" },
                  the group's intervention, read as: "The club should create
                  [what] [where], for [forWhom], open [when], run by [runBy]."
-      assumptions[].riskiest: bool        kept for week 12
-      "indicators": [ { "id", "outcomeId", "owner", "howMany", "who", "level",
-                        "byWhen", "definition", "baseline", "dataSource",
-                        "frequency", "responsible", "reporting" } ],
-      "reviews": { "given": [], "received": [ { "fromGroup",
-                   "items": [ { "target", "question", "challenge", "response", "status" } ] } ] },
+      Week 12 (screens 10-11):
+      "activities": [ { "id", "what", "when", "who", "needs",
+                        "ideaId" } ],    ideaId = an idea in the intervention, or ""
+      "risks": [ { "id", "text", "mitigation" } ]   what could go wrong, and
+                                                 what the club would do
+      "workIf": [ { "id", "assumptionId",        "" or the assumption it started from
+                    "text",                      it will work if ...
+                    "check" } ],                 how to check it before opening
+      assumptions[].riskiest: bool   true while a workIf item starts from it
+      "indicators": [ { "id", "outcomeId",       "lto" or an outcome id
+                        "howMany", "who", "level",
+                        "byWhen",                months after opening, digits
+                        "dataSource",            how the club would count it
+                        "baselineKnown": "" | "yes" | "no",
+                        "baseline",              today's number and its source
+                        "owner", "definition", "frequency", "responsible",
+                        "reporting" } ],         not used (see above)
+      "reviews": { "given": [], "received": [] },   not used (see above)
       "diagrams": { "clientOutcomeIds": [], "clientLinkIds": [] },
       "narrative": { "execSummary", "sections": {} },
       "valuesCheck": [ { "value", "slide", "speaksTo", "cost" } ],
@@ -684,6 +730,13 @@
   .iv-sentence b { font-weight: 800; color: var(--char-6); }
   .slot-empty { color: var(--incorrect); font-style: italic; }
   .iv-made li { padding: 0.35rem 0; border-top: 2px solid var(--border); display: flex; gap: 0.5rem; align-items: baseline; }
+  /* Week 12: the plan in detail, the signs */
+  .plan-item .two-col { margin-top: 0; }
+  .four-targets { display: grid; grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.2fr) minmax(0, 1.4fr) minmax(0, 0.9fr); gap: 0 0.75rem; align-items: start; }
+  .item-head .tag.sign-tag, .tag.sign-tag { background: var(--char-4); color: var(--text); }
+  .sign-sentence { font-size: 1.05rem; font-weight: 700; background: #fff; border: 2px solid var(--border); border-left: 8px solid var(--char-4); padding: 0.6rem 0.85rem; margin: 0.25rem 0 0.6rem; overflow-wrap: anywhere; }
+  .add-row { border-top: 2px solid var(--border); margin-top: 0.75rem; padding-top: 0.6rem; }
+  @media (max-width: 760px) { .four-targets { grid-template-columns: minmax(0, 1fr); } }
   .choice.mini > span { min-height: 44px; padding: 0.3rem 0.55rem; font-size: 0.7rem; letter-spacing: 0.04em; }
   .choices.targets .choice.block > span { text-transform: none; font-size: 0.86rem; }
   .choice input:disabled + span { opacity: 0.45; cursor: not-allowed; }
@@ -845,6 +898,13 @@
     // shows the sheet for the group's current week (the first week not yet
     // closed), or the latest sheet built.
     runSheets: {
+      12: [
+        { t: '0–10', what: 'Deck: what an activity is, what could go wrong, what must be true, and the signs that it is working, with a worked example.' },
+        { t: '10–40', what: 'Screen 10: rotate roles. Each member drafts at least one activity: what happens, when, who makes it happen, what it needs. Then name what could go wrong, and what the club would do about it.' },
+        { t: '40–60', what: 'Screen 11: it will work if … Name the two or three things that must be true, and how the club could check each one before it opens. The Sceptic leads.' },
+        { t: '60–82', what: 'Screen 11: two or three signs that it is working. Give each its four targets (how many, of whom, doing what, by when) and say how the club would count it.' },
+        { t: '82–90', what: 'Screen 11: week 12 self-check; close the week; print the plan cards; export.' }
+      ],
       11: [
         { t: '0–15', what: 'Deck: what an arrow is, what an intervention is, and the three questions (plausible, doable, testable), with a worked example.' },
         { t: '15–35', what: 'Screen 7: rotate roles. Share out the arrows. For each arrow, write ideas: \u201CIf the club …, this arrow would happen because …\u201D. At least three ideas.' },
@@ -881,7 +941,7 @@
       9: { label: 'Week 9 · The long-term outcome', colour: 'var(--char-1)' },
       10: { label: 'Week 10 · Backwards mapping', colour: 'var(--char-2)' },
       11: { label: 'Week 11 · Interventions', colour: 'var(--char-6)' },
-      12: { label: 'Week 12 · Indicators and review', colour: 'var(--char-8)' },
+      12: { label: 'Week 12 · The plan in detail', colour: 'var(--char-8)' },
       13: { label: 'Week 13 · Recommendation', colour: 'var(--char-5)' }
     },
 
@@ -924,14 +984,16 @@
         summary: 'One intervention, in one sentence, built from the ideas that held up; then the week 11 close.',
         reading: [{ ref: 'TC', pages: 'p. 7', what: '§5: a strategy is a coordinated set of interventions' },
                   { ref: 'GAF', pages: 'p. 11', what: 'Step 2, questions 6–7: alternative strategies' }] },
-      { no: 10, week: 12, built: false, title: 'Indicators', colour: 'var(--char-8)',
-        summary: 'Indicators with the four targets, the M&E framework and the timeline check.',
-        reading: [{ ref: 'TC', pages: 'p. 8', what: '§6 Indicators' },
-                  { ref: 'GAF', pages: 'pp. 37–42', what: 'Step 11: monitoring and evaluation plan' }] },
-      { no: 11, week: 12, built: false, title: 'Outside review', colour: 'var(--char-6)',
-        summary: 'Review another group\u2019s theory; respond to the review of yours.',
-        reading: [{ ref: 'TC', pages: 'p. 9', what: '§7 Quality review' },
-                  { ref: 'GAF', pages: 'pp. 47–48', what: 'Quality assurance factors' }] },
+      { no: 10, week: 12, built: true, plan: true, title: 'The plan in detail', colour: 'var(--char-8)',
+        summary: 'What happens in your intervention, when, who makes it happen and what it needs; then what could go wrong.',
+        reading: [{ ref: 'TC', pages: 'p. 7', what: '§5: activities are the specific actions that make up an intervention' },
+                  { ref: 'GAF', pages: 'pp. 19–22', what: 'Steps 5–6: activities and inputs' },
+                  { ref: 'GAF', pages: 'pp. 27–28', what: 'Step 8: risks' }] },
+      { no: 11, week: 12, built: true, plan: true, title: 'Will it work?', colour: 'var(--char-4)',
+        summary: 'What must be true for it to work, and the signs that would show the club it is working; then the week 12 close.',
+        reading: [{ ref: 'TC', pages: 'p. 6', what: '§4 Assumptions' },
+                  { ref: 'TC', pages: 'p. 8', what: '§6 Indicators: the four targets' },
+                  { ref: 'GAF', pages: 'pp. 37–42', what: 'Step 11: monitoring and evaluation' }] },
       { no: 12, week: 13, built: false, title: 'Diagrams and narrative', colour: 'var(--char-5)',
         summary: 'The full diagram, the one-page client diagram and the narrative.',
         reading: [{ ref: 'TC', pages: 'p. 9', what: '§8 Narrative' },
@@ -965,7 +1027,8 @@
       introRef: '[TC] p. 9',
       lead: 'Answer for the theory as it stands this week. Nothing is scored: say where it is strong and where it is thin.',
       // A week can ask the questions of its own work instead.
-      weekLeads: { 11: 'Ask the three questions one last time, of your intervention as a whole. Nothing is scored: say where it is strong and where it is thin.' },
+      weekLeads: { 11: 'Ask the three questions one last time, of your intervention as a whole. Nothing is scored: say where it is strong and where it is thin.',
+                   12: 'Ask the three questions of your plan as it now stands: its activities, what must be true and the signs it is working. Nothing is scored: say where it is strong and where it is thin.' },
       questions: [
         { id: 'plausible', label: 'Plausible',
           quote: 'Plausibility refers to the logic of your pathways. Does it make sense? Are the outcomes in the right order? Are preconditions actually preconditions to the outcomes you\u2019ve indicated? Are there big gaps in the logic?',
@@ -1013,7 +1076,20 @@
       slotWhere: 2,        // where, in or around the stadium
       slotFor: 2,          // for whom
       slotWhen: 2,         // when it is open
-      slotRunBy: 2         // who runs it
+      slotRunBy: 2,        // who runs it
+      // Week 12 (screens 10-11)
+      activityWhat: 6,     // what happens
+      activityWhen: 2,     // when, and how often
+      activityWho: 2,      // who makes it happen
+      activityNeeds: 4,    // what it needs
+      risk: 6,             // what could go wrong
+      mitigation: 6,       // what the club would do about it
+      workIf: 6,           // it will work if ...
+      check: 8,            // how the club could check it before opening
+      signWho: 2,          // of whom
+      signLevel: 3,        // doing what, how much
+      signSource: 3,       // how the club would count it
+      baseline: 4          // today's number, and where it comes from
     },
     // Shortest name accepted (group, members, terms, stakeholders).
     minNameChars: 2,
@@ -1027,6 +1103,13 @@
     minIdeas: 3,           // ideas written on screen 7 (week 11)
     minTested: 2,          // ideas put through the three questions on screen 8
     maxTested: 3,          // at most this many, so the session keeps to time
+    minActivities: 3,      // activities on screen 10 (week 12)
+    minRisks: 2,           // things that could go wrong, on screen 10
+    minWorkIf: 2,          // "it will work if" items on screen 11
+    maxWorkIf: 3,          // at most this many: the ones that carry the most weight
+    minSigns: 2,           // signs it is working, on screen 11
+    maxSigns: 3,           // at most this many headline signs
+    maxMonths: 60,         // "by when" is 1 to this many months after opening
     // Edits to the same field of a closed week within this many minutes make
     // one revision-log entry, not one per keystroke.
     logCoalesceMinutes: 5,
@@ -1037,9 +1120,10 @@
       10: [{ action: 'print-diagram', arg: 'a4', label: 'Print diagram · A4 landscape' },
            { action: 'print-diagram', arg: 'a3', label: 'Print diagram · A3 landscape' }],
       11: [{ action: 'print-cards', arg: 'intervention', label: 'Print the intervention card' },
-           { action: 'print-diagram', arg: 'a4', label: 'Print diagram · A4 landscape' }]
+           { action: 'print-diagram', arg: 'a4', label: 'Print diagram · A4 landscape' }],
+      12: [{ action: 'print-cards', arg: 'plan', label: 'Print the plan cards' }]
     },
-    weekCards: { 9: ['lto'], 10: [], 11: ['intervention'] },
+    weekCards: { 9: ['lto'], 10: [], 11: ['intervention'], 12: ['plan'] },
 
     // Group roles ([GAF] pp. 43–44). minGroup = the smallest group that uses
     // the role. Each week, roles rotate: the suggestion never gives a member
@@ -1098,7 +1182,8 @@
     fofSources: {
       stakeholder: 'Stakeholder we cannot ask (screen 4)',
       sorter: 'Sorter (screen 6)',
-      baseline: 'Unknown baseline (screen 10)',
+      check: 'Check before opening (screen 11)',
+      baseline: 'Today\u2019s number unknown (screen 11)',
       manual: 'Added by the group'
     },
     // Text of the item made when "can we ask?" is No. {name} = the stakeholder.
@@ -1347,6 +1432,61 @@
       madeOf: 'What happens there: the ideas it is built from'
     },
 
+    // ── WEEK 12 (screens 10-11) ────────────────────────────────────────────
+    // Week 12 details the group's plan in plain words: the activities that
+    // make up the intervention, what could go wrong, what must be true, and
+    // the signs that it is working. Quotations are exact, with the page:
+    // [TC] pp. 7 and 8.
+    plan: {
+      lockTitle: 'Week 12 needs your intervention',
+      lockLead: 'Week 12 details the intervention you chose in week 11. Finish this first:',
+      lockAfter: 'Your work on these screens is kept. They open as soon as your intervention on screen 9 is complete.',
+      lead: 'Week 11 said what the club should create. This week says how it would actually run: the activities it is made of, what each one needs, and what could go wrong.',
+      yoursLead: 'Your intervention, from week 11. Change it on screen 9 if the detail shows it needs changing.',
+      activity: 'We use activity to describe all the specific actions that make up an intervention.', activityRef: '[TC] p. 7',
+      example: 'an intervention might be \u201Cliteracy classes\u201D and the various activities needed to make that happen would be things like identifying space and teachers, choosing a curriculum, screening students, etc.', exampleRef: '[TC] p. 7',
+      activitiesLead: 'Break your intervention into the things that would actually happen there, week to week. Each member drafts at least one activity on paper; the Scribe types them in.',
+      fields: {
+        what: { label: 'What happens', hint: 'One thing that happens there, in a sentence.', words: 'activityWhat' },
+        when: { label: 'When, and how often', hint: 'For example: every weekday evening; on match days; once a month.', words: 'activityWhen' },
+        who: { label: 'Who makes it happen', hint: 'Club staff, volunteers, a partner, the people who come?', words: 'activityWho' },
+        needs: { label: 'What it needs', hint: 'Space, staff, money, partners or permission. Say if any of it is outside the club\u2019s control.', words: 'activityNeeds' }
+      },
+      ideaLabel: 'Which idea from week 11 does it carry out?',
+      ideaNone: 'None: it is new this week',
+      risksLead: 'What could go wrong? Name at least two things, and what the club would do about each one.',
+      riskPrompts: ['What if hardly anyone comes, or only one kind of person comes?', 'What if it costs more than planned, or the people running it leave?', 'What could push out one of the eight characteristics of a third place?'],
+      riskFromTests: 'In week 11 you said these characteristics could be at risk:',
+      riskLabel: 'What could go wrong',
+      mitigationLabel: 'What the club would do about it',
+      // Screen 11
+      lead2: 'Two questions decide whether the plan is worth backing: what must be true for it to work, and how the club would know that it is working.',
+      workIfLead: 'It will work if … Name the two or three things that must be true for your intervention to work, the ones it depends on most. Start from your assumption register (screen 6) if you can. For each one, say how the club could check it before it opens.',
+      workIfLabel: 'It will work if …',
+      checkLabel: 'How could the club check this before it opens?',
+      fromRegister: 'Start from an assumption in your register',
+      fromRegisterNone: 'Your assumption register is empty: write your own.',
+      ownButton: 'Write our own',
+      signsLead: 'Signs that it is working: two or three things the club could see or count in its first years. Each sign has four targets.',
+      targets: 'Each indicator needs to have four targets: How many of who or what will reach what level by when?', targetsRef: '[TC] p. 8',
+      clear: 'Your indicator should make it extremely clear to everyone what you will consider success for a given outcome.', clearRef: '[TC] p. 8',
+      boxLabel: 'Which box on your map does it show?',
+      howManyLabel: 'How many', howManyHint: 'A number or a share: 200, or one in five.',
+      whoLabel: 'Of whom', whoHint: 'For example: residents who never buy a match ticket.',
+      levelLabel: 'Doing what, how much', levelHint: 'For example: visit at least twice a month.',
+      byWhenLabel: 'By when: months after opening',
+      sourceLabel: 'How would the club count it?', sourceHint: 'For example: a door count, a short survey, a booking list.',
+      knownLegend: 'Do we know this number today?',
+      baselineLabel: 'What is it today, and where does that come from?',
+      unknownNote: 'Not known today: it goes on Find out first, so the club measures it before it opens.',
+      // The sign as one sentence. {slot} is replaced by what the group types.
+      signSentence: 'By {byWhen} months after opening, {howMany} {who} will {level}.',
+      signBlanks: { byWhen: 'N', howMany: 'how many', who: 'of whom', level: 'do what' },
+      // Find out first items made on screen 11. {text}, {check}, {sign}.
+      fofCheck: 'Check before opening: {text} (how: {check})',
+      fofBaseline: 'Find out today\u2019s number: {sign}'
+    },
+
     // THE BODØ FACTS, copied verbatim from week7-bodo-decline.html
     // CONFIG.facts (full web addresses in the file header). Keep in step.
     facts: [
@@ -1513,6 +1653,9 @@
       sweep: {},
       interventions: [],
       design: { name: '', what: '', where: '', forWhom: '', when: '', runBy: '' },
+      activities: [],
+      risks: [],
+      workIf: [],
       indicators: [],
       reviews: { given: [], received: [] },
       diagrams: { clientOutcomeIds: [], clientLinkIds: [] },
@@ -1540,7 +1683,10 @@
     'reverseImport': { member: '', course: '', claim: '', linkId: '', stance: '', absent: false },
     'interventions': { id: '', linkIds: [], what: '', because: '', tested: false, plausible: '', plausibleVerdict: '', doable: '', doableVerdict: '',
       testable: '', testableVerdict: '', charAtRisk: '', fix: '', inDesign: false, whyNot: '' },
-    'indicators': { id: '', outcomeId: '', owner: '', howMany: '', who: '', level: '', byWhen: '', definition: '', baseline: '', dataSource: '', frequency: '', responsible: '', reporting: '' },
+    'activities': { id: '', what: '', when: '', who: '', needs: '', ideaId: '' },
+    'risks': { id: '', text: '', mitigation: '' },
+    'workIf': { id: '', assumptionId: '', text: '', check: '' },
+    'indicators': { id: '', outcomeId: '', owner: '', howMany: '', who: '', level: '', byWhen: '', definition: '', baselineKnown: '', baseline: '', dataSource: '', frequency: '', responsible: '', reporting: '' },
     'reviews.received': { fromGroup: '', items: [] },
     'valuesCheck': { value: '', slide: '', speaksTo: '', cost: '' },
     'revisionLog': { at: '', week: 0, screen: 0, change: '' }
@@ -1586,6 +1732,7 @@
     s.clientTheory.order = s.clientTheory.order.filter(function (id, i, o) { return ids.indexOf(id) !== -1 && o.indexOf(id) === i; });
     normaliseMap(s);
     normaliseDesign(s);
+    normalisePlan(s);
     return s;
   }
 
@@ -1851,8 +1998,55 @@
     return c;
   }
 
+  // Week 12 opens once the week 11 intervention is complete: the map has
+  // arrows and no loop, and screen 9 passes. Until then screens 10-11 show
+  // what is missing.
+  function planLockChecks(s) {
+    var g = gateResult(screen9Checks(s));
+    return lockChecks(s).concat([check(g.ok, g.ok ? 'Your intervention is complete.' : 'Finish your intervention on screen 9: ' + g.failing[0])]);
+  }
+  function planLocked(s) { return !gateResult(planLockChecks(s)).ok; }
+  // Week 12, screen 10: activities, then what could go wrong.
+  function screen10Checks(s) {
+    var F = CONFIG.plan.fields;
+    var c = roleChecks(s, 12).concat([
+      check(s.activities.length >= CONFIG.minActivities, 'Add at least ' + plural(CONFIG.minActivities, 'activity', 'activities') + ' (' + s.activities.length + ' so far).')
+    ]);
+    s.activities.forEach(function (a, i) {
+      Object.keys(F).forEach(function (k) { c.push(wordMsg('Activity ' + (i + 1) + ', ' + F[k].label.toLowerCase(), a[k], F[k].words)); });
+    });
+    c.push(check(s.risks.length >= CONFIG.minRisks, 'Name at least ' + plural(CONFIG.minRisks, 'thing') + ' that could go wrong (' + s.risks.length + ' so far).'));
+    s.risks.forEach(function (r, i) {
+      c.push(wordMsg('Risk ' + (i + 1) + ', what could go wrong', r.text, 'risk'));
+      c.push(wordMsg('Risk ' + (i + 1) + ', what the club would do', r.mitigation, 'mitigation'));
+    });
+    return c;
+  }
+  // Week 12, screen 11: it will work if ..., then the signs it is working.
+  function validMonths(v) { var t = String(v == null ? '' : v).trim(); return /^\d{1,3}$/.test(t) && +t >= 1 && +t <= CONFIG.maxMonths; }
+  function screen11Checks(s) {
+    var c = [check(s.workIf.length >= CONFIG.minWorkIf, 'Name at least ' + plural(CONFIG.minWorkIf, 'thing') + ' that must be true for it to work (' + s.workIf.length + ' so far).')];
+    s.workIf.forEach(function (w, i) {
+      c.push(wordMsg('Must be true ' + (i + 1) + ', it will work if', w.text, 'workIf'));
+      c.push(wordMsg('Must be true ' + (i + 1) + ', how to check it', w.check, 'check'));
+    });
+    c.push(check(s.indicators.length >= CONFIG.minSigns, 'Add at least ' + plural(CONFIG.minSigns, 'sign') + ' that it is working (' + s.indicators.length + ' so far).'));
+    s.indicators.forEach(function (x, i) {
+      var who = 'Sign ' + (i + 1);
+      c.push(check(signTargetOk(s, x.outcomeId), who + ': which box on your map does it show?'));
+      c.push(check(String(x.howMany).trim().length > 0, who + ': how many?'));
+      c.push(wordMsg(who + ', of whom', x.who, 'signWho'));
+      c.push(wordMsg(who + ', doing what', x.level, 'signLevel'));
+      c.push(check(validMonths(x.byWhen), who + ': by when? A number of months after opening, from 1 to ' + CONFIG.maxMonths + '.'));
+      c.push(wordMsg(who + ', how the club would count it', x.dataSource, 'signSource'));
+      c.push(check(x.baselineKnown === 'yes' || x.baselineKnown === 'no', who + ': do we know this number today?'));
+      if (x.baselineKnown === 'yes') c.push(wordMsg(who + ', today\u2019s number', x.baseline, 'baseline'));
+    });
+    return c;
+  }
+
   var SCREEN_CHECKS = { 1: screen1Checks, 2: screen2Checks, 3: screen3Checks, 4: screen4Checks, 5: screen5Checks, 6: screen6Checks,
-    7: screen7Checks, 8: screen8Checks, 9: screen9Checks };
+    7: screen7Checks, 8: screen8Checks, 9: screen9Checks, 10: screen10Checks, 11: screen11Checks };
   function screenChecks(s, no) { return SCREEN_CHECKS[no] ? SCREEN_CHECKS[no](s) : []; }
   // Every check of a week's built screens. Later stages add their screens to
   // SCREEN_CHECKS and to CONFIG.screens.
@@ -1884,10 +2078,17 @@
   // show what is coming and the reading).
   // Design screens (7-9) open while locked, to show what is missing; once
   // unlocked they open in order among themselves.
+  // Plan screens (10-11) open while locked, to show what is missing; once
+  // unlocked they open in order among themselves.
   function screenEnabled(s, no) {
     var sc = SCREEN[no];
     if (!sc) return false;
     if (!sc.built || no === 1 || no <= s.ui.reached) return true;
+    if (sc.plan) {
+      if (planLocked(s)) return true;
+      for (var k = 1; k < no; k++) if (SCREEN[k].plan && !gateResult(screenChecks(s, k)).ok) return false;
+      return true;
+    }
     if (sc.design) {
       if (designLocked(s)) return true;
       for (var j = 1; j < no; j++) if (SCREEN[j].design && !gateResult(screenChecks(s, j)).ok) return false;
@@ -2338,6 +2539,96 @@
       var sl = slotById(k);
       return slotValue(s, k) || '[' + (sl ? sl.blank : k) + ']';
     });
+  }
+
+  // ==========================================================================
+  // Week 12: the plan in detail (screens 10-11). normalisePlan() runs after
+  // every load (migrate) and before every save, so references to ideas and
+  // assumptions that have gone are cleared, "riskiest" follows "workIf", and
+  // Find out first follows screen 11 (syncPlanFof).
+  // ==========================================================================
+  function assumptionById(s, id) { return id ? byId(s.assumptions, id) : null; }
+  function signTargetOk(s, id) { return id === LTO_ID || !!outcomeById(s, id); }
+  function cleanText(t) { return String(t == null ? '' : t).trim().replace(/\s+/g, ' ').replace(/[\s.;:,]+$/, ''); }
+  function fillIn(tpl, map) { return tpl.replace(/\{(\w+)\}/g, function (m, k) { return map[k] == null ? m : map[k]; }); }
+  function normalisePlan(s) {
+    if (!Array.isArray(s.activities) || !Array.isArray(s.workIf) || !Array.isArray(s.indicators) || !Array.isArray(s.findOutFirst)) return false;
+    var inD = {};
+    designIdeas(s).forEach(function (iv) { inD[iv.id] = 1; });
+    s.activities.forEach(function (a) { if (!inD[a.ideaId]) a.ideaId = ''; });
+    s.workIf.forEach(function (w) { if (!assumptionById(s, w.assumptionId)) w.assumptionId = ''; });
+    s.indicators.forEach(function (x) {
+      if (!signTargetOk(s, x.outcomeId)) x.outcomeId = '';
+      if (x.baselineKnown !== 'yes' && x.baselineKnown !== 'no') x.baselineKnown = '';
+    });
+    markRiskiest(s);
+    return syncPlanFof(s);
+  }
+  // An assumption is "riskiest" while an "it will work if" item starts from it.
+  function markRiskiest(s) {
+    var used = {};
+    s.workIf.forEach(function (w) { if (w.assumptionId) used[w.assumptionId] = 1; });
+    s.assumptions.forEach(function (a) { a.riskiest = !!used[a.id]; });
+  }
+  // A sign as one sentence; an empty slot shows as [how many], [of whom] ...
+  function signSentence(x) {
+    var v = { byWhen: cleanText(x.byWhen), howMany: cleanText(x.howMany), who: cleanText(x.who), level: cleanText(x.level).replace(/^will\s+/i, '') };
+    return CONFIG.plan.signSentence.replace(/\{(\w+)\}/g, function (m, k) { return v[k] || '[' + CONFIG.plan.signBlanks[k] + ']'; });
+  }
+  // Find out first follows screen 11: one item per check that has its text
+  // and its check, and one per sign whose number today is unknown. Returns
+  // true if the list changed.
+  function syncPlanFof(s) {
+    var want = {}, P = CONFIG.plan;
+    s.workIf.forEach(function (w) {
+      if (cleanText(w.text) && cleanText(w.check)) want['check|' + w.id] = fillIn(P.fofCheck, { text: cleanText(w.text), check: cleanText(w.check) });
+    });
+    s.indicators.forEach(function (x) { if (x.baselineKnown === 'no') want['baseline|' + x.id] = fillIn(P.fofBaseline, { sign: signSentence(x) }); });
+    var before = JSON.stringify(s.findOutFirst), seen = {};
+    s.findOutFirst = s.findOutFirst.filter(function (f) {
+      if (f.source !== 'check' && f.source !== 'baseline') return true;
+      var k = f.source + '|' + f.refId;
+      if (!want[k] || seen[k]) return false;
+      seen[k] = 1; f.text = want[k];
+      return true;
+    });
+    Object.keys(want).forEach(function (k) {
+      if (seen[k]) return;
+      var i = k.indexOf('|');
+      s.findOutFirst.push({ id: uid('f'), text: want[k], source: k.slice(0, i), refId: k.slice(i + 1) });
+    });
+    return JSON.stringify(s.findOutFirst) !== before;
+  }
+  function addActivity(s) { var a = { id: uid('a'), what: '', when: '', who: '', needs: '', ideaId: '' }; s.activities.push(a); return a; }
+  function removeActivity(s, id) { s.activities = s.activities.filter(function (a) { return a.id !== id; }); }
+  function addRisk(s) { var r = { id: uid('r'), text: '', mitigation: '' }; s.risks.push(r); return r; }
+  function removeRisk(s, id) { s.risks = s.risks.filter(function (r) { return r.id !== id; }); }
+  // An "it will work if" item, started from an assumption in the register
+  // (its text copied in, to edit) or written from scratch. At most
+  // CONFIG.maxWorkIf; an assumption is used once.
+  function addWorkIf(s, assumptionId) {
+    if (s.workIf.length >= CONFIG.maxWorkIf) return null;
+    var a = assumptionById(s, assumptionId);
+    if (assumptionId && (!a || s.workIf.some(function (w) { return w.assumptionId === a.id; }))) return null;
+    var w = { id: uid('w'), assumptionId: a ? a.id : '', text: a ? a.text : '', check: '' };
+    s.workIf.push(w);
+    markRiskiest(s);
+    return w;
+  }
+  function removeWorkIf(s, id) { s.workIf = s.workIf.filter(function (w) { return w.id !== id; }); markRiskiest(s); syncPlanFof(s); }
+  function addSign(s) {
+    if (s.indicators.length >= CONFIG.maxSigns) return null;
+    var x = { id: uid('n'), outcomeId: '', owner: '', howMany: '', who: '', level: '', byWhen: '', definition: '', baselineKnown: '', baseline: '',
+      dataSource: '', frequency: '', responsible: '', reporting: '' };
+    s.indicators.push(x);
+    return x;
+  }
+  function removeSign(s, id) { s.indicators = s.indicators.filter(function (x) { return x.id !== id; }); syncPlanFof(s); }
+  // The characteristics the week 11 tests said could be at risk.
+  function charsAtRisk(s) {
+    var out = [];
+    testedIdeas(s).forEach(function (iv) { if (charOk(iv.charAtRisk) && out.indexOf(iv.charAtRisk) === -1) out.push(iv.charAtRisk); });
+    return out;
   }
 
   // ==========================================================================
@@ -2826,6 +3117,36 @@
     return out;
   }
 
+  // Week 12: the plan, as text.
+  function ideaRef(s, id) { var iv = interventionById(s, id); return iv ? 'I' + ideaNo(s, iv) : ''; }
+  function activityLine(s, a, i) {
+    return 'Activity ' + (i + 1) + ': ' + dash(a.what) + ' When: ' + dash(a.when) + '. Who: ' + dash(a.who) + '. Needs: ' + dash(a.needs) +
+      '.' + (a.ideaId ? ' Carries out ' + ideaRef(s, a.ideaId) + '.' : '');
+  }
+  function planText(s) {
+    var out = ['Activities:'];
+    s.activities.forEach(function (a, i) { out.push('  ' + activityLine(s, a, i)); });
+    if (!s.activities.length) out.push('  —');
+    out.push('What could go wrong:');
+    s.risks.forEach(function (r, i) { out.push('  R' + (i + 1) + '. ' + dash(r.text) + ' The club would: ' + dash(r.mitigation)); });
+    if (!s.risks.length) out.push('  —');
+    return out;
+  }
+  function signBox(s, x) { return x.outcomeId ? (x.outcomeId === LTO_ID ? 'the long-term outcome' : nodeName(s, x.outcomeId)) + ': ' + nodeText(s, x.outcomeId) : ''; }
+  function signToday(x) { return x.baselineKnown === 'yes' ? dash(x.baseline) : x.baselineKnown === 'no' ? 'not known: on Find out first' : '—'; }
+  function workIfFrom(s, w) { var a = assumptionById(s, w.assumptionId); return a ? ' (assumption A' + (s.assumptions.indexOf(a) + 1) + ')' : ''; }
+  function willWorkText(s) {
+    var out = ['It will work if:'];
+    s.workIf.forEach(function (w, i) { out.push('  ' + (i + 1) + '. ' + dash(w.text) + workIfFrom(s, w) + '. Check before opening: ' + dash(w.check)); });
+    if (!s.workIf.length) out.push('  —');
+    out.push('Signs it is working:');
+    s.indicators.forEach(function (x, i) {
+      out.push('  S' + (i + 1) + '. ' + signSentence(x) + ' Shows ' + dash(signBox(s, x)) + '. Counted by: ' + dash(x.dataSource) + '. Today: ' + signToday(x));
+    });
+    if (!s.indicators.length) out.push('  —');
+    return out;
+  }
+
   var OUTPUT_SECTIONS = [
     { id: 'group', week: 9, title: 'Group and roles', colour: '#5C3A96',
       has: function () { return true; },
@@ -2958,6 +3279,31 @@
           }).join('') + '</tbody></table>' : '<div class="rep-item">—</div>';
         return h;
       } },
+    { id: 'plan', week: 12, title: 'The plan in detail (screen 10)', colour: '#7E58A8',
+      has: function (s) { return s.activities.length > 0 || s.risks.length > 0; },
+      text: function (s) { return planText(s); },
+      html: function (s) {
+        var h = '<h3 class="rep-sub">Activities</h3>' + (s.activities.length ? '<table class="rep-table"><thead><tr><th>What happens</th><th>When</th><th>Who</th><th>What it needs</th></tr></thead><tbody>' +
+          s.activities.map(function (a, i) {
+            return '<tr><td>' + (i + 1) + '. ' + esc(dash(a.what)) + (a.ideaId ? ' <b>(' + esc(ideaRef(s, a.ideaId)) + ')</b>' : '') + '</td><td>' + esc(dash(a.when)) + '</td><td>' + esc(dash(a.who)) + '</td><td>' + esc(dash(a.needs)) + '</td></tr>';
+          }).join('') + '</tbody></table>' : '<div class="rep-item">—</div>');
+        h += '<h3 class="rep-sub">What could go wrong</h3>' + (s.risks.length ? '<table class="rep-table"><thead><tr><th>What could go wrong</th><th>What the club would do</th></tr></thead><tbody>' +
+          s.risks.map(function (r, i) { return '<tr><td>R' + (i + 1) + '. ' + esc(dash(r.text)) + '</td><td>' + esc(dash(r.mitigation)) + '</td></tr>'; }).join('') + '</tbody></table>' : '<div class="rep-item">—</div>');
+        return h;
+      } },
+    { id: 'willwork', week: 12, title: 'Will it work? (screen 11)', colour: '#D4A020',
+      has: function (s) { return s.workIf.length > 0 || s.indicators.length > 0; },
+      text: function (s) { return willWorkText(s); },
+      html: function (s) {
+        var h = '<h3 class="rep-sub">It will work if</h3>' + (s.workIf.length ? s.workIf.map(function (w, i) {
+          return repItem((i + 1) + '. Check before opening: ' + dash(w.check), dash(w.text) + workIfFrom(s, w));
+        }).join('') : '<div class="rep-item">—</div>');
+        h += '<h3 class="rep-sub">Signs it is working</h3>' + (s.indicators.length ? '<table class="rep-table"><thead><tr><th>Sign</th><th>Shows</th><th>Counted by</th><th>Today</th></tr></thead><tbody>' +
+          s.indicators.map(function (x, i) {
+            return '<tr><td>S' + (i + 1) + '. ' + esc(signSentence(x)) + '</td><td>' + esc(dash(signBox(s, x))) + '</td><td>' + esc(dash(x.dataSource)) + '</td><td>' + esc(signToday(x)) + '</td></tr>';
+          }).join('') + '</tbody></table>' : '<div class="rep-item">—</div>');
+        return h;
+      } },
     { id: 'fof', week: 9, title: 'Find out first', colour: '#7A5828',
       has: function (s) { return s.findOutFirst.length > 0; },
       text: function (s) { return s.findOutFirst.map(function (f) { return '- ' + dash(f.text) + ' [' + CONFIG.fofSources[f.source] + ']'; }); },
@@ -3015,6 +3361,20 @@
           })),
           foot: dash(s.group.name) + ' · ' + members(s).join(', ')
         }];
+      } },
+    // One card per "it will work if" item and one per sign: the "it will
+    // work if" and "the club will know it is working when" of week 13.
+    { id: 'plan', title: 'Plan cards',
+      ready: function (s) { return !planLocked(s) && gateResult(screen10Checks(s)).ok && gateResult(screen11Checks(s)).ok; },
+      cards: function (s) {
+        var foot = dash(s.group.name) + ' · ' + members(s).join(', ');
+        return s.workIf.map(function (w, i) {
+          return { eyebrow: 'It will work if · ' + (i + 1) + ' of ' + s.workIf.length + ' · Week 12', colour: '#7E58A8', text: dash(w.text),
+            details: ['Check before opening: ' + dash(w.check)].concat(w.assumptionId ? ['From the assumption register' + workIfFrom(s, w)] : []), foot: foot };
+        }).concat(s.indicators.map(function (x, i) {
+          return { eyebrow: 'Sign it is working · S' + (i + 1) + ' · Week 12', colour: '#D4A020', text: signSentence(x),
+            details: ['Shows: ' + short(dash(signBox(s, x)), 140), 'Counted by: ' + dash(x.dataSource), 'Today: ' + signToday(x)], foot: foot };
+        }));
       } }
   ];
 
@@ -3060,8 +3420,12 @@
   var state, els = {};
   var $ = function (id) { return document.getElementById(id); };
 
+  // Saves; first brings the week 12 links up to date (normalisePlan).
+  // Returns true if Find out first changed, so the side panel can follow.
   function save() {
+    var changed = normalisePlan(state);
     try { window.localStorage.setItem(CONFIG.storageKey, JSON.stringify(state)); } catch (e) { /* storage unavailable: work continues unsaved */ }
+    return changed;
   }
   function load() {
     try {
@@ -3122,10 +3486,10 @@
       h += '<div class="rail-week"><span class="wk">Week ' + w + (weekClosed(state, w) ? ' ✓' : '') + '</span>';
       CONFIG.screens.filter(function (sc) { return sc.week === w; }).forEach(function (sc) {
         var on = state.ui.screen === sc.no, en = screenEnabled(state, sc.no);
-        var locked = sc.design && designLocked(state), done = sc.built && !locked && gateResult(screenChecks(state, sc.no)).ok;
+        var locked = (sc.design && designLocked(state)) || (sc.plan && planLocked(state)), done = sc.built && !locked && gateResult(screenChecks(state, sc.no)).ok;
         h += '<button type="button" class="rail-btn' + (sc.built ? '' : ' later') + (locked ? ' locked' : '') + (done ? ' done' : '') + '" data-action="goto" data-arg="' + sc.no + '"' +
           ' style="--rail-colour:' + sc.colour + ';--rail-ink:' + inkFor(sc.colour) + '"' + (on ? ' aria-current="page"' : '') + (en ? '' : ' disabled') +
-          ' title="' + esc(sc.title) + '" aria-label="Screen ' + sc.no + ': ' + esc(sc.title) + (sc.built ? (locked ? ', locked until the map has arrows' : done ? ', complete' : '') : ', arrives in week ' + sc.week) + '">' +
+          ' title="' + esc(sc.title) + '" aria-label="Screen ' + sc.no + ': ' + esc(sc.title) + (sc.built ? (locked ? (sc.plan ? ', locked until the intervention is complete' : ', locked until the map has arrows') : done ? ', complete' : '') : ', arrives in week ' + sc.week) + '">' +
           (sc.built ? '<span class="pip" aria-hidden="true"></span>' : '') + sc.no + '</button>';
       });
       h += '</div>';
@@ -3806,6 +4170,130 @@
     return h;
   }
 
+  // ── Week 12: the plan lock ──
+  function renderPlanLock(sc) {
+    var P = CONFIG.plan, h = screenHead(sc, sc.summary);
+    h += '<div class="lock-box"><p class="big">' + esc(P.lockTitle) + '</p>' +
+      '<p>' + esc(P.lockLead) + '</p>' + gateHtml('gate-lock', planLockChecks(state).filter(function (c) { return !c.ok; })) +
+      '<p class="quiet">' + esc(P.lockAfter) + '</p><div class="actions">' +
+      '<button type="button" class="btn btn-primary" data-action="goto" data-arg="' + (designLocked(state) ? 5 : 9) + '">' + (designLocked(state) ? 'Screen 5: backwards map' : 'Screen 9: our intervention') + '</button></div></div>';
+    return h;
+  }
+
+  // ── Screen 10: the plan in detail ──
+  function ideaChoices() {
+    return designIdeas(state).map(function (iv) { return { value: iv.id, label: 'I' + ideaNo(state, iv) + ': ' + short(ideaSentence(iv), 80) }; });
+  }
+  function activityEditor(a, i) {
+    var P = CONFIG.plan, base = 'activities.' + i + '.', n = i + 1;
+    var h = '<div class="item plan-item" id="act-' + a.id + '" style="--item-colour:var(--char-8)"><div class="item-head"><span class="tag">' + n + '</span>' +
+      '<span class="grow"><b>Activity ' + n + '</b></span>' +
+      '<button type="button" class="btn btn-danger btn-small" data-action="act-remove" data-arg="' + a.id + '" aria-label="Remove activity ' + n + '">Remove</button></div>';
+    h += wcText('act-what-' + a.id, 'Activity ' + n + ': ' + P.fields.what.label, base + 'what', a.what, CONFIG.words.activityWhat, { short: true, hint: P.fields.what.hint, logLabel: 'Activities' });
+    h += '<div class="two-col">' + ['when', 'who'].map(function (k) {
+      return wcText('act-' + k + '-' + a.id, P.fields[k].label, base + k, a[k], CONFIG.words[P.fields[k].words], { short: true, hint: P.fields[k].hint, logLabel: 'Activities' });
+    }).join('') + '</div>';
+    h += wcText('act-needs-' + a.id, P.fields.needs.label, base + 'needs', a.needs, CONFIG.words.activityNeeds, { short: true, hint: P.fields.needs.hint, logLabel: 'Activities' });
+    var ideas = ideaChoices();
+    if (ideas.length) h += selectHtml('act-idea-' + a.id, P.ideaLabel, ' data-f="' + base + 'ideaId" data-label="Activities"', ideas, a.ideaId, P.ideaNone);
+    return h + '</div>';
+  }
+  function riskEditor(r, i) {
+    var P = CONFIG.plan, base = 'risks.' + i + '.', n = i + 1;
+    return '<div class="item plan-item" id="risk-' + r.id + '" style="--item-colour:var(--char-2)"><div class="item-head"><span class="tag">R' + n + '</span><span class="grow"></span>' +
+      '<button type="button" class="btn btn-danger btn-small" data-action="risk-remove" data-arg="' + r.id + '" aria-label="Remove risk ' + n + '">Remove</button></div>' +
+      '<div class="two-col">' + wcText('risk-text-' + r.id, 'R' + n + ': ' + P.riskLabel, base + 'text', r.text, CONFIG.words.risk, { short: true, logLabel: 'Risks' }) +
+      wcText('risk-mit-' + r.id, P.mitigationLabel, base + 'mitigation', r.mitigation, CONFIG.words.mitigation, { short: true, logLabel: 'Risks' }) + '</div></div>';
+  }
+  function interventionRecap() {
+    var inD = designIdeas(state);
+    return '<div class="iv-sentence">' + sentenceHtml() + '</div>' +
+      '<p><b>' + esc(CONFIG.intervention.soThat) + ':</b> ' + esc(dash(state.lto.text)) + '</p>' +
+      (inD.length ? '<ul class="plain iv-made">' + inD.map(function (iv) {
+        return '<li><span class="tag idea-tag in">I' + ideaNo(state, iv) + '</span><span>' + esc(ideaSentence(iv)) + '</span></li>';
+      }).join('') + '</ul>' : '');
+  }
+  function renderPlan(sc) {
+    if (planLocked(state)) return renderPlanLock(sc);
+    var P = CONFIG.plan, h = screenHead(sc, P.lead), risky = charsAtRisk(state);
+    h += '<div id="roles-panel" data-week="12">' + renderRoles(12) + '</div>';
+    h += '<section class="panel" style="--panel-colour:var(--char-6)"><p class="eyebrow panel-eyebrow">1 · Your intervention · ' + esc(dash(state.design.name)) + '</p>' +
+      '<p class="quiet">' + esc(P.yoursLead) + '</p>' + interventionRecap() +
+      '<div class="actions"><button type="button" class="btn btn-ghost" data-action="goto" data-arg="9">Screen 9: change it</button></div></section>';
+    h += '<section class="panel" style="' + panelStyle(sc) + '"><p class="eyebrow panel-eyebrow">2 · What happens there</p>' +
+      guide('Activities', quote(P.activity, P.activityRef) + '<p style="margin-top:0.4rem">For example, <q>' + esc(P.example) + '</q> ' + esc(P.exampleRef) + '</p>') +
+      '<p style="margin-top:0.75rem">' + esc(P.activitiesLead) + '</p>' +
+      state.activities.map(activityEditor).join('') +
+      '<div class="actions"><button type="button" class="btn btn-accent" data-action="act-add">Add an activity</button></div></section>';
+    h += '<section class="panel" style="--panel-colour:var(--char-2)"><p class="eyebrow panel-eyebrow">3 · What could go wrong</p><p>' + esc(P.risksLead) + '</p>' +
+      '<ul class="q-prompts">' + P.riskPrompts.map(function (q) { return '<li>' + esc(q) + '</li>'; }).join('') + '</ul>' +
+      (risky.length ? '<p class="quiet">' + esc(P.riskFromTests) + ' <b>' + esc(risky.map(charLabelOf).join(', ')) + '</b>.</p>' : '') +
+      state.risks.map(riskEditor).join('') +
+      '<div class="actions"><button type="button" class="btn btn-accent" data-action="risk-add">Add something that could go wrong</button></div></section>';
+    h += screenGate(10);
+    return h;
+  }
+
+  // ── Screen 11: will it work? ──
+  function workIfEditor(w, i) {
+    var P = CONFIG.plan, base = 'workIf.' + i + '.', n = i + 1, a = assumptionById(state, w.assumptionId);
+    return '<div class="item plan-item" id="wi-' + w.id + '" style="--item-colour:var(--char-8)"><div class="item-head"><span class="tag">' + n + '</span>' +
+      '<span class="grow">' + (a ? '<span class="pill">From assumption A' + (state.assumptions.indexOf(a) + 1) + '</span>' : '<span class="pill">Our own</span>') + '</span>' +
+      '<button type="button" class="btn btn-danger btn-small" data-action="wi-remove" data-arg="' + w.id + '" aria-label="Remove must-be-true item ' + n + '">Remove</button></div>' +
+      wcText('wi-text-' + w.id, n + '. ' + P.workIfLabel, base + 'text', w.text, CONFIG.words.workIf, { short: true, logLabel: 'It will work if' }) +
+      wcText('wi-check-' + w.id, P.checkLabel, base + 'check', w.check, CONFIG.words.check, { short: true, logLabel: 'It will work if' }) + '</div>';
+  }
+  function signBoxOptions() {
+    return [{ value: LTO_ID, label: 'The long-term outcome: ' + short(state.lto.text, 70) }].concat(state.outcomes.map(function (o) {
+      return { value: o.id, label: nodeName(state, o.id) + ': ' + short(o.text, 70) };
+    }));
+  }
+  function signEditor(x, i) {
+    var P = CONFIG.plan, base = 'indicators.' + i + '.', n = i + 1;
+    var h = '<div class="item plan-item" id="sg-' + x.id + '" style="--item-colour:var(--char-4)"><div class="item-head"><span class="tag sign-tag">S' + n + '</span><span class="grow"></span>' +
+      '<button type="button" class="btn btn-danger btn-small" data-action="sg-remove" data-arg="' + x.id + '" aria-label="Remove sign ' + n + '">Remove</button></div>';
+    h += selectHtml('sg-box-' + x.id, 'S' + n + ': ' + P.boxLabel, ' data-f="' + base + 'outcomeId" data-label="Signs it is working"', signBoxOptions(), x.outcomeId, 'Choose a box…');
+    h += '<div class="four-targets">' +
+      textInput('sg-many-' + x.id, P.howManyLabel, base + 'howMany', x.howMany, { max: 40, logLabel: 'Signs it is working' }) +
+      wcText('sg-who-' + x.id, P.whoLabel, base + 'who', x.who, CONFIG.words.signWho, { short: true, logLabel: 'Signs it is working' }) +
+      wcText('sg-level-' + x.id, P.levelLabel, base + 'level', x.level, CONFIG.words.signLevel, { short: true, logLabel: 'Signs it is working' }) +
+      '<div class="field"><label for="sg-when-' + x.id + '">' + esc(P.byWhenLabel) + '</label><input type="text" id="sg-when-' + x.id + '" class="slide" inputmode="numeric" autocomplete="off" maxlength="3"' +
+      ' data-f="' + base + 'byWhen" data-label="Signs it is working" value="' + esc(x.byWhen) + '"></div></div>' +
+      '<p class="quiet">' + esc(P.howManyHint) + ' ' + esc(P.whoHint) + ' ' + esc(P.levelHint) + '</p>';
+    h += '<div class="sign-sentence" id="sg-sen-' + x.id + '" aria-live="polite">' + esc(signSentence(x)) + '</div>';
+    h += wcText('sg-src-' + x.id, P.sourceLabel, base + 'dataSource', x.dataSource, CONFIG.words.signSource, { short: true, hint: P.sourceHint, logLabel: 'Signs it is working' });
+    h += '<fieldset role="radiogroup"><legend>' + esc(P.knownLegend) + '</legend><div class="choices">' +
+      chip({ type: 'radio', id: 'sg-known-' + x.id + '-yes', name: 'sgk|' + x.id, value: 'yes', label: 'Yes', checked: x.baselineKnown === 'yes', colour: 'var(--correct)', attrs: ' data-f="' + base + 'baselineKnown" data-label="Signs it is working" data-rerender="1"' }) +
+      chip({ type: 'radio', id: 'sg-known-' + x.id + '-no', name: 'sgk|' + x.id, value: 'no', label: 'No', checked: x.baselineKnown === 'no', colour: 'var(--char-1)', attrs: ' data-f="' + base + 'baselineKnown" data-label="Signs it is working" data-rerender="1"' }) +
+      '</div></fieldset>';
+    if (x.baselineKnown === 'yes') h += wcText('sg-base-' + x.id, P.baselineLabel, base + 'baseline', x.baseline, CONFIG.words.baseline, { short: true, logLabel: 'Signs it is working' });
+    if (x.baselineKnown === 'no') h += '<p class="quiet">' + esc(P.unknownNote) + '</p>';
+    return h + '</div>';
+  }
+  function renderWillWork(sc) {
+    if (planLocked(state)) return renderPlanLock(sc);
+    var P = CONFIG.plan, h = screenHead(sc, P.lead2), full = state.workIf.length >= CONFIG.maxWorkIf;
+    var free = state.assumptions.filter(function (a) { return !state.workIf.some(function (w) { return w.assumptionId === a.id; }); });
+    h += '<section class="panel" style="--panel-colour:var(--char-8)"><p class="eyebrow panel-eyebrow">1 · It will work if …</p><p>' + esc(P.workIfLead) + '</p>' +
+      state.workIf.map(workIfEditor).join('');
+    if (full) h += '<p class="quiet">' + state.workIf.length + ' of ' + CONFIG.maxWorkIf + ': keep the ones the plan depends on most.</p>';
+    else {
+      h += '<div class="add-row">' + (state.assumptions.length ? selectHtml('wi-from', P.fromRegister, ' data-workif-from="1"', free.map(function (a) {
+        return { value: a.id, label: 'A' + (state.assumptions.indexOf(a) + 1) + ': ' + short(a.text, 80) };
+      }), '', 'Choose an assumption…') : '<p class="quiet">' + esc(P.fromRegisterNone) + '</p>') +
+        '<div class="actions"><button type="button" class="btn btn-accent" data-action="wi-add">' + esc(P.ownButton) + '</button></div></div>';
+    }
+    h += '</section>';
+    h += '<section class="panel" style="' + panelStyle(sc) + '"><p class="eyebrow panel-eyebrow">2 · Signs that it is working</p><p>' + esc(P.signsLead) + '</p>' +
+      guide('Four targets', quote(P.targets, P.targetsRef) + '<p style="margin-top:0.4rem">' + quote(P.clear, P.clearRef) + '</p>') +
+      state.indicators.map(signEditor).join('') +
+      (state.indicators.length < CONFIG.maxSigns ? '<div class="actions"><button type="button" class="btn btn-accent" data-action="sg-add">Add a sign</button></div>' :
+        '<p class="quiet">' + CONFIG.maxSigns + ' signs: the headline ones.</p>') + '</section>';
+    h += screenGate(11);
+    h += renderClose(12);
+    return h;
+  }
+
   // Open the editor of a diagram box or arrow.
   function openEditor(id) {
     if (id === LTO_ID || id === 'goal') { goto(3); refocus(id === 'goal' ? 'ce-goal' : 'lto-text'); return; }
@@ -3838,7 +4326,7 @@
   }
 
   var RENDER = { 1: renderSetup, 2: renderClient, 3: renderProblem, 4: renderStakeholders, 5: renderMap, 6: renderEvidence,
-    7: renderIdeas, 8: renderTests, 9: renderIntervention };
+    7: renderIdeas, 8: renderTests, 9: renderIntervention, 10: renderPlan, 11: renderWillWork };
 
   function renderSide() {
     var sc = SCREEN[state.ui.screen], week = sc.week, sChk = state.selfChecks['week' + week], list = members(state);
@@ -3918,6 +4406,7 @@
     }
     if (no === 5 || no === 7) refreshDiagram();
     if (no === 9) { var sen = $('iv-sentence'); if (sen) sen.innerHTML = sentenceHtml(); }
+    if (no === 11) state.indicators.forEach(function (x) { var se = $('sg-sen-' + x.id); if (se) se.textContent = signSentence(x); });
     renderRail();
   }
 
@@ -4032,10 +4521,17 @@
       if (el.dataset.f === 'group.name' || el.dataset.f.indexOf('group.members.') === 0) membersChanged();
       var om = el.dataset.f.match(/^(outcomes|clusters)\.(\d+)\.(text|label)$/);
       if (om) refreshOtext(state[om[1]][+om[2]].id);
-      save(); refreshLive(el);
+      if (save()) renderSide();
+      refreshLive(el);
     });
     app.addEventListener('change', function (ev) {
       var el = ev.target, sNo = state.ui.screen, err;
+      // Week 12: an "it will work if" item started from the register.
+      if (el.dataset.workifFrom) {
+        var nw = el.value && addWorkIf(state, el.value);
+        if (!nw) { el.value = ''; return; }
+        logEdit(state, sNo, 'It will work if'); save(); render(); refocus('wi-text-' + nw.id); return;
+      }
       // Week 11: an idea's arrow, the ideas to test, the ideas in the intervention.
       if (el.dataset.ideaArrow) {
         setIdeaArrow(state, el.dataset.ideaArrow, el.value);
@@ -4221,6 +4717,23 @@
       // Week 11
       else if (act === 'idea-add') { var ni = addIdea(state, arg); log('Ideas'); save(); render(); refocus('idea-what-' + ni.id); }
       else if (act === 'idea-remove') { if (window.confirm('Remove this idea? Its answers to the three questions go with it.')) { removeIdea(state, arg); log('Ideas'); save(); render(); } }
+      // Week 12
+      else if (act === 'act-add') { var na = addActivity(state); log('Activities'); save(); render(); refocus('act-what-' + na.id); }
+      else if (act === 'act-remove') { if (window.confirm('Remove this activity?')) { removeActivity(state, arg); log('Activities'); save(); render(); } }
+      else if (act === 'risk-add') { var nr = addRisk(state); log('Risks'); save(); render(); refocus('risk-text-' + nr.id); }
+      else if (act === 'risk-remove') { if (window.confirm('Remove this risk?')) { removeRisk(state, arg); log('Risks'); save(); render(); } }
+      else if (act === 'wi-add') {
+        var nw2 = addWorkIf(state, '');
+        if (!nw2) { setStatus('At most ' + CONFIG.maxWorkIf + ': remove one first.'); return; }
+        log('It will work if'); save(); render(); refocus('wi-text-' + nw2.id);
+      }
+      else if (act === 'wi-remove') { if (window.confirm('Remove this item?')) { removeWorkIf(state, arg); log('It will work if'); save(); render(); } }
+      else if (act === 'sg-add') {
+        var ns = addSign(state);
+        if (!ns) { setStatus('At most ' + CONFIG.maxSigns + ' signs: remove one first.'); return; }
+        log('Signs it is working'); save(); render(); refocus('sg-box-' + ns.id);
+      }
+      else if (act === 'sg-remove') { if (window.confirm('Remove this sign?')) { removeSign(state, arg); log('Signs it is working'); save(); render(); } }
       else if (act === 'export') exportNow();
       else if (act === 'week7-load') $('week7-file').click();
       else if (act === 'week7-clear') { if (window.confirm('Remove the week 7 sentences from this workbench?')) { state.imported.week7 = null; save(); render(); } }
@@ -4371,7 +4884,25 @@
     edgePath: edgePath,
     markerLayout: markerLayout,
     ideasText: ideasText,
-    interventionText: interventionText
+    interventionText: interventionText,
+    // week 12
+    planLockChecks: planLockChecks,
+    planLocked: planLocked,
+    normalisePlan: normalisePlan,
+    syncPlanFof: syncPlanFof,
+    signSentence: signSentence,
+    validMonths: validMonths,
+    addActivity: addActivity,
+    removeActivity: removeActivity,
+    addRisk: addRisk,
+    removeRisk: removeRisk,
+    addWorkIf: addWorkIf,
+    removeWorkIf: removeWorkIf,
+    addSign: addSign,
+    removeSign: removeSign,
+    charsAtRisk: charsAtRisk,
+    planText: planText,
+    willWorkText: willWorkText
   };
 
   if (document.getElementById('tw-app')) init();
